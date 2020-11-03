@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
+using CoreEngine.Model;
 
 namespace CoreEngine
 {
-    internal class DataModel
+    internal class ExecutionState
     {
         private readonly Dictionary<string, object> _data =
             new Dictionary<string, object>();
 
-        public DataModel()
+        public ExecutionState()
         {
         }
 
@@ -41,7 +42,7 @@ namespace CoreEngine
             }
         }
 
-        public void Init(StateChart statechart, State state)
+        public void Init(StateChart statechart, _State state)
         {
             foreach (var pair in statechart.StateData)
             {

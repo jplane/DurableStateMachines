@@ -4,13 +4,13 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Collections.Generic;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
     internal class StateChart
     {
         private readonly XDocument _xml;
         private readonly Lazy<XElement[]> _stateElements;
-        private readonly Dictionary<string, State> _states;
+        private readonly Dictionary<string, _State> _states;
 
         public StateChart(XDocument xml)
         {
@@ -37,17 +37,17 @@ namespace CoreEngine
                 return GetStates(_xml.Root).ToArray();
             });
 
-            _states = new Dictionary<string, State>();
+            _states = new Dictionary<string, _State>();
 
-            _states.Add("scxml_root", new State(_xml.Root));
+            _states.Add("scxml_root", new _State(_xml.Root));
         }
 
-        public int CompareDocumentOrder(State state1, State state2)
+        public int CompareDocumentOrder(_State state1, _State state2)
         {
             return Compare(state1.Id, state2.Id, _stateElements.Value.Select(s => s.Attribute("id").Value));
         }
 
-        public int CompareReverseDocumentOrder(State state1, State state2)
+        public int CompareReverseDocumentOrder(_State state1, _State state2)
         {
             return Compare(state1.Id, state2.Id, _stateElements.Value.Reverse().Select(s => s.Attribute("id").Value));
         }
@@ -118,9 +118,9 @@ namespace CoreEngine
             });
         }
 
-        public State GetState(string id)
+        public _State GetState(string id)
         {
-            if (! _states.TryGetValue(id, out State state))
+            if (! _states.TryGetValue(id, out _State state))
             {
                 var element = _stateElements.Value.Single(s => s.Attribute("id").Value == id);
 
@@ -130,13 +130,13 @@ namespace CoreEngine
             return state;
         }
 
-        public State GetState(XElement element)
+        public _State GetState(XElement element)
         {
             var id = element.Attribute("id").Value;
 
-            if (! _states.TryGetValue(id, out State state))
+            if (! _states.TryGetValue(id, out _State state))
             {
-                state = new State(element);
+                state = new _State(element);
 
                 _states.Add(id, state);
             }

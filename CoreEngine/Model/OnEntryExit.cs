@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
     internal class OnEntryExit
     {
-        private readonly List<Lazy<ExecutableContent>> _content;
+        private readonly List<Lazy<Content>> _content;
 
         public OnEntryExit(XElement element)
         {
-            var content = new List<Lazy<ExecutableContent>>();
+            var content = new List<Lazy<Content>>();
 
             foreach (var node in element.Elements())
             {
-                content = content.Append(new Lazy<ExecutableContent>(() => new ExecutableContent(node)));
+                content = content.Append(new Lazy<Content>(() => new Content(node)));
             }
 
             _content = content;

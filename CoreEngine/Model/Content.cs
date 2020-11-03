@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Xml.Linq;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
-    internal class ExecutableContent
+    internal class Content
     {
         private readonly XElement _element;
 
-        public ExecutableContent(XElement element)
+        public Content(XElement element)
         {
             _element = element;
         }

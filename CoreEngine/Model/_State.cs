@@ -3,20 +3,20 @@ using System.Linq;
 using System.Xml.Linq;
 using SCG = System.Collections.Generic;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
-    internal class State
+    internal class _State
     {
         private readonly XElement _element;
         private readonly Lazy<OnEntryExit> _onEntry;
         private readonly Lazy<OnEntryExit> _onExit;
         private readonly Lazy<List<Transition>> _transitions;
         private readonly Lazy<List<Invoke>> _invokes;
-        private readonly Lazy<List<State>> _history;
+        private readonly Lazy<List<_State>> _history;
 
         private bool _firstEntry = true;
 
-        public State(XElement element)
+        public _State(XElement element)
         {
             _element = element;
 
@@ -48,11 +48,11 @@ namespace CoreEngine
                 return new List<Invoke>(nodes.Select(n => new Invoke(n, this)));
             });
 
-            _history = new Lazy<List<State>>(() =>
+            _history = new Lazy<List<_State>>(() =>
             {
                 var nodes = element.Elements("history");
 
-                return new List<State>(nodes.Select(n => new State(n)));
+                return new List<_State>(nodes.Select(n => new _State(n)));
             });
         }
 
@@ -114,9 +114,9 @@ namespace CoreEngine
         {
         }
 
-        public OrderedSet<State> GetEffectiveTargetStates(ExecutionContext context, StateChart statechart)
+        public OrderedSet<_State> GetEffectiveTargetStates(ExecutionContext context, StateChart statechart)
         {
-            var set = new OrderedSet<State>();
+            var set = new OrderedSet<_State>();
 
             foreach (var transition in _transitions.Value)
             {
@@ -134,8 +134,8 @@ namespace CoreEngine
 
         public void Enter(ExecutionContext context,
                           StateChart statechart,
-                          OrderedSet<State> statesForDefaultEntry,
-                          SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                          OrderedSet<_State> statesForDefaultEntry,
+                          SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
         {
             context.Configuration.Add(this);
 
@@ -143,7 +143,7 @@ namespace CoreEngine
 
             if (!statechart.IsEarlyBinding && _firstEntry)
             {
-                context.DataModel.Init(statechart, this);
+                context.ExecutionState.Init(statechart, this);
 
                 _firstEntry = false;
             }
@@ -157,7 +157,7 @@ namespace CoreEngine
                 transition.ExecuteContent(context, statechart);
             }
 
-            if (defaultHistoryContent.TryGetValue(this.Id, out OrderedSet<ExecutableContent> set))
+            if (defaultHistoryContent.TryGetValue(this.Id, out OrderedSet<Content> set))
             {
                 foreach (var content in set.ToList())
                 {
@@ -205,7 +205,7 @@ namespace CoreEngine
         {
             foreach (var history in _history.Value)
             {
-                Func<State, bool> predicate;
+                Func<_State, bool> predicate;
 
                 if (history.IsDeepHistoryState)
                 {
@@ -225,7 +225,7 @@ namespace CoreEngine
             }
         }
 
-        public State GetParent(StateChart statechart)
+        public _State GetParent(StateChart statechart)
         {
             if (IsScxmlRoot)
             {
@@ -237,9 +237,9 @@ namespace CoreEngine
             }
         }
 
-        public List<State> GetChildStates(StateChart statechart)
+        public List<_State> GetChildStates(StateChart statechart)
         {
-            var states = new List<State>();
+            var states = new List<_State>();
 
             foreach (var node in _element.Elements().Where(StateChart.IsStateElement))
             {
@@ -300,16 +300,16 @@ namespace CoreEngine
             }
         }
 
-        public bool IsDescendent(State state)
+        public bool IsDescendent(_State state)
         {
             return state._element.Descendants().Contains(this._element);
         }
 
-        public List<State> GetProperAncestors(StateChart statechart, State state = null)
+        public List<_State> GetProperAncestors(StateChart statechart, _State state = null)
         {
-            var set = new List<State>();
+            var set = new List<_State>();
 
-            Func<State, bool> predicate = _ => true;
+            Func<_State, bool> predicate = _ => true;
 
             if (state != null)
             {

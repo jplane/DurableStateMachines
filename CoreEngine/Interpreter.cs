@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using CoreEngine.Model;
 
 namespace CoreEngine
 {
@@ -25,7 +26,7 @@ namespace CoreEngine
         {
             if (_statechart.IsEarlyBinding)
             {
-                _executionContext.DataModel.Init(_statechart);
+                _executionContext.ExecutionState.Init(_statechart);
             }
 
             _executionContext.IsRunning = true;
@@ -59,7 +60,7 @@ namespace CoreEngine
                         }
                         else if (_executionContext.InternalQueue.TryDequeue(out Event internalEvent))
                         {
-                            _executionContext.DataModel["_event"] = internalEvent;
+                            _executionContext.ExecutionState["_event"] = internalEvent;
                             
                             enabledTransitions = SelectTransitions(internalEvent);
                         }
@@ -101,7 +102,7 @@ namespace CoreEngine
                     continue;
                 }
 
-                _executionContext.DataModel["_event"] = externalEvent;
+                _executionContext.ExecutionState["_event"] = externalEvent;
 
                 foreach (var state in _executionContext.Configuration.ToList())
                 {
@@ -139,7 +140,7 @@ namespace CoreEngine
             }
         }
 
-        private void ReturnDoneEvent(State state)
+        private void ReturnDoneEvent(_State state)
         {
             // The implementation of returnDoneEvent is platform-dependent, but if this session is the result of an <invoke> in another SCXML session, 
             //  returnDoneEvent will cause the event done.invoke.<id> to be placed in the external event queue of that session, where <id> is the id 
@@ -179,9 +180,9 @@ namespace CoreEngine
             }
         }
 
-        private OrderedSet<State> ComputeExitSet(List<Transition> transitions)
+        private OrderedSet<_State> ComputeExitSet(List<Transition> transitions)
         {
-            var statesToExit = new OrderedSet<State>();
+            var statesToExit = new OrderedSet<_State>();
 
             foreach (var transition in transitions)
             {
@@ -224,7 +225,7 @@ namespace CoreEngine
 
             foreach (var state in atomicStates)
             {
-                var all = new List<State>();
+                var all = new List<_State>();
 
                 all.Append(state);
 
@@ -304,11 +305,11 @@ namespace CoreEngine
 
         private void EnterStates(List<Transition> enabledTransitions)
         {
-            var statesToEnter = new OrderedSet<State>();
+            var statesToEnter = new OrderedSet<_State>();
 
-            var statesForDefaultEntry = new OrderedSet<State>();
+            var statesForDefaultEntry = new OrderedSet<_State>();
 
-            var defaultHistoryContent = new SCG.Dictionary<string, OrderedSet<ExecutableContent>>();
+            var defaultHistoryContent = new SCG.Dictionary<string, OrderedSet<Content>>();
 
             ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
@@ -323,9 +324,9 @@ namespace CoreEngine
         }
 
         private void ComputeEntrySet(List<Transition> enabledTransitions,
-                                     OrderedSet<State> statesToEnter,
-                                     OrderedSet<State> statesForDefaultEntry,
-                                     SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                                     OrderedSet<_State> statesToEnter,
+                                     OrderedSet<_State> statesForDefaultEntry,
+                                     SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
         {
             foreach (var transition in enabledTransitions)
             {
@@ -345,11 +346,11 @@ namespace CoreEngine
             }
         }
 
-        private void AddAncestorStatesToEnter(State state,
-                                              State ancestor,
-                                              OrderedSet<State> statesToEnter,
-                                              OrderedSet<State> statesForDefaultEntry,
-                                              SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+        private void AddAncestorStatesToEnter(_State state,
+                                              _State ancestor,
+                                              OrderedSet<_State> statesToEnter,
+                                              OrderedSet<_State> statesForDefaultEntry,
+                                              SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
         {
             var ancestors = state.GetProperAncestors(_statechart, ancestor);
 
@@ -372,16 +373,16 @@ namespace CoreEngine
             }
         }
 
-        private void AddDescendentStatesToEnter(State state,
-                                                OrderedSet<State> statesToEnter,
-                                                OrderedSet<State> statesForDefaultEntry,
-                                                SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+        private void AddDescendentStatesToEnter(_State state,
+                                                OrderedSet<_State> statesToEnter,
+                                                OrderedSet<_State> statesForDefaultEntry,
+                                                SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
         {
             if (state.IsHistoryState)
             {
                 var parent = state.GetParent(_statechart);
 
-                if (_executionContext.HistoryValue.TryGetValue(state.Id, out List<State> states))
+                if (_executionContext.HistoryValue.TryGetValue(state.Id, out List<_State> states))
                 {
                     foreach (var s in states)
                     {
@@ -395,9 +396,9 @@ namespace CoreEngine
                 }
                 else
                 {
-                    defaultHistoryContent[parent.Id] = OrderedSet<ExecutableContent>.Union(state.Transitions.Select(t => t.Content));
+                    defaultHistoryContent[parent.Id] = OrderedSet<Content>.Union(state.Transitions.Select(t => t.Content));
 
-                    var targetStates = OrderedSet<State>.Union(state.Transitions.Select(t => t.GetTargetStates(_statechart))).ToList();
+                    var targetStates = OrderedSet<_State>.Union(state.Transitions.Select(t => t.GetTargetStates(_statechart))).ToList();
 
                     foreach (var s in targetStates)
                     {

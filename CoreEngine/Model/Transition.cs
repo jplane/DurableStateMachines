@@ -4,33 +4,33 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
     internal class Transition
     {
         private readonly string _targetStateIds;
         private readonly string _events;
 
-        public Transition(string targetStateIds, State source)
+        public Transition(string targetStateIds, _State source)
         {
             _targetStateIds = targetStateIds;
             _events = string.Empty;
-            Content = new List<ExecutableContent>();
+            Content = new List<Content>();
             Source = source;
             IsInternal = false;
         }
 
-        public Transition(XElement element, State source)
+        public Transition(XElement element, _State source)
         {
             _targetStateIds = element.Attribute("target")?.Value;
 
             _events = element.Attribute("event")?.Value;
 
-            Content = new List<ExecutableContent>();
+            Content = new List<Content>();
 
             foreach (var node in element.Elements())
             {
-                Content.Append(new ExecutableContent(node));
+                Content.Append(new Content(node));
             }
 
             Source = source;
@@ -38,7 +38,7 @@ namespace CoreEngine
             IsInternal = element.Attribute("type") != null && element.Attribute("type").Value == "internal";
         }
 
-        public State Source { get; }
+        public _State Source { get; }
 
         public bool IsInternal { get; }
 
@@ -65,7 +65,7 @@ namespace CoreEngine
             return true;
         }
 
-        public List<ExecutableContent> Content { get; }
+        public List<Content> Content { get; }
 
         public void ExecuteContent(ExecutionContext context, StateChart statechart)
         {
@@ -75,11 +75,11 @@ namespace CoreEngine
             }
         }
 
-        public SCG.IEnumerable<State> GetTargetStates(StateChart statechart)
+        public SCG.IEnumerable<_State> GetTargetStates(StateChart statechart)
         {
             if (string.IsNullOrWhiteSpace(_targetStateIds))
             {
-                return Enumerable.Empty<State>();
+                return Enumerable.Empty<_State>();
             }
             else
             {
@@ -87,15 +87,15 @@ namespace CoreEngine
             }
         }
 
-        public OrderedSet<State> GetEffectiveTargetStates(ExecutionContext context, StateChart statechart)
+        public OrderedSet<_State> GetEffectiveTargetStates(ExecutionContext context, StateChart statechart)
         {
-            var targets = new OrderedSet<State>();
+            var targets = new OrderedSet<_State>();
 
             foreach (var state in GetTargetStates(statechart))
             {
                 if (state.IsHistoryState)
                 {
-                    if (context.HistoryValue.TryGetValue(state.Id, out List<State> value))
+                    if (context.HistoryValue.TryGetValue(state.Id, out List<_State> value))
                     {
                         targets.Union(value);
                     }
@@ -113,7 +113,7 @@ namespace CoreEngine
             return targets;
         }
 
-        public State GetTransitionDomain(ExecutionContext context, StateChart statechart)
+        public _State GetTransitionDomain(ExecutionContext context, StateChart statechart)
         {
             var targetStates = GetEffectiveTargetStates(context, statechart);
 

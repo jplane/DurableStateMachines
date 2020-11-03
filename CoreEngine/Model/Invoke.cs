@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace CoreEngine
+namespace CoreEngine.Model
 {
     internal class Invoke
     {
         private readonly XElement _element;
-        private readonly State _state;
+        private readonly _State _state;
         private readonly bool _autoforward;
 
-        public Invoke(XElement element, State state)
+        public Invoke(XElement element, _State state)
         {
             _element = element;
             _state = state;
@@ -40,7 +40,7 @@ namespace CoreEngine
             {
                 var idlocationattr = _element.Attribute("idlocation");
 
-                if (idlocationattr == null || !context.DataModel.TryGetValue(idlocationattr.Value, out object value))
+                if (idlocationattr == null || !context.ExecutionState.TryGetValue(idlocationattr.Value, out object value))
                 {
                     throw new InvalidOperationException("Unable to resolve invoke ID.");
                 }
