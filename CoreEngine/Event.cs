@@ -2,31 +2,30 @@
 
 namespace CoreEngine
 {
-    internal class Event
+    public class Event
     {
-        public Event(string name, EventType type)
+        public Event(string name)
         {
             this.Name = name;
-            this.Type = type;
             this.SendId = string.Empty;
             this.Origin = string.Empty;
             this.OriginType = string.Empty;
             this.InvokeId = string.Empty;
         }
 
-        public bool IsCancel => this.Name == "cancel";
+        internal bool IsCancel => this.Name == "cancel";
 
         public string Name { get; }
 
-        public EventType Type { get; set; }
+        internal EventType Type { get; set; }
 
-        public string SendId { get; set; }
+        internal string SendId { get; set; }
 
-        public string Origin { get; set; }
+        internal string Origin { get; set; }
 
-        public string OriginType { get; set; }
-        
-        public string InvokeId { get; set; }
+        internal string OriginType { get; set; }
+
+        internal string InvokeId { get; set; }
 
         public object Data { get; set; }
     }

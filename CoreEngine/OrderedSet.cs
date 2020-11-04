@@ -23,6 +23,18 @@ namespace CoreEngine
             return set;
         }
 
+        public static OrderedSet<T> Create(SCG.IEnumerable<T> items)
+        {
+            var set = new OrderedSet<T>();
+
+            foreach (var item in items)
+            {
+                set.Add(item);
+            }
+
+            return set;
+        }
+
         public static OrderedSet<T> Union(SCG.IEnumerable<SCG.IEnumerable<T>> collections)
         {
             var set = new OrderedSet<T>();

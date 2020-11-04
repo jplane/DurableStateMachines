@@ -6,17 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using CoreEngine.Model;
+using CoreEngine.Model.States;
+using CoreEngine.Model.Execution;
 
 namespace CoreEngine
 {
     public class Interpreter
     {
-        private readonly StateChart _statechart;
+        private readonly RootState _root;
         private readonly ExecutionContext _executionContext;
 
         public Interpreter(XDocument xml)
         {
-            _statechart = new StateChart(xml);
+            _root = new RootState(xml.Root);
             _executionContext = new ExecutionContext();
         }
 
@@ -24,18 +26,16 @@ namespace CoreEngine
 
         public void Interpret()
         {
-            if (_statechart.IsEarlyBinding)
+            if (_root.Binding == Databinding.Early)
             {
-                _executionContext.ExecutionState.Init(_statechart);
+                _root.InitDatamodel(_executionContext, true);
             }
 
             _executionContext.IsRunning = true;
 
             ExecuteGlobalScriptElement();
 
-            var root = _statechart.GetState("scxml_root");
-
-            EnterStates(new List<Transition>(new []{ root.GetInitialStateTransition() }));
+            EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
 
             DoEventLoop();
         }
@@ -54,14 +54,14 @@ namespace CoreEngine
 
                     if (enabledTransitions.IsEmpty())
                     {
-                        if (_executionContext.InternalQueue.Count == 0)
+                        var internalEvent = _executionContext.DequeueInternal();
+
+                        if (internalEvent == null)
                         {
                             macrostepDone = true;
                         }
-                        else if (_executionContext.InternalQueue.TryDequeue(out Event internalEvent))
+                        else
                         {
-                            _executionContext.ExecutionState["_event"] = internalEvent;
-                            
                             enabledTransitions = SelectTransitions(internalEvent);
                         }
                     }
@@ -79,22 +79,17 @@ namespace CoreEngine
 
                 foreach (var state in _executionContext.StatesToInvoke.ToList())
                 {
-                    state.Invoke(_executionContext, _statechart);
+                    state.Invoke(_executionContext, _root);
                 }
 
                 _executionContext.StatesToInvoke.Clear();
 
-                if (_executionContext.InternalQueue.Count > 0)
+                if (_executionContext.HasInternalEvents)
                 {
                     continue;
                 }
 
-                Event externalEvent;
-
-                while (! _executionContext.ExternalQueue.TryDequeue(out externalEvent))
-                {
-                    Thread.Sleep(1000);
-                }
+                var externalEvent = _executionContext.DequeueExternal();
 
                 if (externalEvent.IsCancel)
                 {
@@ -102,14 +97,9 @@ namespace CoreEngine
                     continue;
                 }
 
-                _executionContext.ExecutionState["_event"] = externalEvent;
-
                 foreach (var state in _executionContext.Configuration.ToList())
                 {
-                    foreach (var invoke in state.Invokes)
-                    {
-                        invoke.ProcessExternalEvent(_executionContext, externalEvent);
-                    }
+                    state.ProcessExternalEvent(_executionContext, externalEvent);
                 }
 
                 enabledTransitions = SelectTransitions(externalEvent);
@@ -122,17 +112,15 @@ namespace CoreEngine
 
             var statesToExit = _executionContext.Configuration.ToList();
 
-            statesToExit.Sort(_statechart.CompareReverseDocumentOrder);
+            statesToExit.Sort(State.GetReverseDocumentOrder);
 
             foreach (var state in statesToExit)
             {
-                state.Exit(_executionContext, _statechart);
+                state.Exit(_executionContext);
 
                 if (state.IsFinalState)
                 {
-                    var parent = state.GetParent(_statechart);
-
-                    if (parent.IsScxmlRoot)
+                    if (state.Parent.IsScxmlRoot)
                     {
                         ReturnDoneEvent(state);
                     }
@@ -140,7 +128,7 @@ namespace CoreEngine
             }
         }
 
-        private void ReturnDoneEvent(_State state)
+        private void ReturnDoneEvent(State state)
         {
             // The implementation of returnDoneEvent is platform-dependent, but if this session is the result of an <invoke> in another SCXML session, 
             //  returnDoneEvent will cause the event done.invoke.<id> to be placed in the external event queue of that session, where <id> is the id 
@@ -153,7 +141,7 @@ namespace CoreEngine
             
             foreach (var transition in enabledTransitions)
             {
-                transition.ExecuteContent(_executionContext, _statechart);
+                transition.ExecuteContent(_executionContext);
             }
 
             EnterStates(enabledTransitions);
@@ -170,25 +158,25 @@ namespace CoreEngine
                 _executionContext.StatesToInvoke.Delete(state);
             }
 
-            statesToExit.Sort(_statechart.CompareReverseDocumentOrder);
+            statesToExit.Sort(State.GetReverseDocumentOrder);
 
             foreach (var state in statesToExit)
             {
-                state.RecordHistory(_executionContext, _statechart);
+                state.RecordHistory(_executionContext, _root);
 
-                state.Exit(_executionContext, _statechart);
+                state.Exit(_executionContext);
             }
         }
 
-        private OrderedSet<_State> ComputeExitSet(List<Transition> transitions)
+        private OrderedSet<State> ComputeExitSet(List<Transition> transitions)
         {
-            var statesToExit = new OrderedSet<_State>();
+            var statesToExit = new OrderedSet<State>();
 
             foreach (var transition in transitions)
             {
                 if (transition.HasTargets)
                 {
-                    var domain = transition.GetTransitionDomain(_executionContext, _statechart);
+                    var domain = transition.GetTransitionDomain(_executionContext, _root);
 
                     foreach (var state in _executionContext.Configuration.ToList())
                     {
@@ -206,13 +194,13 @@ namespace CoreEngine
         private OrderedSet<Transition> SelectTransitions(Event evt)
         {
             return SelectTransitions(transition => transition.MatchesEvent(evt) &&
-                                                   transition.EvaluateCondition(_executionContext, _statechart));
+                                                   transition.EvaluateCondition(_executionContext, _root));
         }
 
         private OrderedSet<Transition> SelectEventlessTransitions()
         {
             return SelectTransitions(transition => !transition.HasEvent &&
-                                                   transition.EvaluateCondition(_executionContext, _statechart));
+                                                   transition.EvaluateCondition(_executionContext, _root));
         }
 
         private OrderedSet<Transition> SelectTransitions(Func<Transition, bool> predicate)
@@ -221,15 +209,15 @@ namespace CoreEngine
 
             var atomicStates = _executionContext.Configuration.ToList().Filter(s => s.IsAtomic);
 
-            atomicStates.Sort(_statechart.CompareDocumentOrder);
+            atomicStates.Sort(State.GetDocumentOrder);
 
             foreach (var state in atomicStates)
             {
-                var all = new List<_State>();
+                var all = new List<State>();
 
                 all.Append(state);
 
-                foreach (var anc in state.GetProperAncestors(_statechart))
+                foreach (var anc in state.GetProperAncestors(_root))
                 {
                     all.Append(anc);
                 }
@@ -273,7 +261,7 @@ namespace CoreEngine
 
                     if (exitSet1.HasIntersection(exitSet2))
                     {
-                        if (transition1.Source.IsDescendent(transition2.Source))
+                        if (transition1.IsSourceDescendent(transition2))
                         {
                             transitionsToRemove.Add(transition2);
                         }
@@ -305,39 +293,39 @@ namespace CoreEngine
 
         private void EnterStates(List<Transition> enabledTransitions)
         {
-            var statesToEnter = new OrderedSet<_State>();
+            var statesToEnter = new OrderedSet<State>();
 
-            var statesForDefaultEntry = new OrderedSet<_State>();
+            var statesForDefaultEntry = new OrderedSet<State>();
 
-            var defaultHistoryContent = new SCG.Dictionary<string, OrderedSet<Content>>();
+            var defaultHistoryContent = new SCG.Dictionary<string, OrderedSet<ExecutableContent>>();
 
             ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
             var toEnter = statesToEnter.ToList();
 
-            toEnter.Sort(_statechart.CompareDocumentOrder);
+            toEnter.Sort(State.GetDocumentOrder);
 
             foreach (var state in toEnter)
             {
-                state.Enter(_executionContext, _statechart, statesForDefaultEntry, defaultHistoryContent);
+                state.Enter(_executionContext, _root, statesForDefaultEntry, defaultHistoryContent);
             }
         }
 
         private void ComputeEntrySet(List<Transition> enabledTransitions,
-                                     OrderedSet<_State> statesToEnter,
-                                     OrderedSet<_State> statesForDefaultEntry,
-                                     SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
+                                     OrderedSet<State> statesToEnter,
+                                     OrderedSet<State> statesForDefaultEntry,
+                                     SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             foreach (var transition in enabledTransitions)
             {
-                foreach (var state in transition.GetTargetStates(_statechart))
+                foreach (var state in transition.GetTargetStates(_root))
                 {
                     AddDescendentStatesToEnter(state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
 
-                var ancestor = transition.GetTransitionDomain(_executionContext, _statechart);
+                var ancestor = transition.GetTransitionDomain(_executionContext, _root);
 
-                var effectiveTargetStates = transition.GetEffectiveTargetStates(_executionContext, _statechart);
+                var effectiveTargetStates = transition.GetEffectiveTargetStates(_executionContext, _root);
 
                 foreach (var state in effectiveTargetStates.ToList())
                 {
@@ -346,13 +334,13 @@ namespace CoreEngine
             }
         }
 
-        private void AddAncestorStatesToEnter(_State state,
-                                              _State ancestor,
-                                              OrderedSet<_State> statesToEnter,
-                                              OrderedSet<_State> statesForDefaultEntry,
-                                              SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
+        private void AddAncestorStatesToEnter(State state,
+                                              State ancestor,
+                                              OrderedSet<State> statesToEnter,
+                                              OrderedSet<State> statesForDefaultEntry,
+                                              SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
-            var ancestors = state.GetProperAncestors(_statechart, ancestor);
+            var ancestors = state.GetProperAncestors(ancestor);
 
             foreach (var anc in ancestors)
             {
@@ -360,7 +348,7 @@ namespace CoreEngine
 
                 if (anc.IsParallelState)
                 {
-                    var childStates = anc.GetChildStates(_statechart);
+                    var childStates = anc.GetChildStates();
 
                     foreach (var child in childStates)
                     {
@@ -373,16 +361,14 @@ namespace CoreEngine
             }
         }
 
-        private void AddDescendentStatesToEnter(_State state,
-                                                OrderedSet<_State> statesToEnter,
-                                                OrderedSet<_State> statesForDefaultEntry,
-                                                SCG.Dictionary<string, OrderedSet<Content>> defaultHistoryContent)
+        private void AddDescendentStatesToEnter(State state,
+                                                OrderedSet<State> statesToEnter,
+                                                OrderedSet<State> statesForDefaultEntry,
+                                                SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             if (state.IsHistoryState)
             {
-                var parent = state.GetParent(_statechart);
-
-                if (_executionContext.HistoryValue.TryGetValue(state.Id, out List<_State> states))
+                if (_executionContext.HistoryValue.TryGetValue(state.Id, out List<State> states))
                 {
                     foreach (var s in states)
                     {
@@ -391,14 +377,14 @@ namespace CoreEngine
 
                     foreach (var s in states)
                     {
-                        AddAncestorStatesToEnter(s, parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
                 else
                 {
-                    defaultHistoryContent[parent.Id] = OrderedSet<Content>.Union(state.Transitions.Select(t => t.Content));
+                    var targetStates = new List<State>();
 
-                    var targetStates = OrderedSet<_State>.Union(state.Transitions.Select(t => t.GetTargetStates(_statechart))).ToList();
+                    ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, _root);
 
                     foreach (var s in targetStates)
                     {
@@ -407,7 +393,7 @@ namespace CoreEngine
 
                     foreach (var s in targetStates)
                     {
-                        AddAncestorStatesToEnter(s, parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
             }
@@ -415,13 +401,13 @@ namespace CoreEngine
             {
                 statesToEnter.Add(state);
 
-                if (state.IsCompoundState)
+                if (state.IsSequentialState)
                 {
                     statesForDefaultEntry.Add(state);
 
                     var initialTransition = state.GetInitialStateTransition();
 
-                    var targetStates = initialTransition.GetTargetStates(_statechart);
+                    var targetStates = initialTransition.GetTargetStates(_root);
 
                     foreach (var s in targetStates)
                     {
@@ -435,7 +421,7 @@ namespace CoreEngine
                 }
                 else if (state.IsParallelState)
                 {
-                    var childStates = state.GetChildStates(_statechart);
+                    var childStates = state.GetChildStates();
 
                     foreach (var child in childStates)
                     {
