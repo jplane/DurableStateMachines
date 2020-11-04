@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -9,15 +9,15 @@ namespace CoreEngine.Model.DataManipulation
 {
     internal class Datamodel
     {
-        protected readonly Lazy<SCG.List<Data>> _data;
+        protected readonly Lazy<List<Data>> _data;
 
         public Datamodel(XElement element)
         {
-            _data = new Lazy<SCG.List<Data>>(() =>
+            _data = new Lazy<List<Data>>(() =>
             {
                 var nodes = element.Elements("data");
 
-                return new SCG.List<Data>(nodes.Select(n => new Data(n)));
+                return new List<Data>(nodes.Select(n => new Data(n)));
             });
         }
 

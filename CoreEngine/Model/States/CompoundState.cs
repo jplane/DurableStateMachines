@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -8,7 +8,7 @@ namespace CoreEngine.Model.States
 {
     internal abstract class CompoundState : State
     {
-        protected Lazy<SCG.List<State>> _states;
+        protected Lazy<List<State>> _states;
 
         protected CompoundState(XElement element, State parent)
             : base(element, parent)
@@ -32,12 +32,12 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public override List<State> GetChildStates()
+        public override IEnumerable<State> GetChildStates()
         {
-            return new List<State>(_states.Value.Where(s => s is AtomicState ||
-                                                            s is CompoundState ||
-                                                            s is ParallelState ||
-                                                            s is FinalState));
+            return _states.Value.Where(s => s is AtomicState ||
+                                            s is CompoundState ||
+                                            s is ParallelState ||
+                                            s is FinalState);
         }
 
         public override State GetState(string id)

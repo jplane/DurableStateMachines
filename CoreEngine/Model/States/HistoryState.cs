@@ -42,7 +42,7 @@ namespace CoreEngine.Model.States
 
             foreach (var targetState in transition.GetTargetStates(root))
             {
-                targetStates.Append(targetState);
+                targetStates.Add(targetState);
             }
         }
     }

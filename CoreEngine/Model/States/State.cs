@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,8 +14,8 @@ namespace CoreEngine.Model.States
         protected readonly State _parent;
         protected readonly Lazy<OnEntryExit> _onEntry;
         protected readonly Lazy<OnEntryExit> _onExit;
-        protected readonly Lazy<SCG.List<Transition>> _transitions;
-        protected readonly Lazy<SCG.List<Invoke>> _invokes;
+        protected readonly Lazy<List<Transition>> _transitions;
+        protected readonly Lazy<List<Invoke>> _invokes;
         protected readonly Lazy<Datamodel> _datamodel;
 
         private bool _firstEntry;
@@ -40,18 +40,18 @@ namespace CoreEngine.Model.States
                 return node == null ? null : new OnEntryExit(node);
             });
 
-            _transitions = new Lazy<SCG.List<Transition>>(() =>
+            _transitions = new Lazy<List<Transition>>(() =>
             {
                 var nodes = element.Elements("transition");
 
-                return new SCG.List<Transition>(nodes.Select(n => new Transition(n, this)));
+                return new List<Transition>(nodes.Select(n => new Transition(n, this)));
             });
 
-            _invokes = new Lazy<SCG.List<Invoke>>(() =>
+            _invokes = new Lazy<List<Invoke>>(() =>
             {
                 var nodes = element.Elements("invoke");
 
-                return new SCG.List<Invoke>(nodes.Select(n => new Invoke(n)));
+                return new List<Invoke>(nodes.Select(n => new Invoke(n)));
             });
 
             _datamodel = new Lazy<Datamodel>(() =>
@@ -80,7 +80,7 @@ namespace CoreEngine.Model.States
 
         public virtual bool IsAtomic => false;
 
-        public List<Transition> Transitions => new List<Transition>(_transitions.Value);
+        public IEnumerable<Transition> Transitions => _transitions.Value;
 
         public virtual Transition GetInitialStateTransition()
         {
@@ -149,9 +149,9 @@ namespace CoreEngine.Model.States
         {
         }
 
-        public virtual List<State> GetChildStates()
+        public virtual IEnumerable<State> GetChildStates()
         {
-            return new List<State>();
+            return Enumerable.Empty<State>();
         }
 
         public virtual bool IsInFinalState(ExecutionContext context, RootState root)
@@ -204,7 +204,7 @@ namespace CoreEngine.Model.States
         public void Enter(ExecutionContext context,
                           RootState root,
                           OrderedSet<State> statesForDefaultEntry,
-                          SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                          Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             context.Configuration.Add(this);
 
@@ -250,7 +250,7 @@ namespace CoreEngine.Model.States
                     {
                         var parallelChildren = grandparent.GetChildStates();
 
-                        if (parallelChildren.Every(s => s.IsInFinalState(context, root)))
+                        if (parallelChildren.All(s => s.IsInFinalState(context, root)))
                         {
                             context.EnqueueInternal("done.state." + grandparent.Id);
                         }
@@ -273,7 +273,7 @@ namespace CoreEngine.Model.States
             return state._element.Descendants().Contains(this._element);
         }
 
-        public List<State> GetProperAncestors(State state = null)
+        public IEnumerable<State> GetProperAncestors(State state = null)
         {
             var set = new List<State>();
 
@@ -293,7 +293,7 @@ namespace CoreEngine.Model.States
 
             while (parent != null && predicate(parent))
             {
-                set.Append(parent);
+                set.Add(parent);
 
                 parent = parent.Parent;
             }

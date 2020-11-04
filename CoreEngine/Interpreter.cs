@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Collections.Generic;
@@ -207,7 +207,7 @@ namespace CoreEngine
         {
             var enabledTransitions = new OrderedSet<Transition>();
 
-            var atomicStates = _executionContext.Configuration.ToList().Filter(s => s.IsAtomic);
+            var atomicStates = _executionContext.Configuration.ToList().Where(s => s.IsAtomic).ToList();
 
             atomicStates.Sort(State.GetDocumentOrder);
 
@@ -215,11 +215,11 @@ namespace CoreEngine
             {
                 var all = new List<State>();
 
-                all.Append(state);
+                all.Add(state);
 
                 foreach (var anc in state.GetProperAncestors(_root))
                 {
-                    all.Append(anc);
+                    all.Add(anc);
                 }
 
                 foreach (var s in all)
@@ -255,9 +255,9 @@ namespace CoreEngine
 
                 foreach (var transition2 in filteredTransitions.ToList())
                 {
-                    var exitSet1 = ComputeExitSet(List<Transition>.Create(transition1));
+                    var exitSet1 = ComputeExitSet(new List<Transition> { transition1 });
 
-                    var exitSet2 = ComputeExitSet(List<Transition>.Create(transition2));
+                    var exitSet2 = ComputeExitSet(new List<Transition> { transition2 });
 
                     if (exitSet1.HasIntersection(exitSet2))
                     {
@@ -297,7 +297,7 @@ namespace CoreEngine
 
             var statesForDefaultEntry = new OrderedSet<State>();
 
-            var defaultHistoryContent = new SCG.Dictionary<string, OrderedSet<ExecutableContent>>();
+            var defaultHistoryContent = new Dictionary<string, OrderedSet<ExecutableContent>>();
 
             ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
@@ -314,7 +314,7 @@ namespace CoreEngine
         private void ComputeEntrySet(List<Transition> enabledTransitions,
                                      OrderedSet<State> statesToEnter,
                                      OrderedSet<State> statesForDefaultEntry,
-                                     SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                                     Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             foreach (var transition in enabledTransitions)
             {
@@ -338,7 +338,7 @@ namespace CoreEngine
                                               State ancestor,
                                               OrderedSet<State> statesToEnter,
                                               OrderedSet<State> statesForDefaultEntry,
-                                              SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                                              Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             var ancestors = state.GetProperAncestors(ancestor);
 
@@ -364,11 +364,11 @@ namespace CoreEngine
         private void AddDescendentStatesToEnter(State state,
                                                 OrderedSet<State> statesToEnter,
                                                 OrderedSet<State> statesForDefaultEntry,
-                                                SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                                                Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             if (state.IsHistoryState)
             {
-                if (_executionContext.HistoryValue.TryGetValue(state.Id, out List<State> states))
+                if (_executionContext.TryGetHistoryValue(state.Id, out IEnumerable<State> states))
                 {
                     foreach (var s in states)
                     {

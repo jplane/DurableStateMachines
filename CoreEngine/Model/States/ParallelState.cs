@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -11,9 +11,9 @@ namespace CoreEngine.Model.States
         public ParallelState(XElement element, State parent)
             : base(element, parent)
         {
-            _states = new Lazy<SCG.List<State>>(() =>
+            _states = new Lazy<List<State>>(() =>
             {
-                var states = new SCG.List<State>();
+                var states = new List<State>();
 
                 bool IsCompoundState(XElement el)
                 {
@@ -69,7 +69,7 @@ namespace CoreEngine.Model.States
                     predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
                 }
 
-                context.HistoryValue[history.Id] = context.Configuration.ToList().Filter(predicate);
+                context.StoreHistoryValue(history.Id, context.Configuration.ToList().Where(predicate));
             }
         }
 
@@ -77,7 +77,7 @@ namespace CoreEngine.Model.States
         {
             var childStates = GetChildStates();
 
-            return childStates.Every(s => s.IsInFinalState(context, root));
+            return childStates.All(s => s.IsInFinalState(context, root));
         }
     }
 }

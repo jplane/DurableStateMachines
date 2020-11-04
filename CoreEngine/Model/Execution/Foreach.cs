@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _arrayExpression;
         private readonly string _item;
         private readonly string _index;
-        private readonly Lazy<SCG.List<ExecutableContent>> _content;
+        private readonly Lazy<List<ExecutableContent>> _content;
 
         public Foreach(XElement element)
         {
@@ -22,9 +22,9 @@ namespace CoreEngine.Model.Execution
 
             _index = element.Attribute("index")?.Value ?? string.Empty;
 
-            _content = new Lazy<SCG.List<ExecutableContent>>(() =>
+            _content = new Lazy<List<ExecutableContent>>(() =>
             {
-                var content = new SCG.List<ExecutableContent>();
+                var content = new List<ExecutableContent>();
 
                 foreach (var node in element.Elements())
                 {

@@ -1,6 +1,6 @@
 ﻿using CoreEngine.Model.DataManipulation;
 using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace CoreEngine.Model.States
         private readonly string _namelist;
         private readonly Lazy<Content> _content;
         private readonly Lazy<Finalize> _finalize;
-        private readonly Lazy<SCG.List<Param>> _params;
+        private readonly Lazy<List<Param>> _params;
 
         public Invoke(XElement element)
         {
@@ -59,11 +59,11 @@ namespace CoreEngine.Model.States
                 return node == null ? null : new Finalize(node);
             });
 
-            _params = new Lazy<SCG.List<Param>>(() =>
+            _params = new Lazy<List<Param>>(() =>
             {
                 var nodes = element.Elements("param");
 
-                return new SCG.List<Param>(nodes.Select(n => new Param(n)));
+                return new List<Param>(nodes.Select(n => new Param(n)));
             });
         }
 

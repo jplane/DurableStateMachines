@@ -1,9 +1,10 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using CoreEngine.Model;
 using CoreEngine.Model.States;
 using System.Threading;
+using System.Linq;
 
 namespace CoreEngine
 {
@@ -11,15 +12,17 @@ namespace CoreEngine
     {
         private readonly ExpressionEvaluator _eval;
         private readonly ExecutionState _state;
-        private readonly SCG.Queue<Event> _internalQueue;
-        private readonly SCG.Queue<Event> _externalQueue;
+        private readonly Queue<Event> _internalQueue;
+        private readonly Queue<Event> _externalQueue;
+        private readonly Dictionary<string, IEnumerable<State>> _historyValues;
 
         public ExecutionContext()
         {
             _state = new ExecutionState();
             _eval = new ExpressionEvaluator(_state);
-            _internalQueue = new SCG.Queue<Event>();
-            _externalQueue = new SCG.Queue<Event>();
+            _internalQueue = new Queue<Event>();
+            _externalQueue = new Queue<Event>();
+            _historyValues = new Dictionary<string, IEnumerable<State>>();
         }
 
         public bool IsRunning { get; internal set; }
@@ -103,6 +106,14 @@ namespace CoreEngine
 
         internal OrderedSet<State> StatesToInvoke { get; } = new OrderedSet<State>();
 
-        internal SCG.Dictionary<string, List<State>> HistoryValue { get; } = new SCG.Dictionary<string, List<State>>();
+        internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
+        {
+            return _historyValues.TryGetValue(key, out value);
+        }
+
+        internal void StoreHistoryValue(string key, IEnumerable<State> states)
+        {
+            _historyValues[key] = states.ToArray();
+        }
     }
 }

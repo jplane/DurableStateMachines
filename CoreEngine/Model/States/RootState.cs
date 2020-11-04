@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -36,9 +36,9 @@ namespace CoreEngine.Model.States
                                                 element.Attribute("binding")?.Value ?? "early",
                                                 true);
 
-            _states = new Lazy<SCG.List<State>>(() =>
+            _states = new Lazy<List<State>>(() =>
             {
-                var states = new SCG.List<State>();
+                var states = new List<State>();
 
                 bool IsCompoundState(XElement el)
                 {
@@ -100,14 +100,6 @@ namespace CoreEngine.Model.States
             {
                 return base.GetInitialStateTransition();
             }
-        }
-
-        public override List<State> GetChildStates()
-        {
-            return new List<State>(_states.Value.Where(s => s is AtomicState ||
-                                                            s is CompoundState ||
-                                                            s is ParallelState ||
-                                                            s is FinalState));
         }
 
         public override State GetState(string id)

@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
@@ -7,11 +7,11 @@ namespace CoreEngine
 {
     internal class OrderedSet<T>
     {
-        private readonly SCG.List<T> _items;
+        private readonly List<T> _items;
 
         public OrderedSet()
         {
-            _items = new SCG.List<T>();
+            _items = new List<T>();
         }
 
         public static OrderedSet<T> Create(T item)
@@ -23,7 +23,7 @@ namespace CoreEngine
             return set;
         }
 
-        public static OrderedSet<T> Create(SCG.IEnumerable<T> items)
+        public static OrderedSet<T> Create(IEnumerable<T> items)
         {
             var set = new OrderedSet<T>();
 
@@ -35,7 +35,7 @@ namespace CoreEngine
             return set;
         }
 
-        public static OrderedSet<T> Union(SCG.IEnumerable<SCG.IEnumerable<T>> collections)
+        public static OrderedSet<T> Union(IEnumerable<IEnumerable<T>> collections)
         {
             var set = new OrderedSet<T>();
 
@@ -71,7 +71,7 @@ namespace CoreEngine
             }
         }
 
-        public void Union(List<T> list)
+        public void Union(IEnumerable<T> list)
         {
             foreach (var item in list)
             {

@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace CoreEngine.Model.States
 {
     internal class Transition
     {
-        private readonly Lazy<SCG.List<ExecutableContent>> _content;
+        private readonly Lazy<List<ExecutableContent>> _content;
         private readonly string _target;
         private readonly string _events;
         private readonly string _conditionExpr;
@@ -19,7 +19,7 @@ namespace CoreEngine.Model.States
 
         public Transition(string target, State source)
         {
-            _content = new Lazy<SCG.List<ExecutableContent>>();
+            _content = new Lazy<List<ExecutableContent>>();
             _target = target;
             _events = string.Empty;
             _conditionExpr = string.Empty;
@@ -39,9 +39,9 @@ namespace CoreEngine.Model.States
                                                 element.Attribute("type")?.Value ?? "external",
                                                 true);
 
-            _content = new Lazy<SCG.List<ExecutableContent>>(() =>
+            _content = new Lazy<List<ExecutableContent>>(() =>
             {
-                var content = new SCG.List<ExecutableContent>();
+                var content = new List<ExecutableContent>();
 
                 foreach (var node in element.Elements())
                 {
@@ -54,7 +54,7 @@ namespace CoreEngine.Model.States
             _source = source;
         }
 
-        public void StoreDefaultHistoryContent(string id, SCG.Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
         {
             defaultHistoryContent[id] = OrderedSet<ExecutableContent>.Create(_content.Value);
         }
@@ -95,7 +95,7 @@ namespace CoreEngine.Model.States
             return _source.IsDescendent(transition._source);
         }
 
-        public SCG.IEnumerable<State> GetTargetStates(RootState root)
+        public IEnumerable<State> GetTargetStates(RootState root)
         {
             if (string.IsNullOrWhiteSpace(_target))
             {
@@ -115,7 +115,7 @@ namespace CoreEngine.Model.States
             {
                 if (state.IsHistoryState)
                 {
-                    if (context.HistoryValue.TryGetValue(state.Id, out List<State> value))
+                    if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> value))
                     {
                         targets.Union(value);
                     }
@@ -150,7 +150,7 @@ namespace CoreEngine.Model.States
             else
             {
                 var ancestors = _source.GetProperAncestors()
-                                       .Filter(s => s.IsSequentialState || s.IsScxmlRoot);
+                                       .Where(s => s.IsSequentialState || s.IsScxmlRoot);
 
                 foreach (var ancestor in ancestors)
                 {

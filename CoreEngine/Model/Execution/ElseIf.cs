@@ -1,5 +1,5 @@
 ﻿using System;
-using SCG=System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
@@ -9,15 +9,15 @@ namespace CoreEngine.Model.Execution
     internal class ElseIf
     {
         private readonly string _cond;
-        private readonly Lazy<SCG.List<ExecutableContent>> _content;
+        private readonly Lazy<List<ExecutableContent>> _content;
 
         public ElseIf(XElement element)
         {
             _cond = element.Attribute("cond").Value;
 
-            _content = new Lazy<SCG.List<ExecutableContent>>(() =>
+            _content = new Lazy<List<ExecutableContent>>(() =>
             {
-                var content = new SCG.List<ExecutableContent>();
+                var content = new List<ExecutableContent>();
 
                 foreach (var node in element.Elements())
                 {
