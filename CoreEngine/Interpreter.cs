@@ -109,9 +109,7 @@ namespace CoreEngine
                 }
             }
 
-            var statesToExit = _executionContext.Configuration.ToList();
-
-            statesToExit.Sort(State.GetReverseDocumentOrder);
+            var statesToExit = _executionContext.Configuration.Sort(State.GetReverseDocumentOrder);
 
             foreach (var state in statesToExit)
             {
@@ -302,9 +300,7 @@ namespace CoreEngine
 
             ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
-            var toEnter = statesToEnter.ToList();
-
-            toEnter.Sort(State.GetDocumentOrder);
+            var toEnter = statesToEnter.Sort(State.GetDocumentOrder);
 
             foreach (var state in toEnter)
             {

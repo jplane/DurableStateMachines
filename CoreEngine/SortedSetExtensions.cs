@@ -29,5 +29,14 @@ namespace CoreEngine
         {
             return set.Count == 0;
         }
+
+        public static IEnumerable<T> Sort<T>(this SortedSet<T> set, Comparison<T> func)
+        {
+            var list = set.ToList();
+
+            list.Sort(func);
+
+            return list;
+        }
     }
 }
