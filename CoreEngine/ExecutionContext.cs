@@ -102,9 +102,9 @@ namespace CoreEngine
             return evt;
         }
 
-        internal OrderedSet<State> Configuration { get; } = new OrderedSet<State>();
+        internal SortedSet<State> Configuration { get; } = new SortedSet<State>();
 
-        internal OrderedSet<State> StatesToInvoke { get; } = new OrderedSet<State>();
+        internal SortedSet<State> StatesToInvoke { get; } = new SortedSet<State>();
 
         internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
         {

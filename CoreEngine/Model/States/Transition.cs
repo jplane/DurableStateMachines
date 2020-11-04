@@ -54,9 +54,9 @@ namespace CoreEngine.Model.States
             _source = source;
         }
 
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
         {
-            defaultHistoryContent[id] = OrderedSet<ExecutableContent>.Create(_content.Value);
+            defaultHistoryContent[id] = new SortedSet<ExecutableContent>(_content.Value);
         }
 
         public bool HasEvent => !string.IsNullOrWhiteSpace(_events);
@@ -84,7 +84,7 @@ namespace CoreEngine.Model.States
 
         public void ExecuteContent(ExecutionContext context)
         {
-            foreach (var content in _content.Value.ToList())
+            foreach (var content in _content.Value)
             {
                 content.Execute(context);
             }
@@ -107,9 +107,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public OrderedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public SortedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
-            var targets = new OrderedSet<State>();
+            var targets = new SortedSet<State>();
 
             foreach (var state in GetTargetStates(root))
             {
@@ -143,7 +143,7 @@ namespace CoreEngine.Model.States
             }
             else if (_type == TransitionType.Internal &&
                      _source.IsSequentialState &&
-                     targetStates.Every(s => s.IsDescendent(_source)))
+                     targetStates.All(s => s.IsDescendent(_source)))
             {
                 return _source;
             }
@@ -154,7 +154,7 @@ namespace CoreEngine.Model.States
 
                 foreach (var ancestor in ancestors)
                 {
-                    if (targetStates.Every(s => s.IsDescendent(ancestor)))
+                    if (targetStates.All(s => s.IsDescendent(ancestor)))
                     {
                         return ancestor;
                     }

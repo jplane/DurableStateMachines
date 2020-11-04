@@ -179,9 +179,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public OrderedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public SortedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
-            var set = new OrderedSet<State>();
+            var set = new SortedSet<State>();
 
             foreach (var transition in _transitions.Value)
             {
@@ -203,8 +203,8 @@ namespace CoreEngine.Model.States
 
         public void Enter(ExecutionContext context,
                           RootState root,
-                          OrderedSet<State> statesForDefaultEntry,
-                          Dictionary<string, OrderedSet<ExecutableContent>> defaultHistoryContent)
+                          SortedSet<State> statesForDefaultEntry,
+                          Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
         {
             context.Configuration.Add(this);
 
@@ -219,16 +219,16 @@ namespace CoreEngine.Model.States
 
             _onEntry.Value.Execute(context);
 
-            if (statesForDefaultEntry.IsMember(this))
+            if (statesForDefaultEntry.Contains(this))
             {
                 var transition = this.GetInitialStateTransition();
 
                 transition.ExecuteContent(context);
             }
 
-            if (defaultHistoryContent.TryGetValue(this.Id, out OrderedSet<ExecutableContent> set))
+            if (defaultHistoryContent.TryGetValue(this.Id, out SortedSet<ExecutableContent> set))
             {
-                foreach (var content in set.ToList())
+                foreach (var content in set)
                 {
                     content.Execute(context);
                 }
@@ -265,7 +265,7 @@ namespace CoreEngine.Model.States
 
             CancelOutstandingInvokes(context);
 
-            context.Configuration.Delete(this);
+            context.Configuration.Remove(this);
         }
 
         public bool IsDescendent(State state)
