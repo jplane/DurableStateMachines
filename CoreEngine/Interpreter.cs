@@ -76,7 +76,7 @@ namespace CoreEngine
                     break;
                 }
 
-                foreach (var state in _executionContext.StatesToInvoke)
+                foreach (var state in _executionContext.StatesToInvoke.Sort(State.GetXObject))
                 {
                     state.Invoke(_executionContext, _root);
                 }
@@ -109,9 +109,7 @@ namespace CoreEngine
                 }
             }
 
-            var statesToExit = _executionContext.Configuration.Sort(State.GetXObject, true);
-
-            foreach (var state in statesToExit)
+            foreach (var state in _executionContext.Configuration.Sort(State.GetXObject, true))
             {
                 state.Exit(_executionContext);
 
