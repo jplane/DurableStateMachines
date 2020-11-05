@@ -23,7 +23,7 @@ namespace CoreEngine.Model.Execution
         {
             if (!string.IsNullOrWhiteSpace(_expression))
             {
-                context.SetStateValue(_location, context.Eval<object>(_expression));
+                context.SetDataValue(_location, context.Eval<object>(_expression));
             }
             else
             {

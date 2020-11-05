@@ -11,18 +11,18 @@ namespace CoreEngine
 {
     internal class ExpressionEvaluator
     {
-        private readonly ExecutionState _state;
+        private readonly ExecutionContext _context;
 
-        public ExpressionEvaluator(ExecutionState state)
+        public ExpressionEvaluator(ExecutionContext context)
         {
-            _state = state;
+            _context = context;
         }
 
         public object Eval(string expression)
         {
             var globals = new ScriptGlobals
             {
-                data = _state.ScriptData
+                data = _context.ScriptData
             };
 
             var decodedExpr = WebUtility.HtmlDecode(expression);

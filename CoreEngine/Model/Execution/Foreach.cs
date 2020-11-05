@@ -46,11 +46,11 @@ namespace CoreEngine.Model.Execution
 
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {
-                context.SetStateValue(_item, shallowCopy[idx]);
+                context.SetDataValue(_item, shallowCopy[idx]);
 
                 if (!string.IsNullOrWhiteSpace(_index))
                 {
-                    context.SetStateValue(_index, idx);
+                    context.SetDataValue(_index, idx);
                 }
 
                 try
@@ -66,11 +66,11 @@ namespace CoreEngine.Model.Execution
                 }
                 finally
                 {
-                    context.SetStateValue(_item, null);
+                    context.SetDataValue(_item, null);
 
                     if (!string.IsNullOrWhiteSpace(_index))
                     {
-                        context.SetStateValue(_index, null);
+                        context.SetDataValue(_index, null);
                     }
                 }
             }

@@ -11,15 +11,15 @@ namespace CoreEngine
     public class ExecutionContext
     {
         private readonly ExpressionEvaluator _eval;
-        private readonly ExecutionState _state;
+        private readonly Dictionary<string, object> _data;
         private readonly Queue<Event> _internalQueue;
         private readonly Queue<Event> _externalQueue;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
 
         public ExecutionContext()
         {
-            _state = new ExecutionState();
-            _eval = new ExpressionEvaluator(_state);
+            _data = new Dictionary<string, object>();
+            _eval = new ExpressionEvaluator(this);
             _internalQueue = new Queue<Event>();
             _externalQueue = new Queue<Event>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
@@ -27,9 +27,11 @@ namespace CoreEngine
 
         public bool IsRunning { get; internal set; }
 
+        public DynamicDictionary ScriptData => new DynamicDictionary(_data);
+
         public object this[string key]
         {
-            get { return _state[key]; }
+            get { return _data[key]; }
 
             set
             {
@@ -38,18 +40,18 @@ namespace CoreEngine
                     throw new InvalidOperationException("Cannot set execution state while the state machine is running.");
                 }
 
-                _state[key] = value;
+                _data[key] = value;
             }
         }
 
-        internal void SetStateValue(string key, object value)
+        internal void SetDataValue(string key, object value)
         {
-            _state[key] = value;
+            _data[key] = value;
         }
 
         internal bool TryGet(string key, out object value)
         {
-            return _state.TryGetValue(key, out value);
+            return _data.TryGetValue(key, out value);
         }
 
         internal T Eval<T>(string expression)
@@ -68,7 +70,7 @@ namespace CoreEngine
         {
             if (_internalQueue.TryDequeue(out Event evt))
             {
-                _state["_event"] = evt;
+                _data["_event"] = evt;
             }
 
             return evt;
@@ -101,7 +103,7 @@ namespace CoreEngine
 
             if (!evt.IsCancel)
             {
-                _state["_event"] = evt;
+                _data["_event"] = evt;
             }
 
             return evt;
