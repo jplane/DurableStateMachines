@@ -27,8 +27,6 @@ namespace CoreEngine
 
         public bool IsRunning { get; internal set; }
 
-        public DynamicDictionary ScriptData => new DynamicDictionary(_data);
-
         public object this[string key]
         {
             get { return _data[key]; }
@@ -43,6 +41,8 @@ namespace CoreEngine
                 _data[key] = value;
             }
         }
+
+        internal DynamicDictionary ScriptData => new DynamicDictionary(_data);
 
         internal void SetDataValue(string key, object value)
         {
