@@ -27,8 +27,6 @@ namespace ConsoleRunner
 
             var task = Task.Factory.StartNew(() => interpreter.Run());
 
-            //Console.ReadLine();
-
             interpreter.Context.Enqueue("turn.on");
 
             for (var i = 0; i < 5; i++)

@@ -96,7 +96,7 @@ namespace CoreEngine
 
             while (!Dequeue(out evt))
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
             }
 
             if (!evt.IsCancel)
