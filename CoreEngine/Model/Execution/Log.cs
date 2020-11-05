@@ -13,6 +13,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _expression;
 
         public Log(XElement element)
+            : base(element)
         {
             _label = element.Attribute("label")?.Value ?? string.Empty; ;
 

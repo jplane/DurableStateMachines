@@ -15,14 +15,14 @@ namespace CoreEngine.Model.DataManipulation
         {
             _content = new Lazy<Content>(() =>
             {
-                var node = element.Element("content");
+                var node = element.ScxmlElement("content");
 
                 return node == null ? null : new Content(node);
             });
 
             _params = new Lazy<List<Param>>(() =>
             {
-                var nodes = element.Elements("param");
+                var nodes = element.ScxmlElements("param");
 
                 return new List<Param>(nodes.Select(n => new Param(n)));
             });

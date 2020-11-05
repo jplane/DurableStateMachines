@@ -23,7 +23,7 @@ namespace CoreEngine
 
         public ExecutionContext Context => _executionContext;
 
-        public void Interpret()
+        public void Run()
         {
             if (_root.Binding == Databinding.Early)
             {
@@ -32,7 +32,7 @@ namespace CoreEngine
 
             _executionContext.IsRunning = true;
 
-            ExecuteGlobalScriptElement();
+            _root.ExecuteScript(_executionContext);
 
             EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
 
@@ -43,7 +43,7 @@ namespace CoreEngine
         {
             while (_executionContext.IsRunning)
             {
-                SortedSet<Transition> enabledTransitions = null;
+                Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
 
@@ -109,7 +109,7 @@ namespace CoreEngine
                 }
             }
 
-            var statesToExit = _executionContext.Configuration.Sort(State.GetReverseDocumentOrder);
+            var statesToExit = _executionContext.Configuration.Sort(State.GetXObject, true);
 
             foreach (var state in statesToExit)
             {
@@ -148,16 +148,12 @@ namespace CoreEngine
         {
             var exitSet = ComputeExitSet(enabledTransitions);
 
-            var statesToExit = exitSet.ToList();
-
-            foreach (var state in statesToExit)
+            foreach (var state in exitSet)
             {
                 _executionContext.StatesToInvoke.Remove(state);
             }
 
-            statesToExit.Sort(State.GetReverseDocumentOrder);
-
-            foreach (var state in statesToExit)
+            foreach (var state in exitSet.Sort(State.GetXObject, true))
             {
                 state.RecordHistory(_executionContext, _root);
 
@@ -165,9 +161,9 @@ namespace CoreEngine
             }
         }
 
-        private SortedSet<State> ComputeExitSet(IEnumerable<Transition> transitions)
+        private Set<State> ComputeExitSet(IEnumerable<Transition> transitions)
         {
-            var statesToExit = new SortedSet<State>();
+            var statesToExit = new Set<State>();
 
             foreach (var transition in transitions)
             {
@@ -188,27 +184,25 @@ namespace CoreEngine
             return statesToExit;
         }
 
-        private SortedSet<Transition> SelectTransitions(Event evt)
+        private Set<Transition> SelectTransitions(Event evt)
         {
             return SelectTransitions(transition => transition.MatchesEvent(evt) &&
-                                                   transition.EvaluateCondition(_executionContext, _root));
+                                                   transition.EvaluateCondition(_executionContext));
         }
 
-        private SortedSet<Transition> SelectEventlessTransitions()
+        private Set<Transition> SelectEventlessTransitions()
         {
             return SelectTransitions(transition => !transition.HasEvent &&
-                                                   transition.EvaluateCondition(_executionContext, _root));
+                                                   transition.EvaluateCondition(_executionContext));
         }
 
-        private SortedSet<Transition> SelectTransitions(Func<Transition, bool> predicate)
+        private Set<Transition> SelectTransitions(Func<Transition, bool> predicate)
         {
-            var enabledTransitions = new SortedSet<Transition>();
+            var enabledTransitions = new Set<Transition>();
 
             var atomicStates = _executionContext.Configuration
-                                                .Where(s => s.IsAtomic)
-                                                .ToList();
-
-            atomicStates.Sort(State.GetDocumentOrder);
+                                                .Sort(State.GetXObject)
+                                                .Where(s => s.IsAtomic);
 
             foreach (var state in atomicStates)
             {
@@ -242,15 +236,15 @@ namespace CoreEngine
             return enabledTransitions;
         }
 
-        private SortedSet<Transition> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
+        private Set<Transition> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
         {
-            var filteredTransitions = new SortedSet<Transition>();
+            var filteredTransitions = new Set<Transition>();
 
             foreach (var transition1 in enabledTransitions)
             {
                 var t1Preempted = false;
 
-                var transitionsToRemove = new SortedSet<Transition>();
+                var transitionsToRemove = new Set<Transition>();
 
                 foreach (var transition2 in filteredTransitions)
                 {
@@ -286,32 +280,26 @@ namespace CoreEngine
             return filteredTransitions;
         }
 
-        private void ExecuteGlobalScriptElement()
-        {
-        }
-
         private void EnterStates(IEnumerable<Transition> enabledTransitions)
         {
-            var statesToEnter = new SortedSet<State>();
+            var statesToEnter = new Set<State>();
 
-            var statesForDefaultEntry = new SortedSet<State>();
+            var statesForDefaultEntry = new Set<State>();
 
-            var defaultHistoryContent = new Dictionary<string, SortedSet<ExecutableContent>>();
+            var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent>>();
 
             ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
-            var toEnter = statesToEnter.Sort(State.GetDocumentOrder);
-
-            foreach (var state in toEnter)
+            foreach (var state in statesToEnter.Sort(State.GetXObject))
             {
                 state.Enter(_executionContext, _root, statesForDefaultEntry, defaultHistoryContent);
             }
         }
 
         private void ComputeEntrySet(IEnumerable<Transition> enabledTransitions,
-                                     SortedSet<State> statesToEnter,
-                                     SortedSet<State> statesForDefaultEntry,
-                                     Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
+                                     Set<State> statesToEnter,
+                                     Set<State> statesForDefaultEntry,
+                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             foreach (var transition in enabledTransitions)
             {
@@ -333,9 +321,9 @@ namespace CoreEngine
 
         private void AddAncestorStatesToEnter(State state,
                                               State ancestor,
-                                              SortedSet<State> statesToEnter,
-                                              SortedSet<State> statesForDefaultEntry,
-                                              Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
+                                              Set<State> statesToEnter,
+                                              Set<State> statesForDefaultEntry,
+                                              Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             var ancestors = state.GetProperAncestors(ancestor);
 
@@ -359,9 +347,9 @@ namespace CoreEngine
         }
 
         private void AddDescendentStatesToEnter(State state,
-                                                SortedSet<State> statesToEnter,
-                                                SortedSet<State> statesForDefaultEntry,
-                                                Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
+                                                Set<State> statesToEnter,
+                                                Set<State> statesForDefaultEntry,
+                                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             if (state.IsHistoryState)
             {

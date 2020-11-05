@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml.Linq;
 
@@ -7,8 +8,16 @@ namespace CoreEngine.Model.Execution
 {
     internal abstract class ExecutableContent
     {
-        protected ExecutableContent()
+        private readonly XElement _element;
+
+        protected ExecutableContent(XElement element)
         {
+            _element = element;
+        }
+
+        public static XObject GetXObject(ExecutableContent content)
+        {
+            return content._element;
         }
 
         public static ExecutableContent Create(XElement element)

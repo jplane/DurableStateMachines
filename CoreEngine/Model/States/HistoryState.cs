@@ -33,7 +33,7 @@ namespace CoreEngine.Model.States
         }
 
         public void VisitTransition(List<State> targetStates,
-                                    Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent,
+                                    Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
                                     RootState root)
         {
             var transition = this._transitions.Value.Single();

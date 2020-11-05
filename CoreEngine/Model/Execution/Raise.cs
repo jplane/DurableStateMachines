@@ -10,6 +10,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _event;
 
         public Raise(XElement element)
+            : base(element)
         {
             _event = element.Attribute("event").Value;
         }

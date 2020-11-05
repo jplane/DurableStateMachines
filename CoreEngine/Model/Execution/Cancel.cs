@@ -11,6 +11,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _sendidExpr;
 
         public Cancel(XElement element)
+            : base(element)
         {
             _sendid = element.Attribute("sendid")?.Value ?? string.Empty;
             _sendidExpr = element.Attribute("sendidexpr")?.Value ?? string.Empty;

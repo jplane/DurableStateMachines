@@ -13,9 +13,9 @@ namespace CoreEngine.Model.States
         {
             _transition = new Lazy<Transition>(() =>
             {
-                var node = element.Element("transition");
+                var node = element.ScxmlElement("transition");
 
-                return node == null ? null : new Transition(node, parent);
+                return new Transition(node, parent);
             });
         }
 

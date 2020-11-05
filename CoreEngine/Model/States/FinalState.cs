@@ -15,7 +15,7 @@ namespace CoreEngine.Model.States
         {
             _donedata = new Lazy<Donedata>(() =>
             {
-                var node = element.Element("donedata");
+                var node = element.ScxmlElement("donedata");
 
                 return node == null ? null : new Donedata(node);
             });

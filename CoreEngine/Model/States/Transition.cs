@@ -5,11 +5,14 @@ using System.Xml.Linq;
 using System.Linq;
 using CoreEngine.Model.DataManipulation;
 using CoreEngine.Model.Execution;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CoreEngine.Model.States
 {
     internal class Transition
     {
+        private readonly XObject _xobj;
         private readonly Lazy<List<ExecutableContent>> _content;
         private readonly string _target;
         private readonly string _events;
@@ -17,10 +20,11 @@ namespace CoreEngine.Model.States
         private readonly TransitionType _type;
         private readonly State _source;
 
-        public Transition(string target, State source)
+        public Transition(XAttribute attribute, State source)
         {
+            _xobj = attribute;
             _content = new Lazy<List<ExecutableContent>>();
-            _target = target;
+            _target = attribute.Value;
             _events = string.Empty;
             _conditionExpr = string.Empty;
             _type = TransitionType.External;
@@ -29,6 +33,8 @@ namespace CoreEngine.Model.States
 
         public Transition(XElement element, State source)
         {
+            _xobj = element;
+
             _target = element.Attribute("target")?.Value ?? string.Empty;
 
             _events = element.Attribute("event")?.Value ?? string.Empty;
@@ -54,9 +60,14 @@ namespace CoreEngine.Model.States
             _source = source;
         }
 
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
+        public static XObject GetXObject(Transition transition)
         {
-            defaultHistoryContent[id] = new SortedSet<ExecutableContent>(_content.Value);
+            return transition._xobj;
+        }
+
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        {
+            defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
         }
 
         public bool HasEvent => !string.IsNullOrWhiteSpace(_events);
@@ -77,9 +88,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public bool EvaluateCondition(ExecutionContext context, RootState root)
+        public bool EvaluateCondition(ExecutionContext context)
         {
-            return true;
+            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : context.Eval<bool>(_conditionExpr);
         }
 
         public void ExecuteContent(ExecutionContext context)
@@ -107,9 +118,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public SortedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
-            var targets = new SortedSet<State>();
+            var targets = new Set<State>();
 
             foreach (var state in GetTargetStates(root))
             {
@@ -160,7 +171,9 @@ namespace CoreEngine.Model.States
                     }
                 }
 
-                throw new InvalidOperationException("Should have returned sequential or root scxml node.");
+                Debug.Assert(_source.IsScxmlRoot);
+
+                return root;
             }
         }
     }

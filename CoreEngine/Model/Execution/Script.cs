@@ -11,6 +11,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _body;
 
         public Script(XElement element)
+            : base(element)
         {
             _source = element.Attribute("src")?.Value ?? string.Empty;
             _body = element.Value ?? string.Empty;

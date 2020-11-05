@@ -11,8 +11,8 @@ namespace CoreEngine.Model.States
     internal class RootState : CompoundState
     {
         private readonly Lazy<Script> _script;
-
-        private readonly string _initial;
+        private readonly Lazy<Transition> _initialTransition;
+        
         private readonly string _name;
         private readonly string _xmlns;
         private readonly string _version;
@@ -22,8 +22,6 @@ namespace CoreEngine.Model.States
         public RootState(XElement element)
             : base(element, null)
         {
-            _initial = element.Attribute("initial")?.Value ?? string.Empty;
-
             _name = element.Attribute("name")?.Value ?? string.Empty;
 
             _xmlns = element.Attribute("xmlns").Value;
@@ -36,16 +34,21 @@ namespace CoreEngine.Model.States
                                                 element.Attribute("binding")?.Value ?? "early",
                                                 true);
 
+            _initialTransition = new Lazy<Transition>(() =>
+            {
+                var attr = element.Attribute("initial");
+
+                return attr == null ? null : new Transition(attr, this);
+            });
+
             _states = new Lazy<List<State>>(() =>
             {
                 var states = new List<State>();
 
                 bool IsCompoundState(XElement el)
                 {
-                    return el.Name == "state" &&
-                           el.Elements().Any(ce => ce.Name == "state" ||
-                                                   ce.Name == "parallel" ||
-                                                   ce.Name == "final");
+                    return el.ScxmlNameEquals("state") &&
+                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
                 }
 
                 foreach (var el in element.Elements())
@@ -54,15 +57,15 @@ namespace CoreEngine.Model.States
                     {
                         states.Add(new SequentialState(el, this));
                     }
-                    else if (el.Name == "parallel")
+                    else if (el.ScxmlNameEquals("parallel"))
                     {
                         states.Add(new ParallelState(el, this));
                     }
-                    else if (el.Name == "final")
+                    else if (el.ScxmlNameEquals("final"))
                     {
                         states.Add(new FinalState(el, this));
                     }
-                    else if (el.Name == "state")
+                    else if (el.ScxmlNameEquals("state"))
                     {
                         states.Add(new AtomicState(el, this));
                     }
@@ -73,10 +76,15 @@ namespace CoreEngine.Model.States
 
             _script = new Lazy<Script>(() =>
             {
-                var node = element.Element("script");
+                var node = element.ScxmlElement("script");
 
                 return node == null ? null : new Script(node);
             });
+        }
+
+        public void ExecuteScript(ExecutionContext context)
+        {
+            _script.Value?.Execute(context);
         }
 
         public Databinding Binding => _binding;
@@ -92,49 +100,7 @@ namespace CoreEngine.Model.States
 
         public override Transition GetInitialStateTransition()
         {
-            if (!string.IsNullOrWhiteSpace(_initial))
-            {
-                return new Transition(_initial, this);
-            }
-            else
-            {
-                return base.GetInitialStateTransition();
-            }
-        }
-
-        public override State GetState(string id)
-        {
-            var result = base.GetState(id);
-
-            if (result != null)
-            {
-                return result;
-            }
-
-            foreach (var state in GetChildStates())
-            {
-                result = state.GetState(id);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
-        {
-            base.InitDatamodel(context, recursive);
-
-            if (recursive)
-            {
-                foreach (var child in GetChildStates())
-                {
-                    child.InitDatamodel(context, recursive);
-                }
-            }
+            return _initialTransition.Value ?? base.GetInitialStateTransition();
         }
     }
 

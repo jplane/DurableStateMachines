@@ -15,7 +15,7 @@ namespace CoreEngine.Model.DataManipulation
         {
             _data = new Lazy<List<Data>>(() =>
             {
-                var nodes = element.Elements("data");
+                var nodes = element.ScxmlElements("data");
 
                 return new List<Data>(nodes.Select(n => new Data(n)));
             });

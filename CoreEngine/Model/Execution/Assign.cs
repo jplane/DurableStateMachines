@@ -12,6 +12,7 @@ namespace CoreEngine.Model.Execution
         private readonly string _body;
 
         public Assign(XElement element)
+            : base(element)
         {
             _location = element.Attribute("location").Value;
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
@@ -22,7 +23,7 @@ namespace CoreEngine.Model.Execution
         {
             if (!string.IsNullOrWhiteSpace(_expression))
             {
-                context[_location] = context.Eval<object>(_expression);
+                context.SetStateValue(_location, context.Eval<object>(_expression));
             }
             else
             {

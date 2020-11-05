@@ -14,19 +14,20 @@ namespace CoreEngine.Model.Execution
         private readonly Lazy<List<ExecutableContent>> _content;
 
         public If(XElement element)
+            : base(element)
         {
             _cond = element.Attribute("cond").Value;
 
             _else = new Lazy<Else>(() =>
             {
-                var node = element.Element("else");
+                var node = element.ScxmlElement("else");
 
                 return node == null ? null : new Else(node);
             });
 
             _elseifs = new Lazy<List<ElseIf>>(() =>
             {
-                var nodes = element.Elements("elseif");
+                var nodes = element.ScxmlElements("elseif");
 
                 return new List<ElseIf>(nodes.Select(n => new ElseIf(n)));
             });

@@ -17,10 +17,8 @@ namespace CoreEngine.Model.States
 
                 bool IsCompoundState(XElement el)
                 {
-                    return el.Name == "state" &&
-                           el.Elements().Any(ce => ce.Name == "state" ||
-                                                   ce.Name == "parallel" ||
-                                                   ce.Name == "final");
+                    return el.ScxmlNameEquals("state") &&
+                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
                 }
 
                 foreach (var el in element.Elements())
@@ -29,15 +27,15 @@ namespace CoreEngine.Model.States
                     {
                         states.Add(new SequentialState(el, this));
                     }
-                    else if (el.Name == "parallel")
+                    else if (el.ScxmlNameEquals("parallel"))
                     {
                         states.Add(new ParallelState(el, this));
                     }
-                    else if (el.Name == "state")
+                    else if (el.ScxmlNameEquals("state"))
                     {
                         states.Add(new AtomicState(el, this));
                     }
-                    else if (el.Name == "history")
+                    else if (el.ScxmlNameEquals("history"))
                     {
                         states.Add(new HistoryState(el, this));
                     }

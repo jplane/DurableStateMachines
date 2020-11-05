@@ -24,6 +24,7 @@ namespace CoreEngine.Model.Execution
         private readonly Lazy<List<Param>> _params;
 
         public Send(XElement element)
+            : base(element)
         {
             _event = element.Attribute("event")?.Value ?? string.Empty;
             _eventExpr = element.Attribute("eventexpr")?.Value ?? string.Empty;
@@ -44,14 +45,14 @@ namespace CoreEngine.Model.Execution
 
             _content = new Lazy<Content>(() =>
             {
-                var node = element.Element("content");
+                var node = element.ScxmlElement("content");
 
                 return node == null ? null : new Content(node);
             });
 
             _params = new Lazy<List<Param>>(() =>
             {
-                var nodes = element.Elements("param");
+                var nodes = element.ScxmlElements("param");
 
                 return new List<Param>(nodes.Select(n => new Param(n)));
             });

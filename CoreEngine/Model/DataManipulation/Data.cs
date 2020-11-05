@@ -25,7 +25,7 @@ namespace CoreEngine.Model.DataManipulation
         {
             if (! string.IsNullOrWhiteSpace(_expression))
             {
-                context[_id] = context.Eval<object>(_expression);
+                context.SetStateValue(_id, context.Eval<object>(_expression));
             }
             else
             {

@@ -47,21 +47,21 @@ namespace CoreEngine.Model.States
 
             _content = new Lazy<Content>(() =>
             {
-                var node = element.Element("content");
+                var node = element.ScxmlElement("content");
 
                 return node == null ? null : new Content(node);
             });
 
             _finalize = new Lazy<Finalize>(() =>
             {
-                var node = element.Element("finalize");
+                var node = element.ScxmlElement("finalize");
 
                 return node == null ? null : new Finalize(node);
             });
 
             _params = new Lazy<List<Param>>(() =>
             {
-                var nodes = element.Elements("param");
+                var nodes = element.ScxmlElements("param");
 
                 return new List<Param>(nodes.Select(n => new Param(n)));
             });

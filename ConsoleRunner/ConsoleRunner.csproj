@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreEngine\CoreEngine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Program.cs" />
+    <Resource Include="machine.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="machine.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

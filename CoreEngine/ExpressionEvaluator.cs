@@ -1,7 +1,10 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CSharp.RuntimeBinder;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.Net;
 using System.Text;
 
 namespace CoreEngine
@@ -17,12 +20,23 @@ namespace CoreEngine
 
         public object Eval(string expression)
         {
-            var globals = new
+            var globals = new ScriptGlobals
             {
                 data = _state.ScriptData
             };
 
-            return CSharpScript.EvaluateAsync(expression, globals: globals).Result;
+            var decodedExpr = WebUtility.HtmlDecode(expression);
+
+            var options = ScriptOptions.Default
+                                       .AddReferences(typeof(DynamicObject).Assembly,
+                                                      typeof(CSharpArgumentInfo).Assembly);
+
+            return CSharpScript.EvaluateAsync<object>(decodedExpr, options, globals).Result;
         }
+    }
+
+    public class ScriptGlobals
+    {
+        public dynamic data { get; internal set; }
     }
 }

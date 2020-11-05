@@ -15,6 +15,7 @@ namespace CoreEngine.Model.Execution
         private readonly Lazy<List<ExecutableContent>> _content;
 
         public Foreach(XElement element)
+            : base(element)
         {
             _arrayExpression = element.Attribute("array").Value;
 
@@ -41,13 +42,15 @@ namespace CoreEngine.Model.Execution
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
+            // TODO: needs to support setting a stack of context values
+
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {
-                context[_item] = shallowCopy[idx];
+                context.SetStateValue(_item, shallowCopy[idx]);
 
                 if (!string.IsNullOrWhiteSpace(_index))
                 {
-                    context[_index] = idx;
+                    context.SetStateValue(_index, idx);
                 }
 
                 try
@@ -63,11 +66,11 @@ namespace CoreEngine.Model.Execution
                 }
                 finally
                 {
-                    context[_item] = null;
+                    context.SetStateValue(_item, null);
 
                     if (!string.IsNullOrWhiteSpace(_index))
                     {
-                        context[_index] = null;
+                        context.SetStateValue(_index, null);
                     }
                 }
             }

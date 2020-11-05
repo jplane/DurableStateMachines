@@ -42,6 +42,11 @@ namespace CoreEngine
             }
         }
 
+        internal void SetStateValue(string key, object value)
+        {
+            _state[key] = value;
+        }
+
         internal bool TryGet(string key, out object value)
         {
             return _state.TryGetValue(key, out value);
@@ -102,9 +107,9 @@ namespace CoreEngine
             return evt;
         }
 
-        internal SortedSet<State> Configuration { get; } = new SortedSet<State>();
+        internal Set<State> Configuration { get; } = new Set<State>();
 
-        internal SortedSet<State> StatesToInvoke { get; } = new SortedSet<State>();
+        internal Set<State> StatesToInvoke { get; } = new Set<State>();
 
         internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
         {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using CoreEngine.Model.Execution;
 using CoreEngine.Model.DataManipulation;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CoreEngine.Model.States
 {
@@ -28,38 +29,43 @@ namespace CoreEngine.Model.States
 
             _onEntry = new Lazy<OnEntryExit>(() =>
             {
-                var node = element.Element("onentry");
+                var node = element.ScxmlElement("onentry");
 
                 return node == null ? null : new OnEntryExit(node);
             });
 
             _onExit = new Lazy<OnEntryExit>(() =>
             {
-                var node = element.Element("onexit");
+                var node = element.ScxmlElement("onexit");
 
                 return node == null ? null : new OnEntryExit(node);
             });
 
             _transitions = new Lazy<List<Transition>>(() =>
             {
-                var nodes = element.Elements("transition");
+                var nodes = element.ScxmlElements("transition");
 
                 return new List<Transition>(nodes.Select(n => new Transition(n, this)));
             });
 
             _invokes = new Lazy<List<Invoke>>(() =>
             {
-                var nodes = element.Elements("invoke");
+                var nodes = element.ScxmlElements("invoke");
 
                 return new List<Invoke>(nodes.Select(n => new Invoke(n)));
             });
 
             _datamodel = new Lazy<Datamodel>(() =>
             {
-                var node = element.Element("datamodel");
+                var node = element.ScxmlElement("datamodel");
 
                 return node == null ? null : new Datamodel(node);
             });
+        }
+
+        public static XObject GetXObject(State state)
+        {
+            return state._element;
         }
 
         public virtual string Id => _element.Attribute("id")?.Value ?? string.Empty;
@@ -89,52 +95,7 @@ namespace CoreEngine.Model.States
 
         public virtual void InitDatamodel(ExecutionContext context, bool recursive)
         {
-            _datamodel.Value.Init(context);
-        }
-
-        public static int GetDocumentOrder(State state1, State state2)
-        {
-            return state1.GetRelativeOrder(state2);
-        }
-
-        public static int GetReverseDocumentOrder(State state1, State state2)
-        {
-            return state1.GetRelativeOrder(state2, true);
-        }
-
-        public int GetRelativeOrder(State state, bool bottomUp = false)
-        {
-            if (state == null)
-            {
-                return 1;
-            }
-            else
-            {
-                bool AreEqual(string x, string y)
-                {
-                    return string.Compare(x, y, StringComparison.InvariantCultureIgnoreCase) == 0;
-                }
-
-                var ids = _element.Document.Descendants()
-                                           .Where(e => e.Name == "state" || e.Name == "parallel" || e.Name == "final")
-                                           .Select(e => e.Attribute("id").Value);
-                
-                if (bottomUp)
-                {
-                    ids = ids.Reverse();
-                }
-
-                var result = ids.FirstOrDefault(id => AreEqual(id, this.Id) || AreEqual(id, state.Id));
-
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    return 0;
-                }
-                else
-                {
-                    return AreEqual(result, this.Id) ? 1 : -1;
-                }
-            }
+            _datamodel.Value?.Init(context);
         }
 
         public virtual void Invoke(ExecutionContext context, RootState root)
@@ -179,9 +140,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public SortedSet<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
-            var set = new SortedSet<State>();
+            var set = new Set<State>();
 
             foreach (var transition in _transitions.Value)
             {
@@ -203,8 +164,8 @@ namespace CoreEngine.Model.States
 
         public void Enter(ExecutionContext context,
                           RootState root,
-                          SortedSet<State> statesForDefaultEntry,
-                          Dictionary<string, SortedSet<ExecutableContent>> defaultHistoryContent)
+                          Set<State> statesForDefaultEntry,
+                          Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             context.Configuration.Add(this);
 
@@ -217,7 +178,7 @@ namespace CoreEngine.Model.States
                 _firstEntry = false;
             }
 
-            _onEntry.Value.Execute(context);
+            _onEntry.Value?.Execute(context);
 
             if (statesForDefaultEntry.Contains(this))
             {
@@ -226,7 +187,7 @@ namespace CoreEngine.Model.States
                 transition.ExecuteContent(context);
             }
 
-            if (defaultHistoryContent.TryGetValue(this.Id, out SortedSet<ExecutableContent> set))
+            if (defaultHistoryContent.TryGetValue(this.Id, out Set<ExecutableContent> set))
             {
                 foreach (var content in set)
                 {
@@ -261,7 +222,7 @@ namespace CoreEngine.Model.States
 
         public void Exit(ExecutionContext context)
         {
-            _onExit.Value.Execute(context);
+            _onExit.Value?.Execute(context);
 
             CancelOutstandingInvokes(context);
 

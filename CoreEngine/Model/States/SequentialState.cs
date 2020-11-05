@@ -8,17 +8,22 @@ namespace CoreEngine.Model.States
 {
     class SequentialState : CompoundState
     {
-        private readonly string _initialAttribute;
+        private readonly Lazy<Transition> _initialTransition;
         private readonly Lazy<Initial> _initialElement;
 
         public SequentialState(XElement element, State parent)
             : base(element, parent)
         {
-            _initialAttribute = element.Attribute("initial")?.Value ?? string.Empty;
+            _initialTransition = new Lazy<Transition>(() =>
+            {
+                var attr = element.Attribute("initial");
+
+                return attr == null ? null : new Transition(attr, this);
+            });
 
             _initialElement = new Lazy<Initial>(() =>
             {
-                var node = element.Element("initial");
+                var node = element.ScxmlElement("initial");
 
                 return node == null ? null : new Initial(node, this);
             });
@@ -29,10 +34,8 @@ namespace CoreEngine.Model.States
 
                 bool IsCompoundState(XElement el)
                 {
-                    return el.Name == "state" &&
-                           el.Elements().Any(ce => ce.Name == "state" ||
-                                                   ce.Name == "parallel" ||
-                                                   ce.Name == "final");
+                    return el.ScxmlNameEquals("state") &&
+                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
                 }
 
                 foreach (var el in element.Elements())
@@ -41,19 +44,19 @@ namespace CoreEngine.Model.States
                     {
                         states.Add(new SequentialState(el, this));
                     }
-                    else if (el.Name == "parallel")
+                    else if (el.ScxmlNameEquals("parallel"))
                     {
                         states.Add(new ParallelState(el, this));
                     }
-                    else if (el.Name == "final")
+                    else if (el.ScxmlNameEquals("final"))
                     {
                         states.Add(new FinalState(el, this));
                     }
-                    else if (el.Name == "state")
+                    else if (el.ScxmlNameEquals("state"))
                     {
                         states.Add(new AtomicState(el, this));
                     }
-                    else if (el.Name == "history")
+                    else if (el.ScxmlNameEquals("history"))
                     {
                         states.Add(new HistoryState(el, this));
                     }
@@ -67,9 +70,9 @@ namespace CoreEngine.Model.States
 
         public override Transition GetInitialStateTransition()
         {
-            if (!string.IsNullOrWhiteSpace(_initialAttribute))
+            if (_initialTransition.Value != null)
             {
-                return new Transition(_initialAttribute, this);
+                return _initialTransition.Value;
             }
             else if (_initialElement.Value != null)
             {

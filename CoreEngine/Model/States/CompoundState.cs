@@ -20,7 +20,7 @@ namespace CoreEngine.Model.States
         public override Transition GetInitialStateTransition()
         {
             var firstChildState = _element.Elements()
-                                          .FirstOrDefault(el => el.Name == "state" || el.Name == "parallel" || el.Name == "final");
+                                          .FirstOrDefault(el => el.ScxmlNameIn("state", "parallel", "final"));
 
             if (firstChildState != null)
             {
