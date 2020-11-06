@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.DataManipulation
@@ -23,13 +24,13 @@ namespace CoreEngine.Model.DataManipulation
             _body = element.Value ?? string.Empty;
         }
 
-        public void Init(ExecutionContext context)
+        public async Task Init(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             if (! string.IsNullOrWhiteSpace(_expression))
             {
-                context.SetDataValue(_id, context.Eval<object>(_expression));
+                context.SetDataValue(_id, await context.Eval<object>(_expression));
             }
             else
             {

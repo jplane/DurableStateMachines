@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
@@ -65,15 +66,15 @@ namespace CoreEngine.Model.States
             return null;
         }
 
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
+        public override async Task InitDatamodel(ExecutionContext context, bool recursive)
         {
-            base.InitDatamodel(context, recursive);
+            await base.InitDatamodel(context, recursive);
 
             if (recursive)
             {
                 foreach (var child in GetChildStates())
                 {
-                    child.InitDatamodel(context, recursive);
+                    await child.InitDatamodel(context, recursive);
                 }
             }
         }

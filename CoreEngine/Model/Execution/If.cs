@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -52,26 +53,33 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public override void Execute(ExecutionContext context)
+        public override async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            var result = context.Eval<bool>(_cond);
+            var result = await context.Eval<bool>(_cond);
 
             if (result)
             {
                 foreach (var content in _content.Value)
                 {
-                    content.Execute(context);
+                    await content.Execute(context);
                 }
             }
-            else if (_elseifs.Value.Any(ei => ei.ConditionalExecute(context)))
+            else
             {
-                return;
-            }
-            else if (_else.Value != null)
-            {
-                _else.Value.Execute(context);
+                foreach (var elseif in _elseifs.Value)
+                {
+                    if (await elseif.ConditionalExecute(context))
+                    {
+                        return;
+                    }
+                }
+
+                if (_else.Value != null)
+                {
+                    await _else.Value.Execute(context);
+                }
             }
         }
     }

@@ -25,7 +25,7 @@ namespace ConsoleRunner
 
             var interpreter = new Interpreter(xml);
 
-            var task = Task.Factory.StartNew(() => interpreter.Run());
+            var task = interpreter.Run();
 
             interpreter.Context.Enqueue("turn.on");
 

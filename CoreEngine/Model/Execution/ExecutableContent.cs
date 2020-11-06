@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.Execution
@@ -71,6 +72,6 @@ namespace CoreEngine.Model.Execution
             return content;
         }
 
-        public abstract void Execute(ExecutionContext context);
+        public abstract Task Execute(ExecutionContext context);
     }
 }

@@ -16,7 +16,7 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 - adherence to the spec
 	- but ultimately support other formats beyond XML :-)
 
-- portable core runtime that goes wherever .NET Core goes (no external dependencies)
+- portable core runtime that goes wherever .NET Core goes (minimal/no external dependencies)
 
 - useful abstractions to drive environment-specific integration
 	- data model storage

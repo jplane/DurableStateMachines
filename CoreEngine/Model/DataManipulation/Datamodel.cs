@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using CoreEngine.Model.States;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.DataManipulation
 {
@@ -23,13 +24,13 @@ namespace CoreEngine.Model.DataManipulation
             });
         }
 
-        public void Init(ExecutionContext context)
+        public async Task Init(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             foreach (var data in _data.Value)
             {
-                data.Init(context);
+                await data.Init(context);
             }
         }
     }

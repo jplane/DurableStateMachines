@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -27,13 +28,13 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public void Execute(ExecutionContext context)
+        public async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             foreach (var content in _content.Value)
             {
-                content.Execute(context);
+                await content.Execute(context);
             }
         }
     }

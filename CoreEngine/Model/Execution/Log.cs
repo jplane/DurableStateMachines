@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -22,13 +23,13 @@ namespace CoreEngine.Model.Execution
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
         }
 
-        public override void Execute(ExecutionContext context)
+        public override async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             if (!string.IsNullOrWhiteSpace(_expression))
             {
-                var message = context.Eval<string>(_expression);
+                var message = await context.Eval<string>(_expression);
 
                 Trace.WriteLine(message);
             }

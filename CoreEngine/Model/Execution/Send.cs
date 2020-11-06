@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using CoreEngine.Model.DataManipulation;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -60,7 +61,7 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public override void Execute(ExecutionContext context)
+        public override Task Execute(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

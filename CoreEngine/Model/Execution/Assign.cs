@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.Execution
@@ -21,13 +22,13 @@ namespace CoreEngine.Model.Execution
             _body = element.Value ?? string.Empty;
         }
 
-        public override void Execute(ExecutionContext context)
+        public override async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             if (!string.IsNullOrWhiteSpace(_expression))
             {
-                context.SetDataValue(_location, context.Eval<object>(_expression));
+                context.SetDataValue(_location, await context.Eval<object>(_expression));
             }
             else
             {

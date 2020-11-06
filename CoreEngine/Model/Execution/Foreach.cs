@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Collections;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -39,11 +40,11 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public override void Execute(ExecutionContext context)
+        public override async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            var enumerable = context.Eval<IEnumerable>(_arrayExpression);
+            var enumerable = await context.Eval<IEnumerable>(_arrayExpression);
 
             Debug.Assert(enumerable != null);
 
@@ -64,7 +65,7 @@ namespace CoreEngine.Model.Execution
                 {
                     foreach (var content in _content.Value)
                     {
-                        content.Execute(context);
+                        await content.Execute(context);
                     }
                 }
                 finally

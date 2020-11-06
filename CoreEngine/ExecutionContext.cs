@@ -5,6 +5,7 @@ using CoreEngine.Model;
 using CoreEngine.Model.States;
 using System.Threading;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreEngine
 {
@@ -54,9 +55,9 @@ namespace CoreEngine
             return _data.TryGetValue(key, out value);
         }
 
-        internal T Eval<T>(string expression)
+        internal Task<T> Eval<T>(string expression)
         {
-            return (T) _eval.Eval(expression);
+            return _eval.Eval<T>(expression);
         }
 
         internal void EnqueueInternal(string eventName)
@@ -84,7 +85,7 @@ namespace CoreEngine
             }
         }
 
-        internal Event DequeueExternal()
+        internal async Task<Event> DequeueExternal()
         {
             bool Dequeue(out Event evt)
             {
@@ -98,7 +99,7 @@ namespace CoreEngine
 
             while (!Dequeue(out evt))
             {
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
 
             if (!evt.IsCancel)

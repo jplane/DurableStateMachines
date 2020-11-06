@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CoreEngine
 {
@@ -20,7 +21,7 @@ namespace CoreEngine
             _context = context;
         }
 
-        public object Eval(string expression)
+        public Task<T> Eval<T>(string expression)
         {
             expression.CheckArgNull(nameof(expression));
 
@@ -35,7 +36,7 @@ namespace CoreEngine
                                        .AddReferences(typeof(DynamicObject).Assembly,
                                                       typeof(CSharpArgumentInfo).Assembly);
 
-            return CSharpScript.EvaluateAsync<object>(decodedExpr, options, globals).Result;
+            return CSharpScript.EvaluateAsync<T>(decodedExpr, options, globals);
         }
     }
 

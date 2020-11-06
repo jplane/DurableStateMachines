@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.Execution
@@ -19,7 +20,7 @@ namespace CoreEngine.Model.Execution
             _sendidExpr = element.Attribute("sendidexpr")?.Value ?? string.Empty;
         }
 
-        public override void Execute(ExecutionContext context)
+        public override Task Execute(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using CoreEngine.Model.Execution;
 using CoreEngine.Model.DataManipulation;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
@@ -97,9 +98,9 @@ namespace CoreEngine.Model.States
             throw new NotImplementedException();
         }
 
-        public virtual void InitDatamodel(ExecutionContext context, bool recursive)
+        public virtual Task InitDatamodel(ExecutionContext context, bool recursive)
         {
-            _datamodel.Value?.Init(context);
+            return _datamodel.Value == null ? Task.CompletedTask : _datamodel.Value.Init(context);
         }
 
         public virtual void Invoke(ExecutionContext context, RootState root)

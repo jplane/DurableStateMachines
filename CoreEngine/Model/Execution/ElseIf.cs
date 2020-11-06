@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.Execution
 {
@@ -30,17 +31,17 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public bool ConditionalExecute(ExecutionContext context)
+        public async Task<bool> ConditionalExecute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            var result = context.Eval<bool>(_cond);
+            var result = await context.Eval<bool>(_cond);
 
             if (result)
             {
                 foreach (var content in _content.Value)
                 {
-                    content.Execute(context);
+                    await content.Execute(context);
                 }
             }
 

@@ -8,6 +8,7 @@ using CoreEngine.Model;
 using CoreEngine.Model.States;
 using CoreEngine.Model.Execution;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CoreEngine
 {
@@ -26,11 +27,11 @@ namespace CoreEngine
 
         public ExecutionContext Context => _executionContext;
 
-        public void Run()
+        public async Task Run()
         {
             if (_root.Binding == Databinding.Early)
             {
-                _root.InitDatamodel(_executionContext, true);
+                await _root.InitDatamodel(_executionContext, true);
             }
 
             _executionContext.IsRunning = true;
@@ -39,10 +40,10 @@ namespace CoreEngine
 
             EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
 
-            DoEventLoop();
+            await DoEventLoop();
         }
 
-        private void DoEventLoop()
+        private async Task DoEventLoop()
         {
             while (_executionContext.IsRunning)
             {
@@ -52,7 +53,7 @@ namespace CoreEngine
 
                 while (_executionContext.IsRunning && ! macrostepDone)
                 {
-                    enabledTransitions = SelectEventlessTransitions();
+                    enabledTransitions = await SelectEventlessTransitions();
 
                     if (enabledTransitions.IsEmpty())
                     {
@@ -64,7 +65,7 @@ namespace CoreEngine
                         }
                         else
                         {
-                            enabledTransitions = SelectTransitions(internalEvent);
+                            enabledTransitions = await SelectTransitions(internalEvent);
                         }
                     }
 
@@ -91,7 +92,7 @@ namespace CoreEngine
                     continue;
                 }
 
-                var externalEvent = _executionContext.DequeueExternal();
+                var externalEvent = await _executionContext.DequeueExternal();
 
                 if (externalEvent.IsCancel)
                 {
@@ -104,7 +105,7 @@ namespace CoreEngine
                     state.ProcessExternalEvent(_executionContext, externalEvent);
                 }
 
-                enabledTransitions = SelectTransitions(externalEvent);
+                enabledTransitions = await SelectTransitions(externalEvent);
 
                 if (! enabledTransitions.IsEmpty())
                 {
@@ -191,19 +192,19 @@ namespace CoreEngine
             return statesToExit;
         }
 
-        private Set<Transition> SelectTransitions(Event evt)
+        private Task<Set<Transition>> SelectTransitions(Event evt)
         {
-            return SelectTransitions(transition => transition.MatchesEvent(evt) &&
-                                                   transition.EvaluateCondition(_executionContext));
+            return SelectTransitions(async transition => transition.MatchesEvent(evt) &&
+                                                         await transition.EvaluateCondition(_executionContext));
         }
 
-        private Set<Transition> SelectEventlessTransitions()
+        private Task<Set<Transition>> SelectEventlessTransitions()
         {
-            return SelectTransitions(transition => !transition.HasEvent &&
-                                                   transition.EvaluateCondition(_executionContext));
+            return SelectTransitions(async transition => !transition.HasEvent &&
+                                                         await transition.EvaluateCondition(_executionContext));
         }
 
-        private Set<Transition> SelectTransitions(Func<Transition, bool> predicate)
+        private async Task<Set<Transition>> SelectTransitions(Func<Transition, Task<bool>> predicate)
         {
             Debug.Assert(predicate != null);
 
@@ -215,9 +216,10 @@ namespace CoreEngine
 
             foreach (var state in atomicStates)
             {
-                var all = new List<State>();
-
-                all.Add(state);
+                var all = new List<State>
+                {
+                    state
+                };
 
                 foreach (var anc in state.GetProperAncestors(_root))
                 {
@@ -228,7 +230,7 @@ namespace CoreEngine
                 {
                     foreach (var transition in s.Transitions)
                     {
-                        if (predicate(transition))
+                        if (await predicate(transition))
                         {
                             enabledTransitions.Add(transition);
                             goto nextAtomicState;

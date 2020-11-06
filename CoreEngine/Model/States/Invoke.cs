@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
@@ -87,8 +88,9 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public void Execute(ExecutionContext context)
+        public Task Execute(ExecutionContext context)
         {
+            return Task.CompletedTask;
         }
 
         public void Cancel(ExecutionContext context)

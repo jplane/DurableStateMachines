@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.States
@@ -30,8 +31,9 @@ namespace CoreEngine.Model.States
             throw new NotImplementedException();
         }
 
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
+        public override Task InitDatamodel(ExecutionContext context, bool recursive)
         {
+            return Task.CompletedTask;
         }
 
         public void VisitTransition(List<State> targetStates,

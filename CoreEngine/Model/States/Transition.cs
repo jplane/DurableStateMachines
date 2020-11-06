@@ -7,6 +7,7 @@ using CoreEngine.Model.DataManipulation;
 using CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
@@ -100,11 +101,11 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public bool EvaluateCondition(ExecutionContext context)
+        public async Task<bool> EvaluateCondition(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : context.Eval<bool>(_conditionExpr);
+            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : await context.Eval<bool>(_conditionExpr);
         }
 
         public void ExecuteContent(ExecutionContext context)
