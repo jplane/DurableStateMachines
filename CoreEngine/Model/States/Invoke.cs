@@ -23,6 +23,8 @@ namespace CoreEngine.Model.States
 
         public Invoke(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _type = element.Attribute("type")?.Value ?? string.Empty;
             _typeExpr = element.Attribute("typeexpr")?.Value ?? string.Empty;
 
@@ -69,6 +71,8 @@ namespace CoreEngine.Model.States
 
         private string GetId(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             if (! string.IsNullOrWhiteSpace(_id))
             {
                 return _id;
@@ -93,6 +97,8 @@ namespace CoreEngine.Model.States
 
         public void ProcessExternalEvent(ExecutionContext context, Event externalEvent)
         {
+            externalEvent.CheckArgNull(nameof(externalEvent));
+
             var id = GetId(context);
 
             if (id == externalEvent.InvokeId)

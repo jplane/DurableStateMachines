@@ -12,6 +12,8 @@ namespace CoreEngine.Model.Execution
 
         public Else(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _content = new Lazy<List<ExecutableContent>>(() =>
             {
                 var content = new List<ExecutableContent>();
@@ -27,6 +29,8 @@ namespace CoreEngine.Model.Execution
 
         public void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             foreach (var content in _content.Value)
             {
                 content.Execute(context);

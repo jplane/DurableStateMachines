@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Diagnostics;
 
 namespace CoreEngine.Model.States
 {
@@ -11,6 +12,8 @@ namespace CoreEngine.Model.States
         public ParallelState(XElement element, State parent)
             : base(element, parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _states = new Lazy<List<State>>(() =>
             {
                 var states = new List<State>();
@@ -50,25 +53,6 @@ namespace CoreEngine.Model.States
         public override Transition GetInitialStateTransition()
         {
             throw new NotImplementedException();
-        }
-
-        public override void RecordHistory(ExecutionContext context, RootState root)
-        {
-            foreach (var history in _states.Value.OfType<HistoryState>())
-            {
-                Func<State, bool> predicate;
-
-                if (history.IsDeepHistoryState)
-                {
-                    predicate = s => s.IsAtomic && s.IsDescendent(this);
-                }
-                else
-                {
-                    predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
-                }
-
-                context.StoreHistoryValue(history.Id, context.Configuration.Where(predicate));
-            }
         }
 
         public override bool IsInFinalState(ExecutionContext context, RootState root)

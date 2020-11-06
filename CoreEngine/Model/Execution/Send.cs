@@ -26,6 +26,8 @@ namespace CoreEngine.Model.Execution
         public Send(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _event = element.Attribute("event")?.Value ?? string.Empty;
             _eventExpr = element.Attribute("eventexpr")?.Value ?? string.Empty;
 

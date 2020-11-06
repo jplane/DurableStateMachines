@@ -13,6 +13,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public Datamodel(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _data = new Lazy<List<Data>>(() =>
             {
                 var nodes = element.ScxmlElements("data");
@@ -23,6 +25,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public void Init(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             foreach (var data in _data.Value)
             {
                 data.Init(context);

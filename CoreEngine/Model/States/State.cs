@@ -23,6 +23,8 @@ namespace CoreEngine.Model.States
 
         protected State(XElement element, State parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _firstEntry = true;
             _element = element;
             _parent = parent;
@@ -65,6 +67,8 @@ namespace CoreEngine.Model.States
 
         public static XObject GetXObject(State state)
         {
+            state.CheckArgNull(nameof(state));
+
             return state._element;
         }
 
@@ -106,7 +110,7 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public virtual void RecordHistory(ExecutionContext context, RootState root)
+        public virtual void RecordHistory(ExecutionContext context)
         {
         }
 
@@ -167,6 +171,11 @@ namespace CoreEngine.Model.States
                           Set<State> statesForDefaultEntry,
                           Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            context.CheckArgNull(nameof(context));
+            root.CheckArgNull(nameof(root));
+            statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
+            defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
+
             context.Configuration.Add(this);
 
             context.StatesToInvoke.Add(this);
@@ -222,6 +231,8 @@ namespace CoreEngine.Model.States
 
         public void Exit(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             _onExit.Value?.Execute(context);
 
             CancelOutstandingInvokes(context);
@@ -231,6 +242,8 @@ namespace CoreEngine.Model.States
 
         public bool IsDescendent(State state)
         {
+            state.CheckArgNull(nameof(state));
+
             return state._element.Descendants().Contains(this._element);
         }
 

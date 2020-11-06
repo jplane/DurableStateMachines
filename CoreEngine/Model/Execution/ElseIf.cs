@@ -13,6 +13,8 @@ namespace CoreEngine.Model.Execution
 
         public ElseIf(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _cond = element.Attribute("cond").Value;
 
             _content = new Lazy<List<ExecutableContent>>(() =>
@@ -30,6 +32,8 @@ namespace CoreEngine.Model.Execution
 
         public bool ConditionalExecute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             var result = context.Eval<bool>(_cond);
 
             if (result)

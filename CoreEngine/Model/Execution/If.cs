@@ -16,6 +16,8 @@ namespace CoreEngine.Model.Execution
         public If(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _cond = element.Attribute("cond").Value;
 
             _else = new Lazy<Else>(() =>
@@ -52,6 +54,8 @@ namespace CoreEngine.Model.Execution
 
         public override void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             var result = context.Eval<bool>(_cond);
 
             if (result)

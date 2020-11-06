@@ -14,6 +14,8 @@ namespace CoreEngine.Model.Execution
         public Assign(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _location = element.Attribute("location").Value;
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
             _body = element.Value ?? string.Empty;
@@ -21,6 +23,8 @@ namespace CoreEngine.Model.Execution
 
         public override void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             if (!string.IsNullOrWhiteSpace(_expression))
             {
                 context.SetDataValue(_location, context.Eval<object>(_expression));

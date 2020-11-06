@@ -10,6 +10,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public Content(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
             _body = element.Value ?? string.Empty;
         }

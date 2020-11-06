@@ -13,6 +13,8 @@ namespace CoreEngine.Model.States
 
         public Finalize(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _content = new Lazy<List<ExecutableContent>>(() =>
             {
                 var content = new List<ExecutableContent>();

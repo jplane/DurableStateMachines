@@ -13,6 +13,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public Param(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _name = element.Attribute("name").Value;
             _location = element.Attribute("location")?.Value ?? string.Empty;
             _expression = element.Attribute("expr")?.Value ?? string.Empty;

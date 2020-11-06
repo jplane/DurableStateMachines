@@ -13,6 +13,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public Donedata(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _content = new Lazy<Content>(() =>
             {
                 var node = element.ScxmlElement("content");

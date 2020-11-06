@@ -14,6 +14,8 @@ namespace CoreEngine.Model.States
         public HistoryState(XElement element, State parent)
             : base(element, parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _type = (HistoryType) Enum.Parse(typeof(HistoryType),
                                              element.Attribute("type")?.Value ?? "shallow",
                                              true);
@@ -36,7 +38,7 @@ namespace CoreEngine.Model.States
                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
                                     RootState root)
         {
-            var transition = this._transitions.Value.Single();
+            var transition = _transitions.Value.Single();
 
             transition.StoreDefaultHistoryContent(_parent.Id, defaultHistoryContent);
 

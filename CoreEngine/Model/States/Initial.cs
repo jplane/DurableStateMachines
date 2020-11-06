@@ -11,6 +11,8 @@ namespace CoreEngine.Model.States
 
         public Initial(XElement element, State parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _transition = new Lazy<Transition>(() =>
             {
                 var node = element.ScxmlElement("transition");

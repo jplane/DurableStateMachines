@@ -22,6 +22,8 @@ namespace CoreEngine.Model.States
         public RootState(XElement element)
             : base(element, null)
         {
+            element.CheckArgNull(nameof(element));
+
             _name = element.Attribute("name")?.Value ?? string.Empty;
 
             _xmlns = element.Attribute("xmlns").Value;
@@ -101,6 +103,11 @@ namespace CoreEngine.Model.States
         public override Transition GetInitialStateTransition()
         {
             return _initialTransition.Value ?? base.GetInitialStateTransition();
+        }
+
+        public override void RecordHistory(ExecutionContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 

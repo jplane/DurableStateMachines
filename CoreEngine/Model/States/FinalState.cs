@@ -13,6 +13,8 @@ namespace CoreEngine.Model.States
         public FinalState(XElement element, State parent)
             : base(element, parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _donedata = new Lazy<Donedata>(() =>
             {
                 var node = element.ScxmlElement("donedata");

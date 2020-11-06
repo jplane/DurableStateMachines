@@ -15,6 +15,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public Data(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _id = element.Attribute("id").Value;
             _source = element.Attribute("src")?.Value ?? string.Empty;
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
@@ -23,6 +25,8 @@ namespace CoreEngine.Model.DataManipulation
 
         public void Init(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             if (! string.IsNullOrWhiteSpace(_expression))
             {
                 context.SetDataValue(_id, context.Eval<object>(_expression));

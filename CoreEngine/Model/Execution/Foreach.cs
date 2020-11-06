@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Collections;
+using System.Diagnostics;
 
 namespace CoreEngine.Model.Execution
 {
@@ -17,6 +18,8 @@ namespace CoreEngine.Model.Execution
         public Foreach(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _arrayExpression = element.Attribute("array").Value;
 
             _item = element.Attribute("item").Value;
@@ -38,7 +41,11 @@ namespace CoreEngine.Model.Execution
 
         public override void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             var enumerable = context.Eval<IEnumerable>(_arrayExpression);
+
+            Debug.Assert(enumerable != null);
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
@@ -59,10 +66,6 @@ namespace CoreEngine.Model.Execution
                     {
                         content.Execute(context);
                     }
-                }
-                catch (Exception ex)
-                {
-                    context.EnqueueInternal("error.execution");
                 }
                 finally
                 {

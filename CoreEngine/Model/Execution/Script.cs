@@ -13,6 +13,8 @@ namespace CoreEngine.Model.Execution
         public Script(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _source = element.Attribute("src")?.Value ?? string.Empty;
             _body = element.Value ?? string.Empty;
         }

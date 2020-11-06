@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml.Linq;
@@ -12,16 +13,22 @@ namespace CoreEngine.Model.Execution
 
         protected ExecutableContent(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             _element = element;
         }
 
-        public static XObject GetXObject(ExecutableContent content)
+        public static XObject GetXObject(ExecutableContent context)
         {
-            return content._element;
+            context.CheckArgNull(nameof(context));
+
+            return context._element;
         }
 
         public static ExecutableContent Create(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
             ExecutableContent content = null;
 
             switch (element.Name.LocalName)
@@ -58,6 +65,8 @@ namespace CoreEngine.Model.Execution
                     content = new Assign(element);
                     break;
             }
+
+            Debug.Assert(content != null);
 
             return content;
         }

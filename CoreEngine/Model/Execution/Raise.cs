@@ -12,11 +12,15 @@ namespace CoreEngine.Model.Execution
         public Raise(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _event = element.Attribute("event").Value;
         }
 
         public override void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             context.EnqueueInternal(_event);
         }
     }

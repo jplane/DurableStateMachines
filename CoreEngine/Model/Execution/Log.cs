@@ -15,6 +15,8 @@ namespace CoreEngine.Model.Execution
         public Log(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _label = element.Attribute("label")?.Value ?? string.Empty; ;
 
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
@@ -22,6 +24,8 @@ namespace CoreEngine.Model.Execution
 
         public override void Execute(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             if (!string.IsNullOrWhiteSpace(_expression))
             {
                 var message = context.Eval<string>(_expression);

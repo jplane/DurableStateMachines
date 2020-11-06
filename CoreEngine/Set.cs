@@ -17,6 +17,8 @@ namespace CoreEngine
 
         public Set(IEnumerable<T> items)
         {
+            items.CheckArgNull(nameof(items));
+
             foreach (var item in items)
             {
                 this.Add(item);
@@ -43,6 +45,8 @@ namespace CoreEngine
 
         public void Union(IEnumerable<T> items)
         {
+            items.CheckArgNull(nameof(items));
+
             foreach (var item in items)
             {
                 Add(item);
@@ -51,6 +55,8 @@ namespace CoreEngine
 
         public bool HasIntersection(IEnumerable<T> items)
         {
+            items.CheckArgNull(nameof(items));
+
             if (IsEmpty())
             {
                 return false;
@@ -66,7 +72,9 @@ namespace CoreEngine
 
         public IEnumerable<T> Sort(Func<T, XObject> getXObj, bool reverse = false)
         {
-            var list = _items.ToArray().ToList();
+            getXObj.CheckArgNull(nameof(getXObj));
+
+            var list = _items.ToArray().ToList();   // make a copy
 
             var compareFunc = reverse ?
                                 (Comparison<XObject>) XmlExtensions.GetReverseDocumentOrder :

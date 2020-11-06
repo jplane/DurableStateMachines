@@ -7,6 +7,7 @@ using System.Threading;
 using CoreEngine.Model;
 using CoreEngine.Model.States;
 using CoreEngine.Model.Execution;
+using System.Diagnostics;
 
 namespace CoreEngine
 {
@@ -17,6 +18,8 @@ namespace CoreEngine
 
         public Interpreter(XDocument xml)
         {
+            xml.CheckArgNull(nameof(xml));
+
             _root = new RootState(xml.Root);
             _executionContext = new ExecutionContext();
         }
@@ -132,6 +135,8 @@ namespace CoreEngine
 
         private void Microstep(IEnumerable<Transition> enabledTransitions)
         {
+            Debug.Assert(enabledTransitions != null);
+
             ExitStates(enabledTransitions);
             
             foreach (var transition in enabledTransitions)
@@ -146,6 +151,8 @@ namespace CoreEngine
         {
             var exitSet = ComputeExitSet(enabledTransitions);
 
+            Debug.Assert(exitSet != null);
+
             foreach (var state in exitSet)
             {
                 _executionContext.StatesToInvoke.Remove(state);
@@ -153,7 +160,7 @@ namespace CoreEngine
 
             foreach (var state in exitSet.Sort(State.GetXObject, true))
             {
-                state.RecordHistory(_executionContext, _root);
+                state.RecordHistory(_executionContext);
 
                 state.Exit(_executionContext);
             }
@@ -161,6 +168,8 @@ namespace CoreEngine
 
         private Set<State> ComputeExitSet(IEnumerable<Transition> transitions)
         {
+            Debug.Assert(transitions != null);
+
             var statesToExit = new Set<State>();
 
             foreach (var transition in transitions)
@@ -196,6 +205,8 @@ namespace CoreEngine
 
         private Set<Transition> SelectTransitions(Func<Transition, bool> predicate)
         {
+            Debug.Assert(predicate != null);
+
             var enabledTransitions = new Set<Transition>();
 
             var atomicStates = _executionContext.Configuration
@@ -236,6 +247,8 @@ namespace CoreEngine
 
         private Set<Transition> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
         {
+            Debug.Assert(enabledTransitions != null);
+
             var filteredTransitions = new Set<Transition>();
 
             foreach (var transition1 in enabledTransitions)
@@ -299,6 +312,8 @@ namespace CoreEngine
                                      Set<State> statesForDefaultEntry,
                                      Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            Debug.Assert(enabledTransitions != null);
+
             foreach (var transition in enabledTransitions)
             {
                 foreach (var state in transition.GetTargetStates(_root))
@@ -323,6 +338,9 @@ namespace CoreEngine
                                               Set<State> statesForDefaultEntry,
                                               Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            Debug.Assert(state != null);
+            Debug.Assert(statesToEnter != null);
+
             var ancestors = state.GetProperAncestors(ancestor);
 
             foreach (var anc in ancestors)
@@ -349,6 +367,10 @@ namespace CoreEngine
                                                 Set<State> statesForDefaultEntry,
                                                 Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            Debug.Assert(state != null);
+            Debug.Assert(statesToEnter != null);
+            Debug.Assert(statesForDefaultEntry != null);
+
             if (state.IsHistoryState)
             {
                 if (_executionContext.TryGetHistoryValue(state.Id, out IEnumerable<State> states))

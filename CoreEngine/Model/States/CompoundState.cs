@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using System.Diagnostics;
 
 namespace CoreEngine.Model.States
 {
@@ -34,6 +35,8 @@ namespace CoreEngine.Model.States
 
         public override IEnumerable<State> GetChildStates()
         {
+            Debug.Assert(_states != null);
+
             return _states.Value.Where(s => s is AtomicState ||
                                             s is CompoundState ||
                                             s is ParallelState ||
@@ -72,6 +75,27 @@ namespace CoreEngine.Model.States
                 {
                     child.InitDatamodel(context, recursive);
                 }
+            }
+        }
+
+        public override void RecordHistory(ExecutionContext context)
+        {
+            context.CheckArgNull(nameof(context));
+
+            foreach (var history in _states.Value.OfType<HistoryState>())
+            {
+                Func<State, bool> predicate;
+
+                if (history.IsDeepHistoryState)
+                {
+                    predicate = s => s.IsAtomic && s.IsDescendent(this);
+                }
+                else
+                {
+                    predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
+                }
+
+                context.StoreHistoryValue(history.Id, context.Configuration.Where(predicate));
             }
         }
     }

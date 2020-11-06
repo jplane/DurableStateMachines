@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -13,26 +14,36 @@ namespace CoreEngine
 
         public static XElement ScxmlElement(this XElement element, string name)
         {
+            element.CheckArgNull(nameof(element));
+
             return element.Element($"{xmlns}{name}");
         }
 
         public static IEnumerable<XElement> ScxmlElements(this XElement element, string name)
         {
+            element.CheckArgNull(nameof(element));
+
             return element.Elements($"{xmlns}{name}");
         }
 
         public static bool ScxmlNameEquals(this XElement element, string localName)
         {
+            element.CheckArgNull(nameof(element));
+
             return element.Name == $"{xmlns}{localName}";
         }
 
         public static bool ScxmlNameIn(this XElement element, params string[] localNames)
         {
+            element.CheckArgNull(nameof(element));
+
             return localNames.Any(n => element.ScxmlNameEquals(n));
         }
 
         private static XObject[] GetElementsAndAttributes(this XDocument document)
         {
+            Debug.Assert(document != null);
+
             var result = document.Annotation<XObject[]>();
 
             if (result == null)
@@ -59,6 +70,8 @@ namespace CoreEngine
 
         private static int GetDocumentPosition(this XObject xobj)
         {
+            Debug.Assert(xobj != null);
+
             var metadata = xobj.Annotation<XObjectMetadata>();
 
             if (metadata == null)

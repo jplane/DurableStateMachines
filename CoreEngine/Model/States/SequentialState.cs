@@ -14,6 +14,8 @@ namespace CoreEngine.Model.States
         public SequentialState(XElement element, State parent)
             : base(element, parent)
         {
+            element.CheckArgNull(nameof(element));
+
             _initialTransition = new Lazy<Transition>(() =>
             {
                 var attr = element.Attribute("initial");
@@ -81,25 +83,6 @@ namespace CoreEngine.Model.States
             else
             {
                 return base.GetInitialStateTransition();
-            }
-        }
-
-        public override void RecordHistory(ExecutionContext context, RootState root)
-        {
-            foreach (var history in _states.Value.OfType<HistoryState>())
-            {
-                Func<State, bool> predicate;
-
-                if (history.IsDeepHistoryState)
-                {
-                    predicate = s => s.IsAtomic && s.IsDescendent(this);
-                }
-                else
-                {
-                    predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
-                }
-
-                context.StoreHistoryValue(history.Id, context.Configuration.Where(predicate));
             }
         }
 

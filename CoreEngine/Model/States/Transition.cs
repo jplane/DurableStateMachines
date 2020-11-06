@@ -22,6 +22,9 @@ namespace CoreEngine.Model.States
 
         public Transition(XAttribute attribute, State source)
         {
+            attribute.CheckArgNull(nameof(attribute));
+            source.CheckArgNull(nameof(source));
+
             _xobj = attribute;
             _content = new Lazy<List<ExecutableContent>>();
             _target = attribute.Value;
@@ -33,6 +36,9 @@ namespace CoreEngine.Model.States
 
         public Transition(XElement element, State source)
         {
+            element.CheckArgNull(nameof(element));
+            source.CheckArgNull(nameof(source));
+
             _xobj = element;
 
             _target = element.Attribute("target")?.Value ?? string.Empty;
@@ -62,11 +68,15 @@ namespace CoreEngine.Model.States
 
         public static XObject GetXObject(Transition transition)
         {
+            transition.CheckArgNull(nameof(transition));
+
             return transition._xobj;
         }
 
         public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
+
             defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
         }
 
@@ -76,6 +86,8 @@ namespace CoreEngine.Model.States
 
         public bool MatchesEvent(Event evt)
         {
+            evt.CheckArgNull(nameof(evt));
+
             if (HasEvent)
             {
                 return _events.Split(" ").Any(evtId => string.Compare(evtId,
@@ -90,6 +102,8 @@ namespace CoreEngine.Model.States
 
         public bool EvaluateCondition(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             return string.IsNullOrWhiteSpace(_conditionExpr) ? true : context.Eval<bool>(_conditionExpr);
         }
 
@@ -103,11 +117,15 @@ namespace CoreEngine.Model.States
 
         public bool IsSourceDescendent(Transition transition)
         {
+            transition.CheckArgNull(nameof(transition));
+
             return _source.IsDescendent(transition._source);
         }
 
         public IEnumerable<State> GetTargetStates(RootState root)
         {
+            root.CheckArgNull(nameof(root));
+
             if (string.IsNullOrWhiteSpace(_target))
             {
                 return Enumerable.Empty<State>();
@@ -120,6 +138,8 @@ namespace CoreEngine.Model.States
 
         public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
+            context.CheckArgNull(nameof(context));
+
             var targets = new Set<State>();
 
             foreach (var state in GetTargetStates(root))

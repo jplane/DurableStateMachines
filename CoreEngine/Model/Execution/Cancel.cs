@@ -13,6 +13,8 @@ namespace CoreEngine.Model.Execution
         public Cancel(XElement element)
             : base(element)
         {
+            element.CheckArgNull(nameof(element));
+
             _sendid = element.Attribute("sendid")?.Value ?? string.Empty;
             _sendidExpr = element.Attribute("sendidexpr")?.Value ?? string.Empty;
         }

@@ -15,11 +15,15 @@ namespace CoreEngine
 
         public ExpressionEvaluator(ExecutionContext context)
         {
+            context.CheckArgNull(nameof(context));
+
             _context = context;
         }
 
         public object Eval(string expression)
         {
+            expression.CheckArgNull(nameof(expression));
+
             var globals = new ScriptGlobals
             {
                 data = _context.ScriptData

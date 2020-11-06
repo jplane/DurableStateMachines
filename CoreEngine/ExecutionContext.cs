@@ -120,6 +120,8 @@ namespace CoreEngine
 
         internal void StoreHistoryValue(string key, IEnumerable<State> states)
         {
+            states.CheckArgNull(nameof(states));
+
             _historyValues[key] = states.ToArray();
         }
     }
