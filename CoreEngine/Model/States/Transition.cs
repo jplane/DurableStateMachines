@@ -91,9 +91,19 @@ namespace CoreEngine.Model.States
 
             if (HasEvent)
             {
-                return _events.Split(" ").Any(evtId => string.Compare(evtId,
-                                                                      evt.Name,
-                                                                      StringComparison.InvariantCultureIgnoreCase) == 0);
+                foreach (var candidateEvt in _events.Split(" "))
+                {
+                    if (candidateEvt == "*")
+                    {
+                        return true;
+                    }
+                    else if (evt.Name.ToLowerInvariant().StartsWith(candidateEvt.TrimEnd('*', '.').ToLowerInvariant()))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
             else
             {
