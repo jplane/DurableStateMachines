@@ -20,11 +20,15 @@ namespace CoreEngine.Model.Execution
             _body = element.Value ?? string.Empty;
         }
 
-        public override async Task Execute(ExecutionContext context)
+        protected override async Task _Execute(ExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(_body))
             {
                 await context.Eval<object>(_body);
+            }
+            else
+            {
+                throw new NotImplementedException();
             }
         }
     }

@@ -61,9 +61,23 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public override Task Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
-            throw new NotImplementedException();
+            if (!string.IsNullOrWhiteSpace(_idLocation))
+            {
+                context[_idLocation] = Guid.NewGuid().ToString("N");
+            }
+
+            try
+            {
+                return Task.CompletedTask;
+            }
+            catch(Exception ex)
+            {
+                context.EnqueueCommunicationError(ex);
+
+                return Task.CompletedTask;
+            }
         }
     }
 }

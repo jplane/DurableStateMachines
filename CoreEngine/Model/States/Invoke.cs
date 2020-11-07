@@ -10,6 +10,7 @@ namespace CoreEngine.Model.States
 {
     internal class Invoke
     {
+        private readonly string _parentId;
         private readonly bool _autoforward;
         private readonly string _type;
         private readonly string _typeExpr;
@@ -22,9 +23,12 @@ namespace CoreEngine.Model.States
         private readonly Lazy<Finalize> _finalize;
         private readonly Lazy<List<Param>> _params;
 
-        public Invoke(XElement element)
+        public Invoke(XElement element, State parent)
         {
             element.CheckArgNull(nameof(element));
+            parent.CheckArgNull(nameof(parent));
+
+            _parentId = parent.Id;
 
             _type = element.Attribute("type")?.Value ?? string.Empty;
             _typeExpr = element.Attribute("typeexpr")?.Value ?? string.Empty;
@@ -90,14 +94,28 @@ namespace CoreEngine.Model.States
 
         public Task Execute(ExecutionContext context)
         {
-            return Task.CompletedTask;
+            if (!string.IsNullOrWhiteSpace(_idLocation))
+            {
+                context[_idLocation] = $"{_parentId}.{Guid.NewGuid():N}";
+            }
+
+            try
+            {
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueCommunicationError(ex);
+
+                return Task.CompletedTask;
+            }
         }
 
         public void Cancel(ExecutionContext context)
         {
         }
 
-        public void ProcessExternalEvent(ExecutionContext context, Event externalEvent)
+        public Task ProcessExternalEvent(ExecutionContext context, Event externalEvent)
         {
             externalEvent.CheckArgNull(nameof(externalEvent));
 
@@ -112,6 +130,8 @@ namespace CoreEngine.Model.States
             {
                 // send events to service
             }
+
+            return Task.CompletedTask;
         }
 
         private void ApplyFinalize(Event externalEvent)

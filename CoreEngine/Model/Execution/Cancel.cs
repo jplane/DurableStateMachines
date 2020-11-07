@@ -20,7 +20,7 @@ namespace CoreEngine.Model.Execution
             _sendidExpr = element.Attribute("sendidexpr")?.Value ?? string.Empty;
         }
 
-        public override Task Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

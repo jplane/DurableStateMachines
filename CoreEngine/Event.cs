@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CoreEngine
 {
     public class Event
     {
+        private readonly Dictionary<string, object> _data =
+            new Dictionary<string, object>();
+
         public Event(string name)
         {
             this.Name = name;
@@ -27,7 +31,11 @@ namespace CoreEngine
 
         internal string InvokeId { get; set; }
 
-        public object Data { get; set; }
+        public object this[string key]
+        {
+            get => _data[key];
+            internal set => _data[key] = value;
+        }
     }
 
     internal enum EventType

@@ -22,7 +22,7 @@ namespace CoreEngine.Model.Execution
             _body = element.Value ?? string.Empty;
         }
 
-        public override async Task Execute(ExecutionContext context)
+        protected override async Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 

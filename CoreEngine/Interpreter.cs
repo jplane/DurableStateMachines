@@ -22,7 +22,12 @@ namespace CoreEngine
             xml.CheckArgNull(nameof(xml));
 
             _root = new RootState(xml.Root);
+
             _executionContext = new ExecutionContext();
+
+            _executionContext.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
+
+            _executionContext.SetDataValue("_name", _root.Name);
         }
 
         public ExecutionContext Context => _executionContext;
@@ -38,7 +43,7 @@ namespace CoreEngine
 
             _root.ExecuteScript(_executionContext);
 
-            EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
+            await EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
 
             await DoEventLoop();
         }
@@ -71,7 +76,7 @@ namespace CoreEngine
 
                     if (! enabledTransitions.IsEmpty())
                     {
-                        Microstep(enabledTransitions);
+                        await Microstep(enabledTransitions);
                     }
                 }
 
@@ -102,14 +107,14 @@ namespace CoreEngine
 
                 foreach (var state in _executionContext.Configuration)
                 {
-                    state.ProcessExternalEvent(_executionContext, externalEvent);
+                    await state.ProcessExternalEvent(_executionContext, externalEvent);
                 }
 
                 enabledTransitions = await SelectTransitions(externalEvent);
 
                 if (! enabledTransitions.IsEmpty())
                 {
-                    Microstep(enabledTransitions);
+                    await Microstep(enabledTransitions);
                 }
             }
 
@@ -134,7 +139,7 @@ namespace CoreEngine
             //  generated in that session when the <invoke> was executed.
         }
 
-        private void Microstep(IEnumerable<Transition> enabledTransitions)
+        private async Task Microstep(IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(enabledTransitions != null);
 
@@ -142,10 +147,10 @@ namespace CoreEngine
             
             foreach (var transition in enabledTransitions)
             {
-                transition.ExecuteContent(_executionContext);
+                await transition.ExecuteContent(_executionContext);
             }
 
-            EnterStates(enabledTransitions);
+            await EnterStates(enabledTransitions);
         }
 
         private void ExitStates(IEnumerable<Transition> enabledTransitions)
@@ -293,7 +298,7 @@ namespace CoreEngine
             return filteredTransitions;
         }
 
-        private void EnterStates(IEnumerable<Transition> enabledTransitions)
+        private async Task EnterStates(IEnumerable<Transition> enabledTransitions)
         {
             var statesToEnter = new Set<State>();
 
@@ -305,7 +310,7 @@ namespace CoreEngine
 
             foreach (var state in statesToEnter.Sort(State.GetXObject))
             {
-                state.Enter(_executionContext, _root, statesForDefaultEntry, defaultHistoryContent);
+                await state.Enter(_executionContext, _root, statesForDefaultEntry, defaultHistoryContent);
             }
         }
 

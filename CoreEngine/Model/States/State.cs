@@ -55,7 +55,7 @@ namespace CoreEngine.Model.States
             {
                 var nodes = element.ScxmlElements("invoke");
 
-                return new List<Invoke>(nodes.Select(n => new Invoke(n)));
+                return new List<Invoke>(nodes.Select(n => new Invoke(n, this)));
             });
 
             _datamodel = new Lazy<Datamodel>(() =>
@@ -137,11 +137,11 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public void ProcessExternalEvent(ExecutionContext context, Event evt)
+        public async Task ProcessExternalEvent(ExecutionContext context, Event evt)
         {
             foreach (var invoke in _invokes.Value)
             {
-                invoke.ProcessExternalEvent(context, evt);
+                await invoke.ProcessExternalEvent(context, evt);
             }
         }
 
@@ -159,18 +159,10 @@ namespace CoreEngine.Model.States
             return set;
         }
 
-        private void CancelOutstandingInvokes(ExecutionContext context)
-        {
-            foreach (var invoke in _invokes.Value)
-            {
-                invoke.Cancel(context);
-            }
-        }
-
-        public void Enter(ExecutionContext context,
-                          RootState root,
-                          Set<State> statesForDefaultEntry,
-                          Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        public async Task Enter(ExecutionContext context,
+                                RootState root,
+                                Set<State> statesForDefaultEntry,
+                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             context.CheckArgNull(nameof(context));
             root.CheckArgNull(nameof(root));
@@ -183,7 +175,7 @@ namespace CoreEngine.Model.States
 
             if (root.Binding == Databinding.Late && _firstEntry)
             {
-                this.InitDatamodel(context, false);
+                await this.InitDatamodel(context, false);
 
                 _firstEntry = false;
             }
@@ -194,14 +186,14 @@ namespace CoreEngine.Model.States
             {
                 var transition = this.GetInitialStateTransition();
 
-                transition.ExecuteContent(context);
+                await transition.ExecuteContent(context);
             }
 
             if (defaultHistoryContent.TryGetValue(this.Id, out Set<ExecutableContent> set))
             {
                 foreach (var content in set)
                 {
-                    content.Execute(context);
+                    await content.Execute(context);
                 }
             }
 
@@ -236,7 +228,10 @@ namespace CoreEngine.Model.States
 
             _onExit.Value?.Execute(context);
 
-            CancelOutstandingInvokes(context);
+            foreach (var invoke in _invokes.Value)
+            {
+                invoke.Cancel(context);
+            }
 
             context.Configuration.Remove(this);
         }

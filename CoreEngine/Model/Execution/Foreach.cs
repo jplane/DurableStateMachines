@@ -40,17 +40,20 @@ namespace CoreEngine.Model.Execution
             });
         }
 
-        public override async Task Execute(ExecutionContext context)
+        protected override async Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var enumerable = await context.Eval<IEnumerable>(_arrayExpression);
 
-            Debug.Assert(enumerable != null);
+            if (enumerable == null)
+            {
+                return;
+            }
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
-            // TODO: needs to support setting a stack of context values
+            Debug.Assert(_item != null);
 
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {

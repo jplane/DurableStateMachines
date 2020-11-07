@@ -72,6 +72,18 @@ namespace CoreEngine.Model.Execution
             return content;
         }
 
-        public abstract Task Execute(ExecutionContext context);
+        protected abstract Task _Execute(ExecutionContext context);
+
+        public async Task Execute(ExecutionContext context)
+        {
+            try
+            {
+                await _Execute(context);
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueExecutionError(ex);
+            }
+        }
     }
 }

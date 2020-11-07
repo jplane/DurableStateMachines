@@ -28,13 +28,20 @@ namespace CoreEngine.Model.DataManipulation
         {
             context.CheckArgNull(nameof(context));
 
-            if (! string.IsNullOrWhiteSpace(_expression))
+            try
             {
-                context.SetDataValue(_id, await context.Eval<object>(_expression));
+                if (!string.IsNullOrWhiteSpace(_expression))
+                {
+                    context.SetDataValue(_id, await context.Eval<object>(_expression));
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new NotImplementedException();
+                context.EnqueueExecutionError(ex);
             }
         }
     }

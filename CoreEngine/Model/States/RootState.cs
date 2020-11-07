@@ -91,6 +91,8 @@ namespace CoreEngine.Model.States
 
         public Databinding Binding => _binding;
 
+        public string Name => _name;
+
         public override string Id => "scxml_root";
 
         public override bool IsScxmlRoot => true;

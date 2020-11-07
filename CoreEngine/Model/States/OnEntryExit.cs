@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using CoreEngine.Model.Execution;
 
@@ -27,13 +28,13 @@ namespace CoreEngine.Model.States
             });
         }
 
-        public void Execute(ExecutionContext context)
+        public async Task Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             foreach (var content in _content.Value)
             {
-                content.Execute(context);
+                await content.Execute(context);
             }
         }
     }

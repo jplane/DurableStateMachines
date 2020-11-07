@@ -4,7 +4,9 @@ using Microsoft.CSharp.RuntimeBinder;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,5 +45,12 @@ namespace CoreEngine
     public class ScriptGlobals
     {
         public dynamic data { get; internal set; }
+
+        internal ExecutionContext _context { get; set; }
+
+        public bool In(params string[] states)
+        {
+            return _context.Configuration.Any(s => states.Contains(s.Id));
+        }
     }
 }

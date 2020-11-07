@@ -18,7 +18,7 @@ namespace CoreEngine.Model.Execution
             _event = element.Attribute("event").Value;
         }
 
-        public override Task Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 

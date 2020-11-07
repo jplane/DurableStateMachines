@@ -6,6 +6,7 @@ using CoreEngine.Model.States;
 using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace CoreEngine
 {
@@ -57,12 +58,56 @@ namespace CoreEngine
 
         internal Task<T> Eval<T>(string expression)
         {
-            return _eval.Eval<T>(expression);
+            try
+            {
+                return _eval.Eval<T>(expression);
+            }
+            catch(Exception ex)
+            {
+                return Task.FromException<T>(ex);
+            }
         }
 
-        internal void EnqueueInternal(string eventName)
+        internal void EnqueueInternal(string eventName, params object[] dataPairs)
         {
-            _internalQueue.Enqueue(new Event(eventName) { Type = EventType.Internal });
+            Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
+            Debug.Assert(dataPairs.Length % 2 == 0);
+
+            var evt = new Event(eventName)
+            {
+                Type = EventType.Internal
+            };
+
+            for (var idx = 0; idx < dataPairs.Length; idx+=2)
+            {
+                evt[(string) dataPairs[idx]] = dataPairs[idx + 1];
+            }
+
+            _internalQueue.Enqueue(evt);
+        }
+
+        internal void EnqueueCommunicationError(Exception ex)
+        {
+            var evt = new Event("error.communication")
+            {
+                Type = EventType.Platform
+            };
+
+            evt["exception"] = ex;
+
+            _internalQueue.Enqueue(evt);
+        }
+
+        internal void EnqueueExecutionError(Exception ex)
+        {
+            var evt = new Event("error.execution")
+            {
+                Type = EventType.Platform
+            };
+
+            evt["exception"] = ex;
+
+            _internalQueue.Enqueue(evt);
         }
 
         internal bool HasInternalEvents => _internalQueue.Count > 0;

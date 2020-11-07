@@ -105,14 +105,27 @@ namespace CoreEngine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : await context.Eval<bool>(_conditionExpr);
+            async Task<bool> Eval(string condition)
+            {
+                try
+                {
+                    return await context.Eval<bool>(condition);
+                }
+                catch(Exception ex)
+                {
+                    context.EnqueueExecutionError(ex);
+                    return false;
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : await Eval(_conditionExpr);
         }
 
-        public void ExecuteContent(ExecutionContext context)
+        public async Task ExecuteContent(ExecutionContext context)
         {
             foreach (var content in _content.Value)
             {
-                content.Execute(context);
+                await content.Execute(context);
             }
         }
 
