@@ -28,7 +28,11 @@ namespace CoreEngine.Model.Execution
 
             if (!string.IsNullOrWhiteSpace(_expression))
             {
-                context.SetDataValue(_location, await context.Eval<object>(_expression));
+                var value = await context.Eval<object>(_expression);
+
+                context.SetDataValue(_location, value);
+
+                context.LogDebug($"Set {_location} = {value}");
             }
             else
             {

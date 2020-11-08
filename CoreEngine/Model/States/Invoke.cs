@@ -94,9 +94,15 @@ namespace CoreEngine.Model.States
 
         public Task Execute(ExecutionContext context)
         {
+            context.LogInformation($"Start: Invoke");
+
             if (!string.IsNullOrWhiteSpace(_idLocation))
             {
-                context[_idLocation] = $"{_parentId}.{Guid.NewGuid():N}";
+                var syntheticId = $"{_parentId}.{Guid.NewGuid():N}";
+
+                context.LogDebug($"Synthentic Id = {syntheticId}");
+
+                context[_idLocation] = syntheticId;
             }
 
             try
@@ -108,6 +114,10 @@ namespace CoreEngine.Model.States
                 context.EnqueueCommunicationError(ex);
 
                 return Task.CompletedTask;
+            }
+            finally
+            {
+                context.LogInformation($"End: Invoke");
             }
         }
 

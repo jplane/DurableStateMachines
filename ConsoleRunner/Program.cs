@@ -6,6 +6,9 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using System.Dynamic;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleRunner
 {
@@ -18,12 +21,15 @@ namespace ConsoleRunner
     {
         static void Main(string[] args)
         {
-            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-            Trace.AutoFlush = true;
+            var loggerFactory = LoggerFactory.Create(
+                    builder => builder.AddFilter("Default", LogLevel.Information)
+                                      .AddConsole());
 
             var xml = XDocument.Load("machine.xml");
 
             var interpreter = new Interpreter(xml);
+
+            interpreter.Context.Logger = loggerFactory.CreateLogger("StateChart");
 
             var task = interpreter.Run();
 

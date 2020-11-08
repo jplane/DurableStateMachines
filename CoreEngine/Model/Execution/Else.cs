@@ -32,9 +32,18 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            foreach (var content in _content.Value)
+            context.LogInformation("Start: Else.Execute");
+
+            try
             {
-                await content.Execute(context);
+                foreach (var content in _content.Value)
+                {
+                    await content.Execute(context);
+                }
+            }
+            finally
+            {
+                context.LogInformation("End: Else.Execute");
             }
         }
     }

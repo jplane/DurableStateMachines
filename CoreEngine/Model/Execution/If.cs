@@ -59,6 +59,8 @@ namespace CoreEngine.Model.Execution
 
             var result = await context.Eval<bool>(_cond);
 
+            context.LogDebug($"Condition = {result}");
+
             if (result)
             {
                 foreach (var content in _content.Value)

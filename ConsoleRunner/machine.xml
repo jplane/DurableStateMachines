@@ -12,20 +12,10 @@
   </datamodel>
 
   <state id="off">
-    <onentry>
-      <log expr="&quot;enter off state&quot;" />
-    </onentry>
     <transition event="turn.on" target="on"/>
-    <onexit>
-      <log expr="&quot;exit off state&quot;" />
-    </onexit>
   </state>
 
   <state id="on">
-    <onentry>
-      <log expr="&quot;enter on state&quot;" />
-    </onentry>
-
     <initial>
       <transition target="idle"/>
     </initial>
@@ -34,40 +24,20 @@
     <transition cond="data.timer &gt;= data.cook_time" target="off"/>
 
     <state id="idle">
-      <onentry>
-        <log expr="&quot;enter idle state&quot;" />
-      </onentry>
-
       <transition cond="data.door_closed" target="cooking"/>
       <transition event="door.close" target="cooking">
         <assign location="door_closed" expr="true"/>
       </transition>
-      
-      <onexit>
-        <log expr="&quot;exit idle state&quot;" />
-      </onexit>
     </state>
 
     <state id="cooking">
-      <onentry>
-        <log expr="&quot;enter cooking state&quot;" />
-      </onentry>
-      
       <transition event="door.open" target="idle">
         <assign location="door_closed" expr="false"/>
       </transition>
       <transition event="time">
         <assign location="timer" expr="data.timer + 1"/>
       </transition>
-
-      <onexit>
-        <log expr="&quot;exit cooking state&quot;" />
-      </onexit>
     </state>
-
-    <onexit>
-      <log expr="&quot;exit on state&quot;" />
-    </onexit>
 
   </state>
 

@@ -35,17 +35,28 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var result = await context.Eval<bool>(_cond);
+            context.LogInformation("Start: ElseIf.Execute");
 
-            if (result)
+            try
             {
-                foreach (var content in _content.Value)
-                {
-                    await content.Execute(context);
-                }
-            }
+                var result = await context.Eval<bool>(_cond);
 
-            return result;
+                context.LogDebug($"Condition = {result}");
+
+                if (result)
+                {
+                    foreach (var content in _content.Value)
+                    {
+                        await content.Execute(context);
+                    }
+                }
+
+                return result;
+            }
+            finally
+            {
+                context.LogInformation("End: ElseIf.Execute");
+            }
         }
     }
 }

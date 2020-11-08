@@ -76,6 +76,8 @@ namespace CoreEngine.Model.Execution
 
         public async Task Execute(ExecutionContext context)
         {
+            context.LogInformation($"Start: {this.GetType().Name}.Execute");
+
             try
             {
                 await _Execute(context);
@@ -83,6 +85,10 @@ namespace CoreEngine.Model.Execution
             catch (Exception ex)
             {
                 context.EnqueueExecutionError(ex);
+            }
+            finally
+            {
+                context.LogInformation($"End: {this.GetType().Name}.Execute");
             }
         }
     }

@@ -28,9 +28,18 @@ namespace CoreEngine.Model.DataManipulation
         {
             context.CheckArgNull(nameof(context));
 
-            foreach (var data in _data.Value)
+            context.LogInformation("Start: Datamodel.Init");
+
+            try
             {
-                await data.Init(context);
+                foreach (var data in _data.Value)
+                {
+                    await data.Init(context);
+                }
+            }
+            finally
+            {
+                context.LogInformation("End: Datamodel.Init");
             }
         }
     }

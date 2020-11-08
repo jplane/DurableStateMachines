@@ -169,6 +169,8 @@ namespace CoreEngine.Model.States
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
+            context.LogInformation($"Enter {this.GetType().Name}: Id {this.Id}");
+
             context.Configuration.Add(this);
 
             context.StatesToInvoke.Add(this);
@@ -225,6 +227,8 @@ namespace CoreEngine.Model.States
         public void Exit(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
+
+            context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
 
             _onExit.Value?.Execute(context);
 

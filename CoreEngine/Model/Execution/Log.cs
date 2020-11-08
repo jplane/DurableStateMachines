@@ -31,7 +31,7 @@ namespace CoreEngine.Model.Execution
             {
                 var message = await context.Eval<string>(_expression);
 
-                Trace.WriteLine(message);
+                context.LogInformation("Log: " + message);
             }
         }
     }

@@ -50,8 +50,12 @@ namespace CoreEngine
 
         private async Task DoEventLoop()
         {
+            _executionContext.LogInformation("Start: event loop");
+
             while (_executionContext.IsRunning)
             {
+                _executionContext.LogInformation("Start: event loop cycle");
+
                 Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
@@ -116,6 +120,8 @@ namespace CoreEngine
                 {
                     await Microstep(enabledTransitions);
                 }
+
+                _executionContext.LogInformation("End: event loop cycle");
             }
 
             foreach (var state in _executionContext.Configuration.Sort(State.GetXObject, true))
@@ -130,6 +136,8 @@ namespace CoreEngine
                     }
                 }
             }
+
+            _executionContext.LogInformation("End: event loop");
         }
 
         private void ReturnDoneEvent(State state)

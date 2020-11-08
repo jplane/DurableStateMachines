@@ -28,11 +28,17 @@ namespace CoreEngine.Model.DataManipulation
         {
             context.CheckArgNull(nameof(context));
 
+            context.LogDebug("Start: Data.Init");
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(_expression))
                 {
-                    context.SetDataValue(_id, await context.Eval<object>(_expression));
+                    var value = await context.Eval<object>(_expression);
+
+                    context.SetDataValue(_id, value);
+                    
+                    context.LogDebug($"Set {_id} = {value}");
                 }
                 else
                 {
@@ -42,6 +48,10 @@ namespace CoreEngine.Model.DataManipulation
             catch (Exception ex)
             {
                 context.EnqueueExecutionError(ex);
+            }
+            finally
+            {
+                context.LogInformation("End: Data.Init");
             }
         }
     }

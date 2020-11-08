@@ -7,6 +7,7 @@ using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace CoreEngine
 {
@@ -17,6 +18,7 @@ namespace CoreEngine
         private readonly Queue<Event> _internalQueue;
         private readonly Queue<Event> _externalQueue;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
+        private ILogger _logger;
 
         public ExecutionContext()
         {
@@ -28,6 +30,11 @@ namespace CoreEngine
         }
 
         public bool IsRunning { get; internal set; }
+
+        public ILogger Logger
+        {
+            set => _logger = value;
+        }
 
         public object this[string key]
         {
@@ -96,6 +103,8 @@ namespace CoreEngine
             evt["exception"] = ex;
 
             _internalQueue.Enqueue(evt);
+
+            _logger.LogError("Communication error", ex);
         }
 
         internal void EnqueueExecutionError(Exception ex)
@@ -108,6 +117,8 @@ namespace CoreEngine
             evt["exception"] = ex;
 
             _internalQueue.Enqueue(evt);
+
+            _logger.LogError("Execution error", ex);
         }
 
         internal bool HasInternalEvents => _internalQueue.Count > 0;
@@ -169,6 +180,16 @@ namespace CoreEngine
             states.CheckArgNull(nameof(states));
 
             _historyValues[key] = states.ToArray();
+        }
+
+        internal void LogDebug(string message)
+        {
+            _logger?.LogDebug(message);
+        }
+
+        internal void LogInformation(string message)
+        {
+            _logger?.LogInformation(message);
         }
     }
 }

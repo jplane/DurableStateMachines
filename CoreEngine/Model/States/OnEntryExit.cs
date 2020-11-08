@@ -10,10 +10,13 @@ namespace CoreEngine.Model.States
     internal class OnEntryExit
     {
         private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly bool _isEntry;
 
         public OnEntryExit(XElement element)
         {
             element.CheckArgNull(nameof(element));
+
+            _isEntry = element.Name.LocalName.ToLowerInvariant() == "onentry";
 
             _content = new Lazy<List<ExecutableContent>>(() =>
             {
@@ -32,9 +35,20 @@ namespace CoreEngine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            foreach (var content in _content.Value)
+            var name = _isEntry ? "OnEntry" : "OnExit";
+
+            context.LogInformation($"Start: {name}");
+
+            try
             {
-                await content.Execute(context);
+                foreach (var content in _content.Value)
+                {
+                    await content.Execute(context);
+                }
+            }
+            finally
+            {
+                context.LogInformation($"End: {name}");
             }
         }
     }

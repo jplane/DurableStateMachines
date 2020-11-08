@@ -48,21 +48,28 @@ namespace CoreEngine.Model.Execution
 
             if (enumerable == null)
             {
+                context.LogDebug($"Foreach: Array is null");
                 return;
             }
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
+            context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
+
             Debug.Assert(_item != null);
 
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {
+                var item = shallowCopy[idx];
+
                 context.SetDataValue(_item, shallowCopy[idx]);
 
                 if (!string.IsNullOrWhiteSpace(_index))
                 {
                     context.SetDataValue(_index, idx);
                 }
+
+                context.LogDebug($"Foreach: Array item index {_index}");
 
                 try
                 {
