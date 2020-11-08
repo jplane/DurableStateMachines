@@ -86,6 +86,7 @@ namespace CoreEngine
 
                 if (! _executionContext.IsRunning)
                 {
+                    _executionContext.LogInformation("End: event loop cycle");
                     break;
                 }
 
@@ -98,6 +99,7 @@ namespace CoreEngine
 
                 if (_executionContext.HasInternalEvents)
                 {
+                    _executionContext.LogInformation("End: event loop cycle");
                     continue;
                 }
 
@@ -106,6 +108,7 @@ namespace CoreEngine
                 if (externalEvent.IsCancel)
                 {
                     _executionContext.IsRunning = false;
+                    _executionContext.LogInformation("End: event loop cycle");
                     continue;
                 }
 

@@ -16,11 +16,14 @@
 
   <ItemGroup>
     <Resource Include="Program.cs" />
-    <Resource Include="machine.xml" />
+    <Resource Include="microwave.xml" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="machine.xml">
+    <None Update="foreach.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="microwave.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

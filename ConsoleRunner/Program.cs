@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace ConsoleRunner
 {
@@ -25,24 +26,53 @@ namespace ConsoleRunner
                     builder => builder.AddFilter("Default", LogLevel.Information)
                                       .AddConsole());
 
-            var xml = XDocument.Load("machine.xml");
+            var logger = loggerFactory.CreateLogger("StateChart");
+
+            Task task;
+
+            using (var scope = logger.BeginScope(""))
+            {
+                //task = RunMicrowave(logger);
+
+                task = RunForeach(logger);
+            }
+
+            Task.WaitAll(Task.Delay(1000), task);
+        }
+
+        static Task RunForeach(ILogger logger)
+        {
+            return Run("foreach.xml", logger);
+        }
+
+        static Task RunMicrowave(ILogger logger)
+        {
+            return Run("microwave.xml", logger, interpreter =>
+            {
+                interpreter.Context.Enqueue("turn.on");
+
+                for (var i = 0; i < 5; i++)
+                {
+                    interpreter.Context.Enqueue("time");
+                }
+
+                interpreter.Context.Enqueue("cancel");
+            });
+        }
+
+        static Task Run(string xmldoc, ILogger logger, Action<Interpreter> action = null)
+        {
+            var xml = XDocument.Load(xmldoc);
 
             var interpreter = new Interpreter(xml);
 
-            interpreter.Context.Logger = loggerFactory.CreateLogger("StateChart");
+            interpreter.Context.Logger = logger;
 
             var task = interpreter.Run();
 
-            interpreter.Context.Enqueue("turn.on");
+            action?.Invoke(interpreter);
 
-            for (var i = 0; i < 5; i++)
-            {
-                interpreter.Context.Enqueue("time");
-            }
-
-            interpreter.Context.Enqueue("cancel");
-
-            task.Wait();
+            return task;
         }
     }
 }
