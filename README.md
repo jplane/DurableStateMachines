@@ -20,7 +20,7 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 
 - useful abstractions to drive host-specific integration
 
-	- data model storage - read/write of named data locations is formally defined in statecharts, let's store that data in interesting places
+	- data model storage - Read/write of named data locations is formally defined in statecharts, let's store that data in interesting places
 		- Azure Blob Storage
 		- Azure Table Storage
 		- SQL database
@@ -28,7 +28,7 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 		- Azure Key Vault (for secrets)
 		- etc.
 
-	- statechart metadata storage - SCXML is (surprise!) XML-based, which makes the spec much more interesting from an information model perspective than a physical format one. let's read/write statechart metadata in the same places as above
+	- statechart metadata storage - The statechart data model abstractions are defined [here](./CoreEngine.Abstractions/Model), the SCXML provider implementation is [here](./CoreEngine.ModelProvider.Xml). Where else can we store it? (see above)
 
 	- external service invocation - statecharts [formalize](https://www.w3.org/TR/scxml/#invoke) external service communication, we can define some concrete supported implementations
 		- HTTP/webhook
