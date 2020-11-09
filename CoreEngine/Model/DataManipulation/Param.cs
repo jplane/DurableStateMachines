@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
@@ -7,17 +8,13 @@ namespace CoreEngine.Model.DataManipulation
 {
     internal class Param
     {
-        private readonly string _name;
-        private readonly string _location;
-        private readonly string _expression;
+        private readonly IParamMetadata _metadata;
 
-        public Param(XElement element)
+        public Param(IParamMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _name = element.Attribute("name").Value;
-            _location = element.Attribute("location")?.Value ?? string.Empty;
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
+            _metadata = metadata;
         }
     }
 }

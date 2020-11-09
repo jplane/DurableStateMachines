@@ -5,72 +5,50 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using Nito.AsyncEx;
 
 namespace CoreEngine.Model.States
 {
     internal class Invoke
     {
+        private readonly IServiceMetadata _metadata;
         private readonly string _parentId;
-        private readonly bool _autoforward;
-        private readonly string _type;
-        private readonly string _typeExpr;
-        private readonly string _id;
-        private readonly string _idLocation;
-        private readonly string _source;
-        private readonly string _sourceExpr;
-        private readonly string _namelist;
-        private readonly Lazy<Content> _content;
-        private readonly Lazy<Finalize> _finalize;
-        private readonly Lazy<List<Param>> _params;
+        private readonly AsyncLazy<Content> _content;
+        private readonly AsyncLazy<Finalize> _finalize;
+        private readonly AsyncLazy<Param[]> _params;
 
-        public Invoke(XElement element, State parent)
+        public Invoke(IServiceMetadata metadata, State parent)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
             parent.CheckArgNull(nameof(parent));
 
+            _metadata = metadata;
             _parentId = parent.Id;
 
-            _type = element.Attribute("type")?.Value ?? string.Empty;
-            _typeExpr = element.Attribute("typeexpr")?.Value ?? string.Empty;
-
-            _id = element.Attribute("id")?.Value ?? string.Empty;
-            _idLocation = element.Attribute("idlocation")?.Value ?? string.Empty;
-
-            _source = element.Attribute("src")?.Value ?? string.Empty;
-            _sourceExpr = element.Attribute("srcexpr")?.Value ?? string.Empty;
-
-            _namelist = element.Attribute("namelist")?.Value ?? string.Empty;
-
-            var afattr = element.Attribute("autoforward");
-            
-            if (afattr != null && bool.TryParse(afattr.Value, out bool result))
+            _content = new AsyncLazy<Content>(async () =>
             {
-                _autoforward = result;
-            }
-            else
-            {
-                _autoforward = false;
-            }
+                var meta = await metadata.GetContent();
 
-            _content = new Lazy<Content>(() =>
-            {
-                var node = element.ScxmlElement("content");
-
-                return node == null ? null : new Content(node);
+                if (meta != null)
+                    return new Content(meta);
+                else
+                    return null;
             });
 
-            _finalize = new Lazy<Finalize>(() =>
+            _finalize = new AsyncLazy<Finalize>(async () =>
             {
-                var node = element.ScxmlElement("finalize");
+                var meta = await metadata.GetFinalize();
 
-                return node == null ? null : new Finalize(node);
+                if (meta != null)
+                    return new Finalize(meta);
+                else
+                    return null;
             });
 
-            _params = new Lazy<List<Param>>(() =>
+            _params = new AsyncLazy<Param[]>(async () =>
             {
-                var nodes = element.ScxmlElements("param");
-
-                return new List<Param>(nodes.Select(n => new Param(n)));
+                return (await _metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
             });
         }
 
@@ -78,11 +56,11 @@ namespace CoreEngine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            if (! string.IsNullOrWhiteSpace(_id))
+            if (! string.IsNullOrWhiteSpace(_metadata.Id))
             {
-                return _id;
+                return _metadata.Id;
             }
-            else if (string.IsNullOrWhiteSpace(_idLocation) || !context.TryGet(_idLocation, out object value))
+            else if (string.IsNullOrWhiteSpace(_metadata.IdLocation) || !context.TryGet(_metadata.IdLocation, out object value))
             {
                 throw new InvalidOperationException("Unable to resolve invoke ID.");
             }
@@ -96,13 +74,13 @@ namespace CoreEngine.Model.States
         {
             context.LogInformation($"Start: Invoke");
 
-            if (!string.IsNullOrWhiteSpace(_idLocation))
+            if (!string.IsNullOrWhiteSpace(_metadata.IdLocation))
             {
                 var syntheticId = $"{_parentId}.{Guid.NewGuid():N}";
 
                 context.LogDebug($"Synthentic Id = {syntheticId}");
 
-                context[_idLocation] = syntheticId;
+                context[_metadata.IdLocation] = syntheticId;
             }
 
             try
@@ -136,7 +114,7 @@ namespace CoreEngine.Model.States
                 ApplyFinalize(externalEvent);
             }
 
-            if (_autoforward)
+            if (_metadata.Autoforward)
             {
                 // send events to service
             }

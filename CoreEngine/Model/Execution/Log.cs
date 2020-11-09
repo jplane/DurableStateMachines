@@ -5,31 +5,24 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CoreEngine.Abstractions.Model.Execution.Metadata;
 
 namespace CoreEngine.Model.Execution
 {
     internal class Log : ExecutableContent
     {
-        private readonly string _label;
-        private readonly string _expression;
-
-        public Log(XElement element)
-            : base(element)
+        public Log(ILogMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
-
-            _label = element.Attribute("label")?.Value ?? string.Empty; ;
-
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
         }
 
         protected override async Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            if (!string.IsNullOrWhiteSpace(_expression))
+            if (!string.IsNullOrWhiteSpace(((ILogMetadata) _metadata).Message))
             {
-                var message = await context.Eval<string>(_expression);
+                var message = await context.Eval<string>(((ILogMetadata) _metadata).Message);
 
                 context.LogInformation("Log: " + message);
             }

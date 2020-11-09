@@ -7,73 +7,74 @@ using CoreEngine.Model.Execution;
 using CoreEngine.Model.DataManipulation;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model;
 
 namespace CoreEngine.Model.States
 {
     internal abstract class State
     {
-        protected readonly XElement _element;
+        protected readonly IStateMetadata _metadata;
         protected readonly State _parent;
-        protected readonly Lazy<OnEntryExit> _onEntry;
-        protected readonly Lazy<OnEntryExit> _onExit;
-        protected readonly Lazy<List<Transition>> _transitions;
-        protected readonly Lazy<List<Invoke>> _invokes;
-        protected readonly Lazy<Datamodel> _datamodel;
+        protected readonly AsyncLazy<OnEntryExit> _onEntry;
+        protected readonly AsyncLazy<OnEntryExit> _onExit;
+        protected readonly AsyncLazy<Transition[]> _transitions;
+        protected readonly AsyncLazy<Invoke[]> _invokes;
+        protected readonly AsyncLazy<Datamodel> _datamodel;
 
         private bool _firstEntry;
 
-        protected State(XElement element, State parent)
+        protected State(IStateMetadata metadata, State parent)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
             _firstEntry = true;
-            _element = element;
+            _metadata = metadata;
             _parent = parent;
 
-            _onEntry = new Lazy<OnEntryExit>(() =>
+            _onEntry = new AsyncLazy<OnEntryExit>(async () =>
             {
-                var node = element.ScxmlElement("onentry");
+                var meta = await _metadata.GetOnEntry();
 
-                return node == null ? null : new OnEntryExit(node);
+                if (meta != null)
+                    return new OnEntryExit(meta);
+                else
+                    return null;
             });
 
-            _onExit = new Lazy<OnEntryExit>(() =>
+            _onExit = new AsyncLazy<OnEntryExit>(async () =>
             {
-                var node = element.ScxmlElement("onexit");
+                var meta = await _metadata.GetOnExit();
 
-                return node == null ? null : new OnEntryExit(node);
+                if (meta != null)
+                    return new OnEntryExit(meta);
+                else
+                    return null;
             });
 
-            _transitions = new Lazy<List<Transition>>(() =>
+            _transitions = new AsyncLazy<Transition[]>(async () =>
             {
-                var nodes = element.ScxmlElements("transition");
-
-                return new List<Transition>(nodes.Select(n => new Transition(n, this)));
+                return (await _metadata.GetTransitions()).Select(tm => new Transition(tm, this)).ToArray();
             });
 
-            _invokes = new Lazy<List<Invoke>>(() =>
+            _invokes = new AsyncLazy<Invoke[]>(async () =>
             {
-                var nodes = element.ScxmlElements("invoke");
-
-                return new List<Invoke>(nodes.Select(n => new Invoke(n, this)));
+                return (await _metadata.GetServices()).Select(sm => new Invoke(sm, this)).ToArray();
             });
 
-            _datamodel = new Lazy<Datamodel>(() =>
+            _datamodel = new AsyncLazy<Datamodel>(async () =>
             {
-                var node = element.ScxmlElement("datamodel");
+                var meta = await _metadata.GetDatamodel();
 
-                return node == null ? null : new Datamodel(node);
+                if (meta != null)
+                    return new Datamodel(meta);
+                else
+                    return null;
             });
         }
 
-        public static XObject GetXObject(State state)
-        {
-            state.CheckArgNull(nameof(state));
-
-            return state._element;
-        }
-
-        public virtual string Id => _element.Attribute("id")?.Value ?? string.Empty;
+        public virtual string Id => _metadata.Id;
 
         public State Parent => _parent;
 
@@ -91,67 +92,76 @@ namespace CoreEngine.Model.States
 
         public virtual bool IsAtomic => false;
 
-        public IEnumerable<Transition> Transitions => _transitions.Value;
+        public async Task<IEnumerable<Transition>> GetTransitions()
+        {
+            return await _transitions;
+        }
 
-        public virtual Transition GetInitialStateTransition()
+        public virtual Task<Transition> GetInitialStateTransition()
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task InitDatamodel(ExecutionContext context, bool recursive)
+        public virtual async Task InitDatamodel(ExecutionContext context, bool recursive)
         {
-            return _datamodel.Value == null ? Task.CompletedTask : _datamodel.Value.Init(context);
-        }
+            var datamodel = await _datamodel;
 
-        public virtual void Invoke(ExecutionContext context, RootState root)
-        {
-            foreach (var invoke in _invokes.Value)
+            if (datamodel != null)
             {
-                invoke.Execute(context);
+                await datamodel.Init(context);
             }
         }
 
-        public virtual void RecordHistory(ExecutionContext context)
+        public virtual async Task Invoke(ExecutionContext context, RootState root)
         {
+            foreach (var invoke in await _invokes)
+            {
+                await invoke.Execute(context);
+            }
         }
 
-        public virtual IEnumerable<State> GetChildStates()
+        public virtual Task RecordHistory(ExecutionContext context)
         {
-            return Enumerable.Empty<State>();
+            return Task.CompletedTask;
         }
 
-        public virtual bool IsInFinalState(ExecutionContext context, RootState root)
+        public virtual Task<IEnumerable<State>> GetChildStates()
         {
-            return false;
+            return Task.FromResult(Enumerable.Empty<State>());
         }
 
-        public virtual State GetState(string id)
+        public virtual Task<bool> IsInFinalState(ExecutionContext context, RootState root)
+        {
+            return Task.FromResult(false);
+        }
+
+        public virtual Task<State> GetState(string id)
         {
             if (string.Compare(id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0)
             {
-                return this;
+                return Task.FromResult(this);
             }
             else
             {
-                return null;
+                return Task.FromResult<State>(null);
             }
         }
 
         public async Task ProcessExternalEvent(ExecutionContext context, Event evt)
         {
-            foreach (var invoke in _invokes.Value)
+            foreach (var invoke in await _invokes)
             {
                 await invoke.ProcessExternalEvent(context, evt);
             }
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public async Task<Set<State>> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
             var set = new Set<State>();
 
-            foreach (var transition in _transitions.Value)
+            foreach (var transition in await _transitions)
             {
-                var transitionSet = transition.GetEffectiveTargetStates(context, root);
+                var transitionSet = await transition.GetEffectiveTargetStates(context, root);
 
                 set.Union(transitionSet);
             }
@@ -182,13 +192,21 @@ namespace CoreEngine.Model.States
                 _firstEntry = false;
             }
 
-            _onEntry.Value?.Execute(context);
+            var onEntry = await _onEntry;
+
+            if (onEntry != null)
+            { 
+                await onEntry.Execute(context);
+            }
 
             if (statesForDefaultEntry.Contains(this))
             {
-                var transition = this.GetInitialStateTransition();
+                var transition = await this.GetInitialStateTransition();
 
-                await transition.ExecuteContent(context);
+                if (transition != null)
+                {
+                    await transition.ExecuteContent(context);
+                }
             }
 
             if (defaultHistoryContent.TryGetValue(this.Id, out Set<ExecutableContent> set))
@@ -213,9 +231,20 @@ namespace CoreEngine.Model.States
 
                     if (grandparent != null && grandparent.IsParallelState)
                     {
-                        var parallelChildren = grandparent.GetChildStates();
+                        var parallelChildren = await grandparent.GetChildStates();
 
-                        if (parallelChildren.All(s => s.IsInFinalState(context, root)))
+                        var allInFinalState = true;
+
+                        foreach (var pc in parallelChildren)
+                        {
+                            if (! await pc.IsInFinalState(context, root))
+                            {
+                                allInFinalState = false;
+                                break;
+                            }
+                        }
+
+                        if (allInFinalState)
                         {
                             context.EnqueueInternal("done.state." + grandparent.Id);
                         }
@@ -224,15 +253,20 @@ namespace CoreEngine.Model.States
             }
         }
 
-        public void Exit(ExecutionContext context)
+        public async Task Exit(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
 
-            _onExit.Value?.Execute(context);
+            var onExit = await _onExit;
 
-            foreach (var invoke in _invokes.Value)
+            if (onExit != null)
+            {
+                await onExit.Execute(context);
+            }
+
+            foreach (var invoke in await _invokes)
             {
                 invoke.Cancel(context);
             }
@@ -244,7 +278,17 @@ namespace CoreEngine.Model.States
         {
             state.CheckArgNull(nameof(state));
 
-            return state._element.Descendants().Contains(this._element);
+            return _metadata.IsDescendentOf(state._metadata);
+        }
+
+        public static int Compare(State state1, State state2)
+        {
+            return state1._metadata.DepthFirstCompare(state2._metadata);
+        }
+
+        public static int ReverseCompare(State state1, State state2)
+        {
+            return Compare(state1, state2) * -1;
         }
 
         public IEnumerable<State> GetProperAncestors(State state = null)

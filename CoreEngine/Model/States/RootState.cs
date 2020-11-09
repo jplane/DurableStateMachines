@@ -5,117 +5,102 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Data;
 using CoreEngine.Model.Execution;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using CoreEngine.Abstractions.Model;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
     internal class RootState : CompoundState
     {
-        private readonly Lazy<Script> _script;
-        private readonly Lazy<Transition> _initialTransition;
+        private readonly AsyncLazy<Script> _script;
+        private readonly AsyncLazy<Transition> _initialTransition;
         
-        private readonly string _name;
-        private readonly string _xmlns;
-        private readonly string _version;
-        private readonly string _datamodelType;
-        private readonly Databinding _binding;
-
-        public RootState(XElement element)
-            : base(element, null)
+        public RootState(IRootStateMetadata metadata)
+            : base(metadata, null)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _name = element.Attribute("name")?.Value ?? string.Empty;
-
-            _xmlns = element.Attribute("xmlns").Value;
-
-            _version = element.Attribute("version").Value;
-
-            _datamodelType = element.Attribute("datamodel")?.Value ?? "csharp";
-
-            _binding = (Databinding) Enum.Parse(typeof(Databinding),
-                                                element.Attribute("binding")?.Value ?? "early",
-                                                true);
-
-            _initialTransition = new Lazy<Transition>(() =>
+            _initialTransition = new AsyncLazy<Transition>(async () =>
             {
-                var attr = element.Attribute("initial");
+                var meta = await metadata.GetInitialTransition();
 
-                return attr == null ? null : new Transition(attr, this);
+                if (meta != null)
+                    return new Transition(meta, this);
+                else
+                    return null;
             });
 
-            _states = new Lazy<List<State>>(() =>
+            _script = new AsyncLazy<Script>(async () =>
+            {
+                var meta = await metadata.GetScript();
+
+                if (meta != null)
+                    return new Script(meta);
+                else
+                    return null;
+            });
+
+            _states = new AsyncLazy<State[]>(async () =>
             {
                 var states = new List<State>();
 
-                bool IsCompoundState(XElement el)
+                foreach (var stateMetadata in await metadata.GetStates())
                 {
-                    return el.ScxmlNameEquals("state") &&
-                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
-                }
-
-                foreach (var el in element.Elements())
-                {
-                    if (IsCompoundState(el))
+                    if (stateMetadata is ISequentialStateMetadata ssm)
                     {
-                        states.Add(new SequentialState(el, this));
+                        states.Add(new SequentialState(ssm, this));
                     }
-                    else if (el.ScxmlNameEquals("parallel"))
+                    else if (stateMetadata is IParallelStateMetadata psm)
                     {
-                        states.Add(new ParallelState(el, this));
+                        states.Add(new ParallelState(psm, this));
                     }
-                    else if (el.ScxmlNameEquals("final"))
+                    else if (stateMetadata is IAtomicStateMetadata asm)
                     {
-                        states.Add(new FinalState(el, this));
+                        states.Add(new AtomicState(asm, this));
                     }
-                    else if (el.ScxmlNameEquals("state"))
+                    else if (stateMetadata is IFinalStateMetadata fsm)
                     {
-                        states.Add(new AtomicState(el, this));
+                        states.Add(new FinalState(fsm, this));
                     }
                 }
 
-                return states;
-            });
-
-            _script = new Lazy<Script>(() =>
-            {
-                var node = element.ScxmlElement("script");
-
-                return node == null ? null : new Script(node);
+                return states.ToArray();
             });
         }
 
-        public void ExecuteScript(ExecutionContext context)
+        public async Task ExecuteScript(ExecutionContext context)
         {
-            _script.Value?.Execute(context);
+            var script = await _script;
+
+            if (script != null)
+            {
+                await script.Execute(context);
+            }
         }
 
-        public Databinding Binding => _binding;
+        public Databinding Binding => ((IRootStateMetadata) _metadata).Databinding;
 
-        public string Name => _name;
+        public string Name => ((IRootStateMetadata) _metadata).Id;
 
         public override string Id => "scxml_root";
 
         public override bool IsScxmlRoot => true;
 
-        public override void Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context, RootState root)
         {
             throw new InvalidOperationException("Unexpected invocation.");
         }
 
-        public override Transition GetInitialStateTransition()
+        public override Task<Transition> GetInitialStateTransition()
         {
-            return _initialTransition.Value ?? base.GetInitialStateTransition();
+            return _initialTransition.Task;
         }
 
-        public override void RecordHistory(ExecutionContext context)
+        public override Task RecordHistory(ExecutionContext context)
         {
             throw new NotImplementedException();
         }
-    }
-
-    internal enum Databinding
-    {
-        Early,
-        Late
     }
 }

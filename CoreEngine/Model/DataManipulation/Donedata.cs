@@ -3,30 +3,33 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
 
 namespace CoreEngine.Model.DataManipulation
 {
     internal class Donedata
     {
-        private readonly Lazy<Content> _content;
-        private readonly Lazy<List<Param>> _params;
+        private readonly AsyncLazy<Content> _content;
+        private readonly AsyncLazy<Param[]> _params;
 
-        public Donedata(XElement element)
+        public Donedata(IDonedataMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<Content>(() =>
+            _content = new AsyncLazy<Content>(async () =>
             {
-                var node = element.ScxmlElement("content");
+                var meta = await metadata.GetContent();
 
-                return node == null ? null : new Content(node);
+                if (meta != null)
+                    return new Content(meta);
+                else
+                    return null;
             });
 
-            _params = new Lazy<List<Param>>(() =>
+            _params = new AsyncLazy<Param[]>(async () =>
             {
-                var nodes = element.ScxmlElements("param");
-
-                return new List<Param>(nodes.Select(n => new Param(n)));
+                return (await metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
             });
         }
     }

@@ -9,41 +9,46 @@ using CoreEngine.Model.States;
 using CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CoreEngine.Abstractions.Model;
+using Nito.AsyncEx;
 
 namespace CoreEngine
 {
     public class Interpreter
     {
-        private readonly RootState _root;
+        private readonly AsyncLazy<RootState> _root;
         private readonly ExecutionContext _executionContext;
 
-        public Interpreter(XDocument xml)
+        public Interpreter(IModelMetadata metadata)
         {
-            xml.CheckArgNull(nameof(xml));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _root = new RootState(xml.Root);
+            _root = new AsyncLazy<RootState>(async () =>
+            {
+                return new RootState(await metadata.GetRootState());
+            });
 
             _executionContext = new ExecutionContext();
 
             _executionContext.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
-
-            _executionContext.SetDataValue("_name", _root.Name);
         }
 
         public ExecutionContext Context => _executionContext;
 
         public async Task Run()
         {
-            if (_root.Binding == Databinding.Early)
+            _executionContext.SetDataValue("_name", (await _root).Name);
+
+            if ((await _root).Binding == Databinding.Early)
             {
-                await _root.InitDatamodel(_executionContext, true);
+                await (await _root).InitDatamodel(_executionContext, true);
             }
 
             _executionContext.IsRunning = true;
 
-            _root.ExecuteScript(_executionContext);
+            await (await _root).ExecuteScript(_executionContext);
 
-            await EnterStates(new List<Transition>(new []{ _root.GetInitialStateTransition() }));
+            await EnterStates(new List<Transition>(new []{ await (await _root).GetInitialStateTransition() }));
 
             await DoEventLoop();
         }
@@ -90,9 +95,9 @@ namespace CoreEngine
                     break;
                 }
 
-                foreach (var state in _executionContext.StatesToInvoke.Sort(State.GetXObject))
+                foreach (var state in _executionContext.StatesToInvoke.Sort(State.Compare))
                 {
-                    state.Invoke(_executionContext, _root);
+                    await state.Invoke(_executionContext, (await _root));
                 }
 
                 _executionContext.StatesToInvoke.Clear();
@@ -127,9 +132,9 @@ namespace CoreEngine
                 _executionContext.LogInformation("End: event loop cycle");
             }
 
-            foreach (var state in _executionContext.Configuration.Sort(State.GetXObject, true))
+            foreach (var state in _executionContext.Configuration.Sort(State.ReverseCompare))
             {
-                state.Exit(_executionContext);
+                await state.Exit(_executionContext);
 
                 if (state.IsFinalState)
                 {
@@ -154,7 +159,7 @@ namespace CoreEngine
         {
             Debug.Assert(enabledTransitions != null);
 
-            ExitStates(enabledTransitions);
+            await ExitStates(enabledTransitions);
             
             foreach (var transition in enabledTransitions)
             {
@@ -164,9 +169,9 @@ namespace CoreEngine
             await EnterStates(enabledTransitions);
         }
 
-        private void ExitStates(IEnumerable<Transition> enabledTransitions)
+        private async Task ExitStates(IEnumerable<Transition> enabledTransitions)
         {
-            var exitSet = ComputeExitSet(enabledTransitions);
+            var exitSet = await ComputeExitSet(enabledTransitions);
 
             Debug.Assert(exitSet != null);
 
@@ -175,15 +180,15 @@ namespace CoreEngine
                 _executionContext.StatesToInvoke.Remove(state);
             }
 
-            foreach (var state in exitSet.Sort(State.GetXObject, true))
+            foreach (var state in exitSet.Sort(State.ReverseCompare))
             {
-                state.RecordHistory(_executionContext);
+                await state.RecordHistory(_executionContext);
 
-                state.Exit(_executionContext);
+                await state.Exit(_executionContext);
             }
         }
 
-        private Set<State> ComputeExitSet(IEnumerable<Transition> transitions)
+        private async Task<Set<State>> ComputeExitSet(IEnumerable<Transition> transitions)
         {
             Debug.Assert(transitions != null);
 
@@ -193,7 +198,7 @@ namespace CoreEngine
             {
                 if (transition.HasTargets)
                 {
-                    var domain = transition.GetTransitionDomain(_executionContext, _root);
+                    var domain = await transition.GetTransitionDomain(_executionContext, (await _root));
 
                     foreach (var state in _executionContext.Configuration)
                     {
@@ -227,7 +232,7 @@ namespace CoreEngine
             var enabledTransitions = new Set<Transition>();
 
             var atomicStates = _executionContext.Configuration
-                                                .Sort(State.GetXObject)
+                                                .Sort(State.Compare)
                                                 .Where(s => s.IsAtomic);
 
             foreach (var state in atomicStates)
@@ -237,14 +242,14 @@ namespace CoreEngine
                     state
                 };
 
-                foreach (var anc in state.GetProperAncestors(_root))
+                foreach (var anc in state.GetProperAncestors((await _root)))
                 {
                     all.Add(anc);
                 }
 
                 foreach (var s in all)
                 {
-                    foreach (var transition in s.Transitions)
+                    foreach (var transition in await s.GetTransitions())
                     {
                         if (await predicate(transition))
                         {
@@ -258,12 +263,12 @@ namespace CoreEngine
                     continue;
             }
 
-            enabledTransitions = RemoveConflictingTransitions(enabledTransitions);
+            enabledTransitions = await RemoveConflictingTransitions(enabledTransitions);
 
             return enabledTransitions;
         }
 
-        private Set<Transition> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
+        private async Task<Set<Transition>> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(enabledTransitions != null);
 
@@ -277,9 +282,9 @@ namespace CoreEngine
 
                 foreach (var transition2 in filteredTransitions)
                 {
-                    var exitSet1 = ComputeExitSet(new List<Transition> { transition1 });
+                    var exitSet1 = await ComputeExitSet(new List<Transition> { transition1 });
 
-                    var exitSet2 = ComputeExitSet(new List<Transition> { transition2 });
+                    var exitSet2 = await ComputeExitSet(new List<Transition> { transition2 });
 
                     if (exitSet1.HasIntersection(exitSet2))
                     {
@@ -317,44 +322,46 @@ namespace CoreEngine
 
             var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent>>();
 
-            ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+            await ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
-            foreach (var state in statesToEnter.Sort(State.GetXObject))
+            foreach (var state in statesToEnter.Sort(State.Compare))
             {
-                await state.Enter(_executionContext, _root, statesForDefaultEntry, defaultHistoryContent);
+                await state.Enter(_executionContext, (await _root), statesForDefaultEntry, defaultHistoryContent);
             }
         }
 
-        private void ComputeEntrySet(IEnumerable<Transition> enabledTransitions,
-                                     Set<State> statesToEnter,
-                                     Set<State> statesForDefaultEntry,
-                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        private async Task ComputeEntrySet(IEnumerable<Transition> enabledTransitions,
+                                           Set<State> statesToEnter,
+                                           Set<State> statesForDefaultEntry,
+                                           Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(enabledTransitions != null);
 
             foreach (var transition in enabledTransitions)
             {
-                foreach (var state in transition.GetTargetStates(_root))
+                Debug.Assert(transition != null);
+
+                foreach (var state in await transition.GetTargetStates((await _root)))
                 {
-                    AddDescendentStatesToEnter(state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                    await AddDescendentStatesToEnter(state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
 
-                var ancestor = transition.GetTransitionDomain(_executionContext, _root);
+                var ancestor = await transition.GetTransitionDomain(_executionContext, (await _root));
 
-                var effectiveTargetStates = transition.GetEffectiveTargetStates(_executionContext, _root);
+                var effectiveTargetStates = await transition.GetEffectiveTargetStates(_executionContext, (await _root));
 
                 foreach (var state in effectiveTargetStates)
                 {
-                    AddAncestorStatesToEnter(state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                    await AddAncestorStatesToEnter(state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
             }
         }
 
-        private void AddAncestorStatesToEnter(State state,
-                                              State ancestor,
-                                              Set<State> statesToEnter,
-                                              Set<State> statesForDefaultEntry,
-                                              Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        private async Task AddAncestorStatesToEnter(State state,
+                                                    State ancestor,
+                                                    Set<State> statesToEnter,
+                                                    Set<State> statesForDefaultEntry,
+                                                    Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(state != null);
             Debug.Assert(statesToEnter != null);
@@ -367,23 +374,23 @@ namespace CoreEngine
 
                 if (anc.IsParallelState)
                 {
-                    var childStates = anc.GetChildStates();
+                    var childStates = await anc.GetChildStates();
 
                     foreach (var child in childStates)
                     {
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
-                            AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                            await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                         }
                     }
                 }
             }
         }
 
-        private void AddDescendentStatesToEnter(State state,
-                                                Set<State> statesToEnter,
-                                                Set<State> statesForDefaultEntry,
-                                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        private async Task AddDescendentStatesToEnter(State state,
+                                                      Set<State> statesToEnter,
+                                                      Set<State> statesForDefaultEntry,
+                                                      Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(state != null);
             Debug.Assert(statesToEnter != null);
@@ -395,28 +402,28 @@ namespace CoreEngine
                 {
                     foreach (var s in states)
                     {
-                        AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in states)
                     {
-                        AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
                 else
                 {
                     var targetStates = new List<State>();
 
-                    ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, _root);
+                    await ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, (await _root));
 
                     foreach (var s in targetStates)
                     {
-                        AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in targetStates)
                     {
-                        AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
             }
@@ -428,29 +435,31 @@ namespace CoreEngine
                 {
                     statesForDefaultEntry.Add(state);
 
-                    var initialTransition = state.GetInitialStateTransition();
+                    var initialTransition = await state.GetInitialStateTransition();
 
-                    var targetStates = initialTransition.GetTargetStates(_root);
+                    Debug.Assert(initialTransition != null);
+
+                    var targetStates = await initialTransition.GetTargetStates((await _root));
 
                     foreach (var s in targetStates)
                     {
-                        AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in targetStates)
                     {
-                        AddAncestorStatesToEnter(s, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(s, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
                 else if (state.IsParallelState)
                 {
-                    var childStates = state.GetChildStates();
+                    var childStates = await state.GetChildStates();
 
                     foreach (var child in childStates)
                     {
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
-                            AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                            await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                         }
                     }
                 }

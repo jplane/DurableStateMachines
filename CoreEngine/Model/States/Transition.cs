@@ -8,82 +8,42 @@ using CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using CoreEngine.Abstractions.Model;
 
 namespace CoreEngine.Model.States
 {
     internal class Transition
     {
-        private readonly XObject _xobj;
-        private readonly Lazy<List<ExecutableContent>> _content;
-        private readonly string _target;
-        private readonly string _events;
-        private readonly string _conditionExpr;
-        private readonly TransitionType _type;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly ITransitionMetadata _metadata;
         private readonly State _source;
 
-        public Transition(XAttribute attribute, State source)
+        public Transition(ITransitionMetadata metadata, State source)
         {
-            attribute.CheckArgNull(nameof(attribute));
+            metadata.CheckArgNull(nameof(metadata));
             source.CheckArgNull(nameof(source));
 
-            _xobj = attribute;
-            _content = new Lazy<List<ExecutableContent>>();
-            _target = attribute.Value;
-            _events = string.Empty;
-            _conditionExpr = string.Empty;
-            _type = TransitionType.External;
+            _metadata = metadata;
             _source = source;
-        }
 
-        public Transition(XElement element, State source)
-        {
-            element.CheckArgNull(nameof(element));
-            source.CheckArgNull(nameof(source));
-
-            _xobj = element;
-
-            _target = element.Attribute("target")?.Value ?? string.Empty;
-
-            _events = element.Attribute("event")?.Value ?? string.Empty;
-
-            _conditionExpr = element.Attribute("cond")?.Value ?? string.Empty;
-
-            _type = (TransitionType) Enum.Parse(typeof(TransitionType),
-                                                element.Attribute("type")?.Value ?? "external",
-                                                true);
-
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
-
-            _source = source;
         }
 
-        public static XObject GetXObject(Transition transition)
-        {
-            transition.CheckArgNull(nameof(transition));
-
-            return transition._xobj;
-        }
-
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        public async Task StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
+            defaultHistoryContent[id] = new Set<ExecutableContent>(await _content);
         }
 
-        public bool HasEvent => !string.IsNullOrWhiteSpace(_events);
+        public bool HasEvent => _metadata.Events.Any();
 
-        public bool HasTargets => !string.IsNullOrWhiteSpace(_target);
+        public bool HasTargets => _metadata.Targets.Any();
 
         public bool MatchesEvent(Event evt)
         {
@@ -91,7 +51,7 @@ namespace CoreEngine.Model.States
 
             if (HasEvent)
             {
-                foreach (var candidateEvt in _events.Split(" "))
+                foreach (var candidateEvt in _metadata.Events)
                 {
                     if (candidateEvt == "*")
                     {
@@ -128,12 +88,12 @@ namespace CoreEngine.Model.States
                 }
             }
 
-            return string.IsNullOrWhiteSpace(_conditionExpr) ? true : await Eval(_conditionExpr);
+            return string.IsNullOrWhiteSpace(_metadata.ConditionExpr) ? true : await Eval(_metadata.ConditionExpr);
         }
 
         public async Task ExecuteContent(ExecutionContext context)
         {
-            foreach (var content in _content.Value)
+            foreach (var content in await _content)
             {
                 await content.Execute(context);
             }
@@ -146,27 +106,27 @@ namespace CoreEngine.Model.States
             return _source.IsDescendent(transition._source);
         }
 
-        public IEnumerable<State> GetTargetStates(RootState root)
+        public async Task<IEnumerable<State>> GetTargetStates(RootState root)
         {
             root.CheckArgNull(nameof(root));
 
-            if (string.IsNullOrWhiteSpace(_target))
+            var targets = new List<State>();
+
+            foreach (var id in _metadata.Targets)
             {
-                return Enumerable.Empty<State>();
+                targets.Add(await root.GetState(id));
             }
-            else
-            {
-                return _target.Split(" ").Select(id => root.GetState(id));
-            }
+
+            return targets.AsEnumerable();
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public async Task<Set<State>> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
             context.CheckArgNull(nameof(context));
 
             var targets = new Set<State>();
 
-            foreach (var state in GetTargetStates(root))
+            foreach (var state in await GetTargetStates(root))
             {
                 if (state.IsHistoryState)
                 {
@@ -176,7 +136,7 @@ namespace CoreEngine.Model.States
                     }
                     else
                     {
-                        targets.Union(state.GetEffectiveTargetStates(context, root));
+                        targets.Union(await state.GetEffectiveTargetStates(context, root));
                     }
                 }
                 else
@@ -188,15 +148,15 @@ namespace CoreEngine.Model.States
             return targets;
         }
 
-        public State GetTransitionDomain(ExecutionContext context, RootState root)
+        public async Task<State> GetTransitionDomain(ExecutionContext context, RootState root)
         {
-            var targetStates = GetEffectiveTargetStates(context, root);
+            var targetStates = await GetEffectiveTargetStates(context, root);
 
             if (targetStates.IsEmpty())
             {
                 return null;
             }
-            else if (_type == TransitionType.Internal &&
+            else if (_metadata.Type == TransitionType.Internal &&
                      _source.IsSequentialState &&
                      targetStates.All(s => s.IsDescendent(_source)))
             {
@@ -220,11 +180,5 @@ namespace CoreEngine.Model.States
                 return root;
             }
         }
-    }
-
-    internal enum TransitionType
-    {
-        Internal,
-        External
     }
 }

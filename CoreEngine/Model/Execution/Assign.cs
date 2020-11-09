@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,31 +9,22 @@ namespace CoreEngine.Model.Execution
 {
     internal class Assign : ExecutableContent
     {
-        private readonly string _location;
-        private readonly string _expression;
-        private readonly string _body;
-
-        public Assign(XElement element)
-            : base(element)
+        public Assign(IAssignMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
-
-            _location = element.Attribute("location").Value;
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
-            _body = element.Value ?? string.Empty;
         }
 
         protected override async Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            if (!string.IsNullOrWhiteSpace(_expression))
+            if (!string.IsNullOrWhiteSpace(((IAssignMetadata) _metadata).Expression))
             {
-                var value = await context.Eval<object>(_expression);
+                var value = await context.Eval<object>(((IAssignMetadata) _metadata).Expression);
 
-                context.SetDataValue(_location, value);
+                context.SetDataValue(((IAssignMetadata) _metadata).Location, value);
 
-                context.LogDebug($"Set {_location} = {value}");
+                context.LogDebug($"Set {((IAssignMetadata) _metadata).Location} = {value}");
             }
             else
             {

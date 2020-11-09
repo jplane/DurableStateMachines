@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CoreEngine.Abstractions\CoreEngine.Abstractions.csproj" />
+    <ProjectReference Include="..\CoreEngine.ModelProvider.Xml\CoreEngine.ModelProvider.Xml.csproj" />
     <ProjectReference Include="..\CoreEngine\CoreEngine.csproj" />
   </ItemGroup>
 

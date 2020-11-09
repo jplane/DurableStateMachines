@@ -70,17 +70,11 @@ namespace CoreEngine
             return _items.Count == 0;
         }
 
-        public IEnumerable<T> Sort(Func<T, XObject> getXObj, bool reverse = false)
+        public IEnumerable<T> Sort(Comparison<T> comparison)
         {
-            getXObj.CheckArgNull(nameof(getXObj));
-
             var list = _items.ToArray().ToList();   // make a copy
 
-            var compareFunc = reverse ?
-                                (Comparison<XObject>) XmlExtensions.GetReverseDocumentOrder :
-                                                      XmlExtensions.GetDocumentOrder;
-
-            list.Sort((t1, t2) => compareFunc(getXObj(t1), getXObj(t2)));
+            list.Sort(comparison);
 
             return list;
         }

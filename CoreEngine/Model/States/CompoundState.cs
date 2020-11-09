@@ -5,57 +5,44 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using Nito.AsyncEx;
 
 namespace CoreEngine.Model.States
 {
     internal abstract class CompoundState : State
     {
-        protected Lazy<List<State>> _states;
+        protected AsyncLazy<State[]> _states;
 
-        protected CompoundState(XElement element, State parent)
-            : base(element, parent)
+        protected CompoundState(IStateMetadata metadata, State parent)
+            : base(metadata, parent)
         {
         }
 
         public override bool IsSequentialState => true;
 
-        public override Transition GetInitialStateTransition()
-        {
-            var firstChildState = _element.Elements()
-                                          .FirstOrDefault(el => el.ScxmlNameIn("state", "parallel", "final"));
-
-            if (firstChildState != null)
-            {
-                return new Transition(firstChildState, this);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public override IEnumerable<State> GetChildStates()
+        public override async Task<IEnumerable<State>> GetChildStates()
         {
             Debug.Assert(_states != null);
 
-            return _states.Value.Where(s => s is AtomicState ||
-                                            s is CompoundState ||
-                                            s is ParallelState ||
-                                            s is FinalState);
+            return (await _states).Where(s => s is AtomicState ||
+                                              s is CompoundState ||
+                                              s is ParallelState ||
+                                              s is FinalState);
         }
 
-        public override State GetState(string id)
+        public override async Task<State> GetState(string id)
         {
-            var result = base.GetState(id);
+            var result = await base.GetState(id);
 
             if (result != null)
             {
                 return result;
             }
 
-            foreach (var state in GetChildStates())
+            foreach (var state in await GetChildStates())
             {
-                result = state.GetState(id);
+                result = await state.GetState(id);
 
                 if (result != null)
                 {
@@ -72,18 +59,18 @@ namespace CoreEngine.Model.States
 
             if (recursive)
             {
-                foreach (var child in GetChildStates())
+                foreach (var child in await GetChildStates())
                 {
                     await child.InitDatamodel(context, recursive);
                 }
             }
         }
 
-        public override void RecordHistory(ExecutionContext context)
+        public override async Task RecordHistory(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            foreach (var history in _states.Value.OfType<HistoryState>())
+            foreach (var history in (await _states).OfType<HistoryState>())
             {
                 Func<State, bool> predicate;
 

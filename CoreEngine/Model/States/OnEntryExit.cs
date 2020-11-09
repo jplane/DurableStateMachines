@@ -1,33 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using CoreEngine.Abstractions.Model.States.Metadata;
 using CoreEngine.Model.Execution;
+using Nito.AsyncEx;
 
 namespace CoreEngine.Model.States
 {
     internal class OnEntryExit
     {
-        private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
         private readonly bool _isEntry;
 
-        public OnEntryExit(XElement element)
+        public OnEntryExit(IOnEntryExitMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _isEntry = element.Name.LocalName.ToLowerInvariant() == "onentry";
+            _isEntry = metadata.IsEntry;
 
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -41,7 +37,7 @@ namespace CoreEngine.Model.States
 
             try
             {
-                foreach (var content in _content.Value)
+                foreach (var content in await _content)
                 {
                     await content.Execute(context);
                 }

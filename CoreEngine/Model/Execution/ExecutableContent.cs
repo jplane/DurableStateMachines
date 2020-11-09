@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -10,61 +12,52 @@ namespace CoreEngine.Model.Execution
 {
     internal abstract class ExecutableContent
     {
-        private readonly XElement _element;
+        protected readonly IExecutableContentMetadata _metadata;
 
-        protected ExecutableContent(XElement element)
+        protected ExecutableContent(IExecutableContentMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _element = element;
+            _metadata = metadata;
         }
 
-        public static XObject GetXObject(ExecutableContent context)
+        public static ExecutableContent Create(IExecutableContentMetadata metadata)
         {
-            context.CheckArgNull(nameof(context));
-
-            return context._element;
-        }
-
-        public static ExecutableContent Create(XElement element)
-        {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
             ExecutableContent content = null;
 
-            switch (element.Name.LocalName)
+            if (metadata is IIfMetadata im)
             {
-                case "if":
-                    content = new If(element);
-                    break;
-
-                case "raise":
-                    content = new Raise(element);
-                    break;
-
-                case "script":
-                    content = new Script(element);
-                    break;
-
-                case "foreach":
-                    content = new Foreach(element);
-                    break;
-
-                case "log":
-                    content = new Log(element);
-                    break;
-
-                case "send":
-                    content = new Send(element);
-                    break;
-
-                case "cancel":
-                    content = new Cancel(element);
-                    break;
-
-                case "assign":
-                    content = new Assign(element);
-                    break;
+                content = new If(im);
+            }
+            else if (metadata is IRaiseMetadata rm)
+            {
+                content = new Raise(rm);
+            }
+            else if (metadata is IScriptMetadata sm)
+            {
+                content = new Script(sm);
+            }
+            else if (metadata is IForeachMetadata fm)
+            {
+                content = new Foreach(fm);
+            }
+            else if (metadata is ILogMetadata lm)
+            {
+                content = new Log(lm);
+            }
+            else if (metadata is ISendMetadata smd)
+            {
+                content = new Send(smd);
+            }
+            else if (metadata is ICancelMetadata cm)
+            {
+                content = new Cancel(cm);
+            }
+            else if (metadata is IAssignMetadata am)
+            {
+                content = new Assign(am);
             }
 
             Debug.Assert(content != null);

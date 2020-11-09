@@ -5,22 +5,22 @@ using System.Xml.Linq;
 using System.Linq;
 using CoreEngine.Model.States;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
 
 namespace CoreEngine.Model.DataManipulation
 {
     internal class Datamodel
     {
-        protected readonly Lazy<List<Data>> _data;
+        protected readonly AsyncLazy<Data[]> _data;
 
-        public Datamodel(XElement element)
+        public Datamodel(IDatamodelMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _data = new Lazy<List<Data>>(() =>
+            _data = new AsyncLazy<Data[]>(async () =>
             {
-                var nodes = element.ScxmlElements("data");
-
-                return new List<Data>(nodes.Select(n => new Data(n)));
+                return (await metadata.GetData()).Select(d => new Data(d)).ToArray();
             });
         }
 
@@ -32,7 +32,7 @@ namespace CoreEngine.Model.DataManipulation
 
             try
             {
-                foreach (var data in _data.Value)
+                foreach (var data in await _data)
                 {
                     await data.Init(context);
                 }

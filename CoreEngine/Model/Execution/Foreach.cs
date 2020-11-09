@@ -6,37 +6,23 @@ using System.Linq;
 using System.Collections;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.Execution.Metadata;
 
 namespace CoreEngine.Model.Execution
 {
     internal class Foreach : ExecutableContent
     {
-        private readonly string _arrayExpression;
-        private readonly string _item;
-        private readonly string _index;
-        private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
 
-        public Foreach(XElement element)
-            : base(element)
+        public Foreach(IForeachMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _arrayExpression = element.Attribute("array").Value;
-
-            _item = element.Attribute("item").Value;
-
-            _index = element.Attribute("index")?.Value ?? string.Empty;
-
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -44,7 +30,7 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var enumerable = await context.Eval<IEnumerable>(_arrayExpression);
+            var enumerable = await context.Eval<IEnumerable>(((IForeachMetadata) _metadata).ArrayExpression);
 
             if (enumerable == null)
             {
@@ -56,35 +42,35 @@ namespace CoreEngine.Model.Execution
 
             context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
 
-            Debug.Assert(_item != null);
+            Debug.Assert(((IForeachMetadata) _metadata).Item != null);
 
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {
                 var item = shallowCopy[idx];
 
-                context.SetDataValue(_item, shallowCopy[idx]);
+                context.SetDataValue(((IForeachMetadata) _metadata).Item, item);
 
-                if (!string.IsNullOrWhiteSpace(_index))
+                if (!string.IsNullOrWhiteSpace(((IForeachMetadata) _metadata).Index))
                 {
-                    context.SetDataValue(_index, idx);
-                }
+                    context.SetDataValue(((IForeachMetadata) _metadata).Index, idx);
 
-                context.LogDebug($"Foreach: Array item index {_index}");
+                    context.LogDebug($"Foreach: Array item index {((IForeachMetadata) _metadata).Index}");
+                }
 
                 try
                 {
-                    foreach (var content in _content.Value)
+                    foreach (var content in await _content)
                     {
                         await content.Execute(context);
                     }
                 }
                 finally
                 {
-                    context.SetDataValue(_item, null);
+                    context.SetDataValue(((IForeachMetadata) _metadata).Item, null);
 
-                    if (!string.IsNullOrWhiteSpace(_index))
+                    if (!string.IsNullOrWhiteSpace(((IForeachMetadata) _metadata).Index))
                     {
-                        context.SetDataValue(_index, null);
+                        context.SetDataValue(((IForeachMetadata) _metadata).Index, null);
                     }
                 }
             }

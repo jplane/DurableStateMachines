@@ -1,19 +1,18 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+using System;
 using System.Xml.Linq;
 
 namespace CoreEngine.Model.DataManipulation
 {
     internal class Content
     {
-        private readonly string _expression;
-        private readonly string _body;
+        private readonly IContentMetadata _metadata;
 
-        public Content(XElement element)
+        public Content(IContentMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
-            _body = element.Value ?? string.Empty;
+            _metadata = metadata;
         }
     }
 }

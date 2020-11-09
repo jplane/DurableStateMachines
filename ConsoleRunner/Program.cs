@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using CoreEngine.ModelProvider.Xml;
 
 namespace ConsoleRunner
 {
@@ -32,12 +33,12 @@ namespace ConsoleRunner
 
             using (var scope = logger.BeginScope(""))
             {
-                //task = RunMicrowave(logger);
+                task = RunMicrowave(logger);
 
-                task = RunForeach(logger);
+                //task = RunForeach(logger);
             }
 
-            Task.WaitAll(Task.Delay(1000), task);
+            Task.WaitAll(Task.Delay(5000), task);
         }
 
         static Task RunForeach(ILogger logger)
@@ -62,9 +63,9 @@ namespace ConsoleRunner
 
         static Task Run(string xmldoc, ILogger logger, Action<Interpreter> action = null)
         {
-            var xml = XDocument.Load(xmldoc);
+            var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var interpreter = new Interpreter(xml);
+            var interpreter = new Interpreter(metadata);
 
             interpreter.Context.Logger = logger;
 

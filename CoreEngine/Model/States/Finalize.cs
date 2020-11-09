@@ -4,27 +4,22 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using CoreEngine.Model.Execution;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.States.Metadata;
 
 namespace CoreEngine.Model.States
 {
     internal class Finalize
     {
-        private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
 
-        public Finalize(XElement element)
+        public Finalize(IFinalizeMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
         }
     }

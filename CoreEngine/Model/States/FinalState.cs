@@ -1,4 +1,6 @@
-﻿using CoreEngine.Model.DataManipulation;
+﻿using CoreEngine.Abstractions.Model.States.Metadata;
+using CoreEngine.Model.DataManipulation;
+using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,24 +11,27 @@ namespace CoreEngine.Model.States
 {
     internal class FinalState : State
     {
-        private readonly Lazy<Donedata> _donedata;
+        private readonly AsyncLazy<Donedata> _donedata;
 
-        public FinalState(XElement element, State parent)
-            : base(element, parent)
+        public FinalState(IFinalStateMetadata metadata, State parent)
+            : base(metadata, parent)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _donedata = new Lazy<Donedata>(() =>
+            _donedata = new AsyncLazy<Donedata>(async () =>
             {
-                var node = element.ScxmlElement("donedata");
+                var meta = await metadata.GetDonedata();
 
-                return node == null ? null : new Donedata(node);
+                if (meta != null)
+                    return new Donedata(meta);
+                else
+                    return null;
             });
         }
 
         public override bool IsFinalState => true;
 
-        public override void Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context, RootState root)
         {
             throw new NotImplementedException();
         }

@@ -4,27 +4,22 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.Execution.Metadata;
 
 namespace CoreEngine.Model.Execution
 {
     internal class Else
     {
-        private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
 
-        public Else(XElement element)
+        public Else(IEnumerable<IExecutableContentMetadata> contentMetadata)
         {
-            element.CheckArgNull(nameof(element));
+            contentMetadata.CheckArgNull(nameof(contentMetadata));
 
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(() =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return Task.FromResult(contentMetadata.Select(ExecutableContent.Create).ToArray());
             });
         }
 
@@ -36,7 +31,7 @@ namespace CoreEngine.Model.Execution
 
             try
             {
-                foreach (var content in _content.Value)
+                foreach (var content in await _content)
                 {
                     await content.Execute(context);
                 }

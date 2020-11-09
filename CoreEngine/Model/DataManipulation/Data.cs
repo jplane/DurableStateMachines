@@ -1,4 +1,5 @@
-﻿using CoreEngine.Model.States;
+﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+using CoreEngine.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,36 +10,30 @@ namespace CoreEngine.Model.DataManipulation
 {
     internal class Data
     {
-        private readonly string _id;
-        private readonly string _source;
-        private readonly string _expression;
-        private readonly string _body;
+        private readonly IDataMetadata _metadata;
 
-        public Data(XElement element)
+        public Data(IDataMetadata metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _id = element.Attribute("id").Value;
-            _source = element.Attribute("src")?.Value ?? string.Empty;
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
-            _body = element.Value ?? string.Empty;
+            _metadata = metadata;
         }
 
         public async Task Init(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogDebug("Start: Data.Init");
+            context.LogInformation("Start: Data.Init");
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(_expression))
+                if (!string.IsNullOrWhiteSpace(_metadata.Expression))
                 {
-                    var value = await context.Eval<object>(_expression);
+                    var value = await context.Eval<object>(_metadata.Expression);
 
-                    context.SetDataValue(_id, value);
+                    context.SetDataValue(_metadata.Id, value);
                     
-                    context.LogDebug($"Set {_id} = {value}");
+                    context.LogDebug($"Set {_metadata.Id} = {value}");
                 }
                 else
                 {

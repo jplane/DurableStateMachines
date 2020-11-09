@@ -4,30 +4,25 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.Execution.Metadata;
 
 namespace CoreEngine.Model.Execution
 {
     internal class ElseIf
     {
+        private readonly AsyncLazy<ExecutableContent[]> _content;
         private readonly string _cond;
-        private readonly Lazy<List<ExecutableContent>> _content;
 
-        public ElseIf(XElement element)
+        public ElseIf(string condition, Task<IEnumerable<IExecutableContentMetadata>> contentMetadata)
         {
-            element.CheckArgNull(nameof(element));
+            contentMetadata.CheckArgNull(nameof(contentMetadata));
 
-            _cond = element.Attribute("cond").Value;
+            _cond = condition;
 
-            _content = new Lazy<List<ExecutableContent>>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
-                {
-                    content.Add(ExecutableContent.Create(node));
-                }
-
-                return content;
+                return (await contentMetadata).Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -45,7 +40,7 @@ namespace CoreEngine.Model.Execution
 
                 if (result)
                 {
-                    foreach (var content in _content.Value)
+                    foreach (var content in await _content)
                     {
                         await content.Execute(context);
                     }

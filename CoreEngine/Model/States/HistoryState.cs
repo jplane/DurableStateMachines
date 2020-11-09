@@ -1,4 +1,6 @@
-﻿using CoreEngine.Model.Execution;
+﻿using CoreEngine.Abstractions.Model;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using CoreEngine.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,23 +12,16 @@ namespace CoreEngine.Model.States
 {
     internal class HistoryState : State
     {
-        private readonly HistoryType _type;
-
-        public HistoryState(XElement element, State parent)
-            : base(element, parent)
+        public HistoryState(IHistoryStateMetadata metadata, State parent)
+            : base(metadata, parent)
         {
-            element.CheckArgNull(nameof(element));
-
-            _type = (HistoryType) Enum.Parse(typeof(HistoryType),
-                                             element.Attribute("type")?.Value ?? "shallow",
-                                             true);
         }
 
         public override bool IsHistoryState => true;
 
-        public override bool IsDeepHistoryState => _type == HistoryType.Deep;
+        public override bool IsDeepHistoryState => ((IHistoryStateMetadata) _metadata).Type == HistoryType.Deep;
 
-        public override void Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context, RootState root)
         {
             throw new NotImplementedException();
         }
@@ -36,24 +31,18 @@ namespace CoreEngine.Model.States
             return Task.CompletedTask;
         }
 
-        public void VisitTransition(List<State> targetStates,
-                                    Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
-                                    RootState root)
+        public async Task VisitTransition(List<State> targetStates,
+                                          Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
+                                          RootState root)
         {
-            var transition = _transitions.Value.Single();
+            var transition = (await _transitions).Single();
 
-            transition.StoreDefaultHistoryContent(_parent.Id, defaultHistoryContent);
+            await transition.StoreDefaultHistoryContent(_parent.Id, defaultHistoryContent);
 
-            foreach (var targetState in transition.GetTargetStates(root))
+            foreach (var targetState in await transition.GetTargetStates(root))
             {
                 targetStates.Add(targetState);
             }
         }
-    }
-
-    internal enum HistoryType
-    {
-        Deep,
-        Shallow
     }
 }

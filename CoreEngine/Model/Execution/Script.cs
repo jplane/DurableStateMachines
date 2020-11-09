@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,23 +9,16 @@ namespace CoreEngine.Model.Execution
 {
     internal class Script : ExecutableContent
     {
-        private readonly string _source;
-        private readonly string _body;
-
-        public Script(XElement element)
-            : base(element)
+        public Script(IScriptMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
-
-            _source = element.Attribute("src")?.Value ?? string.Empty;
-            _body = element.Value ?? string.Empty;
         }
 
         protected override async Task _Execute(ExecutionContext context)
         {
-            if (!string.IsNullOrWhiteSpace(_body))
+            if (!string.IsNullOrWhiteSpace(((IScriptMetadata) _metadata).BodyExpression))
             {
-                await context.Eval<object>(_body);
+                await context.Eval<object>(((IScriptMetadata) _metadata).BodyExpression);
             }
             else
             {

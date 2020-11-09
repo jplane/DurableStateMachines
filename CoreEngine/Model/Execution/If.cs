@@ -4,52 +4,58 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.Execution.Metadata;
+using System.Diagnostics;
 
 namespace CoreEngine.Model.Execution
 {
     internal class If : ExecutableContent
     {
-        private readonly string _cond;
-        private readonly Lazy<List<ElseIf>> _elseifs;
-        private readonly Lazy<Else> _else;
-        private readonly Lazy<List<ExecutableContent>> _content;
+        private readonly AsyncLazy<ElseIf[]> _elseifs;
+        private readonly AsyncLazy<Else> _else;
+        private readonly AsyncLazy<ExecutableContent[]> _content;
 
-        public If(XElement element)
-            : base(element)
+        public If(IIfMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _cond = element.Attribute("cond").Value;
-
-            _else = new Lazy<Else>(() =>
+            _content = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var node = element.ScxmlElement("else");
-
-                return node == null ? null : new Else(node);
+                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
 
-            _elseifs = new Lazy<List<ElseIf>>(() =>
+            _else = new AsyncLazy<Else>(async () =>
             {
-                var nodes = element.ScxmlElements("elseif");
+                var elseExecutableContent = await metadata.GetElseExecutableContent();
 
-                return new List<ElseIf>(nodes.Select(n => new ElseIf(n)));
-            });
-
-            _content = new Lazy<List<ExecutableContent>>(() =>
-            {
-                var content = new List<ExecutableContent>();
-
-                foreach (var node in element.Elements())
+                if (elseExecutableContent != null)
                 {
-                    var item = ExecutableContent.Create(node);
+                    return new Else(elseExecutableContent);
+                }
+                else
+                {
+                    return null;
+                }
+            });
 
-                    if (item != null)
-                    {
-                        content.Add(item);
-                    }
+            _elseifs = new AsyncLazy<ElseIf[]>(() =>
+            {
+                var elseifs = new List<ElseIf>();
+
+                var conditions = metadata.ElseIfConditionExpressions.ToArray();
+
+                var content = metadata.GetElseIfExecutableContent().ToArray();
+
+                Debug.Assert(conditions.Length == content.Length);
+
+                for (var i = 0; i < conditions.Length; i++)
+                {
+                    elseifs.Add(new ElseIf(conditions[i], content[i]));
                 }
 
-                return content;
+                return Task.FromResult(elseifs.ToArray());
             });
         }
 
@@ -57,20 +63,20 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var result = await context.Eval<bool>(_cond);
+            var result = await context.Eval<bool>(((IIfMetadata) _metadata).IfConditionExpression);
 
             context.LogDebug($"Condition = {result}");
 
             if (result)
             {
-                foreach (var content in _content.Value)
+                foreach (var content in await _content)
                 {
                     await content.Execute(context);
                 }
             }
             else
             {
-                foreach (var elseif in _elseifs.Value)
+                foreach (var elseif in await _elseifs)
                 {
                     if (await elseif.ConditionalExecute(context))
                     {
@@ -78,9 +84,9 @@ namespace CoreEngine.Model.Execution
                     }
                 }
 
-                if (_else.Value != null)
+                if ((await _else) != null)
                 {
-                    await _else.Value.Execute(context);
+                    await (await _else)?.Execute(context);
                 }
             }
         }

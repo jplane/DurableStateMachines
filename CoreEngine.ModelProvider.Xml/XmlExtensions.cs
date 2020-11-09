@@ -1,12 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace CoreEngine
+namespace CoreEngine.ModelProvider.Xml
 {
     internal static class XmlExtensions
     {
@@ -40,35 +39,7 @@ namespace CoreEngine
             return localNames.Any(n => element.ScxmlNameEquals(n));
         }
 
-        private static XObject[] GetElementsAndAttributes(this XDocument document)
-        {
-            Debug.Assert(document != null);
-
-            var result = document.Annotation<XObject[]>();
-
-            if (result == null)
-            {
-                var xobjs = new List<XObject>();
-
-                foreach (var element in document.Descendants())
-                {
-                    xobjs.Add(element);
-
-                    foreach (var attribute in element.Attributes())
-                    {
-                        xobjs.Add(attribute);
-                    }
-                }
-
-                result = xobjs.ToArray();
-
-                document.AddAnnotation(result);
-            }
-
-            return result;
-        }
-
-        private static int GetDocumentPosition(this XObject xobj)
+        private static long GetDocumentPosition(this XObject xobj)
         {
             Debug.Assert(xobj != null);
 
@@ -76,14 +47,35 @@ namespace CoreEngine
 
             if (metadata == null)
             {
-                var items = xobj.Document.GetElementsAndAttributes();
+                var idx = 0L;
 
-                var idx = Array.IndexOf(items, xobj);
+                Action<XObject> addAnnotation = xo =>
+                {
+                    var md = new XObjectMetadata
+                    {
+                        DocumentPosition = idx++
+                    };
 
-                metadata = new XObjectMetadata { DocumentPosition = idx };
+                    xo.AddAnnotation(md);
 
-                xobj.AddAnnotation(metadata);
+                    if (xo == xobj)
+                    {
+                        metadata = md;
+                    }
+                };
+
+                foreach (var element in xobj.Document.Descendants())
+                {
+                    addAnnotation(element);
+
+                    foreach (var attribute in element.Attributes())
+                    {
+                        addAnnotation(attribute);
+                    }
+                }
             }
+
+            Debug.Assert(metadata != null);
 
             return metadata.DocumentPosition;
         }
@@ -111,17 +103,10 @@ namespace CoreEngine
                 return x1Pos == x2Pos ? 0 : x1Pos > x2Pos ? 1 : -1;
             }
         }
-
-        public static int GetReverseDocumentOrder(XObject x1, XObject x2)
-        {
-            var order = GetDocumentOrder(x1, x2);
-
-            return order * -1;
-        }
     }
 
     internal class XObjectMetadata
     {
-        public int DocumentPosition;
+        public long DocumentPosition;
     }
 }

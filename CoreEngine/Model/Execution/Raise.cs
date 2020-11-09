@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,21 +9,16 @@ namespace CoreEngine.Model.Execution
 {
     internal class Raise : ExecutableContent
     {
-        private readonly string _event;
-
-        public Raise(XElement element)
-            : base(element)
+        public Raise(IRaiseMetadata metadata)
+            : base(metadata)
         {
-            element.CheckArgNull(nameof(element));
-
-            _event = element.Attribute("event").Value;
         }
 
         protected override Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            context.EnqueueInternal(_event);
+            context.EnqueueInternal(((IRaiseMetadata) _metadata).Event);
 
             return Task.CompletedTask;
         }

@@ -4,62 +4,60 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.Diagnostics;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using Nito.AsyncEx;
+using System.Threading.Tasks;
 
 namespace CoreEngine.Model.States
 {
     internal class ParallelState : CompoundState
     {
-        public ParallelState(XElement element, State parent)
-            : base(element, parent)
+        public ParallelState(IParallelStateMetadata metadata, State parent)
+            : base(metadata, parent)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _states = new Lazy<List<State>>(() =>
+            _states = new AsyncLazy<State[]>(async () =>
             {
                 var states = new List<State>();
 
-                bool IsCompoundState(XElement el)
+                foreach (var stateMetadata in await metadata.GetStates())
                 {
-                    return el.ScxmlNameEquals("state") &&
-                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
-                }
-
-                foreach (var el in element.Elements())
-                {
-                    if (IsCompoundState(el))
+                    if (stateMetadata is ISequentialStateMetadata ssm)
                     {
-                        states.Add(new SequentialState(el, this));
+                        states.Add(new SequentialState(ssm, this));
                     }
-                    else if (el.ScxmlNameEquals("parallel"))
+                    else if (stateMetadata is IParallelStateMetadata psm)
                     {
-                        states.Add(new ParallelState(el, this));
+                        states.Add(new ParallelState(psm, this));
                     }
-                    else if (el.ScxmlNameEquals("state"))
+                    else if (stateMetadata is IAtomicStateMetadata asm)
                     {
-                        states.Add(new AtomicState(el, this));
+                        states.Add(new AtomicState(asm, this));
                     }
-                    else if (el.ScxmlNameEquals("history"))
+                    else if (stateMetadata is IHistoryStateMetadata hsm)
                     {
-                        states.Add(new HistoryState(el, this));
+                        states.Add(new HistoryState(hsm, this));
                     }
                 }
 
-                return states;
+                return states.ToArray();
             });
         }
 
         public override bool IsParallelState => true;
 
-        public override Transition GetInitialStateTransition()
+        public override async Task<bool> IsInFinalState(ExecutionContext context, RootState root)
         {
-            throw new NotImplementedException();
-        }
+            foreach (var child in await GetChildStates())
+            {
+                if (! await child.IsInFinalState(context, root))
+                {
+                    return false;
+                }
+            }
 
-        public override bool IsInFinalState(ExecutionContext context, RootState root)
-        {
-            var childStates = GetChildStates();
-
-            return childStates.All(s => s.IsInFinalState(context, root));
+            return true;
         }
     }
 }

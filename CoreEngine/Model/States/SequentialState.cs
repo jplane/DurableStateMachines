@@ -3,94 +3,82 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 using System.Linq;
+using Nito.AsyncEx;
+using CoreEngine.Abstractions.Model.States.Metadata;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace CoreEngine.Model.States
 {
-    class SequentialState : CompoundState
+    internal class SequentialState : CompoundState
     {
-        private readonly Lazy<Transition> _initialTransition;
-        private readonly Lazy<Initial> _initialElement;
+        private readonly AsyncLazy<Transition> _initialTransition;
 
-        public SequentialState(XElement element, State parent)
-            : base(element, parent)
+        public SequentialState(ISequentialStateMetadata metadata, State parent)
+            : base(metadata, parent)
         {
-            element.CheckArgNull(nameof(element));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _initialTransition = new Lazy<Transition>(() =>
+            _initialTransition = new AsyncLazy<Transition>(async () =>
             {
-                var attr = element.Attribute("initial");
+                var meta = await metadata.GetInitialTransition();
 
-                return attr == null ? null : new Transition(attr, this);
+                if (meta != null)
+                    return new Transition(meta, this);
+                else
+                    return null;
             });
 
-            _initialElement = new Lazy<Initial>(() =>
-            {
-                var node = element.ScxmlElement("initial");
-
-                return node == null ? null : new Initial(node, this);
-            });
-
-            _states = new Lazy<List<State>>(() =>
+            _states = new AsyncLazy<State[]>(async () =>
             {
                 var states = new List<State>();
 
-                bool IsCompoundState(XElement el)
+                foreach (var stateMetadata in await metadata.GetStates())
                 {
-                    return el.ScxmlNameEquals("state") &&
-                           el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
-                }
-
-                foreach (var el in element.Elements())
-                {
-                    if (IsCompoundState(el))
+                    if (stateMetadata is ISequentialStateMetadata ssm)
                     {
-                        states.Add(new SequentialState(el, this));
+                        states.Add(new SequentialState(ssm, this));
                     }
-                    else if (el.ScxmlNameEquals("parallel"))
+                    else if (stateMetadata is IParallelStateMetadata psm)
                     {
-                        states.Add(new ParallelState(el, this));
+                        states.Add(new ParallelState(psm, this));
                     }
-                    else if (el.ScxmlNameEquals("final"))
+                    else if (stateMetadata is IAtomicStateMetadata asm)
                     {
-                        states.Add(new FinalState(el, this));
+                        states.Add(new AtomicState(asm, this));
                     }
-                    else if (el.ScxmlNameEquals("state"))
+                    else if (stateMetadata is IFinalStateMetadata fsm)
                     {
-                        states.Add(new AtomicState(el, this));
+                        states.Add(new FinalState(fsm, this));
                     }
-                    else if (el.ScxmlNameEquals("history"))
+                    else if (stateMetadata is IHistoryStateMetadata hsm)
                     {
-                        states.Add(new HistoryState(el, this));
+                        states.Add(new HistoryState(hsm, this));
                     }
                 }
 
-                return states;
+                return states.ToArray();
             });
         }
 
         public override bool IsSequentialState => true;
 
-        public override Transition GetInitialStateTransition()
+        public override Task<Transition> GetInitialStateTransition()
         {
-            if (_initialTransition.Value != null)
-            {
-                return _initialTransition.Value;
-            }
-            else if (_initialElement.Value != null)
-            {
-                return _initialElement.Value.Transition;
-            }
-            else
-            {
-                return base.GetInitialStateTransition();
-            }
+            return _initialTransition.Task;
         }
 
-        public override bool IsInFinalState(ExecutionContext context, RootState root)
+        public override async Task<bool> IsInFinalState(ExecutionContext context, RootState root)
         {
-            var childStates = GetChildStates();
+            foreach (var child in await GetChildStates())
+            {
+                if (await child.IsInFinalState(context, root) && context.Configuration.Contains(child))
+                {
+                    return true;
+                }
+            }
 
-            return childStates.Any(s => s.IsFinalState && context.Configuration.Contains(s));
+            return false;
         }
     }
 }
