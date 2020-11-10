@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
 using System.Linq;
 using Nito.AsyncEx;
 using CoreEngine.Abstractions.Model.States.Metadata;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace CoreEngine.Model.States
 {

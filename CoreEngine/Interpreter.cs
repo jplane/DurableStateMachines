@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
 using System.Linq;
-using System.Threading;
-using CoreEngine.Model;
 using CoreEngine.Model.States;
 using CoreEngine.Model.Execution;
 using System.Diagnostics;
@@ -17,7 +13,6 @@ namespace CoreEngine
     public class Interpreter
     {
         private readonly AsyncLazy<RootState> _root;
-        private readonly ExecutionContext _executionContext;
 
         public Interpreter(IModelMetadata metadata)
         {
@@ -28,25 +23,25 @@ namespace CoreEngine
                 return new RootState(await metadata.GetRootState());
             });
 
-            _executionContext = new ExecutionContext();
+            Context = new ExecutionContext();
 
-            _executionContext.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
+            Context.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
         }
 
-        public ExecutionContext Context => _executionContext;
+        public ExecutionContext Context { get; }
 
         public async Task Run()
         {
-            _executionContext.SetDataValue("_name", (await _root).Name);
+            Context.SetDataValue("_name", (await _root).Name);
 
             if ((await _root).Binding == Databinding.Early)
             {
-                await (await _root).InitDatamodel(_executionContext, true);
+                await (await _root).InitDatamodel(Context, true);
             }
 
-            _executionContext.IsRunning = true;
+            Context.IsRunning = true;
 
-            await (await _root).ExecuteScript(_executionContext);
+            await (await _root).ExecuteScript(Context);
 
             await EnterStates(new List<Transition>(new []{ await (await _root).GetInitialStateTransition() }));
 
@@ -55,23 +50,23 @@ namespace CoreEngine
 
         private async Task DoEventLoop()
         {
-            _executionContext.LogInformation("Start: event loop");
+            Context.LogInformation("Start: event loop");
 
-            while (_executionContext.IsRunning)
+            while (Context.IsRunning)
             {
-                _executionContext.LogInformation("Start: event loop cycle");
+                Context.LogInformation("Start: event loop cycle");
 
                 Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
 
-                while (_executionContext.IsRunning && ! macrostepDone)
+                while (Context.IsRunning && ! macrostepDone)
                 {
                     enabledTransitions = await SelectEventlessTransitions();
 
                     if (enabledTransitions.IsEmpty())
                     {
-                        var internalEvent = _executionContext.DequeueInternal();
+                        var internalEvent = Context.DequeueInternal();
 
                         if (internalEvent == null)
                         {
@@ -89,37 +84,37 @@ namespace CoreEngine
                     }
                 }
 
-                if (! _executionContext.IsRunning)
+                if (! Context.IsRunning)
                 {
-                    _executionContext.LogInformation("End: event loop cycle");
+                    Context.LogInformation("End: event loop cycle");
                     break;
                 }
 
-                foreach (var state in _executionContext.StatesToInvoke.Sort(State.Compare))
+                foreach (var state in Context.StatesToInvoke.Sort(State.Compare))
                 {
-                    await state.Invoke(_executionContext, (await _root));
+                    await state.Invoke(Context, await _root);
                 }
 
-                _executionContext.StatesToInvoke.Clear();
+                Context.StatesToInvoke.Clear();
 
-                if (_executionContext.HasInternalEvents)
+                if (Context.HasInternalEvents)
                 {
-                    _executionContext.LogInformation("End: event loop cycle");
+                    Context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
-                var externalEvent = await _executionContext.DequeueExternal();
+                var externalEvent = await Context.DequeueExternal();
 
                 if (externalEvent.IsCancel)
                 {
-                    _executionContext.IsRunning = false;
-                    _executionContext.LogInformation("End: event loop cycle");
+                    Context.IsRunning = false;
+                    Context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
-                foreach (var state in _executionContext.Configuration)
+                foreach (var state in Context.Configuration)
                 {
-                    await state.ProcessExternalEvent(_executionContext, externalEvent);
+                    await state.ProcessExternalEvent(Context, externalEvent);
                 }
 
                 enabledTransitions = await SelectTransitions(externalEvent);
@@ -129,12 +124,12 @@ namespace CoreEngine
                     await Microstep(enabledTransitions);
                 }
 
-                _executionContext.LogInformation("End: event loop cycle");
+                Context.LogInformation("End: event loop cycle");
             }
 
-            foreach (var state in _executionContext.Configuration.Sort(State.ReverseCompare))
+            foreach (var state in Context.Configuration.Sort(State.ReverseCompare))
             {
-                await state.Exit(_executionContext);
+                await state.Exit(Context);
 
                 if (state.IsFinalState)
                 {
@@ -145,7 +140,7 @@ namespace CoreEngine
                 }
             }
 
-            _executionContext.LogInformation("End: event loop");
+            Context.LogInformation("End: event loop");
         }
 
         private void ReturnDoneEvent(State state)
@@ -163,7 +158,9 @@ namespace CoreEngine
             
             foreach (var transition in enabledTransitions)
             {
-                await transition.ExecuteContent(_executionContext);
+                Debug.Assert(transition != null);
+
+                await transition.ExecuteContent(Context);
             }
 
             await EnterStates(enabledTransitions);
@@ -177,14 +174,18 @@ namespace CoreEngine
 
             foreach (var state in exitSet)
             {
-                _executionContext.StatesToInvoke.Remove(state);
+                Debug.Assert(state != null);
+
+                Context.StatesToInvoke.Remove(state);
             }
 
             foreach (var state in exitSet.Sort(State.ReverseCompare))
             {
-                await state.RecordHistory(_executionContext);
+                Debug.Assert(state != null);
 
-                await state.Exit(_executionContext);
+                await state.RecordHistory(Context);
+
+                await state.Exit(Context);
             }
         }
 
@@ -196,11 +197,15 @@ namespace CoreEngine
 
             foreach (var transition in transitions)
             {
+                Debug.Assert(transition != null);
+
                 if (transition.HasTargets)
                 {
-                    var domain = await transition.GetTransitionDomain(_executionContext, (await _root));
+                    var domain = await transition.GetTransitionDomain(Context, await _root);
 
-                    foreach (var state in _executionContext.Configuration)
+                    Debug.Assert(domain != null);
+
+                    foreach (var state in Context.Configuration)
                     {
                         if (state.IsDescendent(domain))
                         {
@@ -216,13 +221,13 @@ namespace CoreEngine
         private Task<Set<Transition>> SelectTransitions(Event evt)
         {
             return SelectTransitions(async transition => transition.MatchesEvent(evt) &&
-                                                         await transition.EvaluateCondition(_executionContext));
+                                                         await transition.EvaluateCondition(Context));
         }
 
         private Task<Set<Transition>> SelectEventlessTransitions()
         {
             return SelectTransitions(async transition => !transition.HasEvent &&
-                                                         await transition.EvaluateCondition(_executionContext));
+                                                         await transition.EvaluateCondition(Context));
         }
 
         private async Task<Set<Transition>> SelectTransitions(Func<Transition, Task<bool>> predicate)
@@ -231,9 +236,7 @@ namespace CoreEngine
 
             var enabledTransitions = new Set<Transition>();
 
-            var atomicStates = _executionContext.Configuration
-                                                .Sort(State.Compare)
-                                                .Where(s => s.IsAtomic);
+            var atomicStates = Context.Configuration.Sort(State.Compare).Where(s => s.IsAtomic);
 
             foreach (var state in atomicStates)
             {
@@ -242,15 +245,19 @@ namespace CoreEngine
                     state
                 };
 
-                foreach (var anc in state.GetProperAncestors((await _root)))
+                foreach (var anc in state.GetProperAncestors(await _root))
                 {
                     all.Add(anc);
                 }
 
                 foreach (var s in all)
                 {
+                    Debug.Assert(s != null);
+
                     foreach (var transition in await s.GetTransitions())
                     {
+                        Debug.Assert(transition != null);
+
                         if (await predicate(transition))
                         {
                             enabledTransitions.Add(transition);
@@ -265,6 +272,8 @@ namespace CoreEngine
 
             enabledTransitions = await RemoveConflictingTransitions(enabledTransitions);
 
+            Debug.Assert(enabledTransitions != null);
+
             return enabledTransitions;
         }
 
@@ -276,15 +285,23 @@ namespace CoreEngine
 
             foreach (var transition1 in enabledTransitions)
             {
+                Debug.Assert(transition1 != null);
+
                 var t1Preempted = false;
 
                 var transitionsToRemove = new Set<Transition>();
 
                 foreach (var transition2 in filteredTransitions)
                 {
+                    Debug.Assert(transition2 != null);
+
                     var exitSet1 = await ComputeExitSet(new List<Transition> { transition1 });
 
+                    Debug.Assert(exitSet1 != null);
+
                     var exitSet2 = await ComputeExitSet(new List<Transition> { transition2 });
+
+                    Debug.Assert(exitSet2 != null);
 
                     if (exitSet1.HasIntersection(exitSet2))
                     {
@@ -304,6 +321,8 @@ namespace CoreEngine
                 {
                     foreach (var transition3 in transitionsToRemove)
                     {
+                        Debug.Assert(transition3 != null);
+
                         filteredTransitions.Remove(transition3);
                     }
 
@@ -326,7 +345,9 @@ namespace CoreEngine
 
             foreach (var state in statesToEnter.Sort(State.Compare))
             {
-                await state.Enter(_executionContext, (await _root), statesForDefaultEntry, defaultHistoryContent);
+                Debug.Assert(state != null);
+
+                await state.Enter(Context, await _root, statesForDefaultEntry, defaultHistoryContent);
             }
         }
 
@@ -341,17 +362,23 @@ namespace CoreEngine
             {
                 Debug.Assert(transition != null);
 
-                foreach (var state in await transition.GetTargetStates((await _root)))
+                foreach (var state in await transition.GetTargetStates(await _root))
                 {
+                    Debug.Assert(state != null);
+
                     await AddDescendentStatesToEnter(state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
 
-                var ancestor = await transition.GetTransitionDomain(_executionContext, (await _root));
+                var ancestor = await transition.GetTransitionDomain(Context, await _root);
 
-                var effectiveTargetStates = await transition.GetEffectiveTargetStates(_executionContext, (await _root));
+                var effectiveTargetStates = await transition.GetEffectiveTargetStates(Context, await _root);
+
+                Debug.Assert(effectiveTargetStates != null);
 
                 foreach (var state in effectiveTargetStates)
                 {
+                    Debug.Assert(state != null);
+
                     await AddAncestorStatesToEnter(state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
             }
@@ -368,16 +395,24 @@ namespace CoreEngine
 
             var ancestors = state.GetProperAncestors(ancestor);
 
+            Debug.Assert(ancestors != null);
+
             foreach (var anc in ancestors)
             {
+                Debug.Assert(anc != null);
+
                 statesToEnter.Add(anc);
 
                 if (anc.IsParallelState)
                 {
                     var childStates = await anc.GetChildStates();
 
+                    Debug.Assert(childStates != null);
+
                     foreach (var child in childStates)
                     {
+                        Debug.Assert(child != null);
+
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
                             await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
@@ -398,15 +433,19 @@ namespace CoreEngine
 
             if (state.IsHistoryState)
             {
-                if (_executionContext.TryGetHistoryValue(state.Id, out IEnumerable<State> states))
+                if (Context.TryGetHistoryValue(state.Id, out IEnumerable<State> states))
                 {
                     foreach (var s in states)
                     {
+                        Debug.Assert(s != null);
+
                         await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in states)
                     {
+                        Debug.Assert(s != null);
+
                         await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
@@ -414,15 +453,19 @@ namespace CoreEngine
                 {
                     var targetStates = new List<State>();
 
-                    await ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, (await _root));
+                    await ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, await _root);
 
                     foreach (var s in targetStates)
                     {
+                        Debug.Assert(s != null);
+
                         await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in targetStates)
                     {
+                        Debug.Assert(s != null);
+
                         await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
@@ -439,15 +482,21 @@ namespace CoreEngine
 
                     Debug.Assert(initialTransition != null);
 
-                    var targetStates = await initialTransition.GetTargetStates((await _root));
+                    var targetStates = await initialTransition.GetTargetStates(await _root);
+
+                    Debug.Assert(targetStates != null);
 
                     foreach (var s in targetStates)
                     {
+                        Debug.Assert(s != null);
+
                         await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
                     foreach (var s in targetStates)
                     {
+                        Debug.Assert(s != null);
+
                         await AddAncestorStatesToEnter(s, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
@@ -455,8 +504,12 @@ namespace CoreEngine
                 {
                     var childStates = await state.GetChildStates();
 
+                    Debug.Assert(childStates != null);
+
                     foreach (var child in childStates)
                     {
+                        Debug.Assert(child != null);
+
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
                             await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);

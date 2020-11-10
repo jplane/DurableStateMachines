@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Xml.Linq;
 
 namespace CoreEngine
 {
@@ -72,6 +70,8 @@ namespace CoreEngine
 
         public IEnumerable<T> Sort(Comparison<T> comparison)
         {
+            comparison.CheckArgNull(nameof(comparison));
+
             var list = _items.ToArray().ToList();   // make a copy
 
             list.Sort(comparison);

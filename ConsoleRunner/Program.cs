@@ -2,14 +2,7 @@
 using System;
 using System.Xml.Linq;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using System.Dynamic;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using CoreEngine.ModelProvider.Xml;
 
 namespace ConsoleRunner
@@ -33,9 +26,9 @@ namespace ConsoleRunner
 
             using (var scope = logger.BeginScope(""))
             {
-                task = RunMicrowave(logger);
+                //task = RunMicrowave(logger);
 
-                //task = RunForeach(logger);
+                task = RunForeach(logger);
             }
 
             Task.WaitAll(Task.Delay(5000), task);

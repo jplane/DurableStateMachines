@@ -1,12 +1,7 @@
 ﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
-using Microsoft.CodeAnalysis;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CoreEngine.Model.Execution
 {

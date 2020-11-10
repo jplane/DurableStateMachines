@@ -1,6 +1,4 @@
 ﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
-using System;
-using System.Xml.Linq;
 
 namespace CoreEngine.Model.DataManipulation
 {

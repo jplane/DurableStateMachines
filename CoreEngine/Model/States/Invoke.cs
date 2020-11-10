@@ -1,8 +1,5 @@
 ﻿using CoreEngine.Model.DataManipulation;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreEngine.Abstractions.Model.States.Metadata;
