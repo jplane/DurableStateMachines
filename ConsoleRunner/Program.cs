@@ -26,9 +26,9 @@ namespace ConsoleRunner
 
             using (var scope = logger.BeginScope(""))
             {
-                task = RunMicrowave(logger);
+                //task = RunMicrowave(logger);
 
-                //task = RunForeach(logger);
+                task = RunForeach(logger);
             }
 
             Task.WaitAll(Task.Delay(5000), task);

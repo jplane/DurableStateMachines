@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CSharp.RuntimeBinder;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -18,12 +19,20 @@ namespace CoreEngine.ModelProvider.Xml
     {
         public static async Task<Func<dynamic, Task<T>>> Compile<T>(string expression)
         {
+            expression.CheckArgNull(nameof(expression));
+
             var syntaxTree = LambdaRewriter.Rewrite<T>(expression);
+
+            Debug.Assert(syntaxTree != null);
 
             syntaxTree = syntaxTree.WithRootAndOptions(syntaxTree.GetRoot(),
                                                        CSharpParseOptions.Default.WithKind(SourceCodeKind.Script));
 
+            Debug.Assert(syntaxTree != null);
+
             var assemblyName = Path.GetRandomFileName();
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(assemblyName));
 
             var compileOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, usings: new[]
             {
@@ -47,38 +56,69 @@ namespace CoreEngine.ModelProvider.Xml
                     MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location)
                 };
 
-            var scriptCompilation = CSharpCompilation.CreateScriptCompilation(assemblyName, syntaxTree, references, compileOptions);
+            var scriptCompilation = CSharpCompilation.CreateScriptCompilation(assemblyName,
+                                                                              syntaxTree,
+                                                                              references,
+                                                                              compileOptions);
+
+            Debug.Assert(scriptCompilation != null);
 
             var errorDiagnostics = scriptCompilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
 
             if (errorDiagnostics.Any())
             {
-                throw new Exception("Compiler error.");
+                throw new ExpressionCompilerException(errorDiagnostics.Select(ed => ed.GetMessage()));
             }
 
             using (var peStream = new MemoryStream())
             {
                 var emitResult = scriptCompilation.Emit(peStream);
 
+                Debug.Assert(emitResult != null);
+
                 if (emitResult.Success)
                 {
-                    var assembly = Assembly.Load(peStream.ToArray());
+                    return await ResolveFunction<T>(scriptCompilation, peStream);
+                }
+                else
+                {
+                    errorDiagnostics = emitResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error);
 
-                    var entryPoint = scriptCompilation.GetEntryPoint(CancellationToken.None);
-
-                    var type = assembly.GetType($"{entryPoint.ContainingNamespace.MetadataName}.{entryPoint.ContainingType.MetadataName}");
-
-                    var method = type.GetMethod(entryPoint.MetadataName);
-
-                    var factory = (Func<object[], Task<object>>)method.CreateDelegate(typeof(Func<object[], Task<object>>));
-
-                    var factoryTask = factory(new object[] { null, null });
-
-                    return (Func<dynamic, Task<T>>)await factoryTask;
+                    throw new ExpressionCompilerException(errorDiagnostics.Select(ed => ed.GetMessage()));
                 }
             }
+        }
 
-            throw new Exception("Compiler error.");
+        private static async Task<Func<dynamic, Task<T>>> ResolveFunction<T>(CSharpCompilation scriptCompilation, MemoryStream peStream)
+        {
+            Debug.Assert(scriptCompilation != null);
+            Debug.Assert(peStream != null);
+
+            var assembly = Assembly.Load(peStream.ToArray());
+
+            Debug.Assert(assembly != null);
+
+            var entryPoint = scriptCompilation.GetEntryPoint(CancellationToken.None);
+
+            Debug.Assert(entryPoint != null);
+
+            var entryType = assembly.GetType($"{entryPoint.ContainingNamespace.MetadataName}.{entryPoint.ContainingType.MetadataName}");
+
+            Debug.Assert(entryType != null);
+
+            var entryMethod = entryType.GetMethod(entryPoint.MetadataName);
+
+            Debug.Assert(entryMethod != null);
+
+            var factory = (Func<object[], Task<object>>) entryMethod.CreateDelegate(typeof(Func<object[], Task<object>>));
+
+            Debug.Assert(factory != null);
+
+            var factoryTask = factory(new object[] { null, null });
+
+            Debug.Assert(factoryTask != null);
+
+            return (Func<dynamic, Task<T>>) await factoryTask;
         }
 
         private class LambdaRewriter : CSharpSyntaxRewriter
@@ -88,12 +128,18 @@ namespace CoreEngine.ModelProvider.Xml
 
             public static SyntaxTree Rewrite<T>(string expression)
             {
+                expression.CheckArgNull(nameof(expression));
+
                 var syntaxTree = CSharpSyntaxTree.ParseText(expression,
                                                             CSharpParseOptions.Default.WithKind(SourceCodeKind.Script));
+
+                Debug.Assert(syntaxTree != null);
 
                 var localsRewriter = new ReplaceLocalsRewriter();
 
                 syntaxTree = localsRewriter.Visit(syntaxTree.GetRoot()).SyntaxTree;
+
+                Debug.Assert(syntaxTree != null);
 
                 var lambdaRewriter = new LambdaRewriter(syntaxTree, typeof(T));
 
@@ -101,11 +147,16 @@ namespace CoreEngine.ModelProvider.Xml
 
                 var targetSyntaxTree = CSharpSyntaxTree.ParseText(expr, CSharpParseOptions.Default.WithKind(SourceCodeKind.Script));
 
+                Debug.Assert(targetSyntaxTree != null);
+
                 return lambdaRewriter.Visit(targetSyntaxTree.GetRoot()).SyntaxTree;
             }
 
             private LambdaRewriter(SyntaxTree tree, Type returnType)
             {
+                tree.CheckArgNull(nameof(tree));
+                returnType.CheckArgNull(nameof(returnType));
+
                 _returnType = returnType;
 
                 _expr = tree.GetRoot().DescendantNodes()
@@ -118,6 +169,10 @@ namespace CoreEngine.ModelProvider.Xml
 
             public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
             {
+                Debug.Assert(node != null);
+                Debug.Assert(_expr != null);
+                Debug.Assert(_returnType != null);
+
                 if (node.Identifier.ValueText == "EXPR")
                 {
                     return _expr;
@@ -142,6 +197,8 @@ namespace CoreEngine.ModelProvider.Xml
 
                 var syntaxTree = CSharpSyntaxTree.ParseText(expr, CSharpParseOptions.Default.WithKind(SourceCodeKind.Script));
 
+                Debug.Assert(syntaxTree != null);
+
                 _tempRoot = syntaxTree.GetRoot();
 
                 _tempIdentifier = _tempRoot.DescendantNodes().OfType<IdentifierNameSyntax>()
@@ -150,6 +207,10 @@ namespace CoreEngine.ModelProvider.Xml
 
             private ExpressionSyntax GetUpdatedMemberAccess(IdentifierNameSyntax identifier)
             {
+                Debug.Assert(identifier != null);
+                Debug.Assert(_tempRoot != null);
+                Debug.Assert(_tempIdentifier != null);
+
                 var updatedRoot = _tempRoot.ReplaceNode(_tempIdentifier, identifier);
 
                 return updatedRoot.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First();
@@ -157,6 +218,8 @@ namespace CoreEngine.ModelProvider.Xml
 
             public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
             {
+                Debug.Assert(node != null);
+
                 if (node.Parent is MemberAccessExpressionSyntax mae)
                 {
                     if (mae.Name != node)
