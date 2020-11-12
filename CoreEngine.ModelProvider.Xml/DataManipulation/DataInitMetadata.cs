@@ -1,18 +1,22 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
 using Nito.AsyncEx;
 using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.Execution
+namespace CoreEngine.ModelProvider.Xml.DataManipulation
 {
-    public class AssignMetadata : ExecutableContentMetadata, IAssignMetadata
+    public class DataInitMetadata : IDataInitMetadata
     {
+        private readonly XElement _element;
         private readonly AsyncLazy<Func<dynamic, Task<object>>> _getter;
 
-        public AssignMetadata(XElement element)
-            : base(element)
+        public DataInitMetadata(XElement element)
         {
+            element.CheckArgNull(nameof(element));
+
+            _element = element;
+
             _getter = new AsyncLazy<Func<dynamic, Task<object>>>(async () =>
             {
                 if (!string.IsNullOrWhiteSpace(this.Expression))
@@ -26,14 +30,16 @@ namespace CoreEngine.ModelProvider.Xml.Execution
             });
         }
 
+        public string Id => _element.Attribute("id").Value;
+
         public async Task<object> GetValue(dynamic data)
         {
             return await (await _getter)(data);
         }
 
-        public string Location => _element.Attribute("location").Value;
+        private string Source => _element.Attribute("src")?.Value ?? string.Empty;
 
-        private string Expression => _element.Attribute("expr").Value ?? string.Empty;
+        private string Expression => _element.Attribute("expr")?.Value ?? string.Empty;
 
         private string Body => _element.Value ?? string.Empty;
     }

@@ -13,14 +13,9 @@ namespace CoreEngine.Model.Execution
 
         protected override async Task _Execute(ExecutionContext context)
         {
-            if (!string.IsNullOrWhiteSpace(((IScriptMetadata) _metadata).BodyExpression))
-            {
-                await context.Eval<object>(((IScriptMetadata) _metadata).BodyExpression);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            context.CheckArgNull(nameof(context));
+
+            await ((IScriptMetadata) _metadata).Execute(context.ScriptData);
         }
     }
 }

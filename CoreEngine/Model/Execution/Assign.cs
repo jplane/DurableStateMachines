@@ -15,18 +15,13 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            if (!string.IsNullOrWhiteSpace(((IAssignMetadata) _metadata).Expression))
-            {
-                var value = await context.Eval<object>(((IAssignMetadata) _metadata).Expression);
+            var assignMetadata = (IAssignMetadata) _metadata;
 
-                context.SetDataValue(((IAssignMetadata) _metadata).Location, value);
+            var value = await assignMetadata.GetValue(context.ScriptData);
 
-                context.LogDebug($"Set {((IAssignMetadata) _metadata).Location} = {value}");
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            context.SetDataValue(assignMetadata.Location, value);
+
+            context.LogDebug($"Set {assignMetadata.Location} = {value}");
         }
     }
 }

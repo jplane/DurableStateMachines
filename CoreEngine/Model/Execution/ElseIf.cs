@@ -3,15 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using CoreEngine.Abstractions.Model.Execution.Metadata;
+using System;
 
 namespace CoreEngine.Model.Execution
 {
     internal class ElseIf
     {
         private readonly AsyncLazy<ExecutableContent[]> _content;
-        private readonly string _cond;
+        private readonly Func<dynamic, Task<bool>> _cond;
 
-        public ElseIf(string condition, Task<IEnumerable<IExecutableContentMetadata>> contentMetadata)
+        public ElseIf(Func<dynamic, Task<bool>> condition, Task<IEnumerable<IExecutableContentMetadata>> contentMetadata)
         {
             contentMetadata.CheckArgNull(nameof(contentMetadata));
 
@@ -31,7 +32,7 @@ namespace CoreEngine.Model.Execution
 
             try
             {
-                var result = await context.Eval<bool>(_cond);
+                var result = await _cond(context.ScriptData);
 
                 context.LogDebug($"Condition = {result}");
 

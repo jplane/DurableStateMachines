@@ -71,20 +71,15 @@ namespace CoreEngine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            async Task<bool> Eval(string condition)
+            try
             {
-                try
-                {
-                    return await context.Eval<bool>(condition);
-                }
-                catch(Exception ex)
-                {
-                    context.EnqueueExecutionError(ex);
-                    return false;
-                }
+                return await _metadata.EvalCondition(context.ScriptData);
             }
-
-            return string.IsNullOrWhiteSpace(_metadata.ConditionExpr) ? true : await Eval(_metadata.ConditionExpr);
+            catch (Exception ex)
+            {
+                context.EnqueueExecutionError(ex);
+                return false;
+            }
         }
 
         public async Task ExecuteContent(ExecutionContext context)

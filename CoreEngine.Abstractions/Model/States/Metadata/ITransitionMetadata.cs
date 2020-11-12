@@ -8,9 +8,9 @@ namespace CoreEngine.Abstractions.Model.States.Metadata
     {
         IEnumerable<string> Targets { get; }
         IEnumerable<string> Events { get; }
-        string ConditionExpr { get; }
         TransitionType Type { get; }
 
+        Task<bool> EvalCondition(dynamic data);
         Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
     }
 }

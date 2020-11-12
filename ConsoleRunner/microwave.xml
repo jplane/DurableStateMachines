@@ -21,10 +21,10 @@
     </initial>
 
     <transition event="turn.off" target="off"/>
-    <transition cond="data.timer &gt;= data.cook_time" target="off"/>
+    <transition cond="timer &gt;= cook_time" target="off"/>
 
     <state id="idle">
-      <transition cond="data.door_closed" target="cooking"/>
+      <transition cond="door_closed" target="cooking"/>
       <transition event="door.close" target="cooking">
         <assign location="door_closed" expr="true"/>
       </transition>
@@ -35,7 +35,7 @@
         <assign location="door_closed" expr="false"/>
       </transition>
       <transition event="time">
-        <assign location="timer" expr="data.timer + 1"/>
+        <assign location="timer" expr="timer + 1"/>
       </transition>
     </state>
 

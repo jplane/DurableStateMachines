@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CoreEngine.Abstractions.Model.Execution.Metadata
 {
     public interface IIfMetadata : IExecutableContentMetadata
     {
-        string IfConditionExpression { get; }
+        Task<bool> EvalIfCondition(dynamic data);
 
-        IEnumerable<string> ElseIfConditionExpressions { get; }
+        Task<IEnumerable<Func<dynamic, Task<bool>>>> GetElseIfConditions();
 
         Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
 

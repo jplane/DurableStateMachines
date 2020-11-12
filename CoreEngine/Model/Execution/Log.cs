@@ -14,12 +14,9 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            if (!string.IsNullOrWhiteSpace(((ILogMetadata) _metadata).Message))
-            {
-                var message = await context.Eval<string>(((ILogMetadata) _metadata).Message);
+            var message = await ((ILogMetadata) _metadata).GetMessage(context.ScriptData);
 
-                context.LogInformation("Log: " + message);
-            }
+            context.LogInformation("Log: " + message);
         }
     }
 }

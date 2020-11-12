@@ -1,25 +1,36 @@
 ﻿using System.Collections.Generic;
 using System.Dynamic;
+using System.Threading.Tasks;
 
 namespace CoreEngine
 {
     public class DynamicDictionary : DynamicObject
     {
-        private readonly Dictionary<string, object> _inner;
+        private readonly IDictionary<string, object> _data;
 
-        public DynamicDictionary(Dictionary<string, object> inner)
+        public DynamicDictionary(IDictionary<string, object> data)
         {
-            _inner = inner;
+            data.CheckArgNull(nameof(data));
+
+            _data = data;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            return _inner.TryGetValue(binder.Name, out result);
+            if (_data.TryGetValue(binder.Name, out result))
+            {
+                result = Task.FromResult(result);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _inner[binder.Name] = value;
+            _data[binder.Name] = value;
 
             return true;
         }

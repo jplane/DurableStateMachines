@@ -10,7 +10,6 @@ namespace CoreEngine
 {
     public class ExecutionContext
     {
-        private readonly ExpressionEvaluator _eval;
         private readonly Dictionary<string, object> _data;
         private readonly Queue<Event> _internalQueue;
         private readonly Queue<Event> _externalQueue;
@@ -20,7 +19,6 @@ namespace CoreEngine
         public ExecutionContext()
         {
             _data = new Dictionary<string, object>();
-            _eval = new ExpressionEvaluator(this);
             _internalQueue = new Queue<Event>();
             _externalQueue = new Queue<Event>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
@@ -58,18 +56,6 @@ namespace CoreEngine
         internal bool TryGet(string key, out object value)
         {
             return _data.TryGetValue(key, out value);
-        }
-
-        internal Task<T> Eval<T>(string expression)
-        {
-            try
-            {
-                return _eval.Eval<T>(expression);
-            }
-            catch(Exception ex)
-            {
-                return Task.FromException<T>(ex);
-            }
         }
 
         internal void EnqueueInternal(string eventName, params object[] dataPairs)

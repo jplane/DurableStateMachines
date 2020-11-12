@@ -1,4 +1,7 @@
 ﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using Nito.AsyncEx;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,12 +11,23 @@ namespace CoreEngine.ModelProvider.Xml.Execution
 {
     public class ForeachMetadata : ExecutableContentMetadata, IForeachMetadata
     {
+        private readonly AsyncLazy<Func<dynamic, Task<IEnumerable>>> _arrayGetter;
+
         public ForeachMetadata(XElement element)
             : base(element)
         {
+            _arrayGetter = new AsyncLazy<Func<dynamic, Task<IEnumerable>>>(async () =>
+            {
+                return await ExpressionCompiler.Compile<IEnumerable>(this.ArrayExpression);
+            });
         }
 
-        public string ArrayExpression => _element.Attribute("array").Value;
+        public async Task<IEnumerable> GetArray(dynamic data)
+        {
+            return await (await _arrayGetter)(data);
+        }
+
+        private string ArrayExpression => _element.Attribute("array").Value;
 
         public string Item => _element.Attribute("item").Value;
 

@@ -1,8 +1,9 @@
-﻿namespace CoreEngine.Abstractions.Model.Execution.Metadata
+﻿using System.Threading.Tasks;
+
+namespace CoreEngine.Abstractions.Model.Execution.Metadata
 {
     public interface IScriptMetadata : IExecutableContentMetadata
     {
-        string Source { get; }
-        string BodyExpression { get; }
+        Task Execute(dynamic data);
     }
 }

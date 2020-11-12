@@ -37,11 +37,11 @@ namespace CoreEngine.Model.Execution
                 }
             });
 
-            _elseifs = new AsyncLazy<ElseIf[]>(() =>
+            _elseifs = new AsyncLazy<ElseIf[]>(async () =>
             {
                 var elseifs = new List<ElseIf>();
 
-                var conditions = metadata.ElseIfConditionExpressions.ToArray();
+                var conditions = (await metadata.GetElseIfConditions()).ToArray();
 
                 var content = metadata.GetElseIfExecutableContent().ToArray();
 
@@ -52,7 +52,7 @@ namespace CoreEngine.Model.Execution
                     elseifs.Add(new ElseIf(conditions[i], content[i]));
                 }
 
-                return Task.FromResult(elseifs.ToArray());
+                return elseifs.ToArray();
             });
         }
 
@@ -60,7 +60,7 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var result = await context.Eval<bool>(((IIfMetadata) _metadata).IfConditionExpression);
+            var result = await ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
 
             context.LogDebug($"Condition = {result}");
 

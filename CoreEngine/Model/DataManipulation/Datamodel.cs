@@ -7,15 +7,15 @@ namespace CoreEngine.Model.DataManipulation
 {
     internal class Datamodel
     {
-        protected readonly AsyncLazy<Data[]> _data;
+        protected readonly AsyncLazy<DataInit[]> _data;
 
         public Datamodel(IDatamodelMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _data = new AsyncLazy<Data[]>(async () =>
+            _data = new AsyncLazy<DataInit[]>(async () =>
             {
-                return (await metadata.GetData()).Select(d => new Data(d)).ToArray();
+                return (await metadata.GetData()).Select(d => new DataInit(d)).ToArray();
             });
         }
 

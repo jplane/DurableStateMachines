@@ -12,21 +12,19 @@
   <state id="loop">
 
     <onentry>
-      <foreach array="data.items" item="arrayItem">
-        <script>
-          data.sum += data.arrayItem;
-        </script>
-        <log expr="&quot;item = &quot; + data.arrayItem" />
+      <foreach array="items" item="arrayItem">
+        <assign location="sum" expr="sum + arrayItem" />
+        <log expr="&quot;item = &quot; + arrayItem" />
       </foreach>
     </onentry>
     
-    <transition cond="data.sum &gt;= 15" target="done"/>
+    <transition cond="sum &gt;= 15" target="done"/>
     
   </state>
 
   <final id="done">
     <onentry>
-      <log expr="&quot;sum = &quot; + data.sum" />
+      <log expr="&quot;sum = &quot; + sum" />
     </onentry>
   </final>
 

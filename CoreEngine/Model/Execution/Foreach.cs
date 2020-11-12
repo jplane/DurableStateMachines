@@ -26,7 +26,9 @@ namespace CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var enumerable = await context.Eval<IEnumerable>(((IForeachMetadata) _metadata).ArrayExpression);
+            var foreachMetadata = (IForeachMetadata) _metadata;
+
+            var enumerable = await foreachMetadata.GetArray(context.ScriptData);
 
             if (enumerable == null)
             {
@@ -38,19 +40,19 @@ namespace CoreEngine.Model.Execution
 
             context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
 
-            Debug.Assert(((IForeachMetadata) _metadata).Item != null);
+            Debug.Assert(foreachMetadata.Item != null);
 
             for (var idx = 0; idx < shallowCopy.Length; idx++)
             {
                 var item = shallowCopy[idx];
 
-                context.SetDataValue(((IForeachMetadata) _metadata).Item, item);
+                context.SetDataValue(foreachMetadata.Item, item);
 
-                if (!string.IsNullOrWhiteSpace(((IForeachMetadata) _metadata).Index))
+                if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
                 {
-                    context.SetDataValue(((IForeachMetadata) _metadata).Index, idx);
+                    context.SetDataValue(foreachMetadata.Index, idx);
 
-                    context.LogDebug($"Foreach: Array item index {((IForeachMetadata) _metadata).Index}");
+                    context.LogDebug($"Foreach: Array item index {foreachMetadata.Index}");
                 }
 
                 try
@@ -62,11 +64,11 @@ namespace CoreEngine.Model.Execution
                 }
                 finally
                 {
-                    context.SetDataValue(((IForeachMetadata) _metadata).Item, null);
+                    context.SetDataValue(foreachMetadata.Item, null);
 
-                    if (!string.IsNullOrWhiteSpace(((IForeachMetadata) _metadata).Index))
+                    if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
                     {
-                        context.SetDataValue(((IForeachMetadata) _metadata).Index, null);
+                        context.SetDataValue(foreachMetadata.Index, null);
                     }
                 }
             }

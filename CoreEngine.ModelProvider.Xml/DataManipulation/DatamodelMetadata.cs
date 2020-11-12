@@ -15,11 +15,11 @@ namespace CoreEngine.ModelProvider.Xml.DataManipulation
             _element = element;
         }
 
-        public Task<IEnumerable<IDataMetadata>> GetData()
+        public Task<IEnumerable<IDataInitMetadata>> GetData()
         {
             var nodes = _element.ScxmlElements("data");
 
-            return Task.FromResult(nodes.Select(n => new DataMetadata(n)).Cast<IDataMetadata>());
+            return Task.FromResult(nodes.Select(n => new DataInitMetadata(n)).Cast<IDataInitMetadata>());
         }
     }
 }

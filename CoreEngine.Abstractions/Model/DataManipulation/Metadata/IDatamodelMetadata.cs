@@ -5,6 +5,6 @@ namespace CoreEngine.Abstractions.Model.DataManipulation.Metadata
 {
     public interface IDatamodelMetadata
     {
-        Task<IEnumerable<IDataMetadata>> GetData();
+        Task<IEnumerable<IDataInitMetadata>> GetData();
     }
 }

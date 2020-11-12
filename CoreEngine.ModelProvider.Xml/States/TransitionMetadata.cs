@@ -2,6 +2,7 @@
 using CoreEngine.Abstractions.Model.Execution.Metadata;
 using CoreEngine.Abstractions.Model.States.Metadata;
 using CoreEngine.ModelProvider.Xml.Execution;
+using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,20 +16,47 @@ namespace CoreEngine.ModelProvider.Xml.States
         private readonly XElement _element;
         private readonly XAttribute _attribute;
         private readonly string _target = string.Empty;
+        private readonly AsyncLazy<Func<dynamic, Task<bool>>> _condition;
 
         public TransitionMetadata(XElement element)
         {
             _element = element;
+
+            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () =>
+            {
+                if (string.IsNullOrWhiteSpace(this.ConditionExpr))
+                {
+                    return EvalTrue;
+                }
+                else
+                {
+                    return await ExpressionCompiler.Compile<bool>(this.ConditionExpr);
+                }
+            });
         }
 
         public TransitionMetadata(XAttribute attribute)
         {
             _attribute = attribute;
+
+            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () =>
+            {
+                if (string.IsNullOrWhiteSpace(this.ConditionExpr))
+                {
+                    return EvalTrue;
+                }
+                else
+                {
+                    return await ExpressionCompiler.Compile<bool>(this.ConditionExpr);
+                }
+            });
         }
 
         public TransitionMetadata(string target)
         {
             _target = target;
+
+            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () => EvalTrue);
         }
 
         public IEnumerable<string> Targets
@@ -72,7 +100,17 @@ namespace CoreEngine.ModelProvider.Xml.States
             }
         }
 
-        public string ConditionExpr => _element?.Attribute("cond")?.Value ?? string.Empty;
+        public async Task<bool> EvalCondition(dynamic data)
+        {
+            return await (await _condition)(data);
+        }
+
+        private static Task<bool> EvalTrue(dynamic _)
+        {
+            return Task.FromResult(true);
+        }
+
+        private string ConditionExpr => _element?.Attribute("cond")?.Value ?? string.Empty;
 
         public TransitionType Type
         {

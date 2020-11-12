@@ -1,15 +1,29 @@
 ﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+using Nito.AsyncEx;
+using System;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CoreEngine.ModelProvider.Xml.Execution
 {
     public class LogMetadata : ExecutableContentMetadata, ILogMetadata
     {
+        private readonly AsyncLazy<Func<dynamic, Task<string>>> _messageGetter;
+
         public LogMetadata(XElement element)
             : base(element)
         {
+            _messageGetter = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            {
+                return await ExpressionCompiler.Compile<string>(this.Message);
+            });
         }
 
-        public string Message => _element.Attribute("expr")?.Value ?? string.Empty;
+        private string Message => _element.Attribute("expr")?.Value ?? string.Empty;
+
+        public async Task<string> GetMessage(dynamic data)
+        {
+            return await (await _messageGetter)(data);
+        }
     }
 }
