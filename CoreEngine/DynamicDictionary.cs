@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Threading.Tasks;
 
@@ -13,6 +15,25 @@ namespace StateChartsDotNet.CoreEngine
             data.CheckArgNull(nameof(data));
 
             _data = data;
+        }
+
+        public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
+        {
+            indexes.CheckArgNull(nameof(indexes));
+
+            if (indexes.Length != 1 || indexes[0].GetType() != typeof(string))
+            {
+                throw new InvalidOperationException("Expecting exactly one string-based index for data lookups.");
+            }
+
+            if (_data.TryGetValue((string) indexes[0], out result))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)

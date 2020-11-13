@@ -17,7 +17,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         protected readonly AsyncLazy<OnEntryExit> _onEntry;
         protected readonly AsyncLazy<OnEntryExit> _onExit;
         protected readonly AsyncLazy<Transition[]> _transitions;
-        protected readonly AsyncLazy<Service[]> _invokes;
+        protected readonly AsyncLazy<InvokeStateChart[]> _invokes;
         protected readonly AsyncLazy<Datamodel> _datamodel;
 
         private bool _firstEntry;
@@ -55,9 +55,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                 return (await _metadata.GetTransitions()).Select(tm => new Transition(tm, this)).ToArray();
             });
 
-            _invokes = new AsyncLazy<Service[]>(async () =>
+            _invokes = new AsyncLazy<InvokeStateChart[]>(async () =>
             {
-                return (await _metadata.GetServices()).Select(sm => new Service(sm, this)).ToArray();
+                return (await _metadata.GetServices()).Select(sm => new InvokeStateChart(sm, this)).ToArray();
             });
 
             _datamodel = new AsyncLazy<Datamodel>(async () =>

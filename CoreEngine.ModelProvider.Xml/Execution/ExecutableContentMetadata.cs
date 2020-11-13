@@ -42,7 +42,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                     break;
 
                 case "send":
-                    content = new SendMetadata(element);
+                    content = new SendMessageMetadata(element);
                     break;
 
                 case "cancel":

@@ -51,11 +51,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             return Task.FromResult(nodes.Select(n => new TransitionMetadata(n)).Cast<ITransitionMetadata>());
         }
 
-        public Task<IEnumerable<IServiceMetadata>> GetServices()
+        public Task<IEnumerable<IInvokeStateChart>> GetServices()
         {
             var nodes = _element.ScxmlElements("invoke");
 
-            return Task.FromResult(nodes.Select(n => new ServiceMetadata(n)).Cast<IServiceMetadata>());
+            return Task.FromResult(nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChart>());
         }
 
         public Task<IDatamodelMetadata> GetDatamodel()

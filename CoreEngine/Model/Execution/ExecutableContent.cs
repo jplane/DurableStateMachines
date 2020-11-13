@@ -42,9 +42,9 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             {
                 content = new Log(lm);
             }
-            else if (metadata is ISendMetadata smd)
+            else if (metadata is ISendMessageMetadata smd)
             {
-                content = new Send(smd);
+                content = new SendMessage(smd);
             }
             else if (metadata is ICancelMetadata cm)
             {

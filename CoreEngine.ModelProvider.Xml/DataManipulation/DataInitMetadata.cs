@@ -25,7 +25,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    return await ExpressionCompiler.Compile<object>(this.Body);
                 }
             });
         }
@@ -36,8 +36,6 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
         {
             return await (await _getter)(data);
         }
-
-        private string Source => _element.Attribute("src")?.Value ?? string.Empty;
 
         private string Expression => _element.Attribute("expr")?.Value ?? string.Empty;
 

@@ -7,15 +7,15 @@ using Nito.AsyncEx;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
-    internal class Service
+    internal class InvokeStateChart
     {
-        private readonly IServiceMetadata _metadata;
+        private readonly IInvokeStateChart _metadata;
         private readonly string _parentId;
         private readonly AsyncLazy<Content> _content;
         private readonly AsyncLazy<Finalize> _finalize;
         private readonly AsyncLazy<Param[]> _params;
 
-        public Service(IServiceMetadata metadata, State parent)
+        public InvokeStateChart(IInvokeStateChart metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
             parent.CheckArgNull(nameof(parent));
@@ -82,7 +82,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             try
             {
-                return Task.CompletedTask;
+                throw new NotImplementedException();
             }
             catch (Exception ex)
             {

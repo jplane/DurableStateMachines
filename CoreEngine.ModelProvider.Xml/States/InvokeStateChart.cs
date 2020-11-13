@@ -1,6 +1,9 @@
-﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+﻿using Nito.AsyncEx;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,11 +11,11 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
-    public class ServiceMetadata : IServiceMetadata
+    public class InvokeStateChart : IInvokeStateChart
     {
         private readonly XElement _element;
 
-        public ServiceMetadata(XElement element)
+        public InvokeStateChart(XElement element)
         {
             _element = element;
         }
@@ -34,21 +37,25 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
         }
 
-        public string Type => _element.Attribute("type")?.Value ?? string.Empty;
-        
-        public string TypeExpression => _element.Attribute("typeexpr")?.Value ?? string.Empty;
-
         public string Id => _element.Attribute("id")?.Value ?? string.Empty;
 
         public string IdLocation => _element.Attribute("idlocation")?.Value ?? string.Empty;
 
-        public string Source => _element.Attribute("src")?.Value ?? string.Empty;
-
-        public string SourceExpression => _element.Attribute("srcexpr")?.Value ?? string.Empty;
-
-        public IEnumerable<string> Namelist
+        private IEnumerable<string> Namelist
         {
-            get => (_element.Attribute("typeexpr")?.Value ?? string.Empty).Split(" ");
+            get
+            {
+                var names = _element?.Attribute("namelist")?.Value;
+
+                if (string.IsNullOrWhiteSpace(names))
+                {
+                    return Enumerable.Empty<string>();
+                }
+                else
+                {
+                    return names.Split(" ");
+                }
+            }
         }
 
         public Task<IContentMetadata> GetContent()
@@ -69,7 +76,22 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
             var nodes = _element.ScxmlElements("param");
 
-            return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+            if (!this.Namelist.Any() && !nodes.Any())
+            {
+                throw new ModelValidationException("Service namelist or <params> must be specified.");
+            }
+            else if (this.Namelist.Any() && nodes.Any())
+            {
+                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
+            }
+            else if (this.Namelist.Any())
+            {
+                return Task.FromResult(this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+            }
+            else
+            {
+                return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+            }
         }
     }
 }

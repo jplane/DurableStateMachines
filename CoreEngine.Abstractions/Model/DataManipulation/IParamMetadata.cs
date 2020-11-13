@@ -1,9 +1,10 @@
-﻿namespace StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation
+﻿using System.Threading.Tasks;
+
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation
 {
     public interface IParamMetadata
     {
         string Name { get; }
-        string Location { get; }
-        string Expression { get; }
+        Task<object> GetValue(dynamic data);
     }
 }

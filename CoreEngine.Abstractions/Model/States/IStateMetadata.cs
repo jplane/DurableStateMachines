@@ -18,7 +18,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 
         Task<IEnumerable<ITransitionMetadata>> GetTransitions();
 
-        Task<IEnumerable<IServiceMetadata>> GetServices();
+        Task<IEnumerable<IInvokeStateChart>> GetServices();
 
         Task<IDatamodelMetadata> GetDatamodel();
     }

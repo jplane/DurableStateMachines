@@ -7,12 +7,12 @@ using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
-    internal class Send : ExecutableContent
+    internal class SendMessage : ExecutableContent
     {
         private readonly AsyncLazy<Content> _content;
         private readonly AsyncLazy<Param[]> _params;
 
-        public Send(ISendMetadata metadata)
+        public SendMessage(ISendMessageMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -35,18 +35,18 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
         protected override Task _Execute(ExecutionContext context)
         {
-            if (!string.IsNullOrWhiteSpace(((ISendMetadata) _metadata).IdLocation))
+            if (!string.IsNullOrWhiteSpace(((ISendMessageMetadata) _metadata).IdLocation))
             {
                 var syntheticId = Guid.NewGuid().ToString("N");
 
                 context.LogDebug($"Synthentic Id = {syntheticId}");
 
-                context[((ISendMetadata) _metadata).IdLocation] = syntheticId;
+                context[((ISendMessageMetadata) _metadata).IdLocation] = syntheticId;
             }
 
             try
             {
-                return Task.CompletedTask;
+                throw new NotImplementedException();
             }
             catch(Exception ex)
             {
