@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Model.Execution;
+using StateChartsDotNet.CoreEngine.Abstractions;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -63,7 +64,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
         }
 
-        public Task Execute(ExecutionContext context)
+        public async Task Execute(ExecutionContext context)
         {
             context.LogInformation($"Start: Invoke");
 
@@ -82,9 +83,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
             catch (Exception ex)
             {
-                context.EnqueueCommunicationError(ex);
-
-                return Task.CompletedTask;
+                await context.EnqueueCommunicationError(ex);
             }
             finally
             {
@@ -96,15 +95,15 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         {
         }
 
-        public Task ProcessExternalEvent(ExecutionContext context, Event externalEvent)
+        public Task ProcessExternalMessage(ExecutionContext context, Message externalMessage)
         {
-            externalEvent.CheckArgNull(nameof(externalEvent));
+            externalMessage.CheckArgNull(nameof(externalMessage));
 
             var id = GetId(context);
 
-            if (id == externalEvent.InvokeId)
+            if (id == externalMessage.InvokeId)
             {
-                ApplyFinalize(externalEvent);
+                ApplyFinalize(externalMessage);
             }
 
             if (_metadata.Autoforward)
@@ -115,7 +114,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return Task.CompletedTask;
         }
 
-        private void ApplyFinalize(Event externalEvent)
+        private void ApplyFinalize(Message externalMessage)
         {
         }
     }

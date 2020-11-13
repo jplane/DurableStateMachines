@@ -2,6 +2,6 @@
 {
     public interface IRaiseMetadata : IExecutableContentMetadata
     {
-        string Event { get; }
+        string MessageName { get; }
     }
 }

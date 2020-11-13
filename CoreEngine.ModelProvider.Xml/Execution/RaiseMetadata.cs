@@ -10,6 +10,6 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
         {
         }
 
-        public string Event => _element.Attribute("event").Value;
+        public string MessageName => _element.Attribute("event").Value;
     }
 }

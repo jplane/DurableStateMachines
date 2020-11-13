@@ -83,7 +83,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
         }
 
-        public IEnumerable<string> Events
+        public IEnumerable<string> Messages
         {
             get
             {

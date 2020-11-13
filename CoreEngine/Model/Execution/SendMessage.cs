@@ -33,7 +33,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             });
         }
 
-        protected override Task _Execute(ExecutionContext context)
+        protected override async Task _Execute(ExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(((ISendMessageMetadata) _metadata).IdLocation))
             {
@@ -50,9 +50,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             }
             catch(Exception ex)
             {
-                context.EnqueueCommunicationError(ex);
-
-                return Task.CompletedTask;
+                await context.EnqueueCommunicationError(ex);
             }
         }
     }

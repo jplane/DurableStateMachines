@@ -14,7 +14,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
     public class SendMessageMetadata : ExecutableContentMetadata, ISendMessageMetadata
     {
         private readonly AsyncLazy<Func<dynamic, Task<string>>> _getType;
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getEvent;
+        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getMessageName;
         private readonly AsyncLazy<Func<dynamic, Task<string>>> _getTarget;
         private readonly AsyncLazy<Func<dynamic, Task<string>>> _getDelay;
 
@@ -26,9 +26,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                 return await ExpressionCompiler.Compile<string>(this.TypeExpression);
             });
 
-            _getEvent = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _getMessageName = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
             {
-                return await ExpressionCompiler.Compile<string>(this.EventExpression);
+                return await ExpressionCompiler.Compile<string>(this.MessageExpression);
             });
 
             _getTarget = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
@@ -46,9 +46,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 
         public string IdLocation => _element.Attribute("idlocation")?.Value ?? string.Empty;
 
-        private string Event => _element.Attribute("event")?.Value ?? string.Empty;
+        private string Message => _element.Attribute("event")?.Value ?? string.Empty;
 
-        private string EventExpression => _element.Attribute("eventexpr")?.Value ?? string.Empty;
+        private string MessageExpression => _element.Attribute("eventexpr")?.Value ?? string.Empty;
 
         private string Target => _element.Attribute("target")?.Value ?? string.Empty;
 
@@ -116,23 +116,23 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
         }
 
-        public async Task<string> GetEvent(dynamic data)
+        public async Task<string> GetMessageName(dynamic data)
         {
-            if (string.IsNullOrWhiteSpace(this.Event) && string.IsNullOrWhiteSpace(this.EventExpression))
+            if (string.IsNullOrWhiteSpace(this.Message) && string.IsNullOrWhiteSpace(this.MessageExpression))
             {
                 throw new ModelValidationException("Service event or eventExpression must be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Event) && !string.IsNullOrWhiteSpace(this.EventExpression))
+            else if (!string.IsNullOrWhiteSpace(this.Message) && !string.IsNullOrWhiteSpace(this.MessageExpression))
             {
                 throw new ModelValidationException("Only one of service event and eventExpression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Event))
+            else if (!string.IsNullOrWhiteSpace(this.Message))
             {
-                return this.Event;
+                return this.Message;
             }
             else
             {
-                return await (await _getEvent)(data);
+                return await (await _getMessageName)(data);
             }
         }
 

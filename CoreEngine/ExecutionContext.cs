@@ -5,23 +5,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using StateChartsDotNet.CoreEngine.Abstractions;
+using StateChartsDotNet.CoreEngine.Abstractions.MessageTransports;
+using StateChartsDotNet.CoreEngine.MessageTransports;
 
 namespace StateChartsDotNet.CoreEngine
 {
     public class ExecutionContext
     {
         private readonly Dictionary<string, object> _data;
-        private readonly Queue<Event> _internalQueue;
-        private readonly Queue<Event> _externalQueue;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private ILogger _logger;
+        private Lazy<IMessageTransport> _internalTransport;
+        private Lazy<IMessageTransport> _externalTransport;
 
         public ExecutionContext()
         {
             _data = new Dictionary<string, object>();
-            _internalQueue = new Queue<Event>();
-            _externalQueue = new Queue<Event>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
+            _internalTransport = new Lazy<IMessageTransport>(() => new InMemoryQueueTransport());
+            _externalTransport = new Lazy<IMessageTransport>(() => new InMemoryQueueTransport());
         }
 
         public bool IsRunning { get; internal set; }
@@ -29,6 +32,54 @@ namespace StateChartsDotNet.CoreEngine
         public ILogger Logger
         {
             set => _logger = value;
+        }
+
+        public IMessageTransport InternalTransport
+        {
+            internal get => _internalTransport.Value;
+            
+            set
+            {
+                if (this.IsRunning)
+                {
+                    throw new InvalidOperationException("Cannot set internal message transport while the state machine is running.");
+                }
+
+                _internalTransport = new Lazy<IMessageTransport>(() => value);
+            }
+        }
+
+        public IMessageTransport ExternalTransport
+        {
+            internal get => _externalTransport.Value;
+
+            set
+            {
+                if (this.IsRunning)
+                {
+                    throw new InvalidOperationException("Cannot set external message transport while the state machine is running.");
+                }
+
+                _externalTransport = new Lazy<IMessageTransport>(() => value);
+            }
+        }
+
+        public Task SendAsync(string eventName, params object[] dataPairs)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
+            Debug.Assert(dataPairs.Length % 2 == 0);
+
+            var evt = new Message(eventName)
+            {
+                Type = MessageType.External
+            };
+
+            for (var idx = 0; idx < dataPairs.Length; idx += 2)
+            {
+                evt[(string)dataPairs[idx]] = dataPairs[idx + 1];
+            }
+
+            return _externalTransport.Value.SendAsync(evt);
         }
 
         public object this[string key]
@@ -58,14 +109,14 @@ namespace StateChartsDotNet.CoreEngine
             return _data.TryGetValue(key, out value);
         }
 
-        internal void EnqueueInternal(string eventName, params object[] dataPairs)
+        internal Task EnqueueInternal(string eventName, params object[] dataPairs)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
             Debug.Assert(dataPairs.Length % 2 == 0);
 
-            var evt = new Event(eventName)
+            var evt = new Message(eventName)
             {
-                Type = EventType.Internal
+                Type = MessageType.Internal
             };
 
             for (var idx = 0; idx < dataPairs.Length; idx+=2)
@@ -73,42 +124,42 @@ namespace StateChartsDotNet.CoreEngine
                 evt[(string) dataPairs[idx]] = dataPairs[idx + 1];
             }
 
-            _internalQueue.Enqueue(evt);
+            return _internalTransport.Value.SendAsync(evt);
         }
 
-        internal void EnqueueCommunicationError(Exception ex)
+        internal async Task EnqueueCommunicationError(Exception ex)
         {
-            var evt = new Event("error.communication")
+            var evt = new Message("error.communication")
             {
-                Type = EventType.Platform
+                Type = MessageType.Platform
             };
 
             evt["exception"] = ex;
 
-            _internalQueue.Enqueue(evt);
+            await _internalTransport.Value.SendAsync(evt);
 
             _logger.LogError("Communication error", ex);
         }
 
-        internal void EnqueueExecutionError(Exception ex)
+        internal async Task EnqueueExecutionError(Exception ex)
         {
-            var evt = new Event("error.execution")
+            var evt = new Message("error.execution")
             {
-                Type = EventType.Platform
+                Type = MessageType.Platform
             };
 
             evt["exception"] = ex;
 
-            _internalQueue.Enqueue(evt);
+            await _internalTransport.Value.SendAsync(evt);
 
             _logger.LogError("Execution error", ex);
         }
 
-        internal bool HasInternalEvents => _internalQueue.Count > 0;
+        internal Task<bool> HasInternalMessages => _internalTransport.Value.HasMessageAsync();
 
-        internal Event DequeueInternal()
+        internal async Task<Message> DequeueInternal()
         {
-            if (_internalQueue.TryDequeue(out Event evt))
+            if (await _internalTransport.Value.TryReceiveAsync(out Message evt))
             {
                 _data["_event"] = evt;
             }
@@ -116,27 +167,16 @@ namespace StateChartsDotNet.CoreEngine
             return evt;
         }
 
-        public void Enqueue(string eventName)
+        internal async Task<Message> DequeueExternal()
         {
-            lock (_externalQueue)
+            Task<bool> Dequeue(out Message evt)
             {
-                _externalQueue.Enqueue(new Event(eventName) { Type = EventType.External });
-            }
-        }
-
-        internal async Task<Event> DequeueExternal()
-        {
-            bool Dequeue(out Event evt)
-            {
-                lock (_externalQueue)
-                {
-                    return _externalQueue.TryDequeue(out evt);
-                }
+                return _externalTransport.Value.TryReceiveAsync(out evt);
             }
 
-            Event evt;
+            Message evt;
 
-            while (!Dequeue(out evt))
+            while (! await Dequeue(out evt))
             {
                 await Task.Delay(100);
             }

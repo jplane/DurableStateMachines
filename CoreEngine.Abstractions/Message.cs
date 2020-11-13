@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
-namespace StateChartsDotNet.CoreEngine
+[assembly: InternalsVisibleTo("StateChartsDotNet.CoreEngine")]
+
+namespace StateChartsDotNet.CoreEngine.Abstractions
 {
-    public class Event
+    public class Message
     {
         private readonly Dictionary<string, object> _data =
             new Dictionary<string, object>();
 
-        public Event(string name)
+        public Message(string name)
         {
             this.Name = name;
             this.SendId = string.Empty;
@@ -20,7 +23,7 @@ namespace StateChartsDotNet.CoreEngine
 
         public string Name { get; }
 
-        internal EventType Type { get; set; }
+        internal MessageType Type { get; set; }
 
         internal string SendId { get; set; }
 
@@ -37,7 +40,7 @@ namespace StateChartsDotNet.CoreEngine
         }
     }
 
-    internal enum EventType
+    internal enum MessageType
     {
         Platform,
         Internal,

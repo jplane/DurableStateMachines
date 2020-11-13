@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -37,17 +38,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             defaultHistoryContent[id] = new Set<ExecutableContent>(await _content);
         }
 
-        public bool HasEvent => _metadata.Events.Any();
+        public bool HasMessage => _metadata.Messages.Any();
 
         public bool HasTargets => _metadata.Targets.Any();
 
-        public bool MatchesEvent(Event evt)
+        public bool MatchesMessage(Message evt)
         {
             evt.CheckArgNull(nameof(evt));
 
-            if (HasEvent)
+            if (HasMessage)
             {
-                foreach (var candidateEvt in _metadata.Events)
+                foreach (var candidateEvt in _metadata.Messages)
                 {
                     if (candidateEvt == "*")
                     {
@@ -77,7 +78,8 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
             catch (Exception ex)
             {
-                context.EnqueueExecutionError(ex);
+                await context.EnqueueExecutionError(ex);
+
                 return false;
             }
         }

@@ -14,7 +14,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            context.EnqueueInternal(((IRaiseMetadata) _metadata).Event);
+            context.EnqueueInternal(((IRaiseMetadata) _metadata).MessageName);
 
             return Task.CompletedTask;
         }

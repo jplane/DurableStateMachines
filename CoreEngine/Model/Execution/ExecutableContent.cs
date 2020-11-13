@@ -72,7 +72,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             }
             catch (Exception ex)
             {
-                context.EnqueueExecutionError(ex);
+                await context.EnqueueExecutionError(ex);
             }
             finally
             {

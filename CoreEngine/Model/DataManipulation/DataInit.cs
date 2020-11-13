@@ -31,7 +31,7 @@ namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
             }
             catch (Exception ex)
             {
-                context.EnqueueExecutionError(ex);
+                await context.EnqueueExecutionError(ex);
             }
             finally
             {

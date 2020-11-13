@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using Nito.AsyncEx;
+using StateChartsDotNet.CoreEngine.Abstractions;
 
 namespace StateChartsDotNet.CoreEngine
 {
@@ -45,10 +46,10 @@ namespace StateChartsDotNet.CoreEngine
 
             await EnterStates(new List<Transition>(new []{ await (await _root).GetInitialStateTransition() }));
 
-            await DoEventLoop();
+            await DoMessageLoop();
         }
 
-        private async Task DoEventLoop()
+        private async Task DoMessageLoop()
         {
             Context.LogInformation("Start: event loop");
 
@@ -62,19 +63,19 @@ namespace StateChartsDotNet.CoreEngine
 
                 while (Context.IsRunning && ! macrostepDone)
                 {
-                    enabledTransitions = await SelectEventlessTransitions();
+                    enabledTransitions = await SelectMessagelessTransitions();
 
                     if (enabledTransitions.IsEmpty())
                     {
-                        var internalEvent = Context.DequeueInternal();
+                        var internalMessage = await Context.DequeueInternal();
 
-                        if (internalEvent == null)
+                        if (internalMessage == null)
                         {
                             macrostepDone = true;
                         }
                         else
                         {
-                            enabledTransitions = await SelectTransitions(internalEvent);
+                            enabledTransitions = await SelectTransitions(internalMessage);
                         }
                     }
 
@@ -97,15 +98,15 @@ namespace StateChartsDotNet.CoreEngine
 
                 Context.StatesToInvoke.Clear();
 
-                if (Context.HasInternalEvents)
+                if (await Context.HasInternalMessages)
                 {
                     Context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
-                var externalEvent = await Context.DequeueExternal();
+                var externalMessage = await Context.DequeueExternal();
 
-                if (externalEvent.IsCancel)
+                if (externalMessage.IsCancel)
                 {
                     Context.IsRunning = false;
                     Context.LogInformation("End: event loop cycle");
@@ -114,10 +115,10 @@ namespace StateChartsDotNet.CoreEngine
 
                 foreach (var state in Context.Configuration)
                 {
-                    await state.ProcessExternalEvent(Context, externalEvent);
+                    await state.ProcessExternalMessage(Context, externalMessage);
                 }
 
-                enabledTransitions = await SelectTransitions(externalEvent);
+                enabledTransitions = await SelectTransitions(externalMessage);
 
                 if (! enabledTransitions.IsEmpty())
                 {
@@ -135,7 +136,7 @@ namespace StateChartsDotNet.CoreEngine
                 {
                     if (state.Parent.IsScxmlRoot)
                     {
-                        ReturnDoneEvent(state);
+                        ReturnDoneMessage(state);
                     }
                 }
             }
@@ -143,10 +144,10 @@ namespace StateChartsDotNet.CoreEngine
             Context.LogInformation("End: event loop");
         }
 
-        private void ReturnDoneEvent(State state)
+        private void ReturnDoneMessage(State state)
         {
-            // The implementation of returnDoneEvent is platform-dependent, but if this session is the result of an <invoke> in another SCXML session, 
-            //  returnDoneEvent will cause the event done.invoke.<id> to be placed in the external event queue of that session, where <id> is the id 
+            // The implementation of returnDoneMessage is platform-dependent, but if this session is the result of an <invoke> in another SCXML session, 
+            //  returnDoneMessage will cause the event done.invoke.<id> to be placed in the external event queue of that session, where <id> is the id 
             //  generated in that session when the <invoke> was executed.
         }
 
@@ -218,15 +219,15 @@ namespace StateChartsDotNet.CoreEngine
             return statesToExit;
         }
 
-        private Task<Set<Transition>> SelectTransitions(Event evt)
+        private Task<Set<Transition>> SelectTransitions(Message evt)
         {
-            return SelectTransitions(async transition => transition.MatchesEvent(evt) &&
+            return SelectTransitions(async transition => transition.MatchesMessage(evt) &&
                                                          await transition.EvaluateCondition(Context));
         }
 
-        private Task<Set<Transition>> SelectEventlessTransitions()
+        private Task<Set<Transition>> SelectMessagelessTransitions()
         {
-            return SelectTransitions(async transition => !transition.HasEvent &&
+            return SelectTransitions(async transition => !transition.HasMessage &&
                                                          await transition.EvaluateCondition(Context));
         }
 

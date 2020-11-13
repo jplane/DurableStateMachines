@@ -7,7 +7,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
     public interface ITransitionMetadata
     {
         IEnumerable<string> Targets { get; }
-        IEnumerable<string> Events { get; }
+        IEnumerable<string> Messages { get; }
         TransitionType Type { get; }
 
         Task<bool> EvalCondition(dynamic data);

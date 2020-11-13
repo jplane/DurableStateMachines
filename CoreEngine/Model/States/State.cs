@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -144,11 +145,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
         }
 
-        public async Task ProcessExternalEvent(ExecutionContext context, Event evt)
+        public async Task ProcessExternalMessage(ExecutionContext context, Message evt)
         {
             foreach (var invoke in await _invokes)
             {
-                await invoke.ProcessExternalEvent(context, evt);
+                await invoke.ProcessExternalMessage(context, evt);
             }
         }
 
@@ -222,7 +223,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                 }
                 else
                 {
-                    context.EnqueueInternal("done.state." + this.Id);
+                    await context.EnqueueInternal("done.state." + this.Id);
 
                     var grandparent = _parent?.Parent;
 
@@ -243,7 +244,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                         if (allInFinalState)
                         {
-                            context.EnqueueInternal("done.state." + grandparent.Id);
+                            await context.EnqueueInternal("done.state." + grandparent.Id);
                         }
                     }
                 }
