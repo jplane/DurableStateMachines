@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CoreEngine.Model.Execution;
-using CoreEngine.Model.DataManipulation;
+using StateChartsDotNet.CoreEngine.Model.Execution;
+using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System.Threading.Tasks;
-using CoreEngine.Abstractions.Model.States.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
-using CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal abstract class State
     {
@@ -17,7 +17,7 @@ namespace CoreEngine.Model.States
         protected readonly AsyncLazy<OnEntryExit> _onEntry;
         protected readonly AsyncLazy<OnEntryExit> _onExit;
         protected readonly AsyncLazy<Transition[]> _transitions;
-        protected readonly AsyncLazy<Invoke[]> _invokes;
+        protected readonly AsyncLazy<Service[]> _invokes;
         protected readonly AsyncLazy<Datamodel> _datamodel;
 
         private bool _firstEntry;
@@ -55,9 +55,9 @@ namespace CoreEngine.Model.States
                 return (await _metadata.GetTransitions()).Select(tm => new Transition(tm, this)).ToArray();
             });
 
-            _invokes = new AsyncLazy<Invoke[]>(async () =>
+            _invokes = new AsyncLazy<Service[]>(async () =>
             {
-                return (await _metadata.GetServices()).Select(sm => new Invoke(sm, this)).ToArray();
+                return (await _metadata.GetServices()).Select(sm => new Service(sm, this)).ToArray();
             });
 
             _datamodel = new AsyncLazy<Datamodel>(async () =>

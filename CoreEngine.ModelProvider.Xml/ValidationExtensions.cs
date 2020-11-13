@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreEngine.ModelProvider.Xml
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
 {
     internal static class ValidationExtensions
     {

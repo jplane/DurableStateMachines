@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model.DataManipulation.Metadata
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation
 {
     public interface IDatamodelMetadata
     {

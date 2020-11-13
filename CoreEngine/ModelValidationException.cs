@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     public class ModelValidationException : ApplicationException
     {

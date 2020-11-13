@@ -1,7 +1,7 @@
-﻿using CoreEngine.Abstractions.Model.States.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model
 {
     public interface IModelMetadata
     {

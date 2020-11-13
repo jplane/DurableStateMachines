@@ -1,10 +1,10 @@
-﻿using CoreEngine.Abstractions.Model;
-using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.ModelProvider.Xml.States;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.States;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
 {
     public class XmlModelMetadata : IModelMetadata
     {

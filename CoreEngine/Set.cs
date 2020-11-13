@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     internal class Set<T> : IEnumerable<T>
     {

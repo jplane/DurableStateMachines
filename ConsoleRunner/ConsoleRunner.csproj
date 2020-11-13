@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CoreEngine.Abstractions\CoreEngine.Abstractions.csproj" />
     <ProjectReference Include="..\CoreEngine.ModelProvider.Xml\CoreEngine.ModelProvider.Xml.csproj" />
     <ProjectReference Include="..\CoreEngine\CoreEngine.csproj" />
   </ItemGroup>

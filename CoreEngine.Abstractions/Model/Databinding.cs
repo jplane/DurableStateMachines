@@ -1,4 +1,4 @@
-﻿namespace CoreEngine.Abstractions.Model
+﻿namespace StateChartsDotNet.CoreEngine.Abstractions.Model
 {
     public enum Databinding
     {

@@ -1,9 +1,9 @@
-﻿using CoreEngine;
+﻿using StateChartsDotNet.CoreEngine;
 using System;
 using System.Xml.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using CoreEngine.ModelProvider.Xml;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml;
 
 namespace ConsoleRunner
 {

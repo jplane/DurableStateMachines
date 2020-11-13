@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
-using CoreEngine.Abstractions.Model.Execution.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
-namespace CoreEngine.Model.Execution
+namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class Else
     {

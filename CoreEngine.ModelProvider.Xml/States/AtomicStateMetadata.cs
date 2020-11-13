@@ -1,7 +1,7 @@
-﻿using CoreEngine.Abstractions.Model.States.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.States
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
     public class AtomicStateMetadata : StateMetadata, IAtomicStateMetadata
     {

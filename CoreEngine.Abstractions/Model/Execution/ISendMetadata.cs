@@ -1,8 +1,8 @@
-﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model.Execution.Metadata
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
     public interface ISendMetadata : IExecutableContentMetadata
     {

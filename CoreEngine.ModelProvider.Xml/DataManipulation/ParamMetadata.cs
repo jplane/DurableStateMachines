@@ -1,7 +1,7 @@
-﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.DataManipulation
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
 {
     public class ParamMetadata : IParamMetadata
     {

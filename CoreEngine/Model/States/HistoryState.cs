@@ -1,12 +1,12 @@
-﻿using CoreEngine.Abstractions.Model;
-using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.Model.Execution;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class HistoryState : State
     {

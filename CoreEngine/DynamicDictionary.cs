@@ -2,7 +2,7 @@
 using System.Dynamic;
 using System.Threading.Tasks;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     public class DynamicDictionary : DynamicObject
     {

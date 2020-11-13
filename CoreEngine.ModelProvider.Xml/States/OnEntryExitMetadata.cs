@@ -1,12 +1,12 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
-using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.ModelProvider.Xml.Execution;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.States
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
     public class OnEntryExitMetadata : IOnEntryExitMetadata
     {

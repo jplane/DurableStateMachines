@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CoreEngine.Model.States;
-using CoreEngine.Model.Execution;
+using StateChartsDotNet.CoreEngine.Model.States;
+using StateChartsDotNet.CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using Nito.AsyncEx;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     public class Interpreter
     {

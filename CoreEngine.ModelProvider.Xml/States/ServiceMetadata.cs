@@ -1,12 +1,12 @@
-﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
-using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.ModelProvider.Xml.DataManipulation;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.States
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
     public class ServiceMetadata : IServiceMetadata
     {

@@ -1,10 +1,10 @@
-﻿using CoreEngine.Abstractions.Model.States.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.States
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
     public class SequentialStateMetadata : StateMetadata, ISequentialStateMetadata
     {

@@ -1,12 +1,12 @@
-﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
-using CoreEngine.Abstractions.Model.Execution.Metadata;
-using CoreEngine.ModelProvider.Xml.DataManipulation;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.Execution
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class SendMetadata : ExecutableContentMetadata, ISendMetadata
     {

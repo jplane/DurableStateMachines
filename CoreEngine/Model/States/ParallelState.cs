@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using CoreEngine.Abstractions.Model.States.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class ParallelState : CompoundState
     {

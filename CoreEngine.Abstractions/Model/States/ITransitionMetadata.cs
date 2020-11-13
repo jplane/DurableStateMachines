@@ -1,8 +1,8 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model.States.Metadata
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface ITransitionMetadata
     {

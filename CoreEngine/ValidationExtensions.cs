@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     internal static class ValidationExtensions
     {

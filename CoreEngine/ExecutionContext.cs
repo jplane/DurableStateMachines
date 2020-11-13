@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using CoreEngine.Model.States;
+using StateChartsDotNet.CoreEngine.Model.States;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace CoreEngine
+namespace StateChartsDotNet.CoreEngine
 {
     public class ExecutionContext
     {

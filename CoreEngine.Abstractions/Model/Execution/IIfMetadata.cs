@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model.Execution.Metadata
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
     public interface IIfMetadata : IExecutableContentMetadata
     {

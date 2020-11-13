@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
 {
     internal static class XmlExtensions
     {

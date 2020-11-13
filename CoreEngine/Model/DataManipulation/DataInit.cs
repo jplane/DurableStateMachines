@@ -1,8 +1,8 @@
-﻿using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using System;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.DataManipulation
+namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
 {
     internal class DataInit
     {

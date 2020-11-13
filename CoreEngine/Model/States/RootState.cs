@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using CoreEngine.Model.Execution;
+using StateChartsDotNet.CoreEngine.Model.Execution;
 using Nito.AsyncEx;
-using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class RootState : CompoundState
     {

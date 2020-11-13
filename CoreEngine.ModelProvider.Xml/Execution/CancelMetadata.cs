@@ -1,7 +1,7 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.Execution
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class CancelMetadata : ExecutableContentMetadata, ICancelMetadata
     {

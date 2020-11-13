@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using Nito.AsyncEx;
-using CoreEngine.Abstractions.Model.DataManipulation.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 
-namespace CoreEngine.Model.DataManipulation
+namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
 {
     internal class Donedata
     {

@@ -1,10 +1,10 @@
-﻿using CoreEngine.Abstractions.Model.States.Metadata;
-using CoreEngine.Model.DataManipulation;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
+using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using Nito.AsyncEx;
 using System;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class FinalState : State
     {

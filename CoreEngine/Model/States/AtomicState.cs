@@ -1,6 +1,6 @@
-﻿using CoreEngine.Abstractions.Model.States.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class AtomicState : State
     {

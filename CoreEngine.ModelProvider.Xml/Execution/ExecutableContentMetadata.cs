@@ -1,8 +1,8 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System.Diagnostics;
 using System.Xml.Linq;
 
-namespace CoreEngine.ModelProvider.Xml.Execution
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public abstract class ExecutableContentMetadata : IExecutableContentMetadata
     {

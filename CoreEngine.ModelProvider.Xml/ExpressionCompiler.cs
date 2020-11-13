@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CoreEngine.ModelProvider.Xml
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
 {
     internal static class ExpressionCompiler
     {

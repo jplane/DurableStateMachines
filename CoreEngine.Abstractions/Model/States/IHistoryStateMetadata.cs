@@ -1,4 +1,4 @@
-﻿namespace CoreEngine.Abstractions.Model.States.Metadata
+﻿namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface IHistoryStateMetadata : IStateMetadata
     {

@@ -1,7 +1,7 @@
-﻿using CoreEngine.Abstractions.Model.Execution.Metadata;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Model.Execution
+namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class Raise : ExecutableContent
     {

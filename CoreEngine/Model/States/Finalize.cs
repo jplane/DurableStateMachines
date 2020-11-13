@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using CoreEngine.Model.Execution;
+using StateChartsDotNet.CoreEngine.Model.Execution;
 using Nito.AsyncEx;
-using CoreEngine.Abstractions.Model.States.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class Finalize
     {

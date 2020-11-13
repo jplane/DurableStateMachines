@@ -1,13 +1,13 @@
-﻿using CoreEngine.Model.DataManipulation;
+﻿using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using CoreEngine.Abstractions.Model.States.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
 
-namespace CoreEngine.Model.States
+namespace StateChartsDotNet.CoreEngine.Model.States
 {
-    internal class Invoke
+    internal class Service
     {
         private readonly IServiceMetadata _metadata;
         private readonly string _parentId;
@@ -15,7 +15,7 @@ namespace CoreEngine.Model.States
         private readonly AsyncLazy<Finalize> _finalize;
         private readonly AsyncLazy<Param[]> _params;
 
-        public Invoke(IServiceMetadata metadata, State parent)
+        public Service(IServiceMetadata metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
             parent.CheckArgNull(nameof(parent));

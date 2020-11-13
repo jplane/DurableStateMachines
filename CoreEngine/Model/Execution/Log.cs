@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using CoreEngine.Abstractions.Model.Execution.Metadata;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
-namespace CoreEngine.Model.Execution
+namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class Log : ExecutableContent
     {

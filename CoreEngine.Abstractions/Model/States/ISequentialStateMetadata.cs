@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreEngine.Abstractions.Model.States.Metadata
+namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface ISequentialStateMetadata : IStateMetadata
     {

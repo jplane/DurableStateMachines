@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace CoreEngine.ModelProvider.Xml
+namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
 {
     public class ExpressionCompilerException : ApplicationException
     {

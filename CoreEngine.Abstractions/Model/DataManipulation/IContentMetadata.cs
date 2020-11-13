@@ -1,4 +1,4 @@
-﻿namespace CoreEngine.Abstractions.Model.DataManipulation.Metadata
+﻿namespace StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation
 {
     public interface IContentMetadata
     {
