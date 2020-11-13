@@ -1,4 +1,5 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
         string IdLocation { get; }
 
         Task<IContentMetadata> GetContent();
-        Task<IFinalizeMetadata> GetFinalize();
+        Task<IEnumerable<IExecutableContentMetadata>> GetFinalizeExecutableContent();
         Task<IEnumerable<IParamMetadata>> GetParams();
      }
 }

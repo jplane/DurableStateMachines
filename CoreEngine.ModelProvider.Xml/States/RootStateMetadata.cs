@@ -40,7 +40,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 var firstChild = (await GetStates()).FirstOrDefault(sm => sm is IAtomicStateMetadata ||
                                                                           sm is ISequentialStateMetadata ||
                                                                           sm is IParallelStateMetadata ||
-                                                                          sm is IFinalizeMetadata);
+                                                                          sm is IFinalStateMetadata);
 
                 return firstChild == null ? null : new TransitionMetadata(firstChild.Id);
             }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
+using StateChartsDotNet.CoreEngine.Model.Execution;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -12,7 +13,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         private readonly IInvokeStateChart _metadata;
         private readonly string _parentId;
         private readonly AsyncLazy<Content> _content;
-        private readonly AsyncLazy<Finalize> _finalize;
+        private readonly AsyncLazy<ExecutableContent[]> _finalizeContent;
         private readonly AsyncLazy<Param[]> _params;
 
         public InvokeStateChart(IInvokeStateChart metadata, State parent)
@@ -33,14 +34,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _finalize = new AsyncLazy<Finalize>(async () =>
+            _finalizeContent = new AsyncLazy<ExecutableContent[]>(async () =>
             {
-                var meta = await metadata.GetFinalize();
-
-                if (meta != null)
-                    return new Finalize(meta);
-                else
-                    return null;
+                return (await metadata.GetFinalizeExecutableContent()).Select(ExecutableContent.Create).ToArray();
             });
 
             _params = new AsyncLazy<Param[]>(async () =>

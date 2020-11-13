@@ -1,8 +1,10 @@
 ﻿using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,11 +67,16 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             return Task.FromResult(node == null ? null : (IContentMetadata) new ContentMetadata(node));
         }
 
-        public Task<IFinalizeMetadata> GetFinalize()
+        public Task<IEnumerable<IExecutableContentMetadata>> GetFinalizeExecutableContent()
         {
-            var node = _element.ScxmlElement("finalize");
+            var content = new List<IExecutableContentMetadata>();
 
-            return Task.FromResult(node == null ? null : (IFinalizeMetadata) new FinalizeMetadata(node));
+            foreach (var node in _element.Elements())
+            {
+                content.Add(ExecutableContentMetadata.Create(node));
+            }
+
+            return Task.FromResult(content.AsEnumerable());
         }
 
         public Task<IEnumerable<IParamMetadata>> GetParams()
