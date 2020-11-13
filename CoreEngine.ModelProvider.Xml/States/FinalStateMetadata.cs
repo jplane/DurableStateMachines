@@ -1,6 +1,8 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -13,11 +15,18 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
         }
 
-        public Task<IDonedataMetadata> GetDonedata()
+        public Task<IContentMetadata> GetContent()
         {
-            var node = _element.ScxmlElement("donedata");
+            var node = _element.ScxmlElement("content");
 
-            return Task.FromResult(node == null ? null : (IDonedataMetadata) new DonedataMetadata(node));
+            return Task.FromResult(node == null ? null : (IContentMetadata)new ContentMetadata(node));
+        }
+
+        public Task<IEnumerable<IParamMetadata>> GetParams()
+        {
+            var nodes = _element.ScxmlElements("param");
+
+            return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
         }
     }
 }

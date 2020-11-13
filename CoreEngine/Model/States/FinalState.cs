@@ -3,26 +3,33 @@ using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using Nito.AsyncEx;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class FinalState : State
     {
-        private readonly AsyncLazy<Donedata> _donedata;
+        private readonly AsyncLazy<Content> _content;
+        private readonly AsyncLazy<Param[]> _params;
 
         public FinalState(IFinalStateMetadata metadata, State parent)
             : base(metadata, parent)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _donedata = new AsyncLazy<Donedata>(async () =>
+            _content = new AsyncLazy<Content>(async () =>
             {
-                var meta = await metadata.GetDonedata();
+                var meta = await metadata.GetContent();
 
                 if (meta != null)
-                    return new Donedata(meta);
+                    return new Content(meta);
                 else
                     return null;
+            });
+
+            _params = new AsyncLazy<Param[]>(async () =>
+            {
+                return (await metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
             });
         }
 
