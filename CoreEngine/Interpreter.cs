@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
+using System.Runtime.ExceptionServices;
+using Microsoft.Extensions.Logging;
 
 namespace StateChartsDotNet.CoreEngine
 {
@@ -29,10 +31,59 @@ namespace StateChartsDotNet.CoreEngine
             Context.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
         }
 
+        public static Task Run(IModelMetadata metadata, Queue<Message> messages, ILogger logger = null)
+        {
+            metadata.CheckArgNull(nameof(metadata));
+            messages.CheckArgNull(nameof(messages));
+
+            return Task.Run(async () =>
+            {
+                async Task<Message> GetNextMessage()
+                {
+                    bool Dequeue(out Message message)
+                    {
+                        lock (messages)
+                        {
+                            return messages.TryDequeue(out message);
+                        }
+                    }
+
+                    Message message;
+
+                    while (!Dequeue(out message))
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    return message;
+                }
+
+                var interpreter = new Interpreter(metadata);
+
+                interpreter.Context.Logger = logger;
+
+                await interpreter.Init();
+
+                while (interpreter.Context.IsRunning)
+                {
+                    var externalMessage = await GetNextMessage();
+
+                    await interpreter.ProcessMessage(externalMessage);
+                }
+            });
+        }
+
         public ExecutionContext Context { get; }
 
-        public async Task Run()
+        public async Task Init()
         {
+            if (Context.IsRunning)
+            {
+                return;
+            }
+
+            Context.LogInformation("Start: init");
+
             Context.SetDataValue("_name", (await _root).Name);
 
             if ((await _root).Binding == Databinding.Early)
@@ -46,22 +97,71 @@ namespace StateChartsDotNet.CoreEngine
 
             await EnterStates(new List<Transition>(new []{ await (await _root).GetInitialStateTransition() }));
 
-            await DoMessageLoop();
+            await ProcessInternalMessages();
+
+            if (!Context.IsRunning)
+            {
+                await FinalizeStateChart();
+            }
+
+            Context.LogInformation("End: init");
         }
 
-        private async Task DoMessageLoop()
+        public async Task ProcessMessage(Message message)
         {
-            Context.LogInformation("Start: event loop");
+            Debug.Assert(message != null);
+
+            if (!Context.IsRunning)
+            {
+                return;
+            }
+
+            Context.LogInformation("Start: process message");
+
+            Context.SetDataValue("_event", message);
+
+            if (message.IsCancel)
+            {
+                Context.IsRunning = false;
+
+                await FinalizeStateChart();
+            }
+            else
+            {
+                foreach (var state in Context.Configuration)
+                {
+                    await state.ProcessExternalMessage(Context, message);
+                }
+
+                var enabledTransitions = await SelectTransitions(message);
+
+                if (!enabledTransitions.IsEmpty())
+                {
+                    await Microstep(enabledTransitions);
+                }
+
+                if (! Context.IsRunning)
+                {
+                    await FinalizeStateChart();
+                }
+
+                await ProcessInternalMessages();
+            }
+
+            Context.LogInformation("End: process message");
+        }
+
+        private async Task ProcessInternalMessages()
+        {
+            Context.LogInformation("Start: process internal messages");
 
             while (Context.IsRunning)
             {
-                Context.LogInformation("Start: event loop cycle");
-
                 Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
 
-                while (Context.IsRunning && ! macrostepDone)
+                while (Context.IsRunning && !macrostepDone)
                 {
                     enabledTransitions = await SelectMessagelessTransitions();
 
@@ -79,7 +179,7 @@ namespace StateChartsDotNet.CoreEngine
                         }
                     }
 
-                    if (! enabledTransitions.IsEmpty())
+                    if (!enabledTransitions.IsEmpty())
                     {
                         await Microstep(enabledTransitions);
                     }
@@ -87,7 +187,6 @@ namespace StateChartsDotNet.CoreEngine
 
                 if (! Context.IsRunning)
                 {
-                    Context.LogInformation("End: event loop cycle");
                     break;
                 }
 
@@ -98,35 +197,18 @@ namespace StateChartsDotNet.CoreEngine
 
                 Context.StatesToInvoke.Clear();
 
-                if (await Context.HasInternalMessages)
+                if (! await Context.HasInternalMessages)
                 {
-                    Context.LogInformation("End: event loop cycle");
-                    continue;
+                    break;
                 }
-
-                var externalMessage = await Context.DequeueExternal();
-
-                if (externalMessage.IsCancel)
-                {
-                    Context.IsRunning = false;
-                    Context.LogInformation("End: event loop cycle");
-                    continue;
-                }
-
-                foreach (var state in Context.Configuration)
-                {
-                    await state.ProcessExternalMessage(Context, externalMessage);
-                }
-
-                enabledTransitions = await SelectTransitions(externalMessage);
-
-                if (! enabledTransitions.IsEmpty())
-                {
-                    await Microstep(enabledTransitions);
-                }
-
-                Context.LogInformation("End: event loop cycle");
             }
+
+            Context.LogInformation("End: process internal messages");
+        }
+
+        private async Task FinalizeStateChart()
+        {
+            Context.LogInformation("Start: finalize state chart");
 
             foreach (var state in Context.Configuration.Sort(State.ReverseCompare))
             {
@@ -141,7 +223,7 @@ namespace StateChartsDotNet.CoreEngine
                 }
             }
 
-            Context.LogInformation("End: event loop");
+            Context.LogInformation("End: finalize state chart");
         }
 
         private void ReturnDoneMessage(State state)

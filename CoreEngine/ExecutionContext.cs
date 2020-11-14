@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.Abstractions;
-using StateChartsDotNet.CoreEngine.Abstractions.MessageTransports;
-using StateChartsDotNet.CoreEngine.MessageTransports;
 
 namespace StateChartsDotNet.CoreEngine
 {
@@ -15,16 +13,13 @@ namespace StateChartsDotNet.CoreEngine
     {
         private readonly Dictionary<string, object> _data;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
+        private readonly Queue<Message> _messages = new Queue<Message>();
         private ILogger _logger;
-        private Lazy<IMessageTransport> _internalTransport;
-        private Lazy<IMessageTransport> _externalTransport;
 
         public ExecutionContext()
         {
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
-            _internalTransport = new Lazy<IMessageTransport>(() => new InMemoryQueueTransport());
-            _externalTransport = new Lazy<IMessageTransport>(() => new InMemoryQueueTransport());
         }
 
         public bool IsRunning { get; internal set; }
@@ -32,36 +27,6 @@ namespace StateChartsDotNet.CoreEngine
         public ILogger Logger
         {
             set => _logger = value;
-        }
-
-        public IMessageTransport InternalTransport
-        {
-            internal get => _internalTransport.Value;
-            
-            set
-            {
-                if (this.IsRunning)
-                {
-                    throw new InvalidOperationException("Cannot set internal message transport while the state machine is running.");
-                }
-
-                _internalTransport = new Lazy<IMessageTransport>(() => value);
-            }
-        }
-
-        public IMessageTransport ExternalTransport
-        {
-            internal get => _externalTransport.Value;
-
-            set
-            {
-                if (this.IsRunning)
-                {
-                    throw new InvalidOperationException("Cannot set external message transport while the state machine is running.");
-                }
-
-                _externalTransport = new Lazy<IMessageTransport>(() => value);
-            }
         }
 
         public Task SendAsync(string eventName, params object[] dataPairs)
@@ -79,7 +44,7 @@ namespace StateChartsDotNet.CoreEngine
                 evt[(string)dataPairs[idx]] = dataPairs[idx + 1];
             }
 
-            return _externalTransport.Value.SendAsync(evt);
+            return Task.CompletedTask;
         }
 
         public object this[string key]
@@ -124,10 +89,12 @@ namespace StateChartsDotNet.CoreEngine
                 evt[(string) dataPairs[idx]] = dataPairs[idx + 1];
             }
 
-            return _internalTransport.Value.SendAsync(evt);
+            _messages.Enqueue(evt);
+
+            return Task.CompletedTask;
         }
 
-        internal async Task EnqueueCommunicationError(Exception ex)
+        internal Task EnqueueCommunicationError(Exception ex)
         {
             var evt = new Message("error.communication")
             {
@@ -136,12 +103,14 @@ namespace StateChartsDotNet.CoreEngine
 
             evt["exception"] = ex;
 
-            await _internalTransport.Value.SendAsync(evt);
+            _messages.Enqueue(evt);
 
             _logger.LogError("Communication error", ex);
+
+            return Task.CompletedTask;
         }
 
-        internal async Task EnqueueExecutionError(Exception ex)
+        internal Task EnqueueExecutionError(Exception ex)
         {
             var evt = new Message("error.execution")
             {
@@ -150,43 +119,23 @@ namespace StateChartsDotNet.CoreEngine
 
             evt["exception"] = ex;
 
-            await _internalTransport.Value.SendAsync(evt);
+            _messages.Enqueue(evt);
 
             _logger.LogError("Execution error", ex);
+
+            return Task.CompletedTask;
         }
 
-        internal Task<bool> HasInternalMessages => _internalTransport.Value.HasMessageAsync();
+        internal Task<bool> HasInternalMessages => Task.FromResult(_messages.Count > 0);
 
-        internal async Task<Message> DequeueInternal()
+        internal Task<Message> DequeueInternal()
         {
-            if (await _internalTransport.Value.TryReceiveAsync(out Message evt))
+            if (_messages.TryDequeue(out Message evt))
             {
                 _data["_event"] = evt;
             }
 
-            return evt;
-        }
-
-        internal async Task<Message> DequeueExternal()
-        {
-            Task<bool> Dequeue(out Message evt)
-            {
-                return _externalTransport.Value.TryReceiveAsync(out evt);
-            }
-
-            Message evt;
-
-            while (! await Dequeue(out evt))
-            {
-                await Task.Delay(100);
-            }
-
-            if (!evt.IsCancel)
-            {
-                _data["_event"] = evt;
-            }
-
-            return evt;
+            return Task.FromResult(evt);
         }
 
         internal Set<State> Configuration { get; } = new Set<State>();

@@ -4,6 +4,8 @@ using System.Xml.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml;
+using StateChartsDotNet.CoreEngine.Abstractions;
+using System.Collections.Generic;
 
 namespace ConsoleRunner
 {
@@ -41,37 +43,38 @@ namespace ConsoleRunner
 
         static Task RunMicrowave(ILogger logger)
         {
-            return Run("microwave.xml", logger, async interpreter =>
+            return Run("microwave.xml", logger, async queue =>
             {
-                await interpreter.Context.SendAsync("turn.on");
+                queue.Enqueue(new Message("turn.on"));
+                await Task.Delay(500);
 
                 for (var i = 0; i < 5; i++)
                 {
-                    await interpreter.Context.SendAsync("time");
+                    queue.Enqueue(new Message("time"));
+                    await Task.Delay(500);
                 }
 
-                await interpreter.Context.SendAsync("cancel");
+                queue.Enqueue(new Message("cancel"));
+                await Task.Delay(500);
             });
         }
 
-        static Task Run(string xmldoc, ILogger logger, Func<Interpreter, Task> action = null)
+        static Task Run(string xmldoc, ILogger logger, Func<Queue<Message>, Task> action = null)
         {
             var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var interpreter = new Interpreter(metadata);
+            var queue = new Queue<Message>();
 
-            interpreter.Context.Logger = logger;
+            var runTask = Interpreter.Run(metadata, queue, logger);
 
-            var runTask = interpreter.Run();
-
-            Task externalTask = Task.CompletedTask;
+            var actionTask = Task.CompletedTask;
 
             if (action != null)
             {
-                externalTask = action.Invoke(interpreter);
+                actionTask = action.Invoke(queue);
             }
 
-            return Task.WhenAll(runTask, externalTask);
+            return Task.WhenAll(runTask, actionTask);
         }
     }
 }
