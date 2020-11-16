@@ -11,11 +11,13 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            await ((IScriptMetadata) _metadata).Execute(context.ScriptData);
+            ((IScriptMetadata) _metadata).Execute(context.ScriptData);
+
+            return Task.CompletedTask;
         }
     }
 }

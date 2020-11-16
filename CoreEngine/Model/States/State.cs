@@ -15,11 +15,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
     {
         protected readonly IStateMetadata _metadata;
         protected readonly State _parent;
-        protected readonly AsyncLazy<OnEntryExit> _onEntry;
-        protected readonly AsyncLazy<OnEntryExit> _onExit;
-        protected readonly AsyncLazy<Transition[]> _transitions;
-        protected readonly AsyncLazy<InvokeStateChart[]> _invokes;
-        protected readonly AsyncLazy<Datamodel> _datamodel;
+        protected readonly Lazy<OnEntryExit> _onEntry;
+        protected readonly Lazy<OnEntryExit> _onExit;
+        protected readonly Lazy<Transition[]> _transitions;
+        protected readonly Lazy<InvokeStateChart[]> _invokes;
+        protected readonly Lazy<Datamodel> _datamodel;
 
         private bool _firstEntry;
 
@@ -31,9 +31,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             _metadata = metadata;
             _parent = parent;
 
-            _onEntry = new AsyncLazy<OnEntryExit>(async () =>
+            _onEntry = new Lazy<OnEntryExit>(() =>
             {
-                var meta = await _metadata.GetOnEntry();
+                var meta = _metadata.GetOnEntry();
 
                 if (meta != null)
                     return new OnEntryExit(meta);
@@ -41,9 +41,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _onExit = new AsyncLazy<OnEntryExit>(async () =>
+            _onExit = new Lazy<OnEntryExit>(() =>
             {
-                var meta = await _metadata.GetOnExit();
+                var meta = _metadata.GetOnExit();
 
                 if (meta != null)
                     return new OnEntryExit(meta);
@@ -51,19 +51,19 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _transitions = new AsyncLazy<Transition[]>(async () =>
+            _transitions = new Lazy<Transition[]>(() =>
             {
-                return (await _metadata.GetTransitions()).Select(tm => new Transition(tm, this)).ToArray();
+                return _metadata.GetTransitions().Select(tm => new Transition(tm, this)).ToArray();
             });
 
-            _invokes = new AsyncLazy<InvokeStateChart[]>(async () =>
+            _invokes = new Lazy<InvokeStateChart[]>(() =>
             {
-                return (await _metadata.GetServices()).Select(sm => new InvokeStateChart(sm, this)).ToArray();
+                return _metadata.GetServices().Select(sm => new InvokeStateChart(sm, this)).ToArray();
             });
 
-            _datamodel = new AsyncLazy<Datamodel>(async () =>
+            _datamodel = new Lazy<Datamodel>(() =>
             {
-                var meta = await _metadata.GetDatamodel();
+                var meta = _metadata.GetDatamodel();
 
                 if (meta != null)
                     return new Datamodel(meta);
@@ -90,76 +90,70 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public virtual bool IsAtomic => false;
 
-        public async Task<IEnumerable<Transition>> GetTransitions()
+        public IEnumerable<Transition> GetTransitions()
         {
-            return await _transitions;
+            return _transitions.Value;
         }
 
-        public virtual Task<Transition> GetInitialStateTransition()
+        public virtual Transition GetInitialStateTransition()
         {
             throw new NotImplementedException();
         }
 
-        public virtual async Task InitDatamodel(ExecutionContext context, bool recursive)
+        public virtual void InitDatamodel(ExecutionContext context, bool recursive)
         {
-            var datamodel = await _datamodel;
-
-            if (datamodel != null)
-            {
-                await datamodel.Init(context);
-            }
+            _datamodel.Value?.Init(context);
         }
 
         public virtual async Task Invoke(ExecutionContext context, RootState root)
         {
-            foreach (var invoke in await _invokes)
+            foreach (var invoke in _invokes.Value)
             {
                 await invoke.Execute(context);
             }
         }
 
-        public virtual Task RecordHistory(ExecutionContext context)
+        public virtual void RecordHistory(ExecutionContext context)
         {
-            return Task.CompletedTask;
         }
 
-        public virtual Task<IEnumerable<State>> GetChildStates()
+        public virtual IEnumerable<State> GetChildStates()
         {
-            return Task.FromResult(Enumerable.Empty<State>());
+            return Enumerable.Empty<State>();
         }
 
-        public virtual Task<bool> IsInFinalState(ExecutionContext context, RootState root)
+        public virtual bool IsInFinalState(ExecutionContext context, RootState root)
         {
-            return Task.FromResult(false);
+            return false;
         }
 
-        public virtual Task<State> GetState(string id)
+        public virtual State GetState(string id)
         {
             if (string.Compare(id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0)
             {
-                return Task.FromResult(this);
+                return this;
             }
             else
             {
-                return Task.FromResult<State>(null);
+                return null;
             }
         }
 
         public async Task ProcessExternalMessage(ExecutionContext context, Message evt)
         {
-            foreach (var invoke in await _invokes)
+            foreach (var invoke in _invokes.Value)
             {
                 await invoke.ProcessExternalMessage(context, evt);
             }
         }
 
-        public async Task<Set<State>> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
         {
             var set = new Set<State>();
 
-            foreach (var transition in await _transitions)
+            foreach (var transition in _transitions.Value)
             {
-                var transitionSet = await transition.GetEffectiveTargetStates(context, root);
+                var transitionSet = transition.GetEffectiveTargetStates(context, root);
 
                 set.Union(transitionSet);
             }
@@ -185,21 +179,16 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             if (root.Binding == Databinding.Late && _firstEntry)
             {
-                await this.InitDatamodel(context, false);
+                this.InitDatamodel(context, false);
 
                 _firstEntry = false;
             }
 
-            var onEntry = await _onEntry;
-
-            if (onEntry != null)
-            { 
-                await onEntry.Execute(context);
-            }
+            _onEntry.Value?.Execute(context);
 
             if (statesForDefaultEntry.Contains(this))
             {
-                var transition = await this.GetInitialStateTransition();
+                var transition = this.GetInitialStateTransition();
 
                 if (transition != null)
                 {
@@ -223,19 +212,19 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                 }
                 else
                 {
-                    await context.EnqueueInternal("done.state." + this.Id);
+                    context.EnqueueInternal("done.state." + this.Id);
 
                     var grandparent = _parent?.Parent;
 
                     if (grandparent != null && grandparent.IsParallelState)
                     {
-                        var parallelChildren = await grandparent.GetChildStates();
+                        var parallelChildren = grandparent.GetChildStates();
 
                         var allInFinalState = true;
 
                         foreach (var pc in parallelChildren)
                         {
-                            if (! await pc.IsInFinalState(context, root))
+                            if (! pc.IsInFinalState(context, root))
                             {
                                 allInFinalState = false;
                                 break;
@@ -244,7 +233,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                         if (allInFinalState)
                         {
-                            await context.EnqueueInternal("done.state." + grandparent.Id);
+                            context.EnqueueInternal("done.state." + grandparent.Id);
                         }
                     }
                 }
@@ -257,16 +246,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
 
-            var onExit = await _onExit;
+            _onExit.Value?.Execute(context);
 
-            if (onExit != null)
+            foreach (var invoke in _invokes.Value)
             {
-                await onExit.Execute(context);
-            }
-
-            foreach (var invoke in await _invokes)
-            {
-                invoke.Cancel(context);
+                await invoke.Cancel(context);
             }
 
             context.Configuration.Remove(this);

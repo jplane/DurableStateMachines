@@ -15,11 +15,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
             _element = element;
         }
 
-        public Task<IEnumerable<IDataInitMetadata>> GetData()
+        public IEnumerable<IDataInitMetadata> GetData()
         {
             var nodes = _element.ScxmlElements("data");
 
-            return Task.FromResult(nodes.Select(n => new DataInitMetadata(n)).Cast<IDataInitMetadata>());
+            return nodes.Select(n => new DataInitMetadata(n)).Cast<IDataInitMetadata>();
         }
     }
 }

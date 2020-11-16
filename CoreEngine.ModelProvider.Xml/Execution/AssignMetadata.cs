@@ -8,16 +8,16 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class AssignMetadata : ExecutableContentMetadata, IAssignMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<object>>> _getter;
+        private readonly Lazy<Func<dynamic, object>> _getter;
 
         public AssignMetadata(XElement element)
             : base(element)
         {
-            _getter = new AsyncLazy<Func<dynamic, Task<object>>>(async () =>
+            _getter = new Lazy<Func<dynamic, object>>(() =>
             {
                 if (!string.IsNullOrWhiteSpace(this.Expression))
                 {
-                    return await ExpressionCompiler.Compile<object>(this.Expression);
+                    return ExpressionCompiler.Compile<object>(this.Expression);
                 }
                 else
                 {
@@ -26,9 +26,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             });
         }
 
-        public async Task<object> GetValue(dynamic data)
+        public object GetValue(dynamic data)
         {
-            return await (await _getter)(data);
+            return _getter.Value(data);
         }
 
         public string Location => _element.Attribute("location").Value;

@@ -11,20 +11,20 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class ForeachMetadata : ExecutableContentMetadata, IForeachMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<IEnumerable>>> _arrayGetter;
+        private readonly Lazy<Func<dynamic, IEnumerable>> _arrayGetter;
 
         public ForeachMetadata(XElement element)
             : base(element)
         {
-            _arrayGetter = new AsyncLazy<Func<dynamic, Task<IEnumerable>>>(async () =>
+            _arrayGetter = new Lazy<Func<dynamic, IEnumerable>>(() =>
             {
-                return await ExpressionCompiler.Compile<IEnumerable>(this.ArrayExpression);
+                return ExpressionCompiler.Compile<IEnumerable>(this.ArrayExpression);
             });
         }
 
-        public async Task<IEnumerable> GetArray(dynamic data)
+        public IEnumerable GetArray(dynamic data)
         {
-            return await (await _arrayGetter)(data);
+            return _arrayGetter.Value(data);
         }
 
         private string ArrayExpression => _element.Attribute("array").Value;
@@ -33,7 +33,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 
         public string Index => _element.Attribute("index")?.Value ?? string.Empty;
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -42,7 +42,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                 content.Add(ExecutableContentMetadata.Create(node));
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content.AsEnumerable();
         }
     }
 }

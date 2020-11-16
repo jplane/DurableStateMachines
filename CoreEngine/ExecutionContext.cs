@@ -74,7 +74,7 @@ namespace StateChartsDotNet.CoreEngine
             return _data.TryGetValue(key, out value);
         }
 
-        internal Task EnqueueInternal(string eventName, params object[] dataPairs)
+        internal void EnqueueInternal(string eventName, params object[] dataPairs)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
             Debug.Assert(dataPairs.Length % 2 == 0);
@@ -90,11 +90,9 @@ namespace StateChartsDotNet.CoreEngine
             }
 
             _messages.Enqueue(evt);
-
-            return Task.CompletedTask;
         }
 
-        internal Task EnqueueCommunicationError(Exception ex)
+        internal void EnqueueCommunicationError(Exception ex)
         {
             var evt = new Message("error.communication")
             {
@@ -106,11 +104,9 @@ namespace StateChartsDotNet.CoreEngine
             _messages.Enqueue(evt);
 
             _logger.LogError("Communication error", ex);
-
-            return Task.CompletedTask;
         }
 
-        internal Task EnqueueExecutionError(Exception ex)
+        internal void EnqueueExecutionError(Exception ex)
         {
             var evt = new Message("error.execution")
             {
@@ -122,20 +118,18 @@ namespace StateChartsDotNet.CoreEngine
             _messages.Enqueue(evt);
 
             _logger.LogError("Execution error", ex);
-
-            return Task.CompletedTask;
         }
 
-        internal Task<bool> HasInternalMessages => Task.FromResult(_messages.Count > 0);
+        internal bool HasInternalMessages => _messages.Count > 0;
 
-        internal Task<Message> DequeueInternal()
+        internal Message DequeueInternal()
         {
             if (_messages.TryDequeue(out Message evt))
             {
                 _data["_event"] = evt;
             }
 
-            return Task.FromResult(evt);
+            return evt;
         }
 
         internal Set<State> Configuration { get; } = new Set<State>();

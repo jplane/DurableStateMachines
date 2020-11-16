@@ -11,17 +11,19 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var assignMetadata = (IAssignMetadata) _metadata;
 
-            var value = await assignMetadata.GetValue(context.ScriptData);
+            var value = assignMetadata.GetValue(context.ScriptData);
 
             context.SetDataValue(assignMetadata.Location, value);
 
             context.LogDebug($"Set {assignMetadata.Location} = {value}");
+
+            return Task.CompletedTask;
         }
     }
 }

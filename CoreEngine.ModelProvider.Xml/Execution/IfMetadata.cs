@@ -10,38 +10,38 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class IfMetadata : ExecutableContentMetadata, IIfMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<bool>>> _ifCondition;
-        private readonly AsyncLazy<Func<dynamic, Task<bool>>[]> _elseIfConditions;
+        private readonly Lazy<Func<dynamic, bool>> _ifCondition;
+        private readonly Lazy<Func<dynamic, bool>[]> _elseIfConditions;
 
         public IfMetadata(XElement element)
             : base(element)
         {
-            _ifCondition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () =>
+            _ifCondition = new Lazy<Func<dynamic, bool>>(() =>
             {
-                return await ExpressionCompiler.Compile<bool>(this.IfConditionExpression);
+                return ExpressionCompiler.Compile<bool>(this.IfConditionExpression);
             });
 
-            _elseIfConditions = new AsyncLazy<Func<dynamic, Task<bool>>[]>(async () =>
+            _elseIfConditions = new Lazy<Func<dynamic, bool>[]>(() =>
             {
-                var funcs = new List<Func<dynamic, Task<bool>>>();
+                var funcs = new List<Func<dynamic, bool>>();
 
                 foreach (var condition in this.ElseIfConditionExpressions)
                 {
-                    funcs.Add(await ExpressionCompiler.Compile<bool>(condition));
+                    funcs.Add(ExpressionCompiler.Compile<bool>(condition));
                 }
 
                 return funcs.ToArray();
             });
         }
 
-        public async Task<bool> EvalIfCondition(dynamic data)
+        public bool EvalIfCondition(dynamic data)
         {
-            return await (await _ifCondition)(data);
+            return _ifCondition.Value(data);
         }
 
-        public async Task<IEnumerable<Func<dynamic, Task<bool>>>> GetElseIfConditions()
+        public IEnumerable<Func<dynamic, bool>> GetElseIfConditions()
         {
-            return (await _elseIfConditions).AsEnumerable();
+            return _elseIfConditions.Value;
         }
 
         private string IfConditionExpression => _element.Attribute("cond").Value;
@@ -56,7 +56,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
         }
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -66,22 +66,22 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                 content.Add(ExecutableContentMetadata.Create(node));
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content.AsEnumerable();
         }
 
-        public IEnumerable<Task<IEnumerable<IExecutableContentMetadata>>> GetElseIfExecutableContent()
+        public IEnumerable<IEnumerable<IExecutableContentMetadata>> GetElseIfExecutableContent()
         {
-            var content = new List<Task<IEnumerable<IExecutableContentMetadata>>>();
+            var content = new List<IEnumerable<IExecutableContentMetadata>>();
 
             foreach (var nodes in _element.ScxmlElements("elseif").Select(e => e.Elements()))
             {
-                content.Add(Task.FromResult(nodes.Select(n => ExecutableContentMetadata.Create(n))));
+                content.Add(nodes.Select(n => ExecutableContentMetadata.Create(n)));
             }
 
             return content;
         }
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetElseExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetElseExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -95,7 +95,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                 }
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content.AsEnumerable();
         }
     }
 }

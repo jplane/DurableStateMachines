@@ -9,18 +9,18 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class ElseIf
     {
-        private readonly AsyncLazy<ExecutableContent[]> _content;
-        private readonly Func<dynamic, Task<bool>> _cond;
+        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Func<dynamic, bool> _cond;
 
-        public ElseIf(Func<dynamic, Task<bool>> condition, Task<IEnumerable<IExecutableContentMetadata>> contentMetadata)
+        public ElseIf(Func<dynamic, bool> condition, IEnumerable<IExecutableContentMetadata> contentMetadata)
         {
             contentMetadata.CheckArgNull(nameof(contentMetadata));
 
             _cond = condition;
 
-            _content = new AsyncLazy<ExecutableContent[]>(async () =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return (await contentMetadata).Select(ExecutableContent.Create).ToArray();
+                return contentMetadata.Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -32,13 +32,13 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
             try
             {
-                var result = await _cond(context.ScriptData);
+                var result = _cond(context.ScriptData);
 
                 context.LogDebug($"Condition = {result}");
 
                 if (result)
                 {
-                    foreach (var content in await _content)
+                    foreach (var content in _content.Value)
                     {
                         await content.Execute(context);
                     }

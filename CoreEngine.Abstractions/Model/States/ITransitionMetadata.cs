@@ -10,7 +10,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
         IEnumerable<string> Messages { get; }
         TransitionType Type { get; }
 
-        Task<bool> EvalCondition(dynamic data);
-        Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
+        bool EvalCondition(dynamic data);
+        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
     }
 }

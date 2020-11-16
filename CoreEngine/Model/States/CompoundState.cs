@@ -10,7 +10,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal abstract class CompoundState : State
     {
-        protected AsyncLazy<State[]> _states;
+        protected Lazy<State[]> _states;
 
         protected CompoundState(IStateMetadata metadata, State parent)
             : base(metadata, parent)
@@ -19,28 +19,25 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsSequentialState => true;
 
-        public override async Task<IEnumerable<State>> GetChildStates()
+        public override IEnumerable<State> GetChildStates()
         {
             Debug.Assert(_states != null);
 
-            return (await _states).Where(s => s is AtomicState ||
-                                              s is CompoundState ||
-                                              s is ParallelState ||
-                                              s is FinalState);
+            return _states.Value.Where(s => s is AtomicState || s is CompoundState || s is ParallelState || s is FinalState);
         }
 
-        public override async Task<State> GetState(string id)
+        public override State GetState(string id)
         {
-            var result = await base.GetState(id);
+            var result = base.GetState(id);
 
             if (result != null)
             {
                 return result;
             }
 
-            foreach (var state in await GetChildStates())
+            foreach (var state in GetChildStates())
             {
-                result = await state.GetState(id);
+                result = state.GetState(id);
 
                 if (result != null)
                 {
@@ -51,24 +48,24 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return null;
         }
 
-        public override async Task InitDatamodel(ExecutionContext context, bool recursive)
+        public override void InitDatamodel(ExecutionContext context, bool recursive)
         {
-            await base.InitDatamodel(context, recursive);
+            base.InitDatamodel(context, recursive);
 
             if (recursive)
             {
-                foreach (var child in await GetChildStates())
+                foreach (var child in GetChildStates())
                 {
-                    await child.InitDatamodel(context, recursive);
+                    child.InitDatamodel(context, recursive);
                 }
             }
         }
 
-        public override async Task RecordHistory(ExecutionContext context)
+        public override void RecordHistory(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            foreach (var history in (await _states).OfType<HistoryState>())
+            foreach (var history in _states.Value.OfType<HistoryState>())
             {
                 Func<State, bool> predicate;
 

@@ -8,8 +8,8 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
     {
         Databinding Databinding { get; }
 
-        Task<IEnumerable<IStateMetadata>> GetStates();
-        Task<ITransitionMetadata> GetInitialTransition();
-        Task<IScriptMetadata> GetScript();
+        IEnumerable<IStateMetadata> GetStates();
+        ITransitionMetadata GetInitialTransition();
+        IScriptMetadata GetScript();
     }
 }

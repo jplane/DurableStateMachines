@@ -27,7 +27,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                                             true);
         }
 
-        public async Task<ITransitionMetadata> GetInitialTransition()
+        public ITransitionMetadata GetInitialTransition()
         {
             var attr = _element.Attribute("initial");
 
@@ -37,23 +37,23 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
             else
             {
-                var firstChild = (await GetStates()).FirstOrDefault(sm => sm is IAtomicStateMetadata ||
-                                                                          sm is ISequentialStateMetadata ||
-                                                                          sm is IParallelStateMetadata ||
-                                                                          sm is IFinalStateMetadata);
+                var firstChild = GetStates().FirstOrDefault(sm => sm is IAtomicStateMetadata ||
+                                                                  sm is ISequentialStateMetadata ||
+                                                                  sm is IParallelStateMetadata ||
+                                                                  sm is IFinalStateMetadata);
 
                 return firstChild == null ? null : new TransitionMetadata(firstChild.Id);
             }
         }
 
-        public Task<IScriptMetadata> GetScript()
+        public IScriptMetadata GetScript()
         {
             var node = _element.ScxmlElement("script");
 
-            return Task.FromResult(node == null ? null : (IScriptMetadata) new ScriptMetadata(node));
+            return node == null ? null : (IScriptMetadata) new ScriptMetadata(node);
         }
 
-        public Task<IEnumerable<IStateMetadata>> GetStates()
+        public IEnumerable<IStateMetadata> GetStates()
         {
             var states = new List<IStateMetadata>();
 
@@ -83,7 +83,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 }
             }
 
-            return Task.FromResult(states.AsEnumerable());
+            return states.AsEnumerable();
         }
     }
 }

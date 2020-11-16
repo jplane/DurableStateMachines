@@ -13,7 +13,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
         }
 
-        public Task<IEnumerable<IStateMetadata>> GetStates()
+        public IEnumerable<IStateMetadata> GetStates()
         {
             var states = new List<IStateMetadata>();
 
@@ -43,7 +43,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 }
             }
 
-            return Task.FromResult(states.AsEnumerable());
+            return states;
         }
     }
 }

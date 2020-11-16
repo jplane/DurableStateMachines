@@ -8,6 +8,6 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
     {
         bool IsEntry { get; }
 
-        Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
+        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
     }
 }

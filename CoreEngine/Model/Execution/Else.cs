@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -8,15 +9,15 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class Else
     {
-        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public Else(IEnumerable<IExecutableContentMetadata> contentMetadata)
         {
             contentMetadata.CheckArgNull(nameof(contentMetadata));
 
-            _content = new AsyncLazy<ExecutableContent[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return Task.FromResult(contentMetadata.Select(ExecutableContent.Create).ToArray());
+                return contentMetadata.Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -28,7 +29,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
             try
             {
-                foreach (var content in await _content)
+                foreach (var content in _content.Value)
                 {
                     await content.Execute(context);
                 }

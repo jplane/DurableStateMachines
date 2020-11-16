@@ -5,6 +5,6 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model
 {
     public interface IModelMetadata
     {
-        Task<IRootStateMetadata> GetRootState();
+        IRootStateMetadata GetRootState();
     }
 }

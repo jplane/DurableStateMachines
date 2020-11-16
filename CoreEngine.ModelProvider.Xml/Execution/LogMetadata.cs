@@ -8,22 +8,22 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class LogMetadata : ExecutableContentMetadata, ILogMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _messageGetter;
+        private readonly Lazy<Func<dynamic, string>> _messageGetter;
 
         public LogMetadata(XElement element)
             : base(element)
         {
-            _messageGetter = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _messageGetter = new Lazy<Func<dynamic, string>>(() =>
             {
-                return await ExpressionCompiler.Compile<string>(this.Message);
+                return ExpressionCompiler.Compile<string>(this.Message);
             });
         }
 
         private string Message => _element.Attribute("expr")?.Value ?? string.Empty;
 
-        public async Task<string> GetMessage(dynamic data)
+        public string GetMessage(dynamic data)
         {
-            return await (await _messageGetter)(data);
+            return _messageGetter.Value(data);
         }
     }
 }

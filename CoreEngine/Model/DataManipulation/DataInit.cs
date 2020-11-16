@@ -15,7 +15,7 @@ namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
             _metadata = metadata;
         }
 
-        public async Task Init(ExecutionContext context)
+        public void Init(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -23,7 +23,7 @@ namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
 
             try
             {
-                var value = await _metadata.GetValue(context.ScriptData);
+                var value = _metadata.GetValue(context.ScriptData);
 
                 context.SetDataValue(_metadata.Id, value);
 
@@ -31,7 +31,7 @@ namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
             }
             catch (Exception ex)
             {
-                await context.EnqueueExecutionError(ex);
+                context.EnqueueExecutionError(ex);
             }
             finally
             {

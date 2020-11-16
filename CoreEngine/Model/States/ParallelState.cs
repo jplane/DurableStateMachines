@@ -2,6 +2,7 @@
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using Nito.AsyncEx;
 using System.Threading.Tasks;
+using System;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -12,11 +13,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _states = new AsyncLazy<State[]>(async () =>
+            _states = new Lazy<State[]>(() =>
             {
                 var states = new List<State>();
 
-                foreach (var stateMetadata in await metadata.GetStates())
+                foreach (var stateMetadata in metadata.GetStates())
                 {
                     if (stateMetadata is ISequentialStateMetadata ssm)
                     {
@@ -42,11 +43,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsParallelState => true;
 
-        public override async Task<bool> IsInFinalState(ExecutionContext context, RootState root)
+        public override bool IsInFinalState(ExecutionContext context, RootState root)
         {
-            foreach (var child in await GetChildStates())
+            foreach (var child in GetChildStates())
             {
-                if (! await child.IsInFinalState(context, root))
+                if (! child.IsInFinalState(context, root))
                 {
                     return false;
                 }

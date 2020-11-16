@@ -40,7 +40,6 @@ namespace StateChartsDotNet.CoreEngine
         {
             if (_data.TryGetValue(binder.Name, out result))
             {
-                result = Task.FromResult(result);
                 return true;
             }
             else

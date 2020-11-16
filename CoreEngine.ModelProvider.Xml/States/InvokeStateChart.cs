@@ -60,14 +60,14 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
         }
 
-        public Task<IContentMetadata> GetContent()
+        public IContentMetadata GetContent()
         {
             var node = _element.ScxmlElement("content");
 
-            return Task.FromResult(node == null ? null : (IContentMetadata) new ContentMetadata(node));
+            return node == null ? null : (IContentMetadata) new ContentMetadata(node);
         }
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetFinalizeExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -76,10 +76,10 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 content.Add(ExecutableContentMetadata.Create(node));
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content.AsEnumerable();
         }
 
-        public Task<IEnumerable<IParamMetadata>> GetParams()
+        public IEnumerable<IParamMetadata> GetParams()
         {
             var nodes = _element.ScxmlElements("param");
 
@@ -93,11 +93,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
             else if (this.Namelist.Any())
             {
-                return Task.FromResult(this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+                return this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
             }
             else
             {
-                return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+                return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
             }
         }
     }

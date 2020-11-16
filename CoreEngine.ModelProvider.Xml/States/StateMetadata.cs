@@ -30,39 +30,39 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             return XmlExtensions.GetDocumentOrder(_element, ((StateMetadata) metadata)._element);
         }
 
-        public Task<IOnEntryExitMetadata> GetOnEntry()
+        public IOnEntryExitMetadata GetOnEntry()
         {
             var node = _element.ScxmlElement("onentry");
 
-            return Task.FromResult(node == null ? null : (IOnEntryExitMetadata) new OnEntryExitMetadata(node));
+            return node == null ? null : (IOnEntryExitMetadata) new OnEntryExitMetadata(node);
         }
 
-        public Task<IOnEntryExitMetadata> GetOnExit()
+        public IOnEntryExitMetadata GetOnExit()
         {
             var node = _element.ScxmlElement("onexit");
 
-            return Task.FromResult(node == null ? null : (IOnEntryExitMetadata) new OnEntryExitMetadata(node));
+            return node == null ? null : (IOnEntryExitMetadata) new OnEntryExitMetadata(node);
         }
 
-        public Task<IEnumerable<ITransitionMetadata>> GetTransitions()
+        public IEnumerable<ITransitionMetadata> GetTransitions()
         {
             var nodes = _element.ScxmlElements("transition");
 
-            return Task.FromResult(nodes.Select(n => new TransitionMetadata(n)).Cast<ITransitionMetadata>());
+            return nodes.Select(n => new TransitionMetadata(n)).Cast<ITransitionMetadata>();
         }
 
-        public Task<IEnumerable<IInvokeStateChart>> GetServices()
+        public IEnumerable<IInvokeStateChart> GetServices()
         {
             var nodes = _element.ScxmlElements("invoke");
 
-            return Task.FromResult(nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChart>());
+            return nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChart>();
         }
 
-        public Task<IDatamodelMetadata> GetDatamodel()
+        public IDatamodelMetadata GetDatamodel()
         {
             var node = _element.ScxmlElement("datamodel");
 
-            return Task.FromResult(node == null ? null : (IDatamodelMetadata) new DatamodelMetadata(node));
+            return node == null ? null : (IDatamodelMetadata) new DatamodelMetadata(node);
         }
     }
 }

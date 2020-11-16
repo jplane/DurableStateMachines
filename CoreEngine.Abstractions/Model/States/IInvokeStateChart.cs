@@ -12,8 +12,8 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
         string Id { get; }
         string IdLocation { get; }
 
-        Task<IContentMetadata> GetContent();
-        Task<IEnumerable<IExecutableContentMetadata>> GetFinalizeExecutableContent();
-        Task<IEnumerable<IParamMetadata>> GetParams();
+        IContentMetadata GetContent();
+        IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
+        IEnumerable<IParamMetadata> GetParams();
      }
 }

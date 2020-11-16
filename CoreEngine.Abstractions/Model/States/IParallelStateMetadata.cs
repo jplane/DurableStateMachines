@@ -5,6 +5,6 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface IParallelStateMetadata : IStateMetadata
     {
-        Task<IEnumerable<IStateMetadata>> GetStates();
+        IEnumerable<IStateMetadata> GetStates();
     }
 }

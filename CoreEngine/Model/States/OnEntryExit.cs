@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Model.Execution;
 using Nito.AsyncEx;
+using System;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class OnEntryExit
     {
-        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
         private readonly bool _isEntry;
 
         public OnEntryExit(IOnEntryExitMetadata metadata)
@@ -17,9 +18,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             _isEntry = metadata.IsEntry;
 
-            _content = new AsyncLazy<ExecutableContent[]>(async () =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -33,7 +34,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             try
             {
-                foreach (var content in await _content)
+                foreach (var content in _content.Value)
                 {
                     await content.Execute(context);
                 }

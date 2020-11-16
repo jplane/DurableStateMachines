@@ -15,9 +15,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
             _document = document;
         }
 
-        public Task<IRootStateMetadata> GetRootState()
+        public IRootStateMetadata GetRootState()
         {
-            return Task.FromResult((IRootStateMetadata) new RootStateMetadata(_document.Root));
+            return new RootStateMetadata(_document.Root);
         }
     }
 }

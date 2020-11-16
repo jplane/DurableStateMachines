@@ -9,17 +9,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class FinalState : State
     {
-        private readonly AsyncLazy<Content> _content;
-        private readonly AsyncLazy<Param[]> _params;
+        private readonly Lazy<Content> _content;
+        private readonly Lazy<Param[]> _params;
 
         public FinalState(IFinalStateMetadata metadata, State parent)
             : base(metadata, parent)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new AsyncLazy<Content>(async () =>
+            _content = new Lazy<Content>(() =>
             {
-                var meta = await metadata.GetContent();
+                var meta = metadata.GetContent();
 
                 if (meta != null)
                     return new Content(meta);
@@ -27,9 +27,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _params = new AsyncLazy<Param[]>(async () =>
+            _params = new Lazy<Param[]>(() =>
             {
-                return (await metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
+                return metadata.GetParams().Select(pm => new Param(pm)).ToArray();
             });
         }
 
@@ -40,9 +40,8 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             throw new NotImplementedException();
         }
 
-        public override Task InitDatamodel(ExecutionContext context, bool recursive)
+        public override void InitDatamodel(ExecutionContext context, bool recursive)
         {
-            return Task.CompletedTask;
         }
     }
 }

@@ -4,28 +4,29 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System.Diagnostics;
+using System;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class If : ExecutableContent
     {
-        private readonly AsyncLazy<ElseIf[]> _elseifs;
-        private readonly AsyncLazy<Else> _else;
-        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly Lazy<ElseIf[]> _elseifs;
+        private readonly Lazy<Else> _else;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public If(IIfMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new AsyncLazy<ExecutableContent[]>(async () =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
 
-            _else = new AsyncLazy<Else>(async () =>
+            _else = new Lazy<Else>(() =>
             {
-                var elseExecutableContent = await metadata.GetElseExecutableContent();
+                var elseExecutableContent = metadata.GetElseExecutableContent();
 
                 if (elseExecutableContent != null)
                 {
@@ -37,11 +38,11 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
                 }
             });
 
-            _elseifs = new AsyncLazy<ElseIf[]>(async () =>
+            _elseifs = new Lazy<ElseIf[]>(() =>
             {
                 var elseifs = new List<ElseIf>();
 
-                var conditions = (await metadata.GetElseIfConditions()).ToArray();
+                var conditions = metadata.GetElseIfConditions().ToArray();
 
                 var content = metadata.GetElseIfExecutableContent().ToArray();
 
@@ -60,20 +61,20 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var result = await ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
+            var result = ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
 
             context.LogDebug($"Condition = {result}");
 
             if (result)
             {
-                foreach (var content in await _content)
+                foreach (var content in _content.Value)
                 {
                     await content.Execute(context);
                 }
             }
             else
             {
-                foreach (var elseif in await _elseifs)
+                foreach (var elseif in _elseifs.Value)
                 {
                     if (await elseif.ConditionalExecute(context))
                     {
@@ -81,10 +82,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
                     }
                 }
 
-                if ((await _else) != null)
-                {
-                    await (await _else)?.Execute(context);
-                }
+                _else.Value?.Execute(context);
             }
         }
     }

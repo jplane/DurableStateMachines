@@ -16,13 +16,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         private readonly XElement _element;
         private readonly XAttribute _attribute;
         private readonly string _target = string.Empty;
-        private readonly AsyncLazy<Func<dynamic, Task<bool>>> _condition;
+        private readonly Lazy<Func<dynamic, bool>> _condition;
 
         public TransitionMetadata(XElement element)
         {
             _element = element;
 
-            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () =>
+            _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
                 if (string.IsNullOrWhiteSpace(this.ConditionExpr))
                 {
@@ -30,7 +30,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 }
                 else
                 {
-                    return await ExpressionCompiler.Compile<bool>(this.ConditionExpr);
+                    return ExpressionCompiler.Compile<bool>(this.ConditionExpr);
                 }
             });
         }
@@ -39,7 +39,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
             _attribute = attribute;
 
-            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () =>
+            _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
                 if (string.IsNullOrWhiteSpace(this.ConditionExpr))
                 {
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 }
                 else
                 {
-                    return await ExpressionCompiler.Compile<bool>(this.ConditionExpr);
+                    return ExpressionCompiler.Compile<bool>(this.ConditionExpr);
                 }
             });
         }
@@ -56,7 +56,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
             _target = target;
 
-            _condition = new AsyncLazy<Func<dynamic, Task<bool>>>(async () => EvalTrue);
+            _condition = new Lazy<Func<dynamic, bool>>(() => EvalTrue);
         }
 
         public IEnumerable<string> Targets
@@ -100,14 +100,14 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             }
         }
 
-        public async Task<bool> EvalCondition(dynamic data)
+        public bool EvalCondition(dynamic data)
         {
-            return await (await _condition)(data);
+            return _condition.Value(data);
         }
 
-        private static Task<bool> EvalTrue(dynamic _)
+        private static bool EvalTrue(dynamic _)
         {
-            return Task.FromResult(true);
+            return true;
         }
 
         private string ConditionExpr => _element?.Attribute("cond")?.Value ?? string.Empty;
@@ -119,7 +119,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                                                true);
         }
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -131,7 +131,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 }
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content;
         }
     }
 }

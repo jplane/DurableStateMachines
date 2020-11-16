@@ -15,18 +15,18 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         {
         }
 
-        public Task<IContentMetadata> GetContent()
+        public IContentMetadata GetContent()
         {
             var node = _element.ScxmlElement("content");
 
-            return Task.FromResult(node == null ? null : (IContentMetadata)new ContentMetadata(node));
+            return node == null ? null : (IContentMetadata)new ContentMetadata(node);
         }
 
-        public Task<IEnumerable<IParamMetadata>> GetParams()
+        public IEnumerable<IParamMetadata> GetParams()
         {
             var nodes = _element.ScxmlElements("param");
 
-            return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+            return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
         }
     }
 }

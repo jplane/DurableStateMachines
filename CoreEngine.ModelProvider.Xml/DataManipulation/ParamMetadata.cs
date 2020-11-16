@@ -12,7 +12,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
     {
         private readonly string _location;
         private readonly string _expression;
-        private readonly AsyncLazy<Func<dynamic, Task<object>>> _getExpressionValue;
+        private readonly Lazy<Func<dynamic, object>> _getExpressionValue;
 
         public ParamMetadata(XElement element)
         {
@@ -20,9 +20,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
             _location = element.Attribute("location")?.Value ?? string.Empty;
             _expression = element.Attribute("expr")?.Value ?? string.Empty;
 
-            _getExpressionValue = new AsyncLazy<Func<dynamic, Task<object>>>(async () =>
+            _getExpressionValue = new Lazy<Func<dynamic, object>>(() =>
             {
-                return await ExpressionCompiler.Compile<object>(_expression);
+                return ExpressionCompiler.Compile<object>(_expression);
             });
         }
 
@@ -35,7 +35,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
 
         public string Name { get; }
 
-        public async Task<object> GetValue(dynamic data)
+        public object GetValue(dynamic data)
         {
 
             if (string.IsNullOrWhiteSpace(_location) && string.IsNullOrWhiteSpace(_expression))
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
             }
             else
             {
-                return await (await _getExpressionValue)(data);
+                return _getExpressionValue.Value(data);
             }
         }
     }
