@@ -43,38 +43,37 @@ namespace ConsoleRunner
 
         static Task RunMicrowave(ILogger logger)
         {
-            return Run("microwave.xml", logger, async queue =>
+            return Run("microwave.xml", logger, async interpreter =>
             {
-                queue.Enqueue(new Message("turn.on"));
-                await Task.Delay(500);
+                await interpreter.Context.SendAsync("turn.on");
 
                 for (var i = 0; i < 5; i++)
                 {
-                    queue.Enqueue(new Message("time"));
-                    await Task.Delay(500);
+                    await interpreter.Context.SendAsync("time");
                 }
 
-                queue.Enqueue(new Message("cancel"));
-                await Task.Delay(500);
+                await interpreter.Context.SendAsync("cancel");
             });
         }
 
-        static Task Run(string xmldoc, ILogger logger, Func<Queue<Message>, Task> action = null)
+        static Task Run(string xmldoc, ILogger logger, Func<Interpreter, Task> action = null)
         {
             var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var queue = new Queue<Message>();
+            var interpreter = new Interpreter(metadata);
 
-            var runTask = Interpreter.Run(metadata, queue, logger);
+            interpreter.Context.Logger = logger;
 
-            var actionTask = Task.CompletedTask;
+            var runTask = interpreter.Run();
+
+            Task externalTask = Task.CompletedTask;
 
             if (action != null)
             {
-                actionTask = action.Invoke(queue);
+                externalTask = action.Invoke(interpreter);
             }
 
-            return Task.WhenAll(runTask, actionTask);
+            return Task.WhenAll(runTask, externalTask);
         }
     }
 }

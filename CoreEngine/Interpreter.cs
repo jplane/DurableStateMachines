@@ -31,59 +31,10 @@ namespace StateChartsDotNet.CoreEngine
             Context.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
         }
 
-        public static Task Run(IModelMetadata metadata, Queue<Message> messages, ILogger logger = null)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-            messages.CheckArgNull(nameof(messages));
-
-            return Task.Run(async () =>
-            {
-                async Task<Message> GetNextMessage()
-                {
-                    bool Dequeue(out Message message)
-                    {
-                        lock (messages)
-                        {
-                            return messages.TryDequeue(out message);
-                        }
-                    }
-
-                    Message message;
-
-                    while (!Dequeue(out message))
-                    {
-                        await Task.Delay(100);
-                    }
-
-                    return message;
-                }
-
-                var interpreter = new Interpreter(metadata);
-
-                interpreter.Context.Logger = logger;
-
-                await interpreter.Init();
-
-                while (interpreter.Context.IsRunning)
-                {
-                    var externalMessage = await GetNextMessage();
-
-                    await interpreter.ProcessMessage(externalMessage);
-                }
-            });
-        }
-
         public ExecutionContext Context { get; }
 
-        public async Task Init()
+        public async Task Run()
         {
-            if (Context.IsRunning)
-            {
-                return;
-            }
-
-            Context.LogInformation("Start: init");
-
             Context.SetDataValue("_name", _root.Value.Name);
 
             if (_root.Value.Binding == Databinding.Early)
@@ -95,68 +46,19 @@ namespace StateChartsDotNet.CoreEngine
 
             _root.Value.ExecuteScript(Context);
 
-            await EnterStates(new List<Transition>(new []{ _root.Value.GetInitialStateTransition() }));
+            await EnterStates(new List<Transition>(new[] { _root.Value.GetInitialStateTransition() }));
 
-            await ProcessInternalMessages();
-
-            if (!Context.IsRunning)
-            {
-                await FinalizeStateChart();
-            }
-
-            Context.LogInformation("End: init");
+            await DoMessageLoop();
         }
 
-        public async Task ProcessMessage(Message message)
+        private async Task DoMessageLoop()
         {
-            Debug.Assert(message != null);
-
-            if (!Context.IsRunning)
-            {
-                return;
-            }
-
-            Context.LogInformation("Start: process message");
-
-            Context.SetDataValue("_event", message);
-
-            if (message.IsCancel)
-            {
-                Context.IsRunning = false;
-
-                await FinalizeStateChart();
-            }
-            else
-            {
-                foreach (var state in Context.Configuration)
-                {
-                    await state.ProcessExternalMessage(Context, message);
-                }
-
-                var enabledTransitions = SelectTransitions(message);
-
-                if (!enabledTransitions.IsEmpty())
-                {
-                    await Microstep(enabledTransitions);
-                }
-
-                if (! Context.IsRunning)
-                {
-                    await FinalizeStateChart();
-                }
-
-                await ProcessInternalMessages();
-            }
-
-            Context.LogInformation("End: process message");
-        }
-
-        private async Task ProcessInternalMessages()
-        {
-            Context.LogInformation("Start: process internal messages");
+            Context.LogInformation("Start: event loop");
 
             while (Context.IsRunning)
             {
+                Context.LogInformation("Start: event loop cycle");
+
                 Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
@@ -185,8 +87,9 @@ namespace StateChartsDotNet.CoreEngine
                     }
                 }
 
-                if (! Context.IsRunning)
+                if (!Context.IsRunning)
                 {
+                    Context.LogInformation("End: event loop cycle");
                     break;
                 }
 
@@ -197,18 +100,35 @@ namespace StateChartsDotNet.CoreEngine
 
                 Context.StatesToInvoke.Clear();
 
-                if (! Context.HasInternalMessages)
+                if (Context.HasInternalMessages)
                 {
-                    break;
+                    Context.LogInformation("End: event loop cycle");
+                    continue;
                 }
+
+                var externalMessage = await Context.DequeueExternal();
+
+                if (externalMessage.IsCancel)
+                {
+                    Context.IsRunning = false;
+                    Context.LogInformation("End: event loop cycle");
+                    continue;
+                }
+
+                foreach (var state in Context.Configuration)
+                {
+                    await state.ProcessExternalMessage(Context, externalMessage);
+                }
+
+                enabledTransitions = await SelectTransitions(externalMessage);
+
+                if (!enabledTransitions.IsEmpty())
+                {
+                    await Microstep(enabledTransitions);
+                }
+
+                Context.LogInformation("End: event loop cycle");
             }
-
-            Context.LogInformation("End: process internal messages");
-        }
-
-        private async Task FinalizeStateChart()
-        {
-            Context.LogInformation("Start: finalize state chart");
 
             foreach (var state in Context.Configuration.Sort(State.ReverseCompare))
             {
@@ -223,7 +143,7 @@ namespace StateChartsDotNet.CoreEngine
                 }
             }
 
-            Context.LogInformation("End: finalize state chart");
+            Context.LogInformation("End: event loop");
         }
 
         private void ReturnDoneMessage(State state)

@@ -29,24 +29,6 @@ namespace StateChartsDotNet.CoreEngine
             set => _logger = value;
         }
 
-        public Task SendAsync(string eventName, params object[] dataPairs)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
-            Debug.Assert(dataPairs.Length % 2 == 0);
-
-            var evt = new Message(eventName)
-            {
-                Type = MessageType.External
-            };
-
-            for (var idx = 0; idx < dataPairs.Length; idx += 2)
-            {
-                evt[(string)dataPairs[idx]] = dataPairs[idx + 1];
-            }
-
-            return Task.CompletedTask;
-        }
-
         public object this[string key]
         {
             get { return _data[key]; }
