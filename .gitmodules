@@ -1,6 +1,3 @@
-[submodule "core-test-framework"]
-	path = core-test-framework
-	url = https://gitlab.com/scion-scxml/core-test-framework.git
 [submodule "test-framework"]
 	path = test-framework
 	url = https://gitlab.com/scion-scxml/test-framework.git
