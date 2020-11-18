@@ -49,7 +49,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
                     content = new Assign(assign);
                     break;
                 default:
-                    throw new InvalidCastException("CoreEngine.Execution is unable to cast Executable Metadata to correct type.");
+                    throw new ArgumentException(message: "Executable Metadata is not a recognized type", paramName: nameof(metadata));
             }
 
             Debug.Assert(content != null);
