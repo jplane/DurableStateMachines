@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using StateChartsDotNet.CoreEngine.Model.Execution;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using System.Threading.Tasks;

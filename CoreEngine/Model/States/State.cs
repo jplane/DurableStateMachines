@@ -5,7 +5,6 @@ using StateChartsDotNet.CoreEngine.Model.Execution;
 using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions;
 

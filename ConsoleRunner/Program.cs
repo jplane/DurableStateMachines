@@ -28,9 +28,9 @@ namespace ConsoleRunner
 
             using (var scope = logger.BeginScope(""))
             {
-                task = RunMicrowave(logger);
+                //task = RunMicrowave(logger);
 
-                //task = RunForeach(logger);
+                task = RunForeach(logger);
             }
 
             Task.WaitAll(Task.Delay(5000), task);
@@ -43,34 +43,36 @@ namespace ConsoleRunner
 
         static Task RunMicrowave(ILogger logger)
         {
-            return Run("microwave.xml", logger, async interpreter =>
+            return Run("microwave.xml", logger, async context =>
             {
-                await interpreter.Context.SendAsync("turn.on");
+                await context.SendAsync("turn.on");
 
                 for (var i = 0; i < 5; i++)
                 {
-                    await interpreter.Context.SendAsync("time");
+                    await context.SendAsync("time");
                 }
 
-                await interpreter.Context.SendAsync("cancel");
+                await context.SendAsync("cancel");
             });
         }
 
-        static Task Run(string xmldoc, ILogger logger, Func<Interpreter, Task> action = null)
+        static Task Run(string xmldoc, ILogger logger, Func<ExecutionContext, Task> action = null)
         {
             var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var interpreter = new Interpreter(metadata);
+            var context = new ExecutionContext();
 
-            interpreter.Context.Logger = logger;
+            context.Logger = logger;
 
-            var runTask = interpreter.Run();
+            var interpreter = new Interpreter();
+
+            var runTask = interpreter.Run(metadata, context);
 
             Task externalTask = Task.CompletedTask;
 
             if (action != null)
             {
-                externalTask = action.Invoke(interpreter);
+                externalTask = action.Invoke(context);
             }
 
             return Task.WhenAll(runTask, externalTask);

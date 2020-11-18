@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Model.Execution;
 using StateChartsDotNet.CoreEngine.Abstractions;
 

@@ -2,7 +2,6 @@
 using System.Linq;
 using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution

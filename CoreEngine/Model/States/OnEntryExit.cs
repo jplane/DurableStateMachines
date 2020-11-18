@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Model.Execution;
-using Nito.AsyncEx;
 using System;
 
 namespace StateChartsDotNet.CoreEngine.Model.States

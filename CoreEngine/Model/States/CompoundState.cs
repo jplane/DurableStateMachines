@@ -4,7 +4,6 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
-using Nito.AsyncEx;
 
 namespace StateChartsDotNet.CoreEngine.Model.States
 {
@@ -78,7 +77,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
                 }
 
-                context.StoreHistoryValue(history.Id, context.Configuration.Where(predicate));
+                context.StoreHistoryValue(history.Id, predicate);
             }
         }
     }

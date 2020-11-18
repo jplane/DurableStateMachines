@@ -6,70 +6,63 @@ using StateChartsDotNet.CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
-using System.Runtime.ExceptionServices;
-using Microsoft.Extensions.Logging;
 
 namespace StateChartsDotNet.CoreEngine
 {
     public class Interpreter
     {
-        private readonly Lazy<RootState> _root;
+        public Interpreter()
+        {
+        }
 
-        public Interpreter(IModelMetadata metadata)
+        public async Task Run(IModelMetadata metadata, ExecutionContext context)
         {
             metadata.CheckArgNull(nameof(metadata));
+            context.CheckArgNull(nameof(context));
 
-            _root = new Lazy<RootState>(() =>
+            var root = new RootState(metadata.GetRootState());
+
+            await context.Init(root);
+
+            if (root.Binding == Databinding.Early)
             {
-                return new RootState(metadata.GetRootState());
-            });
-
-            Context = new ExecutionContext();
-
-            Context.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
-        }
-
-        public ExecutionContext Context { get; }
-
-        public async Task Run()
-        {
-            Context.SetDataValue("_name", _root.Value.Name);
-
-            if (_root.Value.Binding == Databinding.Early)
-            {
-                _root.Value.InitDatamodel(Context, true);
+                root.InitDatamodel(context, true);
             }
 
-            Context.IsRunning = true;
+            context.IsRunning = true;
 
-            _root.Value.ExecuteScript(Context);
+            root.ExecuteScript(context);
 
-            await EnterStates(new List<Transition>(new[] { _root.Value.GetInitialStateTransition() }));
+            await EnterStates(root,
+                              context,
+                              new List<Transition>(new[] { root.GetInitialStateTransition() }));
 
-            await DoMessageLoop();
+            await DoMessageLoop(root, context);
         }
 
-        private async Task DoMessageLoop()
+        private async Task DoMessageLoop(RootState root, ExecutionContext context)
         {
-            Context.LogInformation("Start: event loop");
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
 
-            while (Context.IsRunning)
+            context.LogInformation("Start: event loop");
+
+            while (context.IsRunning)
             {
-                Context.LogInformation("Start: event loop cycle");
+                context.LogInformation("Start: event loop cycle");
 
                 Set<Transition> enabledTransitions = null;
 
                 var macrostepDone = false;
 
-                while (Context.IsRunning && !macrostepDone)
+                while (context.IsRunning && !macrostepDone)
                 {
-                    enabledTransitions = SelectMessagelessTransitions();
+                    enabledTransitions = SelectMessagelessTransitions(root, context);
 
                     if (enabledTransitions.IsEmpty())
                     {
-                        var internalMessage = Context.DequeueInternal();
+                        var internalMessage = context.DequeueInternal();
 
                         if (internalMessage == null)
                         {
@@ -77,62 +70,62 @@ namespace StateChartsDotNet.CoreEngine
                         }
                         else
                         {
-                            enabledTransitions = SelectTransitions(internalMessage);
+                            enabledTransitions = SelectTransitions(root, context, internalMessage);
                         }
                     }
 
                     if (!enabledTransitions.IsEmpty())
                     {
-                        await Microstep(enabledTransitions);
+                        await Microstep(root, context, enabledTransitions);
                     }
                 }
 
-                if (!Context.IsRunning)
+                if (!context.IsRunning)
                 {
-                    Context.LogInformation("End: event loop cycle");
+                    context.LogInformation("End: event loop cycle");
                     break;
                 }
 
-                foreach (var state in Context.StatesToInvoke.Sort(State.Compare))
+                foreach (var state in context.StatesToInvoke.Sort(State.Compare))
                 {
-                    await state.Invoke(Context, _root.Value);
+                    await state.Invoke(context, root);
                 }
 
-                Context.StatesToInvoke.Clear();
+                context.StatesToInvoke.Clear();
 
-                if (Context.HasInternalMessages)
+                if (context.HasInternalMessages)
                 {
-                    Context.LogInformation("End: event loop cycle");
+                    context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
-                var externalMessage = await Context.DequeueExternal();
+                var externalMessage = await context.DequeueExternal();
 
                 if (externalMessage.IsCancel)
                 {
-                    Context.IsRunning = false;
-                    Context.LogInformation("End: event loop cycle");
+                    context.IsRunning = false;
+                    context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
-                foreach (var state in Context.Configuration)
+                foreach (var state in context.Configuration)
                 {
-                    await state.ProcessExternalMessage(Context, externalMessage);
+                    await state.ProcessExternalMessage(context, externalMessage);
                 }
 
-                enabledTransitions = await SelectTransitions(externalMessage);
+                enabledTransitions = SelectTransitions(root, context, externalMessage);
 
                 if (!enabledTransitions.IsEmpty())
                 {
-                    await Microstep(enabledTransitions);
+                    await Microstep(root, context, enabledTransitions);
                 }
 
-                Context.LogInformation("End: event loop cycle");
+                context.LogInformation("End: event loop cycle");
             }
 
-            foreach (var state in Context.Configuration.Sort(State.ReverseCompare))
+            foreach (var state in context.Configuration.Sort(State.ReverseCompare))
             {
-                await state.Exit(Context);
+                await state.Exit(context);
 
                 if (state.IsFinalState)
                 {
@@ -143,7 +136,7 @@ namespace StateChartsDotNet.CoreEngine
                 }
             }
 
-            Context.LogInformation("End: event loop");
+            context.LogInformation("End: event loop");
         }
 
         private void ReturnDoneMessage(State state)
@@ -153,25 +146,25 @@ namespace StateChartsDotNet.CoreEngine
             //  generated in that session when the <invoke> was executed.
         }
 
-        private async Task Microstep(IEnumerable<Transition> enabledTransitions)
+        private async Task Microstep(RootState root, ExecutionContext context, IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(enabledTransitions != null);
 
-            await ExitStates(enabledTransitions);
+            await ExitStates(root, context, enabledTransitions);
             
             foreach (var transition in enabledTransitions)
             {
                 Debug.Assert(transition != null);
 
-                await transition.ExecuteContent(Context);
+                await transition.ExecuteContent(context);
             }
 
-            await EnterStates(enabledTransitions);
+            await EnterStates(root, context, enabledTransitions);
         }
 
-        private async Task ExitStates(IEnumerable<Transition> enabledTransitions)
+        private async Task ExitStates(RootState root, ExecutionContext context, IEnumerable<Transition> enabledTransitions)
         {
-            var exitSet = ComputeExitSet(enabledTransitions);
+            var exitSet = ComputeExitSet(root, context, enabledTransitions);
 
             Debug.Assert(exitSet != null);
 
@@ -179,21 +172,25 @@ namespace StateChartsDotNet.CoreEngine
             {
                 Debug.Assert(state != null);
 
-                Context.StatesToInvoke.Remove(state);
+                context.StatesToInvoke.Remove(state);
             }
 
             foreach (var state in exitSet.Sort(State.ReverseCompare))
             {
                 Debug.Assert(state != null);
 
-                state.RecordHistory(Context);
+                state.RecordHistory(context);
 
-                await state.Exit(Context);
+                await state.Exit(context);
             }
         }
 
-        private Set<State> ComputeExitSet(IEnumerable<Transition> transitions)
+        private Set<State> ComputeExitSet(RootState root,
+                                          ExecutionContext context,
+                                          IEnumerable<Transition> transitions)
         {
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
             Debug.Assert(transitions != null);
 
             var statesToExit = new Set<State>();
@@ -204,11 +201,11 @@ namespace StateChartsDotNet.CoreEngine
 
                 if (transition.HasTargets)
                 {
-                    var domain = transition.GetTransitionDomain(Context, _root.Value);
+                    var domain = transition.GetTransitionDomain(context, root);
 
                     Debug.Assert(domain != null);
 
-                    foreach (var state in Context.Configuration)
+                    foreach (var state in context.Configuration)
                     {
                         if (state.IsDescendent(domain))
                         {
@@ -221,25 +218,31 @@ namespace StateChartsDotNet.CoreEngine
             return statesToExit;
         }
 
-        private Set<Transition> SelectTransitions(Message evt)
+        private Set<Transition> SelectTransitions(RootState root, ExecutionContext context, Message evt)
         {
-            return SelectTransitions(transition => transition.MatchesMessage(evt) &&
-                                                   transition.EvaluateCondition(Context));
+            return SelectTransitions(root,
+                                     context,
+                                     transition => transition.MatchesMessage(evt) &&
+                                                   transition.EvaluateCondition(context));
         }
 
-        private Set<Transition> SelectMessagelessTransitions()
+        private Set<Transition> SelectMessagelessTransitions(RootState root, ExecutionContext context)
         {
-            return SelectTransitions(transition => !transition.HasMessage &&
-                                                   transition.EvaluateCondition(Context));
+            return SelectTransitions(root,
+                                     context,
+                                     transition => !transition.HasMessage &&
+                                                   transition.EvaluateCondition(context));
         }
 
-        private Set<Transition> SelectTransitions(Func<Transition, bool> predicate)
+        private Set<Transition> SelectTransitions(RootState root, ExecutionContext context, Func<Transition, bool> predicate)
         {
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
             Debug.Assert(predicate != null);
 
             var enabledTransitions = new Set<Transition>();
 
-            var atomicStates = Context.Configuration.Sort(State.Compare).Where(s => s.IsAtomic);
+            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.IsAtomic);
 
             foreach (var state in atomicStates)
             {
@@ -248,7 +251,7 @@ namespace StateChartsDotNet.CoreEngine
                     state
                 };
 
-                foreach (var anc in state.GetProperAncestors(_root.Value))
+                foreach (var anc in state.GetProperAncestors(root))
                 {
                     all.Add(anc);
                 }
@@ -273,15 +276,19 @@ namespace StateChartsDotNet.CoreEngine
                     continue;
             }
 
-            enabledTransitions = RemoveConflictingTransitions(enabledTransitions);
+            enabledTransitions = RemoveConflictingTransitions(root, context, enabledTransitions);
 
             Debug.Assert(enabledTransitions != null);
 
             return enabledTransitions;
         }
 
-        private Set<Transition> RemoveConflictingTransitions(IEnumerable<Transition> enabledTransitions)
+        private Set<Transition> RemoveConflictingTransitions(RootState root,
+                                                             ExecutionContext context,
+                                                             IEnumerable<Transition> enabledTransitions)
         {
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
             Debug.Assert(enabledTransitions != null);
 
             var filteredTransitions = new Set<Transition>();
@@ -298,11 +305,11 @@ namespace StateChartsDotNet.CoreEngine
                 {
                     Debug.Assert(transition2 != null);
 
-                    var exitSet1 = ComputeExitSet(new List<Transition> { transition1 });
+                    var exitSet1 = ComputeExitSet(root, context, new List<Transition> { transition1 });
 
                     Debug.Assert(exitSet1 != null);
 
-                    var exitSet2 = ComputeExitSet(new List<Transition> { transition2 });
+                    var exitSet2 = ComputeExitSet(root, context, new List<Transition> { transition2 });
 
                     Debug.Assert(exitSet2 != null);
 
@@ -336,7 +343,9 @@ namespace StateChartsDotNet.CoreEngine
             return filteredTransitions;
         }
 
-        private async Task EnterStates(IEnumerable<Transition> enabledTransitions)
+        private async Task EnterStates(RootState root,
+                                       ExecutionContext context,
+                                       IEnumerable<Transition> enabledTransitions)
         {
             var statesToEnter = new Set<State>();
 
@@ -344,37 +353,41 @@ namespace StateChartsDotNet.CoreEngine
 
             var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent>>();
 
-            await ComputeEntrySet(enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+            await ComputeEntrySet(root, context, enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
             foreach (var state in statesToEnter.Sort(State.Compare))
             {
                 Debug.Assert(state != null);
 
-                await state.Enter(Context, _root.Value, statesForDefaultEntry, defaultHistoryContent);
+                await state.Enter(context, root, statesForDefaultEntry, defaultHistoryContent);
             }
         }
 
-        private async Task ComputeEntrySet(IEnumerable<Transition> enabledTransitions,
+        private async Task ComputeEntrySet(RootState root,
+                                           ExecutionContext context,
+                                           IEnumerable<Transition> enabledTransitions,
                                            Set<State> statesToEnter,
                                            Set<State> statesForDefaultEntry,
                                            Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
             Debug.Assert(enabledTransitions != null);
 
             foreach (var transition in enabledTransitions)
             {
                 Debug.Assert(transition != null);
 
-                foreach (var state in transition.GetTargetStates(_root.Value))
+                foreach (var state in transition.GetTargetStates(root))
                 {
                     Debug.Assert(state != null);
 
-                    await AddDescendentStatesToEnter(state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                    await AddDescendentStatesToEnter(root, context, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
 
-                var ancestor = transition.GetTransitionDomain(Context, _root.Value);
+                var ancestor = transition.GetTransitionDomain(context, root);
 
-                var effectiveTargetStates = transition.GetEffectiveTargetStates(Context, _root.Value);
+                var effectiveTargetStates = transition.GetEffectiveTargetStates(context, root);
 
                 Debug.Assert(effectiveTargetStates != null);
 
@@ -382,12 +395,14 @@ namespace StateChartsDotNet.CoreEngine
                 {
                     Debug.Assert(state != null);
 
-                    await AddAncestorStatesToEnter(state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                    await AddAncestorStatesToEnter(root, context, state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                 }
             }
         }
 
-        private async Task AddAncestorStatesToEnter(State state,
+        private async Task AddAncestorStatesToEnter(RootState root,
+                                                    ExecutionContext context,
+                                                    State state,
                                                     State ancestor,
                                                     Set<State> statesToEnter,
                                                     Set<State> statesForDefaultEntry,
@@ -418,58 +433,62 @@ namespace StateChartsDotNet.CoreEngine
 
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
-                            await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                            await AddDescendentStatesToEnter(root, context, child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                         }
                     }
                 }
             }
         }
 
-        private async Task AddDescendentStatesToEnter(State state,
+        private async Task AddDescendentStatesToEnter(RootState root,
+                                                      ExecutionContext context,
+                                                      State state,
                                                       Set<State> statesToEnter,
                                                       Set<State> statesForDefaultEntry,
                                                       Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
+            Debug.Assert(root != null);
+            Debug.Assert(context != null);
             Debug.Assert(state != null);
             Debug.Assert(statesToEnter != null);
             Debug.Assert(statesForDefaultEntry != null);
 
             if (state.IsHistoryState)
             {
-                if (Context.TryGetHistoryValue(state.Id, out IEnumerable<State> states))
+                if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> resolvedStates))
                 {
-                    foreach (var s in states)
+                    foreach (var resolved in resolvedStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(resolved != null);
 
-                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(root, context, resolved, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
-                    foreach (var s in states)
+                    foreach (var resolved in resolvedStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(resolved != null);
 
-                        await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(root, context, resolved, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
                 else
                 {
                     var targetStates = new List<State>();
 
-                    ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, _root.Value);
+                    ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, root);
 
-                    foreach (var s in targetStates)
+                    foreach (var target in targetStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(target != null);
 
-                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(root, context, target, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
-                    foreach (var s in targetStates)
+                    foreach (var target in targetStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(target != null);
 
-                        await AddAncestorStatesToEnter(s, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(root, context, target, state.Parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
             }
@@ -485,22 +504,22 @@ namespace StateChartsDotNet.CoreEngine
 
                     Debug.Assert(initialTransition != null);
 
-                    var targetStates = initialTransition.GetTargetStates(_root.Value);
+                    var targetStates = initialTransition.GetTargetStates(root);
 
                     Debug.Assert(targetStates != null);
 
-                    foreach (var s in targetStates)
+                    foreach (var target in targetStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(target != null);
 
-                        await AddDescendentStatesToEnter(s, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddDescendentStatesToEnter(root, context, target, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
 
-                    foreach (var s in targetStates)
+                    foreach (var target in targetStates)
                     {
-                        Debug.Assert(s != null);
+                        Debug.Assert(target != null);
 
-                        await AddAncestorStatesToEnter(s, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                        await AddAncestorStatesToEnter(root, context, target, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
                 else if (state.IsParallelState)
@@ -515,7 +534,7 @@ namespace StateChartsDotNet.CoreEngine
 
                         if (! statesToEnter.Any(s => s.IsDescendent(child)))
                         {
-                            await AddDescendentStatesToEnter(child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
+                            await AddDescendentStatesToEnter(root, context, child, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                         }
                     }
                 }

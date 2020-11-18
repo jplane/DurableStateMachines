@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
-using Nito.AsyncEx;
 using System.Threading.Tasks;
 using System;
 
