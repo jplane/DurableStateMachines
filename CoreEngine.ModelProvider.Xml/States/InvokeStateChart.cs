@@ -1,5 +1,4 @@
-﻿using Nito.AsyncEx;
-using StateChartsDotNet.CoreEngine.Abstractions.Model;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
@@ -8,7 +7,6 @@ using StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States

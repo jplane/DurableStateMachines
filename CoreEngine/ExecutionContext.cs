@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.Abstractions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Runtime.CompilerServices;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using Nito.AsyncEx;
+
+[assembly: InternalsVisibleTo("StateChartsDotNet.CoreEngine.DurableTask")]
 
 namespace StateChartsDotNet.CoreEngine
 {
@@ -15,34 +19,47 @@ namespace StateChartsDotNet.CoreEngine
         private readonly Dictionary<string, object> _data;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<Message> _internalMessages;
-        private readonly Queue<Message> _externalMessages;
+        private readonly AsyncProducerConsumerQueue<Message> _externalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
+        private readonly RootState _root;
 
         private ILogger _logger;
 
-        public ExecutionContext()
+        public ExecutionContext(IModelMetadata metadata)
         {
+            _root = new RootState(metadata.GetRootState());
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
             _internalMessages = new Queue<Message>();
-            _externalMessages = new Queue<Message>();
+            _externalMessages = new AsyncProducerConsumerQueue<Message>();
             _configuration = new Set<State>();
             _statesToInvoke = new Set<State>();
         }
 
-        internal virtual Task Init(RootState root)
+        internal virtual Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
         {
-            this.SetDataValue("_sessionid", Guid.NewGuid().ToString("D"));
-            this.SetDataValue("_name", root.Name);
+            func.CheckArgNull(nameof(func));
+
+            return func(this);
+        }
+
+        internal virtual Task Init()
+        {
+            this["_sessionid"] = Guid.NewGuid().ToString("D");
+
+            this["_name"] = this.Root.Name;
 
             return Task.CompletedTask;
         }
+
+        internal RootState Root => _root;
 
         public bool IsRunning { get; internal set; }
 
         public ILogger Logger
         {
+            get => _logger;
             set => _logger = value;
         }
 
@@ -61,7 +78,7 @@ namespace StateChartsDotNet.CoreEngine
             }
         }
 
-        public Task SendAsync(string message, params object[] dataPairs)
+        public void Send(string message, params object[] dataPairs)
         {
             var msg = new Message(message)
             {
@@ -73,35 +90,17 @@ namespace StateChartsDotNet.CoreEngine
                 msg[(string) dataPairs[idx]] = dataPairs[idx + 1];
             }
 
-            return SendAsync(msg);
+            Send(msg);
         }
 
-        public virtual Task SendAsync(Message message)
+        public virtual void Send(Message message)
         {
-            lock (_externalMessages)
-            {
-                _externalMessages.Enqueue(message);
-            }
-
-            return Task.CompletedTask;
+            _externalMessages.Enqueue(message);
         }
 
-        internal virtual async Task<Message> DequeueExternal()
+        internal async Task<Message> DequeueExternal()
         {
-            bool TryGet(out Message evt)
-            {
-                lock (_externalMessages)
-                {
-                    return _externalMessages.TryDequeue(out evt);
-                }
-            }
-
-            Message msg;
-
-            while (! TryGet(out msg))
-            {
-                await Task.Delay(1000);
-            }
+            var msg = await _externalMessages.DequeueAsync();
 
             _data["_event"] = msg;
 

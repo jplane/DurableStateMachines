@@ -3,6 +3,7 @@ using System.Linq;
 using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
@@ -34,16 +35,25 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
         protected override Task _Execute(ExecutionContext context)
         {
-            if (!string.IsNullOrWhiteSpace(((ISendMessageMetadata) _metadata).IdLocation))
+            context.CheckArgNull(nameof(context));
+
+            var metadata = (ISendMessageMetadata) _metadata;
+
+            return context.ExecuteContent(metadata.UniqueId, ec =>
             {
-                var syntheticId = Guid.NewGuid().ToString("N");
+                Debug.Assert(ec != null);
 
-                context.LogDebug($"Synthentic Id = {syntheticId}");
+                if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                {
+                    var syntheticId = Guid.NewGuid().ToString("N");
 
-                context[((ISendMessageMetadata) _metadata).IdLocation] = syntheticId;
-            }
+                    ec.LogDebug($"Synthentic Id = {syntheticId}");
 
-            throw new NotImplementedException();
+                    ec[metadata.IdLocation] = syntheticId;
+                }
+
+                throw new NotImplementedException();
+            });
         }
     }
 }

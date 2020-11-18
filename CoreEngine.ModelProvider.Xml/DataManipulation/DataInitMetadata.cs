@@ -1,7 +1,5 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
-using Nito.AsyncEx;
 using System;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation

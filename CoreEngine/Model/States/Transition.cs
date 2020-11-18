@@ -112,13 +112,13 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return targets.AsEnumerable();
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var targets = new Set<State>();
 
-            foreach (var state in GetTargetStates(root))
+            foreach (var state in GetTargetStates(context.Root))
             {
                 if (state.IsHistoryState)
                 {
@@ -128,7 +128,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     }
                     else
                     {
-                        targets.Union(state.GetEffectiveTargetStates(context, root));
+                        targets.Union(state.GetEffectiveTargetStates(context));
                     }
                 }
                 else
@@ -140,9 +140,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return targets;
         }
 
-        public State GetTransitionDomain(ExecutionContext context, RootState root)
+        public State GetTransitionDomain(ExecutionContext context)
         {
-            var targetStates = GetEffectiveTargetStates(context, root);
+            var targetStates = GetEffectiveTargetStates(context);
 
             if (targetStates.IsEmpty())
             {
@@ -169,7 +169,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                 Debug.Assert(_source.IsScxmlRoot);
 
-                return root;
+                return context.Root;
             }
         }
     }

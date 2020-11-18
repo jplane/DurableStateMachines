@@ -38,6 +38,22 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml
             return localNames.Any(n => element.ScxmlNameEquals(n));
         }
 
+        public static string GetUniqueElementPath(this XElement element)
+        {
+            var siblingOrder = 1 + element.ElementsBeforeSelf().Count();
+
+            var path = $"{element.Name}[{siblingOrder}]";
+
+            if (element.Parent == null)
+            {
+                return path;
+            }
+            else
+            {
+                return $"{element.Parent.GetUniqueElementPath()}.{path}";
+            }
+        }
+
         private static long GetDocumentPosition(this XObject xobj)
         {
             Debug.Assert(xobj != null);

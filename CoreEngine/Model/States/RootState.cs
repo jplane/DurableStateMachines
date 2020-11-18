@@ -78,7 +78,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsScxmlRoot => true;
 
-        public override Task Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context)
         {
             throw new InvalidOperationException("Unexpected invocation.");
         }

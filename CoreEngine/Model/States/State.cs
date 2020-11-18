@@ -104,7 +104,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             _datamodel.Value?.Init(context);
         }
 
-        public virtual async Task Invoke(ExecutionContext context, RootState root)
+        public virtual async Task Invoke(ExecutionContext context)
         {
             foreach (var invoke in _invokes.Value)
             {
@@ -121,7 +121,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return Enumerable.Empty<State>();
         }
 
-        public virtual bool IsInFinalState(ExecutionContext context, RootState root)
+        public virtual bool IsInFinalState(ExecutionContext context)
         {
             return false;
         }
@@ -146,13 +146,13 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context)
         {
             var set = new Set<State>();
 
             foreach (var transition in _transitions.Value)
             {
-                var transitionSet = transition.GetEffectiveTargetStates(context, root);
+                var transitionSet = transition.GetEffectiveTargetStates(context);
 
                 set.Union(transitionSet);
             }
@@ -161,12 +161,10 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         }
 
         public async Task Enter(ExecutionContext context,
-                                RootState root,
                                 Set<State> statesForDefaultEntry,
                                 Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             context.CheckArgNull(nameof(context));
-            root.CheckArgNull(nameof(root));
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
@@ -176,7 +174,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             context.StatesToInvoke.Add(this);
 
-            if (root.Binding == Databinding.Late && _firstEntry)
+            if (context.Root.Binding == Databinding.Late && _firstEntry)
             {
                 this.InitDatamodel(context, false);
 
@@ -223,7 +221,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                         foreach (var pc in parallelChildren)
                         {
-                            if (! pc.IsInFinalState(context, root))
+                            if (! pc.IsInFinalState(context))
                             {
                                 allInFinalState = false;
                                 break;

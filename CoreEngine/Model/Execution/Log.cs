@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
@@ -14,11 +15,18 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var message = ((ILogMetadata) _metadata).GetMessage(context.ScriptData);
+            var metadata = (ILogMetadata) _metadata;
 
-            context.LogInformation("Log: " + message);
+            return context.ExecuteContent(metadata.UniqueId, ec =>
+            {
+                Debug.Assert(ec != null);
 
-            return Task.CompletedTask;
+                var message = metadata.GetMessage(ec.ScriptData);
+
+                ec.LogInformation("Log: " + message);
+
+                return Task.CompletedTask;
+            });
         }
     }
 }

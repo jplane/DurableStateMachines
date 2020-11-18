@@ -64,11 +64,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return _initialTransition.Value;
         }
 
-        public override bool IsInFinalState(ExecutionContext context, RootState root)
+        public override bool IsInFinalState(ExecutionContext context)
         {
             foreach (var child in GetChildStates())
             {
-                if (child.IsInFinalState(context, root) && context.Configuration.Contains(child))
+                if (child.IsInFinalState(context) && context.Configuration.Contains(child))
                 {
                     return true;
                 }

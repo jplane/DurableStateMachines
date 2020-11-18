@@ -34,7 +34,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsFinalState => true;
 
-        public override Task Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

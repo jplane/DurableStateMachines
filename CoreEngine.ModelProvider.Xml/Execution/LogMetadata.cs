@@ -1,18 +1,22 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
-using Nito.AsyncEx;
 using System;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class LogMetadata : ExecutableContentMetadata, ILogMetadata
     {
+        private readonly Lazy<string> _uniqueId;
         private readonly Lazy<Func<dynamic, string>> _messageGetter;
 
         public LogMetadata(XElement element)
             : base(element)
         {
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
+            });
+
             _messageGetter = new Lazy<Func<dynamic, string>>(() =>
             {
                 return ExpressionCompiler.Compile<string>(this.Message);
@@ -20,6 +24,8 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
         }
 
         private string Message => _element.Attribute("expr")?.Value ?? string.Empty;
+
+        public string UniqueId => _uniqueId.Value;
 
         public string GetMessage(dynamic data)
         {
