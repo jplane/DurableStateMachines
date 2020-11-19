@@ -35,9 +35,8 @@ namespace CoreEngine.DurableTask
         {
             _executionContext = new DurableExecutionContext(_metadata,
                                                             context,
-                                                            _ensureActivityRegistration);
-
-            _executionContext.Logger = _logger;
+                                                            _ensureActivityRegistration,
+                                                            _logger);
 
             await _executionContext.LogInformation("Start: durable orchestration.");
 
@@ -51,7 +50,7 @@ namespace CoreEngine.DurableTask
             }
             catch(Exception ex)
             {
-                _executionContext.Logger.LogError("Error during orchestration: " + ex);
+                _logger?.LogError("Error during orchestration: " + ex);
 
                 return false;
             }

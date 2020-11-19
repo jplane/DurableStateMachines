@@ -55,9 +55,7 @@ namespace ConsoleRunner
         {
             var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var context = new ExecutionContext(metadata);
-
-            context.Logger = logger;
+            var context = new ExecutionContext(metadata, logger);
 
             var interpreter = new Interpreter();
 

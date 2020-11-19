@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
@@ -16,8 +17,9 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
 
         public DurableExecutionContext(IModelMetadata metadata,
                                        OrchestrationContext orchestrationContext,
-                                       Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration)
-            : base(metadata)
+                                       Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration,
+                                       ILogger logger = null)
+            : base(metadata, logger)
         {
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
             ensureActivityRegistration.CheckArgNull(nameof(ensureActivityRegistration));

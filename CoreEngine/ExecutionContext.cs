@@ -23,12 +23,15 @@ namespace StateChartsDotNet.CoreEngine
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
+        private readonly ILogger _logger;
 
-        private ILogger _logger;
-
-        public ExecutionContext(IModelMetadata metadata)
+        public ExecutionContext(IModelMetadata metadata, ILogger logger = null)
         {
+            metadata.CheckArgNull(nameof(metadata));
+
             _root = new RootState(metadata.GetRootState());
+            _logger = logger;
+
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
             _internalMessages = new Queue<Message>();
@@ -37,31 +40,7 @@ namespace StateChartsDotNet.CoreEngine
             _statesToInvoke = new Set<State>();
         }
 
-        internal virtual Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
-        {
-            func.CheckArgNull(nameof(func));
-
-            return func(this);
-        }
-
-        internal virtual Task Init()
-        {
-            this["_sessionid"] = Guid.NewGuid().ToString("D");
-
-            this["_name"] = this.Root.Name;
-
-            return Task.CompletedTask;
-        }
-
-        internal RootState Root => _root;
-
         public bool IsRunning { get; internal set; }
-
-        public ILogger Logger
-        {
-            get => _logger;
-            set => _logger = value;
-        }
 
         public object this[string key]
         {
@@ -97,6 +76,24 @@ namespace StateChartsDotNet.CoreEngine
         {
             _externalMessages.Enqueue(message);
         }
+
+        internal virtual Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
+        {
+            func.CheckArgNull(nameof(func));
+
+            return func(this);
+        }
+
+        internal virtual Task Init()
+        {
+            this["_sessionid"] = Guid.NewGuid().ToString("D");
+
+            this["_name"] = this.Root.Name;
+
+            return Task.CompletedTask;
+        }
+
+        internal RootState Root => _root;
 
         internal async Task<Message> DequeueExternal()
         {
