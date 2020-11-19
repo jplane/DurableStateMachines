@@ -21,15 +21,10 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 
 - Useful abstractions to drive host-specific integration
 
-	- __Data storage__ - Read/write of named data locations is formally defined in statecharts, let's store that data in interesting places
-		- Azure Blob Storage
-		- Azure Table Storage
-		- SQL database
-		- CosmosDB
-		- Azure Key Vault (for secrets)
-		- etc.
-
-	- __Statechart metadata storage__ - Model metadata abstractions are defined [here](./CoreEngine.Abstractions/Model), the SCXML provider implementation is [here](./CoreEngine.ModelProvider.Xml). Where else can we store it? (see above)
+	- __Statechart metadata storage__ - Model metadata abstractions are defined [here](./CoreEngine.Abstractions/Model), the SCXML provider implementation is [here](./CoreEngine.ModelProvider.Xml). What other implementations can we define?
+	    - Fluent object model
+		- JSON
+		- ???
 
 	- __External service invocation__ - Statecharts [formalize](https://www.w3.org/TR/scxml/#invoke) external service communication, we can define some concrete supported implementations
 		- HTTP/webhook
@@ -41,9 +36,6 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 		- Apache Kafka
 		- Azure Storage Queues
 		- in-proc queues
-
-	- __Work scheduling__ - Support pause/resume semantics, distributed execution, etc.
-		- The implementation is Task-aware which gives us the opportunity to use interesting [Task schedulers](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler?view=netcore-3.1)
 
 	- __Visualization/debugging hooks__
 		- Define a lightweight debugger protocol to enable breakpoints, state inspection, etc.
