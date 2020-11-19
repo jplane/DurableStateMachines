@@ -5,6 +5,6 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation
 {
     public interface IDatamodelMetadata
     {
-        Task<IEnumerable<IDataInitMetadata>> GetData();
+        IEnumerable<IDataInitMetadata> GetData();
     }
 }

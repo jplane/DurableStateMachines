@@ -6,14 +6,14 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
     public interface IIfMetadata : IExecutableContentMetadata
     {
-        Task<bool> EvalIfCondition(dynamic data);
+        bool EvalIfCondition(dynamic data);
 
-        Task<IEnumerable<Func<dynamic, Task<bool>>>> GetElseIfConditions();
+        IEnumerable<Func<dynamic, bool>> GetElseIfConditions();
 
-        Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
+        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
 
-        IEnumerable<Task<IEnumerable<IExecutableContentMetadata>>> GetElseIfExecutableContent();
+        IEnumerable<IEnumerable<IExecutableContentMetadata>> GetElseIfExecutableContent();
 
-        Task<IEnumerable<IExecutableContentMetadata>> GetElseExecutableContent();
+        IEnumerable<IExecutableContentMetadata> GetElseExecutableContent();
     }
 }

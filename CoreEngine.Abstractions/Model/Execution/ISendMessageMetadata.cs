@@ -7,14 +7,16 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
     public interface ISendMessageMetadata : IExecutableContentMetadata
     {
+        string UniqueId { get; }
+
         string Id { get; }
         string IdLocation { get; }
 
-        Task<string> GetType(dynamic data);
-        Task<TimeSpan> GetDelay(dynamic data);
-        Task<string> GetTarget(dynamic data);
-        Task<string> GetMessageName(dynamic data);
-        Task<IContentMetadata> GetContent();
-        Task<IEnumerable<IParamMetadata>> GetParams();
+        string GetType(dynamic data);
+        TimeSpan GetDelay(dynamic data);
+        string GetTarget(dynamic data);
+        string GetMessageName(dynamic data);
+        IContentMetadata GetContent();
+        IEnumerable<IParamMetadata> GetParams();
     }
 }

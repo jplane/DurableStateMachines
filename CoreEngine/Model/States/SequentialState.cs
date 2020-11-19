@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System.Threading.Tasks;
 
@@ -9,16 +8,16 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class SequentialState : CompoundState
     {
-        private readonly AsyncLazy<Transition> _initialTransition;
+        private readonly Lazy<Transition> _initialTransition;
 
         public SequentialState(ISequentialStateMetadata metadata, State parent)
             : base(metadata, parent)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _initialTransition = new AsyncLazy<Transition>(async () =>
+            _initialTransition = new Lazy<Transition>(() =>
             {
-                var meta = await metadata.GetInitialTransition();
+                var meta = metadata.GetInitialTransition();
 
                 if (meta != null)
                     return new Transition(meta, this);
@@ -26,11 +25,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _states = new AsyncLazy<State[]>(async () =>
+            _states = new Lazy<State[]>(() =>
             {
                 var states = new List<State>();
 
-                foreach (var stateMetadata in await metadata.GetStates())
+                foreach (var stateMetadata in metadata.GetStates())
                 {
                     if (stateMetadata is ISequentialStateMetadata ssm)
                     {
@@ -60,16 +59,16 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsSequentialState => true;
 
-        public override Task<Transition> GetInitialStateTransition()
+        public override Transition GetInitialStateTransition()
         {
-            return _initialTransition.Task;
+            return _initialTransition.Value;
         }
 
-        public override async Task<bool> IsInFinalState(ExecutionContext context, RootState root)
+        public override bool IsInFinalState(ExecutionContext context)
         {
-            foreach (var child in await GetChildStates())
+            foreach (var child in GetChildStates())
             {
-                if (await child.IsInFinalState(context, root) && context.Configuration.Contains(child))
+                if (child.IsInFinalState(context) && context.Configuration.Contains(child))
                 {
                     return true;
                 }

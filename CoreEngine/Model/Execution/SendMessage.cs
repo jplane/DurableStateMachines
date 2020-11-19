@@ -2,24 +2,24 @@
 using System.Linq;
 using StateChartsDotNet.CoreEngine.Model.DataManipulation;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class SendMessage : ExecutableContent
     {
-        private readonly AsyncLazy<Content> _content;
-        private readonly AsyncLazy<Param[]> _params;
+        private readonly Lazy<Content> _content;
+        private readonly Lazy<Param[]> _params;
 
         public SendMessage(ISendMessageMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new AsyncLazy<Content>(async () =>
+            _content = new Lazy<Content>(() =>
             {
-                var meta = await metadata.GetContent();
+                var meta = metadata.GetContent();
 
                 if (meta != null)
                     return new Content(meta);
@@ -27,31 +27,33 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
                     return null;
             });
 
-            _params = new AsyncLazy<Param[]>(async () =>
+            _params = new Lazy<Param[]>(() =>
             {
-                return (await metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
+                return metadata.GetParams().Select(pm => new Param(pm)).ToArray();
             });
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
-            if (!string.IsNullOrWhiteSpace(((ISendMessageMetadata) _metadata).IdLocation))
+            context.CheckArgNull(nameof(context));
+
+            var metadata = (ISendMessageMetadata) _metadata;
+
+            return context.ExecuteContent(metadata.UniqueId, ec =>
             {
-                var syntheticId = Guid.NewGuid().ToString("N");
+                Debug.Assert(ec != null);
 
-                context.LogDebug($"Synthentic Id = {syntheticId}");
+                if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                {
+                    var syntheticId = Guid.NewGuid().ToString("N");
 
-                context[((ISendMessageMetadata) _metadata).IdLocation] = syntheticId;
-            }
+                    ec.LogDebug($"Synthentic Id = {syntheticId}");
 
-            try
-            {
+                    ec.SetDataValue(metadata.IdLocation, syntheticId);
+                }
+
                 throw new NotImplementedException();
-            }
-            catch(Exception ex)
-            {
-                await context.EnqueueCommunicationError(ex);
-            }
+            });
         }
     }
 }

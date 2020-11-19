@@ -17,6 +17,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions
             this.Origin = string.Empty;
             this.OriginType = string.Empty;
             this.InvokeId = string.Empty;
+            this.Type = MessageType.External;
         }
 
         internal bool IsCancel => this.Name == "cancel";

@@ -61,7 +61,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
         public async Task Execute(ExecutionContext context)
         {
-            context.LogInformation($"Start: {this.GetType().Name}.Execute");
+            await context.LogInformation($"Start: {this.GetType().Name}.Execute");
 
             try
             {
@@ -69,11 +69,11 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             }
             catch (Exception ex)
             {
-                await context.EnqueueExecutionError(ex);
+                context.EnqueueExecutionError(ex);
             }
             finally
             {
-                context.LogInformation($"End: {this.GetType().Name}.Execute");
+                await context.LogInformation($"End: {this.GetType().Name}.Execute");
             }
         }
     }

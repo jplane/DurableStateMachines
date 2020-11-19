@@ -1,22 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
 {
     internal class Else
     {
-        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public Else(IEnumerable<IExecutableContentMetadata> contentMetadata)
         {
             contentMetadata.CheckArgNull(nameof(contentMetadata));
 
-            _content = new AsyncLazy<ExecutableContent[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return Task.FromResult(contentMetadata.Select(ExecutableContent.Create).ToArray());
+                return contentMetadata.Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -24,18 +24,18 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation("Start: Else.Execute");
+            await context.LogInformation("Start: Else.Execute");
 
             try
             {
-                foreach (var content in await _content)
+                foreach (var content in _content.Value)
                 {
                     await content.Execute(context);
                 }
             }
             finally
             {
-                context.LogInformation("End: Else.Execute");
+                await context.LogInformation("End: Else.Execute");
             }
         }
     }

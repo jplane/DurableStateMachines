@@ -5,7 +5,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface ISequentialStateMetadata : IStateMetadata
     {
-        Task<ITransitionMetadata> GetInitialTransition();
-        Task<IEnumerable<IStateMetadata>> GetStates();
+        ITransitionMetadata GetInitialTransition();
+        IEnumerable<IStateMetadata> GetStates();
     }
 }

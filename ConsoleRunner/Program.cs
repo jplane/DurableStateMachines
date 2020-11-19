@@ -9,11 +9,6 @@ using System.Collections.Generic;
 
 namespace ConsoleRunner
 {
-    public class Foo
-    {
-        public dynamic data;
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -28,9 +23,9 @@ namespace ConsoleRunner
 
             using (var scope = logger.BeginScope(""))
             {
-                //task = RunMicrowave(logger);
+                task = RunMicrowave(logger);
 
-                task = RunForeach(logger);
+                //task = RunForeach(logger);
             }
 
             Task.WaitAll(Task.Delay(5000), task);
@@ -43,38 +38,35 @@ namespace ConsoleRunner
 
         static Task RunMicrowave(ILogger logger)
         {
-            return Run("microwave.xml", logger, async queue =>
+            return Run("microwave.xml", logger, context =>
             {
-                queue.Enqueue(new Message("turn.on"));
-                await Task.Delay(500);
+                context.Send("turn.on");
 
                 for (var i = 0; i < 5; i++)
                 {
-                    queue.Enqueue(new Message("time"));
-                    await Task.Delay(500);
+                    context.Send("time");
                 }
 
-                queue.Enqueue(new Message("cancel"));
-                await Task.Delay(500);
+                context.Send("cancel");
             });
         }
 
-        static Task Run(string xmldoc, ILogger logger, Func<Queue<Message>, Task> action = null)
+        static Task Run(string xmldoc, ILogger logger, Action<ExecutionContext> action = null)
         {
             var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
 
-            var queue = new Queue<Message>();
+            var context = new ExecutionContext(metadata, logger);
 
-            var runTask = Interpreter.Run(metadata, queue, logger);
+            var interpreter = new Interpreter();
 
-            var actionTask = Task.CompletedTask;
+            var runTask = interpreter.Run(context);
 
             if (action != null)
             {
-                actionTask = action.Invoke(queue);
+                action.Invoke(context);
             }
 
-            return Task.WhenAll(runTask, actionTask);
+            return runTask;
         }
     }
 }

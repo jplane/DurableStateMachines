@@ -6,7 +6,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
     public interface IFinalStateMetadata : IStateMetadata
     {
-        Task<IContentMetadata> GetContent();
-        Task<IEnumerable<IParamMetadata>> GetParams();
+        IContentMetadata GetContent();
+        IEnumerable<IParamMetadata> GetParams();
     }
 }

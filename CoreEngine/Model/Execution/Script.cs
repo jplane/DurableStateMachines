@@ -1,5 +1,6 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.CoreEngine.Model.Execution
@@ -11,11 +12,20 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override Task _Execute(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            await ((IScriptMetadata) _metadata).Execute(context.ScriptData);
+            var metadata = (IScriptMetadata) _metadata;
+
+            return context.ExecuteContent(metadata.UniqueId, ec =>
+            {
+                Debug.Assert(ec != null);
+
+                metadata.Execute(ec.ScriptData);
+
+                return Task.CompletedTask;
+            });
         }
     }
 }

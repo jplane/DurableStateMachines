@@ -1,25 +1,24 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Nito.AsyncEx;
+﻿using System;
+using System.Linq;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 
 namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
 {
     internal class Datamodel
     {
-        protected readonly AsyncLazy<DataInit[]> _data;
+        protected readonly Lazy<DataInit[]> _data;
 
         public Datamodel(IDatamodelMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _data = new AsyncLazy<DataInit[]>(async () =>
+            _data = new Lazy<DataInit[]>(() =>
             {
-                return (await metadata.GetData()).Select(d => new DataInit(d)).ToArray();
+                return metadata.GetData().Select(d => new DataInit(d)).ToArray();
             });
         }
 
-        public async Task Init(ExecutionContext context)
+        public void Init(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -27,9 +26,9 @@ namespace StateChartsDotNet.CoreEngine.Model.DataManipulation
 
             try
             {
-                foreach (var data in await _data)
+                foreach (var data in _data.Value)
                 {
-                    await data.Init(context);
+                    data.Init(context);
                 }
             }
             finally

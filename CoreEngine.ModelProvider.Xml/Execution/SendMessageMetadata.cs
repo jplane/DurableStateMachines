@@ -1,46 +1,52 @@
-﻿using Nito.AsyncEx;
-using StateChartsDotNet.CoreEngine.Abstractions.Model;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class SendMessageMetadata : ExecutableContentMetadata, ISendMessageMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getType;
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getMessageName;
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getTarget;
-        private readonly AsyncLazy<Func<dynamic, Task<string>>> _getDelay;
+        private readonly Lazy<string> _uniqueId;
+        private readonly Lazy<Func<dynamic, string>> _getType;
+        private readonly Lazy<Func<dynamic, string>> _getMessageName;
+        private readonly Lazy<Func<dynamic, string>> _getTarget;
+        private readonly Lazy<Func<dynamic, string>> _getDelay;
 
         public SendMessageMetadata(XElement element)
             : base(element)
         {
-            _getType = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _uniqueId = new Lazy<string>(() =>
             {
-                return await ExpressionCompiler.Compile<string>(this.TypeExpression);
+                return element.GetUniqueElementPath();
             });
 
-            _getMessageName = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _getType = new Lazy<Func<dynamic, string>>(() =>
             {
-                return await ExpressionCompiler.Compile<string>(this.MessageExpression);
+                return ExpressionCompiler.Compile<string>(this.TypeExpression);
             });
 
-            _getTarget = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _getMessageName = new Lazy<Func<dynamic, string>>(() =>
             {
-                return await ExpressionCompiler.Compile<string>(this.TargetExpression);
+                return ExpressionCompiler.Compile<string>(this.MessageExpression);
             });
 
-            _getDelay = new AsyncLazy<Func<dynamic, Task<string>>>(async () =>
+            _getTarget = new Lazy<Func<dynamic, string>>(() =>
             {
-                return await ExpressionCompiler.Compile<string>(this.DelayExpression);
+                return ExpressionCompiler.Compile<string>(this.TargetExpression);
+            });
+
+            _getDelay = new Lazy<Func<dynamic, string>>(() =>
+            {
+                return ExpressionCompiler.Compile<string>(this.DelayExpression);
             });
         }
+
+        public string UniqueId => _uniqueId.Value;
 
         public string Id => _element.Attribute("id")?.Value ?? string.Empty;
 
@@ -67,14 +73,14 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             get => (_element.Attribute("eventexpr")?.Value ?? string.Empty).Split(" ");
         }
 
-        public Task<IContentMetadata> GetContent()
+        public IContentMetadata GetContent()
         {
             var node = _element.ScxmlElement("content");
 
-            return Task.FromResult(node == null ? null : (IContentMetadata) new ContentMetadata(node));
+            return node == null ? null : (IContentMetadata) new ContentMetadata(node);
         }
 
-        public Task<IEnumerable<IParamMetadata>> GetParams()
+        public IEnumerable<IParamMetadata> GetParams()
         {
             var nodes = _element.ScxmlElements("param");
 
@@ -88,15 +94,15 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
             else if (this.Namelist.Any())
             {
-                return Task.FromResult(this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+                return this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
             }
             else
             {
-                return Task.FromResult(nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>());
+                return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
             }
         }
 
-        public async Task<string> GetType(dynamic data)
+        public string GetType(dynamic data)
         {
             if (string.IsNullOrWhiteSpace(this.Type) && string.IsNullOrWhiteSpace(this.TypeExpression))
             {
@@ -112,11 +118,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
             else
             {
-                return await (await _getType)(data);
+                return _getType.Value(data);
             }
         }
 
-        public async Task<string> GetMessageName(dynamic data)
+        public string GetMessageName(dynamic data)
         {
             if (string.IsNullOrWhiteSpace(this.Message) && string.IsNullOrWhiteSpace(this.MessageExpression))
             {
@@ -132,11 +138,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
             else
             {
-                return await (await _getMessageName)(data);
+                return _getMessageName.Value(data);
             }
         }
 
-        public async Task<string> GetTarget(dynamic data)
+        public string GetTarget(dynamic data)
         {
             if (string.IsNullOrWhiteSpace(this.Target) && string.IsNullOrWhiteSpace(this.TargetExpression))
             {
@@ -152,11 +158,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
             else
             {
-                return await (await _getTarget)(data);
+                return _getTarget.Value(data);
             }
         }
 
-        public async Task<TimeSpan> GetDelay(dynamic data)
+        public TimeSpan GetDelay(dynamic data)
         {
             if (string.IsNullOrWhiteSpace(this.Delay) && string.IsNullOrWhiteSpace(this.DelayExpression))
             {
@@ -172,7 +178,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
             }
             else
             {
-                return TimeSpan.Parse(await (await _getDelay)(data));
+                return TimeSpan.Parse(_getDelay.Value(data));
             }
         }
     }

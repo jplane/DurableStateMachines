@@ -12,14 +12,14 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 
         int DepthFirstCompare(IStateMetadata metadata);
 
-        Task<IOnEntryExitMetadata> GetOnEntry();
+        IOnEntryExitMetadata GetOnEntry();
 
-        Task<IOnEntryExitMetadata> GetOnExit();
+        IOnEntryExitMetadata GetOnExit();
 
-        Task<IEnumerable<ITransitionMetadata>> GetTransitions();
+        IEnumerable<ITransitionMetadata> GetTransitions();
 
-        Task<IEnumerable<IInvokeStateChart>> GetServices();
+        IEnumerable<IInvokeStateChart> GetServices();
 
-        Task<IDatamodelMetadata> GetDatamodel();
+        IDatamodelMetadata GetDatamodel();
     }
 }

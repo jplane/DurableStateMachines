@@ -6,46 +6,42 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.Abstractions;
+using System.Runtime.CompilerServices;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using Nito.AsyncEx;
+
+[assembly: InternalsVisibleTo("StateChartsDotNet.CoreEngine.DurableTask")]
 
 namespace StateChartsDotNet.CoreEngine
 {
     public class ExecutionContext
     {
-        private readonly Dictionary<string, object> _data;
+        protected readonly Dictionary<string, object> _data;
+        
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
-        private readonly Queue<Message> _messages = new Queue<Message>();
-        private ILogger _logger;
+        private readonly Queue<Message> _internalMessages;
+        private readonly AsyncProducerConsumerQueue<Message> _externalMessages;
+        private readonly Set<State> _configuration;
+        private readonly Set<State> _statesToInvoke;
+        private readonly RootState _root;
+        private readonly ILogger _logger;
 
-        public ExecutionContext()
+        public ExecutionContext(IModelMetadata metadata, ILogger logger = null)
         {
+            metadata.CheckArgNull(nameof(metadata));
+
+            _root = new RootState(metadata.GetRootState());
+            _logger = logger;
+
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
+            _internalMessages = new Queue<Message>();
+            _externalMessages = new AsyncProducerConsumerQueue<Message>();
+            _configuration = new Set<State>();
+            _statesToInvoke = new Set<State>();
         }
 
         public bool IsRunning { get; internal set; }
-
-        public ILogger Logger
-        {
-            set => _logger = value;
-        }
-
-        public Task SendAsync(string eventName, params object[] dataPairs)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
-            Debug.Assert(dataPairs.Length % 2 == 0);
-
-            var evt = new Message(eventName)
-            {
-                Type = MessageType.External
-            };
-
-            for (var idx = 0; idx < dataPairs.Length; idx += 2)
-            {
-                evt[(string)dataPairs[idx]] = dataPairs[idx + 1];
-            }
-
-            return Task.CompletedTask;
-        }
 
         public object this[string key]
         {
@@ -62,6 +58,53 @@ namespace StateChartsDotNet.CoreEngine
             }
         }
 
+        public void Send(string message, params object[] dataPairs)
+        {
+            var msg = new Message(message)
+            {
+                Type = MessageType.External
+            };
+
+            for (var idx = 0; idx < dataPairs.Length; idx += 2)
+            {
+                msg[(string) dataPairs[idx]] = dataPairs[idx + 1];
+            }
+
+            Send(msg);
+        }
+
+        public virtual void Send(Message message)
+        {
+            _externalMessages.Enqueue(message);
+        }
+
+        internal virtual Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
+        {
+            func.CheckArgNull(nameof(func));
+
+            return func(this);
+        }
+
+        internal virtual Task Init()
+        {
+            this["_sessionid"] = Guid.NewGuid().ToString("D");
+
+            this["_name"] = this.Root.Name;
+
+            return Task.CompletedTask;
+        }
+
+        internal RootState Root => _root;
+
+        internal async Task<Message> DequeueExternal()
+        {
+            var msg = await _externalMessages.DequeueAsync();
+
+            _data["_event"] = msg;
+
+            return msg;
+        }
+
         internal DynamicDictionary ScriptData => new DynamicDictionary(_data);
 
         internal void SetDataValue(string key, object value)
@@ -74,7 +117,7 @@ namespace StateChartsDotNet.CoreEngine
             return _data.TryGetValue(key, out value);
         }
 
-        internal Task EnqueueInternal(string eventName, params object[] dataPairs)
+        internal void EnqueueInternal(string eventName, params object[] dataPairs)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
             Debug.Assert(dataPairs.Length % 2 == 0);
@@ -89,12 +132,10 @@ namespace StateChartsDotNet.CoreEngine
                 evt[(string) dataPairs[idx]] = dataPairs[idx + 1];
             }
 
-            _messages.Enqueue(evt);
-
-            return Task.CompletedTask;
+            _internalMessages.Enqueue(evt);
         }
 
-        internal Task EnqueueCommunicationError(Exception ex)
+        internal void EnqueueCommunicationError(Exception ex)
         {
             var evt = new Message("error.communication")
             {
@@ -103,14 +144,12 @@ namespace StateChartsDotNet.CoreEngine
 
             evt["exception"] = ex;
 
-            _messages.Enqueue(evt);
+            _internalMessages.Enqueue(evt);
 
             _logger.LogError("Communication error", ex);
-
-            return Task.CompletedTask;
         }
 
-        internal Task EnqueueExecutionError(Exception ex)
+        internal void EnqueueExecutionError(Exception ex)
         {
             var evt = new Message("error.execution")
             {
@@ -119,49 +158,51 @@ namespace StateChartsDotNet.CoreEngine
 
             evt["exception"] = ex;
 
-            _messages.Enqueue(evt);
+            _internalMessages.Enqueue(evt);
 
             _logger.LogError("Execution error", ex);
-
-            return Task.CompletedTask;
         }
 
-        internal Task<bool> HasInternalMessages => Task.FromResult(_messages.Count > 0);
+        internal bool HasInternalMessages => _internalMessages.Count > 0;
 
-        internal Task<Message> DequeueInternal()
+        internal Message DequeueInternal()
         {
-            if (_messages.TryDequeue(out Message evt))
+            if (_internalMessages.TryDequeue(out Message evt))
             {
                 _data["_event"] = evt;
             }
 
-            return Task.FromResult(evt);
+            return evt;
         }
 
-        internal Set<State> Configuration { get; } = new Set<State>();
+        internal Set<State> Configuration => _configuration;
 
-        internal Set<State> StatesToInvoke { get; } = new Set<State>();
+        internal Set<State> StatesToInvoke => _statesToInvoke;
 
         internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
         {
             return _historyValues.TryGetValue(key, out value);
         }
 
-        internal void StoreHistoryValue(string key, IEnumerable<State> states)
+        internal void StoreHistoryValue(string key, Func<State, bool> predicate)
         {
-            states.CheckArgNull(nameof(states));
+            predicate.CheckArgNull(nameof(predicate));
 
-            _historyValues[key] = states.ToArray();
+            _historyValues[key] = this.Configuration.Where(predicate).ToArray();
         }
 
-        internal void LogDebug(string message)
+        internal virtual Task LogDebug(string message)
         {
             _logger?.LogDebug(message);
+
+            return Task.CompletedTask;
         }
 
-        internal void LogInformation(string message)
+        internal virtual Task LogInformation(string message)
         {
             _logger?.LogInformation(message);
+
+            return Task.CompletedTask;
         }
     }
 }

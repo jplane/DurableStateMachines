@@ -19,7 +19,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 
         public bool IsEntry => _element.Name.LocalName.ToLowerInvariant() == "onentry";
 
-        public Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent()
+        public IEnumerable<IExecutableContentMetadata> GetExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
 
@@ -28,7 +28,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 content.Add(ExecutableContentMetadata.Create(node));
             }
 
-            return Task.FromResult(content.AsEnumerable());
+            return content;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using StateChartsDotNet.CoreEngine.Model.Execution;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using System.Threading.Tasks;
@@ -10,17 +9,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class RootState : CompoundState
     {
-        private readonly AsyncLazy<Script> _script;
-        private readonly AsyncLazy<Transition> _initialTransition;
+        private readonly Lazy<Script> _script;
+        private readonly Lazy<Transition> _initialTransition;
         
         public RootState(IRootStateMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _initialTransition = new AsyncLazy<Transition>(async () =>
+            _initialTransition = new Lazy<Transition>(() =>
             {
-                var meta = await metadata.GetInitialTransition();
+                var meta = metadata.GetInitialTransition();
 
                 if (meta != null)
                     return new Transition(meta, this);
@@ -28,9 +27,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _script = new AsyncLazy<Script>(async () =>
+            _script = new Lazy<Script>(() =>
             {
-                var meta = await metadata.GetScript();
+                var meta = metadata.GetScript();
 
                 if (meta != null)
                     return new Script(meta);
@@ -38,11 +37,11 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _states = new AsyncLazy<State[]>(async () =>
+            _states = new Lazy<State[]>(() =>
             {
                 var states = new List<State>();
 
-                foreach (var stateMetadata in await metadata.GetStates())
+                foreach (var stateMetadata in metadata.GetStates())
                 {
                     if (stateMetadata is ISequentialStateMetadata ssm)
                     {
@@ -66,14 +65,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             });
         }
 
-        public async Task ExecuteScript(ExecutionContext context)
+        public void ExecuteScript(ExecutionContext context)
         {
-            var script = await _script;
-
-            if (script != null)
-            {
-                await script.Execute(context);
-            }
+            _script.Value?.Execute(context);
         }
 
         public Databinding Binding => ((IRootStateMetadata) _metadata).Databinding;
@@ -84,17 +78,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsScxmlRoot => true;
 
-        public override Task Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context)
         {
             throw new InvalidOperationException("Unexpected invocation.");
         }
 
-        public override Task<Transition> GetInitialStateTransition()
+        public override Transition GetInitialStateTransition()
         {
-            return _initialTransition.Task;
+            return _initialTransition.Value;
         }
 
-        public override Task RecordHistory(ExecutionContext context)
+        public override void RecordHistory(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

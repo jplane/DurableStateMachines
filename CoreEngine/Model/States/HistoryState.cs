@@ -19,25 +19,24 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public override bool IsDeepHistoryState => ((IHistoryStateMetadata) _metadata).Type == HistoryType.Deep;
 
-        public override Task Invoke(ExecutionContext context, RootState root)
+        public override Task Invoke(ExecutionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public override Task InitDatamodel(ExecutionContext context, bool recursive)
+        public override void InitDatamodel(ExecutionContext context, bool recursive)
         {
-            return Task.CompletedTask;
         }
 
-        public async Task VisitTransition(List<State> targetStates,
-                                          Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
-                                          RootState root)
+        public void VisitTransition(List<State> targetStates,
+                                    Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
+                                    RootState root)
         {
-            var transition = (await _transitions).Single();
+            var transition = _transitions.Value.Single();
 
-            await transition.StoreDefaultHistoryContent(_parent.Id, defaultHistoryContent);
+            transition.StoreDefaultHistoryContent(_parent.Id, defaultHistoryContent);
 
-            foreach (var targetState in await transition.GetTargetStates(root))
+            foreach (var targetState in transition.GetTargetStates(root))
             {
                 targetStates.Add(targetState);
             }

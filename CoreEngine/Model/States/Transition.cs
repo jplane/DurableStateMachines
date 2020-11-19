@@ -4,7 +4,6 @@ using System.Linq;
 using StateChartsDotNet.CoreEngine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions;
@@ -13,7 +12,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class Transition
     {
-        private readonly AsyncLazy<ExecutableContent[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
         private readonly ITransitionMetadata _metadata;
         private readonly State _source;
 
@@ -25,17 +24,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             _metadata = metadata;
             _source = source;
 
-            _content = new AsyncLazy<ExecutableContent[]>(async () =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return (await metadata.GetExecutableContent()).Select(ExecutableContent.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        public async Task StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            defaultHistoryContent[id] = new Set<ExecutableContent>(await _content);
+            defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
         }
 
         public bool HasMessage => _metadata.Messages.Any();
@@ -68,17 +67,17 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
         }
 
-        public async Task<bool> EvaluateCondition(ExecutionContext context)
+        public bool EvaluateCondition(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             try
             {
-                return await _metadata.EvalCondition(context.ScriptData);
+                return _metadata.EvalCondition(context.ScriptData);
             }
             catch (Exception ex)
             {
-                await context.EnqueueExecutionError(ex);
+                context.EnqueueExecutionError(ex);
 
                 return false;
             }
@@ -86,7 +85,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
         public async Task ExecuteContent(ExecutionContext context)
         {
-            foreach (var content in await _content)
+            foreach (var content in _content.Value)
             {
                 await content.Execute(context);
             }
@@ -99,7 +98,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return _source.IsDescendent(transition._source);
         }
 
-        public async Task<IEnumerable<State>> GetTargetStates(RootState root)
+        public IEnumerable<State> GetTargetStates(RootState root)
         {
             root.CheckArgNull(nameof(root));
 
@@ -107,19 +106,19 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             foreach (var id in _metadata.Targets)
             {
-                targets.Add(await root.GetState(id));
+                targets.Add(root.GetState(id));
             }
 
             return targets.AsEnumerable();
         }
 
-        public async Task<Set<State>> GetEffectiveTargetStates(ExecutionContext context, RootState root)
+        public Set<State> GetEffectiveTargetStates(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var targets = new Set<State>();
 
-            foreach (var state in await GetTargetStates(root))
+            foreach (var state in GetTargetStates(context.Root))
             {
                 if (state.IsHistoryState)
                 {
@@ -129,7 +128,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     }
                     else
                     {
-                        targets.Union(await state.GetEffectiveTargetStates(context, root));
+                        targets.Union(state.GetEffectiveTargetStates(context));
                     }
                 }
                 else
@@ -141,9 +140,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             return targets;
         }
 
-        public async Task<State> GetTransitionDomain(ExecutionContext context, RootState root)
+        public State GetTransitionDomain(ExecutionContext context)
         {
-            var targetStates = await GetEffectiveTargetStates(context, root);
+            var targetStates = GetEffectiveTargetStates(context);
 
             if (targetStates.IsEmpty())
             {
@@ -170,7 +169,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                 Debug.Assert(_source.IsScxmlRoot);
 
-                return root;
+                return context.Root;
             }
         }
     }

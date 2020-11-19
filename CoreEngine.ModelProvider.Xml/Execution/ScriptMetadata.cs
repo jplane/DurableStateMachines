@@ -1,29 +1,35 @@
-﻿using Nito.AsyncEx;
-using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
 using System;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class ScriptMetadata : ExecutableContentMetadata, IScriptMetadata
     {
-        private readonly AsyncLazy<Func<dynamic, Task<object>>> _executor;
+        private readonly Lazy<string> _uniqueId;
+        private readonly Lazy<Func<dynamic, object>> _executor;
 
         public ScriptMetadata(XElement element)
             : base(element)
         {
-            _executor = new AsyncLazy<Func<dynamic, Task<object>>>(async () =>
+            _uniqueId = new Lazy<string>(() =>
             {
-                return await ExpressionCompiler.Compile<object>(this.BodyExpression);
+                return element.GetUniqueElementPath();
+            });
+
+            _executor = new Lazy<Func<dynamic, object>>(() =>
+            {
+                return ExpressionCompiler.Compile<object>(this.BodyExpression);
             });
         }
 
         private string BodyExpression => _element.Value ?? string.Empty;
 
-        public async Task Execute(dynamic data)
+        public string UniqueId => _uniqueId.Value;
+
+        public void Execute(dynamic data)
         {
-            await (await _executor)(data);
+            _executor.Value(data);
         }
     }
 }

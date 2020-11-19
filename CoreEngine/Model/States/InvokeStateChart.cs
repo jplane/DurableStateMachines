@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
-using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Model.Execution;
 using StateChartsDotNet.CoreEngine.Abstractions;
 
@@ -13,9 +12,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
     {
         private readonly IInvokeStateChart _metadata;
         private readonly string _parentId;
-        private readonly AsyncLazy<Content> _content;
-        private readonly AsyncLazy<ExecutableContent[]> _finalizeContent;
-        private readonly AsyncLazy<Param[]> _params;
+        private readonly Lazy<Content> _content;
+        private readonly Lazy<ExecutableContent[]> _finalizeContent;
+        private readonly Lazy<Param[]> _params;
 
         public InvokeStateChart(IInvokeStateChart metadata, State parent)
         {
@@ -25,9 +24,9 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             _metadata = metadata;
             _parentId = parent.Id;
 
-            _content = new AsyncLazy<Content>(async () =>
+            _content = new Lazy<Content>(() =>
             {
-                var meta = await metadata.GetContent();
+                var meta = metadata.GetContent();
 
                 if (meta != null)
                     return new Content(meta);
@@ -35,14 +34,14 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                     return null;
             });
 
-            _finalizeContent = new AsyncLazy<ExecutableContent[]>(async () =>
+            _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
-                return (await metadata.GetFinalizeExecutableContent()).Select(ExecutableContent.Create).ToArray();
+                return metadata.GetFinalizeExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
 
-            _params = new AsyncLazy<Param[]>(async () =>
+            _params = new Lazy<Param[]>(() =>
             {
-                return (await _metadata.GetParams()).Select(pm => new Param(pm)).ToArray();
+                return _metadata.GetParams().Select(pm => new Param(pm)).ToArray();
             });
         }
 
@@ -64,7 +63,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
         }
 
-        public async Task Execute(ExecutionContext context)
+        public Task Execute(ExecutionContext context)
         {
             context.LogInformation($"Start: Invoke");
 
@@ -74,25 +73,28 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                 context.LogDebug($"Synthentic Id = {syntheticId}");
 
-                context[_metadata.IdLocation] = syntheticId;
+                context.SetDataValue(_metadata.IdLocation, syntheticId);
             }
 
-            try
-            {
-                throw new NotImplementedException();
-            }
-            catch (Exception ex)
-            {
-                await context.EnqueueCommunicationError(ex);
-            }
-            finally
-            {
-                context.LogInformation($"End: Invoke");
-            }
+            return Task.CompletedTask;
+
+            //try
+            //{
+            //    throw new NotImplementedException();
+            //}
+            //catch (Exception ex)
+            //{
+            //    context.EnqueueCommunicationError(ex);
+            //}
+            //finally
+            //{
+            //    context.LogInformation($"End: Invoke");
+            //}
         }
 
-        public void Cancel(ExecutionContext context)
+        public Task Cancel(ExecutionContext context)
         {
+            throw new NotImplementedException();
         }
 
         public Task ProcessExternalMessage(ExecutionContext context, Message externalMessage)

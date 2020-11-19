@@ -9,7 +9,7 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
         string Item { get; }
         string Index { get; }
 
-        Task<IEnumerable> GetArray(dynamic data);
-        Task<IEnumerable<IExecutableContentMetadata>> GetExecutableContent();
+        IEnumerable GetArray(dynamic data);
+        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
     }
 }
