@@ -16,7 +16,8 @@ namespace StateChartsDotNet.CoreEngine
 {
     public class ExecutionContext
     {
-        private readonly Dictionary<string, object> _data;
+        protected readonly Dictionary<string, object> _data;
+        
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<Message> _internalMessages;
         private readonly AsyncProducerConsumerQueue<Message> _externalMessages;

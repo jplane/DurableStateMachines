@@ -4,6 +4,7 @@ using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -27,6 +28,8 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
             _orchestrationContext = orchestrationContext;
             _ensureActivityRegistration = ensureActivityRegistration;
         }
+
+        internal IDictionary<string, object> GetData() => _data;
 
         internal override async Task Init()
         {
