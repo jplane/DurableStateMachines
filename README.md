@@ -1,5 +1,7 @@
 # StateChartsDotNet
 
+[![Gitter](https://badges.gitter.im/StateChartsDotNet/community.svg)](https://gitter.im/StateChartsDotNet/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Bringing the power of hierarchical state machines to a .NET Core runtime near you.
 
 ## Background
