@@ -29,7 +29,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             var name = _isEntry ? "OnEntry" : "OnExit";
 
-            context.LogInformation($"Start: {name}");
+            await context.LogInformation($"Start: {name}");
 
             try
             {
@@ -40,7 +40,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             }
             finally
             {
-                context.LogInformation($"End: {name}");
+                await context.LogInformation($"End: {name}");
             }
         }
     }

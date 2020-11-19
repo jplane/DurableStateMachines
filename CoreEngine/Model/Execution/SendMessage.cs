@@ -49,7 +49,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
                     ec.LogDebug($"Synthentic Id = {syntheticId}");
 
-                    ec[metadata.IdLocation] = syntheticId;
+                    ec.SetDataValue(metadata.IdLocation, syntheticId);
                 }
 
                 throw new NotImplementedException();

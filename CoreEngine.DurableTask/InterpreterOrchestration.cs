@@ -1,29 +1,45 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine;
 using StateChartsDotNet.CoreEngine.Abstractions;
+using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.DurableTask;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace CoreEngine.DurableTask
 {
     public class InterpreterOrchestration : TaskOrchestration<bool, string, Message, string>
     {
-        private readonly DurableExecutionContext _executionContext;
+        private readonly IModelMetadata _metadata;
+        private readonly Action<string, ExecutionContext, Func<ExecutionContext, Task>> _ensureActivityRegistration;
+        private readonly ILogger _logger;
 
-        public InterpreterOrchestration(DurableExecutionContext executionContext)
+        private DurableExecutionContext _executionContext;
+
+        public InterpreterOrchestration(IModelMetadata metadata,
+                                        Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration,
+                                        ILogger logger = null)
         {
-            executionContext.CheckArgNull(nameof(executionContext));
+            metadata.CheckArgNull(nameof(metadata));
+            ensureActivityRegistration.CheckArgNull(nameof(ensureActivityRegistration));
 
-            _executionContext = executionContext;
+            _metadata = metadata;
+            _ensureActivityRegistration = ensureActivityRegistration;
+            _logger = logger;
         }
 
         public override async Task<bool> RunTask(OrchestrationContext context, string input)
         {
-            _executionContext.OrchestrationContext = context;
+            _executionContext = new DurableExecutionContext(_metadata,
+                                                            context,
+                                                            _ensureActivityRegistration);
 
-            _executionContext.LogInformation("Start: durable orchestration.");
+            _executionContext.Logger = _logger;
+
+            await _executionContext.LogInformation("Start: durable orchestration.");
 
             try
             {
@@ -41,12 +57,14 @@ namespace CoreEngine.DurableTask
             }
             finally
             {
-                _executionContext.LogInformation("End: durable orchestration.");
+                await _executionContext.LogInformation("End: durable orchestration.");
             }
         }
 
         public override void OnEvent(OrchestrationContext context, string name, Message input)
         {
+            Debug.Assert(_executionContext != null);
+
             _executionContext.EnqueueExternalMessage(input);
         }
     }

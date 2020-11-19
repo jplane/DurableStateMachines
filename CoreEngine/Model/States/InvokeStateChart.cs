@@ -73,7 +73,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
                 context.LogDebug($"Synthentic Id = {syntheticId}");
 
-                context[_metadata.IdLocation] = syntheticId;
+                context.SetDataValue(_metadata.IdLocation, syntheticId);
             }
 
             return Task.CompletedTask;

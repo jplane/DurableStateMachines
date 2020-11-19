@@ -27,13 +27,13 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation("Start: ElseIf.Execute");
+            await context.LogInformation("Start: ElseIf.Execute");
 
             try
             {
                 var result = _cond(context.ScriptData);
 
-                context.LogDebug($"Condition = {result}");
+                await context.LogDebug($"Condition = {result}");
 
                 if (result)
                 {
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             }
             finally
             {
-                context.LogInformation("End: ElseIf.Execute");
+                await context.LogInformation("End: ElseIf.Execute");
             }
         }
     }

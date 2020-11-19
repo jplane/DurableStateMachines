@@ -63,7 +63,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
             var result = ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
 
-            context.LogDebug($"Condition = {result}");
+            await context.LogDebug($"Condition = {result}");
 
             if (result)
             {

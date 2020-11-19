@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using System;
@@ -10,20 +11,19 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
     public class DurableExecutionContext : ExecutionContext
     {
         private readonly Action<string, ExecutionContext, Func<ExecutionContext, Task>> _ensureActivityRegistration;
+
         private OrchestrationContext _orchestrationContext;
 
         public DurableExecutionContext(IModelMetadata metadata,
+                                       OrchestrationContext orchestrationContext,
                                        Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration)
             : base(metadata)
         {
+            orchestrationContext.CheckArgNull(nameof(orchestrationContext));
             ensureActivityRegistration.CheckArgNull(nameof(ensureActivityRegistration));
 
+            _orchestrationContext = orchestrationContext;
             _ensureActivityRegistration = ensureActivityRegistration;
-        }
-
-        internal OrchestrationContext OrchestrationContext
-        {
-            set => _orchestrationContext = value;
         }
 
         internal override async Task Init()
@@ -59,6 +59,20 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
             Debug.Assert(_orchestrationContext != null);
 
             _orchestrationContext.SendEvent(_orchestrationContext.OrchestrationInstance, message.Name, message);
+        }
+
+        internal override Task LogDebug(string message)
+        {
+            Debug.Assert(_orchestrationContext != null);
+
+            return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("debug", message));
+        }
+
+        internal override Task LogInformation(string message)
+        {
+            Debug.Assert(_orchestrationContext != null);
+
+            return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("information", message));
         }
     }
 }

@@ -24,7 +24,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation("Start: Else.Execute");
+            await context.LogInformation("Start: Else.Execute");
 
             try
             {
@@ -35,7 +35,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
             }
             finally
             {
-                context.LogInformation("End: Else.Execute");
+                await context.LogInformation("End: Else.Execute");
             }
         }
     }

@@ -9,11 +9,6 @@ using System.Collections.Generic;
 
 namespace ConsoleRunner
 {
-    public class Foo
-    {
-        public dynamic data;
-    }
-
     class Program
     {
         static void Main(string[] args)

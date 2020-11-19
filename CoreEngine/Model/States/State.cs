@@ -168,7 +168,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            context.LogInformation($"Enter {this.GetType().Name}: Id {this.Id}");
+            await context.LogInformation($"Enter {this.GetType().Name}: Id {this.Id}");
 
             context.Configuration.Add(this);
 
@@ -181,7 +181,10 @@ namespace StateChartsDotNet.CoreEngine.Model.States
                 _firstEntry = false;
             }
 
-            _onEntry.Value?.Execute(context);
+            if (_onEntry.Value != null)
+            {
+                await _onEntry.Value.Execute(context);
+            }
 
             if (statesForDefaultEntry.Contains(this))
             {
@@ -241,9 +244,12 @@ namespace StateChartsDotNet.CoreEngine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
+            await context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
 
-            _onExit.Value?.Execute(context);
+            if (_onExit.Value != null)
+            {
+                await _onExit.Value.Execute(context);
+            }
 
             foreach (var invoke in _invokes.Value)
             {

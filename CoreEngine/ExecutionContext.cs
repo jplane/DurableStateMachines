@@ -193,14 +193,18 @@ namespace StateChartsDotNet.CoreEngine
             _historyValues[key] = this.Configuration.Where(predicate).ToArray();
         }
 
-        internal void LogDebug(string message)
+        internal virtual Task LogDebug(string message)
         {
             _logger?.LogDebug(message);
+
+            return Task.CompletedTask;
         }
 
-        internal void LogInformation(string message)
+        internal virtual Task LogInformation(string message)
         {
             _logger?.LogInformation(message);
+
+            return Task.CompletedTask;
         }
     }
 }

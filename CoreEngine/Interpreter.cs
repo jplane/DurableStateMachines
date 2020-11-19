@@ -41,11 +41,11 @@ namespace StateChartsDotNet.CoreEngine
         {
             Debug.Assert(context != null);
 
-            context.LogInformation("Start: event loop");
+            await context.LogInformation("Start: event loop");
 
             while (context.IsRunning)
             {
-                context.LogInformation("Start: event loop cycle");
+                await context.LogInformation("Start: event loop cycle");
 
                 Set<Transition> enabledTransitions = null;
 
@@ -77,7 +77,7 @@ namespace StateChartsDotNet.CoreEngine
 
                 if (!context.IsRunning)
                 {
-                    context.LogInformation("End: event loop cycle");
+                    await context.LogInformation("End: event loop cycle");
                     break;
                 }
 
@@ -90,7 +90,7 @@ namespace StateChartsDotNet.CoreEngine
 
                 if (context.HasInternalMessages)
                 {
-                    context.LogInformation("End: event loop cycle");
+                    await context.LogInformation("End: event loop cycle");
                     continue;
                 }
 
@@ -99,7 +99,9 @@ namespace StateChartsDotNet.CoreEngine
                 if (externalMessage.IsCancel)
                 {
                     context.IsRunning = false;
-                    context.LogInformation("End: event loop cycle");
+                    
+                    await context.LogInformation("End: event loop cycle");
+                    
                     continue;
                 }
 
@@ -115,7 +117,7 @@ namespace StateChartsDotNet.CoreEngine
                     await Microstep(context, enabledTransitions);
                 }
 
-                context.LogInformation("End: event loop cycle");
+                await context.LogInformation("End: event loop cycle");
             }
 
             foreach (var state in context.Configuration.Sort(State.ReverseCompare))
@@ -131,7 +133,7 @@ namespace StateChartsDotNet.CoreEngine
                 }
             }
 
-            context.LogInformation("End: event loop");
+            await context.LogInformation("End: event loop");
         }
 
         private void ReturnDoneMessage(State state)

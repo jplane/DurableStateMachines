@@ -16,7 +16,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreEngine.Abstractions", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreEngine.ModelProvider.Xml", "CoreEngine.ModelProvider.Xml\CoreEngine.ModelProvider.Xml.csproj", "{66CEF53C-E8CF-462F-B6A8-C7D1C245CB65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreEngine.DurableTask", "CoreEngine.DurableTask\CoreEngine.DurableTask.csproj", "{5B4778A3-057D-4B46-8783-9C18B681A15B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreEngine.DurableTask", "CoreEngine.DurableTask\CoreEngine.DurableTask.csproj", "{5B4778A3-057D-4B46-8783-9C18B681A15B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableConsoleRunner", "DurableConsoleRunner\DurableConsoleRunner.csproj", "{46354D3F-EF60-4B7E-8876-0B714414A663}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{5B4778A3-057D-4B46-8783-9C18B681A15B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B4778A3-057D-4B46-8783-9C18B681A15B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B4778A3-057D-4B46-8783-9C18B681A15B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46354D3F-EF60-4B7E-8876-0B714414A663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46354D3F-EF60-4B7E-8876-0B714414A663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46354D3F-EF60-4B7E-8876-0B714414A663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46354D3F-EF60-4B7E-8876-0B714414A663}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

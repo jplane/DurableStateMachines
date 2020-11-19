@@ -32,13 +32,13 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
             if (enumerable == null)
             {
-                context.LogDebug($"Foreach: Array is null");
+                await context.LogDebug($"Foreach: Array is null");
                 return;
             }
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
-            context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
+            await context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
 
             Debug.Assert(foreachMetadata.Item != null);
 
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
                 {
                     context.SetDataValue(foreachMetadata.Index, idx);
 
-                    context.LogDebug($"Foreach: Array item index {foreachMetadata.Index}");
+                    await context.LogDebug($"Foreach: Array item index {foreachMetadata.Index}");
                 }
 
                 try
