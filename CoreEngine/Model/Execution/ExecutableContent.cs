@@ -22,37 +22,34 @@ namespace StateChartsDotNet.CoreEngine.Model.Execution
 
             ExecutableContent content = null;
 
-            if (metadata is IIfMetadata im)
+            switch (metadata)
             {
-                content = new If(im);
-            }
-            else if (metadata is IRaiseMetadata rm)
-            {
-                content = new Raise(rm);
-            }
-            else if (metadata is IScriptMetadata sm)
-            {
-                content = new Script(sm);
-            }
-            else if (metadata is IForeachMetadata fm)
-            {
-                content = new Foreach(fm);
-            }
-            else if (metadata is ILogMetadata lm)
-            {
-                content = new Log(lm);
-            }
-            else if (metadata is ISendMessageMetadata smd)
-            {
-                content = new SendMessage(smd);
-            }
-            else if (metadata is ICancelMetadata cm)
-            {
-                content = new Cancel(cm);
-            }
-            else if (metadata is IAssignMetadata am)
-            {
-                content = new Assign(am);
+                case IIfMetadata @if:
+                    content = new If(@if);
+                    break;
+                case IRaiseMetadata raise:
+                    content = new Raise(raise);
+                    break;
+                case IScriptMetadata script:
+                    content = new Script(script);
+                    break;
+                case IForeachMetadata @foreach:
+                    content = new Foreach(@foreach);
+                    break;
+                case ILogMetadata log:
+                    content = new Log(log);
+                    break;
+                case ISendMessageMetadata send:
+                    content = new SendMessage(send);
+                    break;
+                case ICancelMetadata cancel:
+                    content = new Cancel(cancel);
+                    break;
+                case IAssignMetadata assign:
+                    content = new Assign(assign);
+                    break;
+                default:
+                    throw new ArgumentException(message: "Executable Metadata is not a recognized type", paramName: nameof(metadata));
             }
 
             Debug.Assert(content != null);
