@@ -6,12 +6,38 @@ using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ConsoleRunner
 {
     public class Foo
     {
         public dynamic data;
+    }
+
+    public class ScxmlTestEventObject
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
+
+    public class ScxmlTestEvent
+    {
+        [JsonPropertyName("event")]
+        public ScxmlTestEventObject Event { get; set; }
+
+        [JsonPropertyName("nextConfiguration")]
+        public List<string> NextConfiguration { get; set; }
+    }
+
+    public class ScxmlTest
+    {
+        [JsonPropertyName("initialConfiguration")]
+        public List<string> InitialConfiguration { get; set; }
+
+        [JsonPropertyName("events")]
+        public List<ScxmlTestEvent> Events { get; set; }
     }
 
     class Program
@@ -30,7 +56,9 @@ namespace ConsoleRunner
             {
                 //task = RunMicrowave(logger);
 
-                task = RunForeach(logger);
+                // task = RunForeach(logger);
+
+                task = RunScxmlTests(logger);
             }
 
             Task.WaitAll(Task.Delay(5000), task);
@@ -56,6 +84,26 @@ namespace ConsoleRunner
 
                 queue.Enqueue(new Message("cancel"));
                 await Task.Delay(500);
+            });
+        }
+
+        static Task RunScxmlTests(ILogger logger)
+        {
+            var jsonPath = "../test-framework/test/basic/basic1.json";
+            var testJson = System.IO.File.ReadAllText(jsonPath);
+
+            var scxmlTest = JsonSerializer.Deserialize<ScxmlTest>(testJson);
+            return Run("../test-framework/test/basic/basic1.scxml", logger, async queue =>
+            {
+                foreach (var item in scxmlTest.Events)
+                {
+                    Console.WriteLine(item.Event.Name);
+                    queue.Enqueue(new Message(item.Event.Name));
+
+
+                    // TODO: verify that the interpreter's state configuration
+                    // contains item.nextConfiguration (sets are equal)
+                }
             });
         }
 
