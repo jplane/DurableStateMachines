@@ -7,8 +7,6 @@ namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
     public interface ISendMessageMetadata : IExecutableContentMetadata
     {
-        string UniqueId { get; }
-
         string Id { get; }
         string IdLocation { get; }
 

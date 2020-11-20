@@ -7,8 +7,8 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using System.Runtime.CompilerServices;
-using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using Nito.AsyncEx;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 
 [assembly: InternalsVisibleTo("StateChartsDotNet.CoreEngine.DurableTask")]
 
@@ -26,11 +26,11 @@ namespace StateChartsDotNet.CoreEngine
         private readonly RootState _root;
         private readonly ILogger _logger;
 
-        public ExecutionContext(IModelMetadata metadata, ILogger logger = null)
+        public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _root = new RootState(metadata.GetRootState());
+            _root = new RootState(metadata);
             _logger = logger;
 
             _data = new Dictionary<string, object>();

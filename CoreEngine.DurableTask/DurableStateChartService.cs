@@ -2,6 +2,7 @@
 using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,13 +13,13 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
 {
     public class DurableStateChartService
     {
-        private readonly IModelMetadata _metadata;
+        private readonly IRootStateMetadata _metadata;
         private readonly IOrchestrationService _service;
         private readonly ILogger _logger;
 
         private TaskHubWorker _worker;
 
-        public DurableStateChartService(IModelMetadata metadata,
+        public DurableStateChartService(IRootStateMetadata metadata,
                                         IOrchestrationService service,
                                         ILogger logger = null)
         {

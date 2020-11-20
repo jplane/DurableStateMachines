@@ -11,7 +11,6 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public class SendMessageMetadata : ExecutableContentMetadata, ISendMessageMetadata
     {
-        private readonly Lazy<string> _uniqueId;
         private readonly Lazy<Func<dynamic, string>> _getType;
         private readonly Lazy<Func<dynamic, string>> _getMessageName;
         private readonly Lazy<Func<dynamic, string>> _getTarget;
@@ -20,11 +19,6 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
         public SendMessageMetadata(XElement element)
             : base(element)
         {
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
-
             _getType = new Lazy<Func<dynamic, string>>(() =>
             {
                 return ExpressionCompiler.Compile<string>(this.TypeExpression);
@@ -45,8 +39,6 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
                 return ExpressionCompiler.Compile<string>(this.DelayExpression);
             });
         }
-
-        public string UniqueId => _uniqueId.Value;
 
         public string Id => _element.Attribute("id")?.Value ?? string.Empty;
 

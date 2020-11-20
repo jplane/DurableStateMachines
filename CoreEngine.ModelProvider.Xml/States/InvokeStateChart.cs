@@ -14,10 +14,16 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
     public class InvokeStateChart : IInvokeStateChart
     {
         private readonly XElement _element;
+        private readonly Lazy<string> _uniqueId;
 
         public InvokeStateChart(XElement element)
         {
             _element = element;
+
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
+            });
         }
 
         public bool Autoforward
@@ -35,6 +41,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                     return false;
                 }
             }
+        }
+
+        public string UniqueId => _uniqueId.Value;
+
+        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
+        {
+            return true;
         }
 
         public string Id => _element.Attribute("id")?.Value ?? string.Empty;

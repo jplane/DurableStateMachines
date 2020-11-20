@@ -1,4 +1,7 @@
-﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.Execution;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml.Linq;
 
@@ -6,11 +9,24 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.Execution
 {
     public abstract class ExecutableContentMetadata : IExecutableContentMetadata
     {
+        private readonly Lazy<string> _uniqueId;
         protected readonly XElement _element;
 
         protected ExecutableContentMetadata(XElement element)
         {
             _element = element;
+
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
+            });
+        }
+
+        public string UniqueId => _uniqueId.Value;
+
+        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
+        {
+            return true;
         }
 
         public static IExecutableContentMetadata Create(XElement element)

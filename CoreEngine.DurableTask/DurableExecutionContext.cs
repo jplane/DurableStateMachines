@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine.Abstractions;
-using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
 
         private OrchestrationContext _orchestrationContext;
 
-        public DurableExecutionContext(IModelMetadata metadata,
+        public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,
                                        Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration,
                                        ILogger logger = null)

@@ -1,6 +1,7 @@
 ﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
@@ -10,6 +11,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
         private readonly string _location;
         private readonly string _expression;
         private readonly Lazy<Func<dynamic, object>> _getExpressionValue;
+        private readonly Lazy<string> _uniqueId;
 
         public ParamMetadata(XElement element)
         {
@@ -21,6 +23,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
             {
                 return ExpressionCompiler.Compile<object>(_expression);
             });
+
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
+            });
         }
 
         public ParamMetadata(string location)
@@ -28,6 +35,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation
             this.Name = location;
             _location = location;
             _expression = null;
+        }
+
+        public string UniqueId => _uniqueId.Value;
+
+        public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
+        {
+            return true;
         }
 
         public string Name { get; }

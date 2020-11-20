@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
-    public interface ITransitionMetadata
+    public interface ITransitionMetadata : IModelMetadata
     {
         IEnumerable<string> Targets { get; }
         IEnumerable<string> Messages { get; }

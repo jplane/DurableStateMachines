@@ -1,6 +1,6 @@
 ﻿namespace StateChartsDotNet.CoreEngine.Abstractions.Model.Execution
 {
-    public interface IExecutableContentMetadata
+    public interface IExecutableContentMetadata : IModelMetadata
     {
     }
 }

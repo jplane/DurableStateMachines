@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
-    public interface IStateMetadata
+    public interface IStateMetadata : IModelMetadata
     {
         string Id { get; }
 
