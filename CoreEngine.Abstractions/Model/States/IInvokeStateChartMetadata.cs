@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
-    public interface IInvokeStateChart : IModelMetadata
+    public interface IInvokeStateChartMetadata : IModelMetadata
     {
         bool Autoforward { get; }
         string Id { get; }

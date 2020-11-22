@@ -13,8 +13,8 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
     public class RootStateMetadata : StateMetadata, IRootStateMetadata
     {
-        public RootStateMetadata(XElement element)
-            : base(element)
+        public RootStateMetadata(XDocument document)
+            : base(document.Root)
         {
         }
 

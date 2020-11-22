@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
-    public class InvokeStateChart : IInvokeStateChart
+    public class InvokeStateChart : IInvokeStateChartMetadata
     {
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;

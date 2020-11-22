@@ -8,6 +8,7 @@ using StateChartsDotNet.CoreEngine.Abstractions;
 using System.Collections.Generic;
 using StateChartsDotNet.CoreEngine.DurableTask;
 using DurableTask.AzureStorage;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.States;
 
 namespace DurableConsoleRunner
 {
@@ -59,7 +60,7 @@ namespace DurableConsoleRunner
 
         static async Task Run(string xmldoc, ILogger logger, Func<DurableStateChartClient, Task> action = null)
         {
-            var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
+            var metadata = new RootStateMetadata(XDocument.Load(xmldoc));
 
             var settings = new AzureStorageOrchestrationServiceSettings
             {

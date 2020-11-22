@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using System.Collections.Generic;
+using StateChartsDotNet.CoreEngine.ModelProvider.Xml.States;
 
 namespace ConsoleRunner
 {
@@ -53,7 +54,7 @@ namespace ConsoleRunner
 
         static Task Run(string xmldoc, ILogger logger, Action<ExecutionContext> action = null)
         {
-            var metadata = new XmlModelMetadata(XDocument.Load(xmldoc));
+            var metadata = new RootStateMetadata(XDocument.Load(xmldoc));
 
             var context = new ExecutionContext(metadata, logger);
 

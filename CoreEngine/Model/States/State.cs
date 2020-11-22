@@ -57,7 +57,7 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 
             _invokes = new Lazy<InvokeStateChart[]>(() =>
             {
-                return _metadata.GetServices().Select(sm => new InvokeStateChart(sm, this)).ToArray();
+                return _metadata.GetStateChartInvokes().Select(sm => new InvokeStateChart(sm, this)).ToArray();
             });
 
             _datamodel = new Lazy<Datamodel>(() =>
