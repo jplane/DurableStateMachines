@@ -70,14 +70,28 @@ namespace StateChartsDotNet.CoreEngine.DurableTask
         {
             Debug.Assert(_orchestrationContext != null);
 
-            return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("debug", message));
+            if (_logger != null)
+            {
+                return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("debug", message));
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
 
         internal override Task LogInformation(string message)
         {
             Debug.Assert(_orchestrationContext != null);
 
-            return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("information", message));
+            if (_logger != null)
+            {
+                return _orchestrationContext.ScheduleTask<bool>("logger", string.Empty, ("information", message));
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }

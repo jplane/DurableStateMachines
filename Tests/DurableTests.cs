@@ -11,17 +11,6 @@ namespace Tests
     [TestClass]
     public class DurableTests
     {
-        private static ILogger _logger;
-
-        [ClassInitialize]
-        public static void Init(TestContext context)
-        {
-            var loggerFactory = LoggerFactory.Create(
-                                    builder => builder.AddFilter("DurableTests", level => true).AddDebug());
-
-            _logger = loggerFactory.CreateLogger("DurableTests");
-        }
-
         [TestMethod]
         public async Task SimpleTransition()
         {
@@ -44,7 +33,7 @@ namespace Tests
 
             var emulator = new LocalOrchestrationService();
 
-            var service = new DurableStateChartService(machine, emulator, _logger);
+            var service = new DurableStateChartService(machine, emulator);
 
             await service.StartAsync();
 

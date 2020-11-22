@@ -17,14 +17,14 @@ namespace StateChartsDotNet.CoreEngine
     public class ExecutionContext
     {
         protected readonly Dictionary<string, object> _data;
-        
+        protected readonly ILogger _logger;
+
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<Message> _internalMessages;
         private readonly AsyncProducerConsumerQueue<Message> _externalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
-        private readonly ILogger _logger;
 
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
         {
