@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -6,12 +6,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CoreEngine.Abstractions\CoreEngine.Abstractions.csproj" />
+    <ProjectReference Include="..\CoreEngine.DurableTask\CoreEngine.DurableTask.csproj" />
     <ProjectReference Include="..\CoreEngine.ModelProvider.Fluent\CoreEngine.ModelProvider.Fluent.csproj" />
+    <ProjectReference Include="..\CoreEngine.ModelProvider.Xml\CoreEngine.ModelProvider.Xml.csproj" />
     <ProjectReference Include="..\CoreEngine\CoreEngine.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.DurableTask.Emulator" Version="2.5.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
