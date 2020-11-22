@@ -20,7 +20,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.DataManipulation
 
         internal string UniqueId { private get; set; }
 
-        public DatamodelMetadata<TParent> WithDataInit()
+        public DatamodelMetadata<TParent> DataInit()
         {
             var datainit = new DataInitMetadata<DatamodelMetadata<TParent>>();
 

@@ -13,24 +13,24 @@ using System.Runtime.InteropServices;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 {
-    public sealed class RootStateMetadata : StateMetadata, IRootStateMetadata
+    public sealed class StateChart : StateMetadata, IRootStateMetadata
     {
-        private readonly List<InvokeStateChartMetadata<RootStateMetadata>> _stateChartInvokes;
-        private readonly List<TransitionMetadata<RootStateMetadata>> _transitions;
+        private readonly List<InvokeStateChartMetadata<StateChart>> _stateChartInvokes;
+        private readonly List<TransitionMetadata<StateChart>> _transitions;
 
-        private DatamodelMetadata<RootStateMetadata> _datamodel;
+        private DatamodelMetadata<StateChart> _datamodel;
         private Databinding _databinding;
-        private TransitionMetadata<RootStateMetadata> _initialTransition;
-        private ScriptMetadata<RootStateMetadata> _script;
+        private TransitionMetadata<StateChart> _initialTransition;
+        private ScriptMetadata<StateChart> _script;
 
         private readonly List<StateMetadata> _states = new List<StateMetadata>();
 
-        private RootStateMetadata(string name)
+        private StateChart(string name)
             : base(name)
         {
-            _databinding = Databinding.Early;
-            _stateChartInvokes = new List<InvokeStateChartMetadata<RootStateMetadata>>();
-            _transitions = new List<TransitionMetadata<RootStateMetadata>>();
+            _databinding = Abstractions.Model.Databinding.Early;
+            _stateChartInvokes = new List<InvokeStateChartMetadata<StateChart>>();
+            _transitions = new List<TransitionMetadata<StateChart>>();
         }
 
         protected override IStateMetadata _Parent => null;
@@ -40,20 +40,20 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             get => new[] { ((IStateMetadata)this).Id }.Concat(_states.SelectMany(s => s.StateNames));
         }
 
-        public static RootStateMetadata Create(string name)
+        public static StateChart Define(string name)
         {
-            return new RootStateMetadata(name);
+            return new StateChart(name);
         }
 
-        public RootStateMetadata WithDatabinding(Databinding databinding)
+        public StateChart Databinding(Databinding databinding)
         {
             _databinding = databinding;
             return this;
         }
 
-        public RootStateMetadata WithInitialState(string initialState)
+        public StateChart InitialState(string initialState)
         {
-            _initialTransition = new TransitionMetadata<RootStateMetadata>().WithTarget(initialState);
+            _initialTransition = new TransitionMetadata<StateChart>().Target(initialState);
 
             _initialTransition.Parent = this;
 
@@ -62,9 +62,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public ScriptMetadata<RootStateMetadata> WithScript()
+        public ScriptMetadata<StateChart> Execute()
         {
-            _script = new ScriptMetadata<RootStateMetadata>();
+            _script = new ScriptMetadata<StateChart>();
 
             _script.Parent = this;
 
@@ -75,9 +75,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<RootStateMetadata> WithDatamodel()
+        public DatamodelMetadata<StateChart> Datamodel()
         {
-            _datamodel = new DatamodelMetadata<RootStateMetadata>();
+            _datamodel = new DatamodelMetadata<StateChart>();
 
             _datamodel.Parent = this;
 
@@ -86,24 +86,24 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return _datamodel;
         }
 
-        public AtomicStateMetadata<RootStateMetadata> WithAtomicState(string id)
+        public AtomicStateMetadata<StateChart> AtomicState(string id)
         {
-            return WithState<AtomicStateMetadata<RootStateMetadata>>(id);
+            return WithState<AtomicStateMetadata<StateChart>>(id);
         }
 
-        public SequentialStateMetadata<RootStateMetadata> WithSequentialState(string id)
+        public SequentialStateMetadata<StateChart> SequentialState(string id)
         {
-            return WithState<SequentialStateMetadata<RootStateMetadata>>(id);
+            return WithState<SequentialStateMetadata<StateChart>>(id);
         }
 
-        public ParallelStateMetadata<RootStateMetadata> WithParallelState(string id)
+        public ParallelStateMetadata<StateChart> ParallelState(string id)
         {
-            return WithState<ParallelStateMetadata<RootStateMetadata>>(id);
+            return WithState<ParallelStateMetadata<StateChart>>(id);
         }
 
-        public FinalStateMetadata<RootStateMetadata> WithFinalState(string id)
+        public FinalStateMetadata<StateChart> FinalState(string id)
         {
-            return WithState<FinalStateMetadata<RootStateMetadata>>(id);
+            return WithState<FinalStateMetadata<StateChart>>(id);
         }
 
         private TStateMetadata WithState<TStateMetadata>(string id) where TStateMetadata : StateMetadata
@@ -134,8 +134,8 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             }
             else if (_states.Count > 0)
             {
-                return new TransitionMetadata<RootStateMetadata>()
-                                    .WithTarget(((IStateMetadata)_states[0]).Id);
+                return new TransitionMetadata<StateChart>()
+                                    .Target(((IStateMetadata)_states[0]).Id);
             }
             else
             {

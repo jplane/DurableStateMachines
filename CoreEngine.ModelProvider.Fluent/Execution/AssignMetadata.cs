@@ -17,13 +17,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
 
         internal TParent Parent { get; set; }
 
-        public AssignMetadata<TParent> WithLocation(string location)
+        public AssignMetadata<TParent> Location(string location)
         {
             _location = location;
             return this;
         }
 
-        public AssignMetadata<TParent> WithValue(Func<dynamic, object> getter)
+        public AssignMetadata<TParent> Value(Func<dynamic, object> getter)
         {
             _getValue = getter;
             return this;

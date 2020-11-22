@@ -16,22 +16,22 @@ namespace Tests
         {
             var x = 1;
 
-            var root = RootStateMetadata.Create("test")
-                                        .WithAtomicState("state1")
-                                            .WithOnEntry()
-                                                .WithScript(_ => x += 1)
-                                                .Attach()
-                                            .WithOnExit()
-                                                .WithScript(_ => x += 1)
-                                                .Attach()
-                                            .WithTransition()
-                                                .WithTarget("alldone")
-                                                .Attach()
+            var machine = StateChart.Define("test")
+                                    .AtomicState("state1")
+                                        .OnEntry()
+                                            .Execute(_ => x += 1)
                                             .Attach()
-                                        .WithFinalState("alldone")
+                                        .OnExit()
+                                            .Execute(_ => x += 1)
+                                            .Attach()
+                                        .Transition()
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(root);
+            var context = new ExecutionContext(machine);
 
             var interpreter = new Interpreter();
 

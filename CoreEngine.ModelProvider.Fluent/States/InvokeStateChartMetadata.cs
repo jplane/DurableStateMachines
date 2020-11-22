@@ -35,27 +35,27 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public InvokeStateChartMetadata<TParent> WithAutoforward(bool autoforward)
+        public InvokeStateChartMetadata<TParent> Autoforward(bool autoforward)
         {
             _autoForward = autoforward;
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> WithId(string id)
+        public InvokeStateChartMetadata<TParent> Id(string id)
         {
             _id = id;
             _idLocation = null;
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> WithIdLocation(string idLocation)
+        public InvokeStateChartMetadata<TParent> IdLocation(string idLocation)
         {
             _id = null;
             _idLocation = idLocation;
             return this;
         }
 
-        public ContentMetadata<InvokeStateChartMetadata<TParent>> WithContent()
+        public ContentMetadata<InvokeStateChartMetadata<TParent>> Content()
         {
             _content = new ContentMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -66,7 +66,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return _content;
         }
 
-        public ParamMetadata<InvokeStateChartMetadata<TParent>> WithParam()
+        public ParamMetadata<InvokeStateChartMetadata<TParent>> Param()
         {
             var param = new ParamMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return param;
         }
 
-        public AssignMetadata<InvokeStateChartMetadata<TParent>> WithAssign()
+        public AssignMetadata<InvokeStateChartMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -92,7 +92,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public CancelMetadata<InvokeStateChartMetadata<TParent>> WithCancel()
+        public CancelMetadata<InvokeStateChartMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -105,7 +105,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public ForeachMetadata<InvokeStateChartMetadata<TParent>> WithForeach()
+        public ForeachMetadata<InvokeStateChartMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -118,7 +118,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public IfMetadata<InvokeStateChartMetadata<TParent>> WithIf()
+        public IfMetadata<InvokeStateChartMetadata<TParent>> If()
         {
             var ec = new IfMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -131,11 +131,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public InvokeStateChartMetadata<TParent> WithLog(string message)
+        public InvokeStateChartMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<InvokeStateChartMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _finalizeExecutableContent.Add(ec);
 
@@ -146,11 +146,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public InvokeStateChartMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<InvokeStateChartMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _finalizeExecutableContent.Add(ec);
 
@@ -161,11 +161,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> WithRaise(string messageName)
+        public InvokeStateChartMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<InvokeStateChartMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _finalizeExecutableContent.Add(ec);
 
@@ -176,11 +176,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> WithScript(Action<dynamic> action)
+        public InvokeStateChartMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<InvokeStateChartMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _finalizeExecutableContent.Add(ec);
 
@@ -191,7 +191,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<InvokeStateChartMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<InvokeStateChartMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<InvokeStateChartMetadata<TParent>>();
 

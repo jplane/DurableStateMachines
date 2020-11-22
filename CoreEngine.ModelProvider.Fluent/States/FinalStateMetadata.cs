@@ -33,7 +33,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public OnEntryExitMetadata<FinalStateMetadata<TParent>> WithOnEntry()
+        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnEntry()
         {
             _onEntry = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(true);
 
@@ -46,7 +46,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<FinalStateMetadata<TParent>> WithOnExit()
+        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnExit()
         {
             _onExit = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(false);
 
@@ -57,7 +57,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return _onExit;
         }
 
-        public ContentMetadata<FinalStateMetadata<TParent>> WithContent()
+        public ContentMetadata<FinalStateMetadata<TParent>> Content()
         {
             _content = new ContentMetadata<FinalStateMetadata<TParent>>();
 
@@ -68,7 +68,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return _content;
         }
 
-        public ParamMetadata<FinalStateMetadata<TParent>> WithParam()
+        public ParamMetadata<FinalStateMetadata<TParent>> Param()
         {
             var param = new ParamMetadata<FinalStateMetadata<TParent>>();
 

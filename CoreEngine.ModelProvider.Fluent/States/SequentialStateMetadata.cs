@@ -44,7 +44,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public TransitionMetadata<SequentialStateMetadata<TParent>> WithInitialTransition()
+        public TransitionMetadata<SequentialStateMetadata<TParent>> InitialTransition()
         {
             _initialTransition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
 
@@ -57,7 +57,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<SequentialStateMetadata<TParent>> WithDatamodel()
+        public DatamodelMetadata<SequentialStateMetadata<TParent>> Datamodel()
         {
             _datamodel = new DatamodelMetadata<SequentialStateMetadata<TParent>>();
 
@@ -70,7 +70,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> WithOnEntry()
+        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnEntry()
         {
             _onEntry = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(true);
 
@@ -83,7 +83,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> WithOnExit()
+        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnExit()
         {
             _onExit = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(false);
 
@@ -96,7 +96,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> WithStateChartInvoke()
+        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> StateChartInvoke()
         {
             var invoke = new InvokeStateChartMetadata<SequentialStateMetadata<TParent>>();
 
@@ -111,7 +111,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
 
-        public TransitionMetadata<SequentialStateMetadata<TParent>> WithTransition()
+        public TransitionMetadata<SequentialStateMetadata<TParent>> Transition()
         {
             var transition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
 
@@ -124,27 +124,27 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return transition;
         }
 
-        public AtomicStateMetadata<SequentialStateMetadata<TParent>> WithAtomicState(string id)
+        public AtomicStateMetadata<SequentialStateMetadata<TParent>> AtomicState(string id)
         {
             return WithState<AtomicStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }
 
-        public SequentialStateMetadata<SequentialStateMetadata<TParent>> WithSequentialState(string id)
+        public SequentialStateMetadata<SequentialStateMetadata<TParent>> SequentialState(string id)
         {
             return WithState<SequentialStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }
 
-        public ParallelStateMetadata<SequentialStateMetadata<TParent>> WithParallelState(string id)
+        public ParallelStateMetadata<SequentialStateMetadata<TParent>> ParallelState(string id)
         {
             return WithState<ParallelStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }
 
-        public FinalStateMetadata<SequentialStateMetadata<TParent>> WithFinalState(string id)
+        public FinalStateMetadata<SequentialStateMetadata<TParent>> FinalState(string id)
         {
             return WithState<FinalStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }
 
-        public HistoryStateMetadata<SequentialStateMetadata<TParent>> WithHistoryState(string id)
+        public HistoryStateMetadata<SequentialStateMetadata<TParent>> HistoryState(string id)
         {
             return WithState<HistoryStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }
@@ -176,7 +176,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             else if (_states.Count > 0)
             {
                 return new TransitionMetadata<SequentialStateMetadata<TParent>>()
-                                        .WithTarget(((IStateMetadata)_states[0]).Id);
+                                        .Target(((IStateMetadata)_states[0]).Id);
             }
             else
             {

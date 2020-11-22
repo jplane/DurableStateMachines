@@ -28,13 +28,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public ElseIfMetadata<TParent> WithCondition(Func<dynamic, bool> condition)
+        public ElseIfMetadata<TParent> Condition(Func<dynamic, bool> condition)
         {
             _eval = condition;
             return this;
         }
 
-        public AssignMetadata<ElseIfMetadata<TParent>> WithAssign()
+        public AssignMetadata<ElseIfMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<ElseIfMetadata<TParent>>();
 
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public CancelMetadata<ElseIfMetadata<TParent>> WithCancel()
+        public CancelMetadata<ElseIfMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<ElseIfMetadata<TParent>>();
 
@@ -60,7 +60,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ForeachMetadata<ElseIfMetadata<TParent>> WithForeach()
+        public ForeachMetadata<ElseIfMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<ElseIfMetadata<TParent>>();
 
@@ -73,7 +73,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public IfMetadata<ElseIfMetadata<TParent>> WithIf()
+        public IfMetadata<ElseIfMetadata<TParent>> If()
         {
             var ec = new IfMetadata<ElseIfMetadata<TParent>>();
 
@@ -86,11 +86,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ElseIfMetadata<TParent> WithLog(string message)
+        public ElseIfMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<ElseIfMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -101,11 +101,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseIfMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public ElseIfMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<ElseIfMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -116,11 +116,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseIfMetadata<TParent> WithRaise(string messageName)
+        public ElseIfMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<ElseIfMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -131,11 +131,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseIfMetadata<TParent> WithScript(Action<dynamic> action)
+        public ElseIfMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<ElseIfMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -146,7 +146,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<ElseIfMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<ElseIfMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<ElseIfMetadata<TParent>>();
 

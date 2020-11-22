@@ -14,7 +14,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.DataManipulation
         {
         }
 
-        public ContentMetadata<TParent> WithPayload(Func<dynamic, object> getter)
+        public ContentMetadata<TParent> Payload(Func<dynamic, object> getter)
         {
             _payloadGetter = getter;
             return this;

@@ -29,7 +29,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public AssignMetadata<OnEntryExitMetadata<TParent>> WithAssign()
+        public AssignMetadata<OnEntryExitMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<OnEntryExitMetadata<TParent>>();
 
@@ -42,7 +42,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public CancelMetadata<OnEntryExitMetadata<TParent>> WithCancel()
+        public CancelMetadata<OnEntryExitMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<OnEntryExitMetadata<TParent>>();
 
@@ -55,7 +55,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public ForeachMetadata<OnEntryExitMetadata<TParent>> WithForeach()
+        public ForeachMetadata<OnEntryExitMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<OnEntryExitMetadata<TParent>>();
 
@@ -68,7 +68,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public IfMetadata<OnEntryExitMetadata<TParent>> WithIf()
+        public IfMetadata<OnEntryExitMetadata<TParent>> If()
         {
             var ec = new IfMetadata<OnEntryExitMetadata<TParent>>();
 
@@ -81,11 +81,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public OnEntryExitMetadata<TParent> WithLog(string message)
+        public OnEntryExitMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<OnEntryExitMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -96,11 +96,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public OnEntryExitMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public OnEntryExitMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<OnEntryExitMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -111,11 +111,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public OnEntryExitMetadata<TParent> WithRaise(string messageName)
+        public OnEntryExitMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<OnEntryExitMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -126,11 +126,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public OnEntryExitMetadata<TParent> WithScript(Action<dynamic> action)
+        public OnEntryExitMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<OnEntryExitMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -141,7 +141,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<OnEntryExitMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<OnEntryExitMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<OnEntryExitMetadata<TParent>>();
 

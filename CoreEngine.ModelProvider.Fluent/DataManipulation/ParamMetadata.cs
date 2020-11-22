@@ -19,13 +19,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.DataManipulation
 
         internal string UniqueId { private get; set; }
 
-        public ParamMetadata<TParent> WithName(string name)
+        public ParamMetadata<TParent> Name(string name)
         {
             _name = name;
             return this;
         }
 
-        public ParamMetadata<TParent> WithValue(Func<dynamic, object> getter)
+        public ParamMetadata<TParent> Value(Func<dynamic, object> getter)
         {
             _valueGetter = getter;
             return this;

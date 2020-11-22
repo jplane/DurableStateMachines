@@ -21,7 +21,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public LogMetadata<TParent> WithMessage(Func<dynamic, string> getter)
+        public LogMetadata<TParent> Message(Func<dynamic, string> getter)
         {
             _getMessage = getter;
             return this;

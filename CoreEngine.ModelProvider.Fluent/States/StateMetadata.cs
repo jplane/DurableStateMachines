@@ -53,9 +53,9 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
                 parent = current._Parent;
             }
 
-            Debug.Assert(current is RootStateMetadata);
+            Debug.Assert(current is StateChart);
 
-            var stateNames = ((RootStateMetadata)current).StateNames.ToArray();
+            var stateNames = ((StateChart)current).StateNames.ToArray();
 
             foreach (var name in stateNames)
             {

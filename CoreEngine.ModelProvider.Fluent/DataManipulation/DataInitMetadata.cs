@@ -15,13 +15,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.DataManipulation
         {
         }
 
-        public DataInitMetadata<TParent> WithId(string id)
+        public DataInitMetadata<TParent> Id(string id)
         {
             _id = id;
             return this;
         }
 
-        public DataInitMetadata<TParent> WithValue(Func<dynamic, object> getter)
+        public DataInitMetadata<TParent> Value(Func<dynamic, object> getter)
         {
             _valueGetter = getter;
             return this;

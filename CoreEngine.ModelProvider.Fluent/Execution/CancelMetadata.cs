@@ -15,13 +15,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
 
         internal TParent Parent { get; set; }
 
-        public CancelMetadata<TParent> WithSendId(string sendId)
+        public CancelMetadata<TParent> SendId(string sendId)
         {
             _sendId = sendId;
             return this;
         }
 
-        public CancelMetadata<TParent> WithSendIdExpression(string sendIdExpr)
+        public CancelMetadata<TParent> SendIdExpression(string sendIdExpr)
         {
             _sendIdExpr = sendIdExpr;
             return this;

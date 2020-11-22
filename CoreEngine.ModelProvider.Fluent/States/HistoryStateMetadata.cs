@@ -28,7 +28,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public TransitionMetadata<HistoryStateMetadata<TParent>> WithTransition()
+        public TransitionMetadata<HistoryStateMetadata<TParent>> Transition()
         {
             _transition = new TransitionMetadata<HistoryStateMetadata<TParent>>();
 
@@ -39,7 +39,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return _transition;
         }
 
-        public HistoryStateMetadata<TParent> WithType(HistoryType type)
+        public HistoryStateMetadata<TParent> Type(HistoryType type)
         {
             _type = type;
 

@@ -20,7 +20,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public ScriptMetadata<TParent> WithAction(Action<dynamic> action)
+        public ScriptMetadata<TParent> Action(Action<dynamic> action)
         {
             _action = action;
             return this;

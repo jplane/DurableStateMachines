@@ -11,9 +11,9 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
-    public class RootStateMetadata : StateMetadata, IRootStateMetadata
+    public class StateChart : StateMetadata, IRootStateMetadata
     {
-        public RootStateMetadata(XDocument document)
+        public StateChart(XDocument document)
             : base(document.Root)
         {
         }

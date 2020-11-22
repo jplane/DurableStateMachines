@@ -43,7 +43,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<ParallelStateMetadata<TParent>> WithDatamodel()
+        public DatamodelMetadata<ParallelStateMetadata<TParent>> Datamodel()
         {
             _datamodel = new DatamodelMetadata<ParallelStateMetadata<TParent>>();
 
@@ -56,7 +56,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> WithOnEntry()
+        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnEntry()
         {
             _onEntry = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(true);
 
@@ -69,7 +69,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> WithOnExit()
+        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnExit()
         {
             _onExit = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(false);
 
@@ -82,7 +82,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
 
-        public TransitionMetadata<ParallelStateMetadata<TParent>> WithTransition()
+        public TransitionMetadata<ParallelStateMetadata<TParent>> Transition()
         {
             var transition = new TransitionMetadata<ParallelStateMetadata<TParent>>();
 
@@ -95,17 +95,17 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return transition;
         }
 
-        public AtomicStateMetadata<ParallelStateMetadata<TParent>> WithAtomicState(string id)
+        public AtomicStateMetadata<ParallelStateMetadata<TParent>> AtomicState(string id)
         {
             return WithState<AtomicStateMetadata<ParallelStateMetadata<TParent>>>(id);
         }
 
-        public SequentialStateMetadata<ParallelStateMetadata<TParent>> WithSequentialState(string id)
+        public SequentialStateMetadata<ParallelStateMetadata<TParent>> SequentialState(string id)
         {
             return WithState<SequentialStateMetadata<ParallelStateMetadata<TParent>>>(id);
         }
 
-        public ParallelStateMetadata<ParallelStateMetadata<TParent>> WithParallelState(string id)
+        public ParallelStateMetadata<ParallelStateMetadata<TParent>> ParallelState(string id)
         {
             return WithState<ParallelStateMetadata<ParallelStateMetadata<TParent>>>(id);
         }

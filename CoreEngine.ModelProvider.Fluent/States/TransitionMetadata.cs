@@ -36,31 +36,31 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public TransitionMetadata<TParent> WithType(TransitionType type)
+        public TransitionMetadata<TParent> Type(TransitionType type)
         {
             _type = type;
             return this;
         }
 
-        public TransitionMetadata<TParent> WithTarget(string target)
+        public TransitionMetadata<TParent> Target(string target)
         {
             _targets.Add(target);
             return this;
         }
 
-        public TransitionMetadata<TParent> WithMessage(string message)
+        public TransitionMetadata<TParent> Message(string message)
         {
             _messages.Add(message);
             return this;
         }
 
-        public TransitionMetadata<TParent> WithCondition(Func<dynamic, bool> condition)
+        public TransitionMetadata<TParent> Condition(Func<dynamic, bool> condition)
         {
             _evalCondition = condition;
             return this;
         }
 
-        public AssignMetadata<TransitionMetadata<TParent>> WithAssign()
+        public AssignMetadata<TransitionMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<TransitionMetadata<TParent>>();
 
@@ -73,7 +73,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public CancelMetadata<TransitionMetadata<TParent>> WithCancel()
+        public CancelMetadata<TransitionMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<TransitionMetadata<TParent>>();
 
@@ -86,7 +86,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public ForeachMetadata<TransitionMetadata<TParent>> WithForeach()
+        public ForeachMetadata<TransitionMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<TransitionMetadata<TParent>>();
 
@@ -99,7 +99,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public IfMetadata<TransitionMetadata<TParent>> WithIf()
+        public IfMetadata<TransitionMetadata<TParent>> If()
         {
             var ec = new IfMetadata<TransitionMetadata<TParent>>();
 
@@ -112,11 +112,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return ec;
         }
 
-        public TransitionMetadata<TParent> WithLog(string message)
+        public TransitionMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<TransitionMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -127,11 +127,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public TransitionMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public TransitionMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<TransitionMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -142,11 +142,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public TransitionMetadata<TParent> WithRaise(string messageName)
+        public TransitionMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<TransitionMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -157,11 +157,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public TransitionMetadata<TParent> WithScript(Action<dynamic> action)
+        public TransitionMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<TransitionMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -172,7 +172,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<TransitionMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<TransitionMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<TransitionMetadata<TParent>>();
 

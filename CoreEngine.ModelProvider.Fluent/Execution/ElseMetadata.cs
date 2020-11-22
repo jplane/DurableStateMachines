@@ -25,7 +25,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public AssignMetadata<ElseMetadata<TParent>> WithAssign()
+        public AssignMetadata<ElseMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<ElseMetadata<TParent>>();
 
@@ -38,7 +38,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public CancelMetadata<ElseMetadata<TParent>> WithCancel()
+        public CancelMetadata<ElseMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<ElseMetadata<TParent>>();
 
@@ -51,7 +51,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ForeachMetadata<ElseMetadata<TParent>> WithForeach()
+        public ForeachMetadata<ElseMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<ElseMetadata<TParent>>();
 
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public IfMetadata<ElseMetadata<TParent>> WithIf()
+        public IfMetadata<ElseMetadata<TParent>> If()
         {
             var ec = new IfMetadata<ElseMetadata<TParent>>();
 
@@ -77,11 +77,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ElseMetadata<TParent> WithLog(string message)
+        public ElseMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<ElseMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -92,11 +92,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public ElseMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<ElseMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -107,11 +107,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseMetadata<TParent> WithRaise(string messageName)
+        public ElseMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<ElseMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -122,11 +122,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ElseMetadata<TParent> WithScript(Action<dynamic> action)
+        public ElseMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<ElseMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -137,7 +137,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<ElseMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<ElseMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<ElseMetadata<TParent>>();
 

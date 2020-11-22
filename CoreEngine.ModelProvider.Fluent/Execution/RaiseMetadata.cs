@@ -19,7 +19,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public RaiseMetadata<TParent> WithMessageName(string messageName)
+        public RaiseMetadata<TParent> MessageName(string messageName)
         {
             _messageName = messageName;
             return this;

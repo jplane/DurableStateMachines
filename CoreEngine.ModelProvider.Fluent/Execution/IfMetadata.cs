@@ -28,13 +28,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public IfMetadata<TParent> WithCondition(Func<dynamic, bool> condition)
+        public IfMetadata<TParent> Condition(Func<dynamic, bool> condition)
         {
             _eval = condition;
             return this;
         }
 
-        public ElseIfMetadata<IfMetadata<TParent>> WithElseIf()
+        public ElseIfMetadata<IfMetadata<TParent>> ElseIf()
         {
             var elseif = new ElseIfMetadata<IfMetadata<TParent>>();
 
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return elseif;
         }
 
-        public ElseMetadata<IfMetadata<TParent>> WithElse()
+        public ElseMetadata<IfMetadata<TParent>> Else()
         {
             _else = new ElseMetadata<IfMetadata<TParent>>();
 
@@ -58,7 +58,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return _else;
         }
 
-        public AssignMetadata<IfMetadata<TParent>> WithAssign()
+        public AssignMetadata<IfMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<IfMetadata<TParent>>();
 
@@ -71,7 +71,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public CancelMetadata<IfMetadata<TParent>> WithCancel()
+        public CancelMetadata<IfMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<IfMetadata<TParent>>();
 
@@ -84,7 +84,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ForeachMetadata<IfMetadata<TParent>> WithForeach()
+        public ForeachMetadata<IfMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<IfMetadata<TParent>>();
 
@@ -97,7 +97,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public IfMetadata<IfMetadata<TParent>> WithIf()
+        public IfMetadata<IfMetadata<TParent>> If()
         {
             var ec = new IfMetadata<IfMetadata<TParent>>();
 
@@ -110,11 +110,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public IfMetadata<TParent> WithLog(string message)
+        public IfMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<IfMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -125,11 +125,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public IfMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public IfMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<IfMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -140,11 +140,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public IfMetadata<TParent> WithRaise(string messageName)
+        public IfMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<IfMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -155,11 +155,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public IfMetadata<TParent> WithScript(Action<dynamic> action)
+        public IfMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<IfMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -170,7 +170,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<IfMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<IfMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<IfMetadata<TParent>>();
 

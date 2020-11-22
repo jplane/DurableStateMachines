@@ -54,9 +54,9 @@ namespace ConsoleRunner
 
         static Task Run(string xmldoc, ILogger logger, Action<ExecutionContext> action = null)
         {
-            var metadata = new RootStateMetadata(XDocument.Load(xmldoc));
+            var machine = new StateChart(XDocument.Load(xmldoc));
 
-            var context = new ExecutionContext(metadata, logger);
+            var context = new ExecutionContext(machine, logger);
 
             var interpreter = new Interpreter();
 

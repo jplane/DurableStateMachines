@@ -60,7 +60,7 @@ namespace DurableConsoleRunner
 
         static async Task Run(string xmldoc, ILogger logger, Func<DurableStateChartClient, Task> action = null)
         {
-            var metadata = new RootStateMetadata(XDocument.Load(xmldoc));
+            var machine = new StateChart(XDocument.Load(xmldoc));
 
             var settings = new AzureStorageOrchestrationServiceSettings
             {
@@ -73,7 +73,7 @@ namespace DurableConsoleRunner
 
             await dtazure.CreateIfNotExistsAsync();
 
-            var service = new DurableStateChartService(metadata, dtazure, logger);
+            var service = new DurableStateChartService(machine, dtazure, logger);
 
             await service.StartAsync();
 

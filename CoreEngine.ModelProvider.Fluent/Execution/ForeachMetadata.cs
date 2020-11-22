@@ -27,25 +27,25 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public ForeachMetadata<TParent> WithItemLocation(string itemLocation)
+        public ForeachMetadata<TParent> ItemLocation(string itemLocation)
         {
             _itemLocation = itemLocation;
             return this;
         }
 
-        public ForeachMetadata<TParent> WithIndexLocation(string indexLocation)
+        public ForeachMetadata<TParent> IndexLocation(string indexLocation)
         {
             _indexLocation = indexLocation;
             return this;
         }
 
-        public ForeachMetadata<TParent> WithItems(Func<dynamic, IEnumerable> getter)
+        public ForeachMetadata<TParent> Items(Func<dynamic, IEnumerable> getter)
         {
             _getItems = getter;
             return this;
         }
 
-        public AssignMetadata<ForeachMetadata<TParent>> WithAssign()
+        public AssignMetadata<ForeachMetadata<TParent>> Assign()
         {
             var ec = new AssignMetadata<ForeachMetadata<TParent>>();
 
@@ -58,7 +58,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public CancelMetadata<ForeachMetadata<TParent>> WithCancel()
+        public CancelMetadata<ForeachMetadata<TParent>> Cancel()
         {
             var ec = new CancelMetadata<ForeachMetadata<TParent>>();
 
@@ -71,7 +71,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ForeachMetadata<ForeachMetadata<TParent>> WithForeach()
+        public ForeachMetadata<ForeachMetadata<TParent>> Foreach()
         {
             var ec = new ForeachMetadata<ForeachMetadata<TParent>>();
 
@@ -84,7 +84,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public IfMetadata<ForeachMetadata<TParent>> WithIf()
+        public IfMetadata<ForeachMetadata<TParent>> If()
         {
             var ec = new IfMetadata<ForeachMetadata<TParent>>();
 
@@ -97,11 +97,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return ec;
         }
 
-        public ForeachMetadata<TParent> WithLog(string message)
+        public ForeachMetadata<TParent> Log(string message)
         {
             var ec = new LogMetadata<ForeachMetadata<TParent>>();
 
-            ec.WithMessage(_ => message);
+            ec.Message(_ => message);
 
             _executableContent.Add(ec);
 
@@ -112,11 +112,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ForeachMetadata<TParent> WithLog(Func<dynamic, string> getter)
+        public ForeachMetadata<TParent> Log(Func<dynamic, string> getter)
         {
             var ec = new LogMetadata<ForeachMetadata<TParent>>();
 
-            ec.WithMessage(getter);
+            ec.Message(getter);
 
             _executableContent.Add(ec);
 
@@ -127,11 +127,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ForeachMetadata<TParent> WithRaise(string messageName)
+        public ForeachMetadata<TParent> Raise(string messageName)
         {
             var ec = new RaiseMetadata<ForeachMetadata<TParent>>();
 
-            ec.WithMessageName(messageName);
+            ec.MessageName(messageName);
 
             _executableContent.Add(ec);
 
@@ -142,11 +142,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public ForeachMetadata<TParent> WithScript(Action<dynamic> action)
+        public ForeachMetadata<TParent> Execute(Action<dynamic> action)
         {
             var ec = new ScriptMetadata<ForeachMetadata<TParent>>();
 
-            ec.WithAction(action);
+            ec.Action(action);
 
             _executableContent.Add(ec);
 
@@ -157,7 +157,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<ForeachMetadata<TParent>> WithSendMessage()
+        public SendMessageMetadata<ForeachMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<ForeachMetadata<TParent>>();
 

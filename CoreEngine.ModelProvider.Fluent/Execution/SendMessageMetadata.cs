@@ -32,43 +32,43 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return this.Parent;
         }
 
-        public SendMessageMetadata<TParent> WithId(string id)
+        public SendMessageMetadata<TParent> Id(string id)
         {
             _id = id;
             return this;
         }
 
-        public SendMessageMetadata<TParent> WithIdLocation(string idLocation)
+        public SendMessageMetadata<TParent> IdLocation(string idLocation)
         {
             _idLocation = idLocation;
             return this;
         }
 
-        public SendMessageMetadata<TParent> WithDelay(Func<dynamic, TimeSpan> getter)
+        public SendMessageMetadata<TParent> Delay(Func<dynamic, TimeSpan> getter)
         {
             _delayGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> WithMessageName(Func<dynamic, string> getter)
+        public SendMessageMetadata<TParent> MessageName(Func<dynamic, string> getter)
         {
             _messageNameGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> WithTarget(Func<dynamic, string> getter)
+        public SendMessageMetadata<TParent> Target(Func<dynamic, string> getter)
         {
             _targetGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> WithType(Func<dynamic, string> getter)
+        public SendMessageMetadata<TParent> Type(Func<dynamic, string> getter)
         {
             _typeGetter = getter;
             return this;
         }
 
-        public ContentMetadata<SendMessageMetadata<TParent>> WithContent()
+        public ContentMetadata<SendMessageMetadata<TParent>> Content()
         {
             _content = new ContentMetadata<SendMessageMetadata<TParent>>();
 
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution
             return _content;
         }
 
-        public ParamMetadata<SendMessageMetadata<TParent>> WithParam()
+        public ParamMetadata<SendMessageMetadata<TParent>> Param()
         {
             var param = new ParamMetadata<SendMessageMetadata<TParent>>();
 

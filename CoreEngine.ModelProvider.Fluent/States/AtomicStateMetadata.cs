@@ -33,7 +33,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
             return this.Parent;
         }
 
-        public DatamodelMetadata<AtomicStateMetadata<TParent>> WithDatamodel()
+        public DatamodelMetadata<AtomicStateMetadata<TParent>> Datamodel()
         {
             _datamodel = new DatamodelMetadata<AtomicStateMetadata<TParent>>();
 
@@ -46,7 +46,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public OnEntryExitMetadata<AtomicStateMetadata<TParent>> WithOnEntry()
+        public OnEntryExitMetadata<AtomicStateMetadata<TParent>> OnEntry()
         {
             _onEntry = new OnEntryExitMetadata<AtomicStateMetadata<TParent>>(true);
 
@@ -59,7 +59,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<AtomicStateMetadata<TParent>> WithOnExit()
+        public OnEntryExitMetadata<AtomicStateMetadata<TParent>> OnExit()
         {
             _onExit = new OnEntryExitMetadata<AtomicStateMetadata<TParent>>(false);
 
@@ -72,7 +72,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        public InvokeStateChartMetadata<AtomicStateMetadata<TParent>> WithStateChartInvoke()
+        public InvokeStateChartMetadata<AtomicStateMetadata<TParent>> StateChartInvoke()
         {
             var invoke = new InvokeStateChartMetadata<AtomicStateMetadata<TParent>>();
 
@@ -87,7 +87,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
 
-        public TransitionMetadata<AtomicStateMetadata<TParent>> WithTransition()
+        public TransitionMetadata<AtomicStateMetadata<TParent>> Transition()
         {
             var transition = new TransitionMetadata<AtomicStateMetadata<TParent>>();
 
