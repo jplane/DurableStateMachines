@@ -1,7 +1,7 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Metadata.Xml.DataManipulation;
+using StateChartsDotNet.Metadata.Xml.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

@@ -1,4 +1,4 @@
-﻿namespace StateChartsDotNet.Common.Model.DataManipulation
+﻿namespace StateChartsDotNet.Common.Model.Data
 {
     public interface IDataInitMetadata : IModelMetadata
     {

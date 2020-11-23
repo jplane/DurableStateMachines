@@ -1,5 +1,5 @@
 ﻿using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Model.DataManipulation;
+using StateChartsDotNet.Model.Data;
 using System;
 using System.Threading.Tasks;
 using System.Linq;

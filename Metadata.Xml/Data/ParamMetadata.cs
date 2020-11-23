@@ -1,10 +1,10 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Metadata.Xml.DataManipulation
+namespace StateChartsDotNet.Metadata.Xml.Data
 {
     public class ParamMetadata
     {

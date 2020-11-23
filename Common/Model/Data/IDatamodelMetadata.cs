@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Model.DataManipulation
+namespace StateChartsDotNet.Common.Model.Data
 {
     public interface IDatamodelMetadata : IModelMetadata
     {

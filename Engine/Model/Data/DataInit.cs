@@ -1,7 +1,7 @@
-﻿using StateChartsDotNet.Common.Model.DataManipulation;
+﻿using StateChartsDotNet.Common.Model.Data;
 using System;
 
-namespace StateChartsDotNet.Model.DataManipulation
+namespace StateChartsDotNet.Model.Data
 {
     internal class DataInit
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 
-namespace StateChartsDotNet.Model.DataManipulation
+namespace StateChartsDotNet.Model.Data
 {
     internal class Datamodel
     {

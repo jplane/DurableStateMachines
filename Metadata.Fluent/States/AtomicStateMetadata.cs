@@ -1,7 +1,7 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Fluent.DataManipulation;
+using StateChartsDotNet.Metadata.Fluent.Data;
 using System.Collections.Generic;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
