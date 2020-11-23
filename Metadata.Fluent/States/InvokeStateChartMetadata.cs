@@ -6,6 +6,8 @@ using StateChartsDotNet.Metadata.Fluent.DataManipulation;
 using StateChartsDotNet.Metadata.Fluent.Execution;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
@@ -17,7 +19,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private bool _autoForward;
         private string _id;
         private string _idLocation;
-        private ContentMetadata<InvokeStateChartMetadata<TParent>> _content;
+        private Func<dynamic, object> _contentGetter;
+        private Func<dynamic, object> _typeGetter;
 
         internal InvokeStateChartMetadata()
         {
@@ -54,20 +57,21 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public ContentMetadata<InvokeStateChartMetadata<TParent>> Content()
+        public InvokeStateChartMetadata<TParent> Content(Func<dynamic, object> getter)
         {
-            _content = new ContentMetadata<InvokeStateChartMetadata<TParent>>();
-
-            _content.Parent = this;
-
-            _content.UniqueId = $"{((IModelMetadata)this).UniqueId}.Content";
-
-            return _content;
+            _contentGetter = getter;
+            return this;
         }
 
-        public ParamMetadata<InvokeStateChartMetadata<TParent>> Param()
+        public InvokeStateChartMetadata<TParent> Type(Func<dynamic, object> getter)
         {
-            var param = new ParamMetadata<InvokeStateChartMetadata<TParent>>();
+            _typeGetter = getter;
+            return this;
+        }
+
+        public ParamMetadata<InvokeStateChartMetadata<TParent>> Param(string name)
+        {
+            var param = new ParamMetadata<InvokeStateChartMetadata<TParent>>(name);
 
             param.Parent = this;
 
@@ -211,11 +215,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         string IModelMetadata.UniqueId => this.UniqueId;
 
-        IContentMetadata IInvokeStateChartMetadata.GetContent() => _content;
-
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() => _finalizeExecutableContent;
 
-        IEnumerable<IParamMetadata> IInvokeStateChartMetadata.GetParams() => _params;
+        string IInvokeStateChartMetadata.GetType(dynamic data) => _typeGetter?.Invoke(data);
+
+        object IInvokeStateChartMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
+
+        IReadOnlyDictionary<string, Func<dynamic, object>> IInvokeStateChartMetadata.GetParams() =>
+            new ReadOnlyDictionary<string, Func<dynamic, object>>(
+                _params.ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
 
         bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

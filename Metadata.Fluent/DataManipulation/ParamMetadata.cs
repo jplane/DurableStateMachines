@@ -5,24 +5,19 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.Metadata.Fluent.DataManipulation
 {
-    public sealed class ParamMetadata<TParent> : IParamMetadata where TParent : IModelMetadata
+    public sealed class ParamMetadata<TParent> where TParent : IModelMetadata
     {
-        private string _name;
+        private readonly string _name;
         private Func<dynamic, object> _valueGetter;
 
-        internal ParamMetadata()
+        internal ParamMetadata(string name)
         {
+            _name = name;
         }
 
         internal TParent Parent { get; set; }
 
         internal string UniqueId { private get; set; }
-
-        public ParamMetadata<TParent> Name(string name)
-        {
-            _name = name;
-            return this;
-        }
 
         public ParamMetadata<TParent> Value(Func<dynamic, object> getter)
         {
@@ -35,15 +30,13 @@ namespace StateChartsDotNet.Metadata.Fluent.DataManipulation
             return this.Parent;
         }
 
-        string IModelMetadata.UniqueId => this.UniqueId;
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
+        internal bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {
             throw new System.NotImplementedException();
         }
 
-        string IParamMetadata.Name => _name;
+        internal string Name => _name;
 
-        object IParamMetadata.GetValue(dynamic data) => _valueGetter?.Invoke(data);
+        internal object GetValue(dynamic data) => _valueGetter?.Invoke(data);
     }
 }

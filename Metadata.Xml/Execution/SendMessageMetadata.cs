@@ -4,6 +4,7 @@ using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Xml.DataManipulation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -15,6 +16,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         private readonly Lazy<Func<dynamic, string>> _getMessageName;
         private readonly Lazy<Func<dynamic, string>> _getTarget;
         private readonly Lazy<Func<dynamic, string>> _getDelay;
+        private readonly Lazy<Func<dynamic, object>> _getContentValue;
 
         public SendMessageMetadata(XElement element)
             : base(element)
@@ -37,6 +39,27 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
             _getDelay = new Lazy<Func<dynamic, string>>(() =>
             {
                 return ExpressionCompiler.Compile<string>(this.DelayExpression);
+            });
+
+            _getContentValue = new Lazy<Func<dynamic, object>>(() =>
+            {
+                var node = _element.ScxmlElement("content");
+
+                if (node == null)
+                {
+                    return _ => string.Empty;
+                }
+
+                var expression = node.Attribute("expr")?.Value;
+
+                if (!string.IsNullOrWhiteSpace(expression))
+                {
+                    return ExpressionCompiler.Compile<object>(expression);
+                }
+                else
+                {
+                    return _ => node.Value ?? string.Empty;
+                }
             });
         }
 
@@ -63,35 +86,6 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         private IEnumerable<string> Namelist
         {
             get => (_element.Attribute("eventexpr")?.Value ?? string.Empty).Split(" ");
-        }
-
-        public IContentMetadata GetContent()
-        {
-            var node = _element.ScxmlElement("content");
-
-            return node == null ? null : (IContentMetadata) new ContentMetadata(node);
-        }
-
-        public IEnumerable<IParamMetadata> GetParams()
-        {
-            var nodes = _element.ScxmlElements("param");
-
-            if (!this.Namelist.Any() && !nodes.Any())
-            {
-                throw new ModelValidationException("Service namelist or <params> must be specified.");
-            }
-            else if (this.Namelist.Any() && nodes.Any())
-            {
-                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
-            }
-            else if (this.Namelist.Any())
-            {
-                return this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
-            }
-            else
-            {
-                return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
-            }
         }
 
         public string GetType(dynamic data)
@@ -171,6 +165,32 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
             else
             {
                 return TimeSpan.Parse(_getDelay.Value(data));
+            }
+        }
+
+        public object GetContent(dynamic data)
+        {
+            return _getContentValue.Value(data);
+        }
+
+        public IReadOnlyDictionary<string, Func<dynamic, object>> GetParams()
+        {
+            var nodes = _element.ScxmlElements("param");
+
+            if (this.Namelist.Any() && nodes.Any())
+            {
+                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
+            }
+
+            if (this.Namelist.Any())
+            {
+                return new ReadOnlyDictionary<string, Func<dynamic, object>>(
+                    this.Namelist.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
+            }
+            else
+            {
+                return new ReadOnlyDictionary<string, Func<dynamic, object>>(
+                    nodes.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
             }
         }
     }

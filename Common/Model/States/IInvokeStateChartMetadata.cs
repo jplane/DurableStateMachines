@@ -1,6 +1,6 @@
-﻿using StateChartsDotNet.Common.Model.DataManipulation;
-using StateChartsDotNet.Common.Model.Execution;
+﻿using System;
 using System.Collections.Generic;
+using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.Common.Model.States
 {
@@ -10,8 +10,9 @@ namespace StateChartsDotNet.Common.Model.States
         string Id { get; }
         string IdLocation { get; }
 
-        IContentMetadata GetContent();
+        string GetType(dynamic data);
+        object GetContent(dynamic data);
+        IReadOnlyDictionary<string, Func<dynamic, object>> GetParams();
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
-        IEnumerable<IParamMetadata> GetParams();
      }
 }

@@ -4,6 +4,8 @@ using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Fluent.DataManipulation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
 {
@@ -12,11 +14,11 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         private readonly List<ParamMetadata<SendMessageMetadata<TParent>>> _params;
         private string _id;
         private string _idLocation;
-        private ContentMetadata<SendMessageMetadata<TParent>> _content;
         private Func<dynamic, TimeSpan> _delayGetter;
         private Func<dynamic, string> _messageNameGetter;
         private Func<dynamic, string> _targetGetter;
         private Func<dynamic, string> _typeGetter;
+        private Func<dynamic, object> _contentGetter;
 
         internal SendMessageMetadata()
         {
@@ -66,20 +68,15 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        public ContentMetadata<SendMessageMetadata<TParent>> Content()
+        public SendMessageMetadata<TParent> Content(Func<dynamic, object> getter)
         {
-            _content = new ContentMetadata<SendMessageMetadata<TParent>>();
-
-            _content.Parent = this;
-
-            _content.UniqueId = $"{((IModelMetadata)this).UniqueId}.Content";
-
-            return _content;
+            _contentGetter = getter;
+            return this;
         }
 
-        public ParamMetadata<SendMessageMetadata<TParent>> Param()
+        public ParamMetadata<SendMessageMetadata<TParent>> Param(string name)
         {
-            var param = new ParamMetadata<SendMessageMetadata<TParent>>();
+            var param = new ParamMetadata<SendMessageMetadata<TParent>>(name);
 
             param.Parent = this;
 
@@ -94,13 +91,15 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         string ISendMessageMetadata.IdLocation => _idLocation;
 
-        IContentMetadata ISendMessageMetadata.GetContent() => _content;
-
         TimeSpan ISendMessageMetadata.GetDelay(dynamic data) => _delayGetter?.Invoke(data);
 
         string ISendMessageMetadata.GetMessageName(dynamic data) => _messageNameGetter?.Invoke(data);
 
-        IEnumerable<IParamMetadata> ISendMessageMetadata.GetParams() => _params;
+        object ISendMessageMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
+
+        IReadOnlyDictionary<string, Func<dynamic, object>> ISendMessageMetadata.GetParams() =>
+            new ReadOnlyDictionary<string, Func<dynamic, object>>(
+                _params.ToDictionary(p => p.Name, p => (Func<dynamic, object>) p.GetValue));
 
         string ISendMessageMetadata.GetTarget(dynamic data) => _targetGetter?.Invoke(data);
 

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.DataManipulation
 {
-    public class ParamMetadata : IParamMetadata
+    public class ParamMetadata
     {
         private readonly string _location;
         private readonly string _expression;
@@ -36,8 +36,6 @@ namespace StateChartsDotNet.Metadata.Xml.DataManipulation
             _location = location;
             _expression = null;
         }
-
-        public string UniqueId => _uniqueId.Value;
 
         public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {
