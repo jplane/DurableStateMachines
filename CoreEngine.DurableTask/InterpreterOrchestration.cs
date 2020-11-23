@@ -4,6 +4,7 @@ using Nito.AsyncEx;
 using StateChartsDotNet.CoreEngine;
 using StateChartsDotNet.CoreEngine.Abstractions;
 using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.DurableTask;
 using System;
 using System.Collections;
@@ -18,13 +19,13 @@ namespace CoreEngine.DurableTask
                                                               Message,
                                                               string>
     {
-        private readonly IModelMetadata _metadata;
+        private readonly IRootStateMetadata _metadata;
         private readonly Action<string, ExecutionContext, Func<ExecutionContext, Task>> _ensureActivityRegistration;
         private readonly ILogger _logger;
 
         private DurableExecutionContext _executionContext;
 
-        public InterpreterOrchestration(IModelMetadata metadata,
+        public InterpreterOrchestration(IRootStateMetadata metadata,
                                         Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration,
                                         ILogger logger = null)
         {

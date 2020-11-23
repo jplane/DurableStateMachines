@@ -11,10 +11,10 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
 {
-    public class RootStateMetadata : StateMetadata, IRootStateMetadata
+    public class StateChart : StateMetadata, IRootStateMetadata
     {
-        public RootStateMetadata(XElement element)
-            : base(element)
+        public StateChart(XDocument document)
+            : base(document.Root)
         {
         }
 

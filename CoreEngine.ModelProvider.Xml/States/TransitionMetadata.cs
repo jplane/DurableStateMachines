@@ -15,6 +15,7 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         private readonly XAttribute _attribute;
         private readonly string _target = string.Empty;
         private readonly Lazy<Func<dynamic, bool>> _condition;
+        private readonly Lazy<string> _uniqueId;
 
         public TransitionMetadata(XElement element)
         {
@@ -30,6 +31,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
                 {
                     return ExpressionCompiler.Compile<bool>(this.ConditionExpr);
                 }
+            });
+
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
             });
         }
 
@@ -55,6 +61,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             _target = target;
 
             _condition = new Lazy<Func<dynamic, bool>>(() => EvalTrue);
+        }
+
+        public string UniqueId => _uniqueId.Value;
+
+        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
+        {
+            return true;
         }
 
         public IEnumerable<string> Targets

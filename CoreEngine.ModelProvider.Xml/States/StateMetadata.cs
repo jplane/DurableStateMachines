@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
+﻿using StateChartsDotNet.CoreEngine.Abstractions.Model;
+using StateChartsDotNet.CoreEngine.Abstractions.Model.DataManipulation;
 using StateChartsDotNet.CoreEngine.Abstractions.Model.States;
 using StateChartsDotNet.CoreEngine.ModelProvider.Xml.DataManipulation;
 using System;
@@ -16,6 +17,13 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
         protected StateMetadata(XElement element)
         {
             _element = element;
+        }
+
+        public string UniqueId => this.Id;
+
+        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
+        {
+            return true;
         }
 
         public virtual string Id => _element.Attribute("id")?.Value ?? string.Empty;
@@ -51,11 +59,11 @@ namespace StateChartsDotNet.CoreEngine.ModelProvider.Xml.States
             return nodes.Select(n => new TransitionMetadata(n)).Cast<ITransitionMetadata>();
         }
 
-        public IEnumerable<IInvokeStateChart> GetServices()
+        public IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes()
         {
             var nodes = _element.ScxmlElements("invoke");
 
-            return nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChart>();
+            return nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChartMetadata>();
         }
 
         public IDatamodelMetadata GetDatamodel()

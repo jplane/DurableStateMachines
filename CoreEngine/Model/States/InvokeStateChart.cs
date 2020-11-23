@@ -10,13 +10,13 @@ namespace StateChartsDotNet.CoreEngine.Model.States
 {
     internal class InvokeStateChart
     {
-        private readonly IInvokeStateChart _metadata;
+        private readonly IInvokeStateChartMetadata _metadata;
         private readonly string _parentId;
         private readonly Lazy<Content> _content;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
         private readonly Lazy<Param[]> _params;
 
-        public InvokeStateChart(IInvokeStateChart metadata, State parent)
+        public InvokeStateChart(IInvokeStateChartMetadata metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
             parent.CheckArgNull(nameof(parent));

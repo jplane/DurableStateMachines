@@ -21,11 +21,6 @@ Bringing the power of hierarchical state machines to a .NET Core runtime near yo
 
 - Useful abstractions to drive host-specific integration
 
-	- __Statechart metadata storage__ - Model metadata abstractions are defined [here](./CoreEngine.Abstractions/Model), the SCXML provider implementation is [here](./CoreEngine.ModelProvider.Xml). What other implementations can we define?
-	    - Fluent object model
-		- JSON
-		- ???
-
 	- __External service invocation__ - Statecharts [formalize](https://www.w3.org/TR/scxml/#invoke) external service communication, we can define some concrete supported implementations
 		- HTTP/webhook
 		- Dynamic assembly+type+method invocation (good for in-proc 'services')

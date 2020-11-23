@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.CoreEngine.Abstractions.Model.States
 {
-    public interface IOnEntryExitMetadata
+    public interface IOnEntryExitMetadata : IModelMetadata
     {
         bool IsEntry { get; }
 
