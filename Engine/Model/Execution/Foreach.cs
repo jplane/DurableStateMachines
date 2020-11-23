@@ -21,7 +21,7 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -31,13 +31,13 @@ namespace StateChartsDotNet.Model.Execution
 
             if (enumerable == null)
             {
-                await context.LogDebug($"Foreach: Array is null");
+                await context.LogDebugAsync($"Foreach: Array is null");
                 return;
             }
 
             var shallowCopy = enumerable.OfType<object>().ToArray();
 
-            await context.LogDebug($"Foreach: Array length {shallowCopy.Length}");
+            await context.LogDebugAsync($"Foreach: Array length {shallowCopy.Length}");
 
             Debug.Assert(foreachMetadata.Item != null);
 
@@ -51,14 +51,14 @@ namespace StateChartsDotNet.Model.Execution
                 {
                     context.SetDataValue(foreachMetadata.Index, idx);
 
-                    await context.LogDebug($"Foreach: Array item index {foreachMetadata.Index}");
+                    await context.LogDebugAsync($"Foreach: Array item index {foreachMetadata.Index}");
                 }
 
                 try
                 {
                     foreach (var content in _content.Value)
                     {
-                        await content.Execute(context);
+                        await content.ExecuteAsync(context);
                     }
                 }
                 finally

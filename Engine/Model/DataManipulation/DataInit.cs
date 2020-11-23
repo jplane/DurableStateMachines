@@ -18,7 +18,7 @@ namespace StateChartsDotNet.Model.DataManipulation
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation("Start: DataInit");
+            context.LogInformationAsync("Start: DataInit");
 
             try
             {
@@ -26,7 +26,7 @@ namespace StateChartsDotNet.Model.DataManipulation
 
                 context.SetDataValue(_metadata.Id, value);
 
-                context.LogDebug($"Set {_metadata.Id} = {value}");
+                context.LogDebugAsync($"Set {_metadata.Id} = {value}");
             }
             catch (Exception ex)
             {
@@ -34,7 +34,7 @@ namespace StateChartsDotNet.Model.DataManipulation
             }
             finally
             {
-                context.LogInformation("End: DataInit");
+                context.LogInformationAsync("End: DataInit");
             }
         }
     }

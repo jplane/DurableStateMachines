@@ -58,6 +58,11 @@ namespace StateChartsDotNet
             }
         }
 
+        public void Stop()
+        {
+            Send("cancel");
+        }
+
         public void Send(string message, params object[] dataPairs)
         {
             var msg = new Message(message)
@@ -78,14 +83,14 @@ namespace StateChartsDotNet
             _externalMessages.Enqueue(message);
         }
 
-        internal virtual Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
+        internal virtual Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
         {
             func.CheckArgNull(nameof(func));
 
             return func(this);
         }
 
-        internal virtual Task Init()
+        internal virtual Task InitAsync()
         {
             this["_sessionid"] = Guid.NewGuid().ToString("D");
 
@@ -96,7 +101,7 @@ namespace StateChartsDotNet
 
         internal RootState Root => _root;
 
-        internal async Task<Message> DequeueExternal()
+        internal async Task<Message> DequeueExternalAsync()
         {
             var msg = await _externalMessages.DequeueAsync();
 
@@ -191,14 +196,14 @@ namespace StateChartsDotNet
             _historyValues[key] = this.Configuration.Where(predicate).ToArray();
         }
 
-        internal virtual Task LogDebug(string message)
+        internal virtual Task LogDebugAsync(string message)
         {
             _logger?.LogDebug(message);
 
             return Task.CompletedTask;
         }
 
-        internal virtual Task LogInformation(string message)
+        internal virtual Task LogInformationAsync(string message)
         {
             _logger?.LogInformation(message);
 

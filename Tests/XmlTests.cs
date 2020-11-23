@@ -55,7 +55,7 @@ namespace Tests
 
             var interpreter = new Interpreter();
 
-            await interpreter.Run(context);
+            await interpreter.RunAsync(context);
 
             Assert.AreEqual(15, context["sum"]);
         }
@@ -113,7 +113,7 @@ namespace Tests
 
             var interpreter = new Interpreter();
 
-            var task = interpreter.Run(context);
+            var task = interpreter.RunAsync(context);
 
             await Task.Delay(1000);
 
@@ -125,7 +125,7 @@ namespace Tests
                 await Task.Delay(200);
             }
 
-            context.Send("cancel");
+            context.Stop();
 
             await task;
 

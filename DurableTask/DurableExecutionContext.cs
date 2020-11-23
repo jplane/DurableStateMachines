@@ -30,7 +30,7 @@ namespace StateChartsDotNet.DurableTask
 
         internal IDictionary<string, object> GetData() => _data;
 
-        internal override async Task Init()
+        internal override async Task InitAsync()
         {
             Debug.Assert(_orchestrationContext != null);
 
@@ -39,7 +39,7 @@ namespace StateChartsDotNet.DurableTask
             this["_name"] = this.Root.Name;
         }
 
-        internal override Task ExecuteContent(string uniqueId, Func<ExecutionContext, Task> func)
+        internal override Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
         {
             uniqueId.CheckArgNull(nameof(func));
             func.CheckArgNull(nameof(func));
@@ -65,7 +65,7 @@ namespace StateChartsDotNet.DurableTask
             _orchestrationContext.SendEvent(_orchestrationContext.OrchestrationInstance, message.Name, message);
         }
 
-        internal override Task LogDebug(string message)
+        internal override Task LogDebugAsync(string message)
         {
             Debug.Assert(_orchestrationContext != null);
 
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.DurableTask
             }
         }
 
-        internal override Task LogInformation(string message)
+        internal override Task LogInformationAsync(string message)
         {
             Debug.Assert(_orchestrationContext != null);
 

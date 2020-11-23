@@ -63,15 +63,15 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public Task Execute(ExecutionContext context)
+        public Task ExecuteAsync(ExecutionContext context)
         {
-            context.LogInformation($"Start: Invoke");
+            context.LogInformationAsync($"Start: Invoke");
 
             if (!string.IsNullOrWhiteSpace(_metadata.IdLocation))
             {
                 var syntheticId = $"{_parentId}.{Guid.NewGuid():N}";
 
-                context.LogDebug($"Synthentic Id = {syntheticId}");
+                context.LogDebugAsync($"Synthentic Id = {syntheticId}");
 
                 context.SetDataValue(_metadata.IdLocation, syntheticId);
             }
@@ -92,12 +92,12 @@ namespace StateChartsDotNet.Model.States
             //}
         }
 
-        public Task Cancel(ExecutionContext context)
+        public Task CancelAsync(ExecutionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public Task ProcessExternalMessage(ExecutionContext context, Message externalMessage)
+        public Task ProcessExternalMessageAsync(ExecutionContext context, Message externalMessage)
         {
             externalMessage.CheckArgNull(nameof(externalMessage));
 

@@ -10,7 +10,7 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _Execute(ExecutionContext context)
+        protected override Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Model.Execution
 
             context.SetDataValue(assignMetadata.Location, value);
 
-            context.LogDebug($"Set {assignMetadata.Location} = {value}");
+            context.LogDebugAsync($"Set {assignMetadata.Location} = {value}");
 
             return Task.CompletedTask;
         }

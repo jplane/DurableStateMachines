@@ -67,7 +67,7 @@ namespace StateChartsDotNet.Model.States
 
         public void ExecuteScript(ExecutionContext context)
         {
-            _script.Value?.Execute(context);
+            _script.Value?.ExecuteAsync(context);
         }
 
         public Databinding Binding => ((IRootStateMetadata) _metadata).Databinding;
@@ -78,7 +78,7 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsScxmlRoot => true;
 
-        public override Task Invoke(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContext context)
         {
             throw new InvalidOperationException("Unexpected invocation.");
         }

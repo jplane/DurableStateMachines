@@ -57,15 +57,15 @@ namespace StateChartsDotNet.Model.Execution
             return content;
         }
 
-        protected abstract Task _Execute(ExecutionContext context);
+        protected abstract Task _ExecuteAsync(ExecutionContext context);
 
-        public async Task Execute(ExecutionContext context)
+        public async Task ExecuteAsync(ExecutionContext context)
         {
-            await context.LogInformation($"Start: {this.GetType().Name}.Execute");
+            await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
 
             try
             {
-                await _Execute(context);
+                await _ExecuteAsync(context);
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@ namespace StateChartsDotNet.Model.Execution
             }
             finally
             {
-                await context.LogInformation($"End: {this.GetType().Name}.Execute");
+                await context.LogInformationAsync($"End: {this.GetType().Name}.Execute");
             }
         }
     }

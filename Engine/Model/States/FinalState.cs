@@ -34,7 +34,7 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsFinalState => true;
 
-        public override Task Invoke(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

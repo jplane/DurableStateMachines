@@ -11,13 +11,13 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _Execute(ExecutionContext context)
+        protected override Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (IScriptMetadata) _metadata;
 
-            return context.ExecuteContent(metadata.UniqueId, ec =>
+            return context.ExecuteContentAsync(metadata.UniqueId, ec =>
             {
                 Debug.Assert(ec != null);
 

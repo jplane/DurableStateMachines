@@ -23,24 +23,24 @@ namespace StateChartsDotNet.Model.States
             });
         }
 
-        public async Task Execute(ExecutionContext context)
+        public async Task ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var name = _isEntry ? "OnEntry" : "OnExit";
 
-            await context.LogInformation($"Start: {name}");
+            await context.LogInformationAsync($"Start: {name}");
 
             try
             {
                 foreach (var content in _content.Value)
                 {
-                    await content.Execute(context);
+                    await content.ExecuteAsync(context);
                 }
             }
             finally
             {
-                await context.LogInformation($"End: {name}");
+                await context.LogInformationAsync($"End: {name}");
             }
         }
     }

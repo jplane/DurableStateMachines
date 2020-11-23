@@ -83,11 +83,11 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ExecuteContent(ExecutionContext context)
+        public async Task ExecuteContentAsync(ExecutionContext context)
         {
             foreach (var content in _content.Value)
             {
-                await content.Execute(context);
+                await content.ExecuteAsync(context);
             }
         }
 

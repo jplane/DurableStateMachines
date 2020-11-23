@@ -24,18 +24,18 @@ namespace StateChartsDotNet.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            await context.LogInformation("Start: Else.Execute");
+            await context.LogInformationAsync("Start: Else.Execute");
 
             try
             {
                 foreach (var content in _content.Value)
                 {
-                    await content.Execute(context);
+                    await content.ExecuteAsync(context);
                 }
             }
             finally
             {
-                await context.LogInformation("End: Else.Execute");
+                await context.LogInformationAsync("End: Else.Execute");
             }
         }
     }

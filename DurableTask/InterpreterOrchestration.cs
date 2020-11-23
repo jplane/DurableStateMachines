@@ -51,13 +51,13 @@ namespace CoreEngine.DurableTask
                 }
             }
 
-            await _executionContext.LogInformation("Start: durable orchestration.");
+            await _executionContext.LogInformationAsync("Start: durable orchestration.");
 
             try
             {
                 var interpreter = new Interpreter();
 
-                await interpreter.Run(_executionContext);
+                await interpreter.RunAsync(_executionContext);
             }
             catch(Exception ex)
             {
@@ -65,7 +65,7 @@ namespace CoreEngine.DurableTask
             }
             finally
             {
-                await _executionContext.LogInformation("End: durable orchestration.");
+                await _executionContext.LogInformationAsync("End: durable orchestration.");
             }
 
             return _executionContext.GetData();

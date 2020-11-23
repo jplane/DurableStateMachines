@@ -91,6 +91,11 @@ namespace StateChartsDotNet.DurableTask
             }
         }
 
+        public Task StopAsync()
+        {
+            return SendMessageAsync(new Message("cancel"));
+        }
+
         public Task SendMessageAsync(Message message)
         {
             if (!IsRunning)

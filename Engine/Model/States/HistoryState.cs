@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsDeepHistoryState => ((IHistoryStateMetadata) _metadata).Type == HistoryType.Deep;
 
-        public override Task Invoke(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContext context)
         {
             throw new NotImplementedException();
         }

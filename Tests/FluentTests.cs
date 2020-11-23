@@ -32,7 +32,7 @@ namespace Tests
 
             var interpreter = new Interpreter();
 
-            await interpreter.Run(context);
+            await interpreter.RunAsync(context);
 
             Assert.AreEqual(3, x);
         }

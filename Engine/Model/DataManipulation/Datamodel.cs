@@ -22,7 +22,7 @@ namespace StateChartsDotNet.Model.DataManipulation
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformation("Start: Datamodel.Init");
+            context.LogInformationAsync("Start: Datamodel.Init");
 
             try
             {
@@ -33,7 +33,7 @@ namespace StateChartsDotNet.Model.DataManipulation
             }
             finally
             {
-                context.LogInformation("End: Datamodel.Init");
+                context.LogInformationAsync("End: Datamodel.Init");
             }
         }
     }

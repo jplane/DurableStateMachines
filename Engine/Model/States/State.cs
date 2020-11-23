@@ -104,11 +104,11 @@ namespace StateChartsDotNet.Model.States
             _datamodel.Value?.Init(context);
         }
 
-        public virtual async Task Invoke(ExecutionContext context)
+        public virtual async Task InvokeAsync(ExecutionContext context)
         {
             foreach (var invoke in _invokes.Value)
             {
-                await invoke.Execute(context);
+                await invoke.ExecuteAsync(context);
             }
         }
 
@@ -138,11 +138,11 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessage(ExecutionContext context, Message evt)
+        public async Task ProcessExternalMessageAsync(ExecutionContext context, Message evt)
         {
             foreach (var invoke in _invokes.Value)
             {
-                await invoke.ProcessExternalMessage(context, evt);
+                await invoke.ProcessExternalMessageAsync(context, evt);
             }
         }
 
@@ -160,15 +160,15 @@ namespace StateChartsDotNet.Model.States
             return set;
         }
 
-        public async Task Enter(ExecutionContext context,
-                                Set<State> statesForDefaultEntry,
-                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        public async Task EnterAsync(ExecutionContext context,
+                                     Set<State> statesForDefaultEntry,
+                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             context.CheckArgNull(nameof(context));
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            await context.LogInformation($"Enter {this.GetType().Name}: Id {this.Id}");
+            await context.LogInformationAsync($"Enter {this.GetType().Name}: Id {this.Id}");
 
             context.Configuration.Add(this);
 
@@ -183,7 +183,7 @@ namespace StateChartsDotNet.Model.States
 
             if (_onEntry.Value != null)
             {
-                await _onEntry.Value.Execute(context);
+                await _onEntry.Value.ExecuteAsync(context);
             }
 
             if (statesForDefaultEntry.Contains(this))
@@ -192,7 +192,7 @@ namespace StateChartsDotNet.Model.States
 
                 if (transition != null)
                 {
-                    await transition.ExecuteContent(context);
+                    await transition.ExecuteContentAsync(context);
                 }
             }
 
@@ -200,7 +200,7 @@ namespace StateChartsDotNet.Model.States
             {
                 foreach (var content in set)
                 {
-                    await content.Execute(context);
+                    await content.ExecuteAsync(context);
                 }
             }
 
@@ -240,20 +240,20 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task Exit(ExecutionContext context)
+        public async Task ExitAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            await context.LogInformation($"Exit {this.GetType().Name}: Id {this.Id}");
+            await context.LogInformationAsync($"Exit {this.GetType().Name}: Id {this.Id}");
 
             if (_onExit.Value != null)
             {
-                await _onExit.Value.Execute(context);
+                await _onExit.Value.ExecuteAsync(context);
             }
 
             foreach (var invoke in _invokes.Value)
             {
-                await invoke.Cancel(context);
+                await invoke.CancelAsync(context);
             }
 
             context.Configuration.Remove(this);

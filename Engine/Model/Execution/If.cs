@@ -57,26 +57,26 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override async Task _Execute(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var result = ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
 
-            await context.LogDebug($"Condition = {result}");
+            await context.LogDebugAsync($"Condition = {result}");
 
             if (result)
             {
                 foreach (var content in _content.Value)
                 {
-                    await content.Execute(context);
+                    await content.ExecuteAsync(context);
                 }
             }
             else
             {
                 foreach (var elseif in _elseifs.Value)
                 {
-                    if (await elseif.ConditionalExecute(context))
+                    if (await elseif.ConditionalExecuteAsync(context))
                     {
                         return;
                     }

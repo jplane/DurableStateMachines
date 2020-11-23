@@ -10,7 +10,7 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _Execute(ExecutionContext context)
+        protected override Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 

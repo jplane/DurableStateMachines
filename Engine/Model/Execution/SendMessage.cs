@@ -33,13 +33,13 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override Task _Execute(ExecutionContext context)
+        protected override Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (ISendMessageMetadata) _metadata;
 
-            return context.ExecuteContent(metadata.UniqueId, ec =>
+            return context.ExecuteContentAsync(metadata.UniqueId, async ec =>
             {
                 Debug.Assert(ec != null);
 
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.Model.Execution
                 {
                     var syntheticId = Guid.NewGuid().ToString("N");
 
-                    ec.LogDebug($"Synthentic Id = {syntheticId}");
+                    await ec.LogDebugAsync($"Synthentic Id = {syntheticId}");
 
                     ec.SetDataValue(metadata.IdLocation, syntheticId);
                 }

@@ -23,23 +23,23 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        public async Task<bool> ConditionalExecute(ExecutionContext context)
+        public async Task<bool> ConditionalExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            await context.LogInformation("Start: ElseIf.Execute");
+            await context.LogInformationAsync("Start: ElseIf.Execute");
 
             try
             {
                 var result = _cond(context.ScriptData);
 
-                await context.LogDebug($"Condition = {result}");
+                await context.LogDebugAsync($"Condition = {result}");
 
                 if (result)
                 {
                     foreach (var content in _content.Value)
                     {
-                        await content.Execute(context);
+                        await content.ExecuteAsync(context);
                     }
                 }
 
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.Model.Execution
             }
             finally
             {
-                await context.LogInformation("End: ElseIf.Execute");
+                await context.LogInformationAsync("End: ElseIf.Execute");
             }
         }
     }
