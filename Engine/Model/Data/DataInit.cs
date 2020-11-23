@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model.Data;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 
 namespace StateChartsDotNet.Model.Data

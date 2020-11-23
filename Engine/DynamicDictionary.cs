@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using StateChartsDotNet.Common;
 
 namespace StateChartsDotNet
 {
@@ -44,13 +45,6 @@ namespace StateChartsDotNet
             {
                 return false;
             }
-        }
-
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            _data[binder.Name] = value;
-
-            return true;
         }
     }
 }

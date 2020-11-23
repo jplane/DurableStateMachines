@@ -12,7 +12,7 @@ namespace StateChartsDotNet.Common.Model.States
 
         string GetType(dynamic data);
         object GetContent(dynamic data);
-        IReadOnlyDictionary<string, Func<dynamic, object>> GetParams();
+        IReadOnlyDictionary<string, object> GetParams(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
      }
 }

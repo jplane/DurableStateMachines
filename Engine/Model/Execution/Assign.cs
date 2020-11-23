@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model.Execution;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model.Execution;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.Execution

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
 
 namespace StateChartsDotNet.Model.States

@@ -1,6 +1,7 @@
 ﻿using DurableTask.Core;
 using System;
 using System.Threading.Tasks;
+using StateChartsDotNet.Common;
 
 namespace StateChartsDotNet.DurableTask
 {

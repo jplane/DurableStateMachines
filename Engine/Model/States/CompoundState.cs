@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
 
 namespace StateChartsDotNet.Model.States

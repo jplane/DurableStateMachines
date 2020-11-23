@@ -44,12 +44,12 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return _getContentValue.Value(data);
         }
 
-        public IReadOnlyDictionary<string, Func<dynamic, object>> GetParams()
+        public IReadOnlyDictionary<string, object> GetParams(dynamic data)
         {
             var nodes = _element.ScxmlElement("donedata").ScxmlElements("param");
 
-            return new ReadOnlyDictionary<string, Func<dynamic, object>>(
-                nodes.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
+            return new ReadOnlyDictionary<string, object>(
+                nodes.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => p.GetValue(data)));
         }
     }
 }

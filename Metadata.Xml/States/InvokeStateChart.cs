@@ -158,7 +158,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return _getContentValue.Value(data);
         }
 
-        public IReadOnlyDictionary<string, Func<dynamic, object>> GetParams()
+        public IReadOnlyDictionary<string, object> GetParams(dynamic data)
         {
             var nodes = _element.ScxmlElements("param");
 
@@ -167,16 +167,18 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
             }
 
+            IEnumerable<ParamMetadata> parms;
+
             if (this.Namelist.Any())
             {
-                return new ReadOnlyDictionary<string, Func<dynamic, object>>(
-                    this.Namelist.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
+                parms = this.Namelist.Select(n => new ParamMetadata(n));
             }
             else
             {
-                return new ReadOnlyDictionary<string, Func<dynamic, object>>(
-                    nodes.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
+                parms = nodes.Select(n => new ParamMetadata(n));
             }
+
+            return new ReadOnlyDictionary<string, object>(parms.ToDictionary(p => p.Name, p => p.GetValue(data)));
         }
     }
 }

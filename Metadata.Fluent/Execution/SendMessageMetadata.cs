@@ -44,9 +44,21 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
+        public SendMessageMetadata<TParent> Delay(TimeSpan timespan)
+        {
+            _delayGetter = _ => timespan;
+            return this;
+        }
+
         public SendMessageMetadata<TParent> Delay(Func<dynamic, TimeSpan> getter)
         {
             _delayGetter = getter;
+            return this;
+        }
+
+        public SendMessageMetadata<TParent> MessageName(string messageName)
+        {
+            _messageNameGetter = _ => messageName;
             return this;
         }
 
@@ -56,15 +68,33 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
+        public SendMessageMetadata<TParent> Target(string target)
+        {
+            _targetGetter = _ => target;
+            return this;
+        }
+
         public SendMessageMetadata<TParent> Target(Func<dynamic, string> getter)
         {
             _targetGetter = getter;
             return this;
         }
 
+        public SendMessageMetadata<TParent> Type(string type)
+        {
+            _typeGetter = _ => type;
+            return this;
+        }
+
         public SendMessageMetadata<TParent> Type(Func<dynamic, string> getter)
         {
             _typeGetter = getter;
+            return this;
+        }
+
+        public SendMessageMetadata<TParent> Content(object content)
+        {
+            _contentGetter = _ => content;
             return this;
         }
 
@@ -97,9 +127,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         object ISendMessageMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
 
-        IReadOnlyDictionary<string, Func<dynamic, object>> ISendMessageMetadata.GetParams() =>
-            new ReadOnlyDictionary<string, Func<dynamic, object>>(
-                _params.ToDictionary(p => p.Name, p => (Func<dynamic, object>) p.GetValue));
+        IReadOnlyDictionary<string, object> ISendMessageMetadata.GetParams(dynamic data) =>
+            new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
 
         string ISendMessageMetadata.GetTarget(dynamic data) => _targetGetter?.Invoke(data);
 

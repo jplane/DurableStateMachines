@@ -79,8 +79,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         object IFinalStateMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
 
-        IReadOnlyDictionary<string, Func<dynamic, object>> IFinalStateMetadata.GetParams() =>
-            new ReadOnlyDictionary<string, Func<dynamic, object>>(
-                _params.ToDictionary(p => p.Name, p => (Func<dynamic, object>)p.GetValue));
+        IReadOnlyDictionary<string, object> IFinalStateMetadata.GetParams(dynamic data) =>
+            new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
     }
 }

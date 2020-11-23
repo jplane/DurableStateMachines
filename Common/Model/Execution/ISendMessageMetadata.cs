@@ -13,6 +13,6 @@ namespace StateChartsDotNet.Common.Model.Execution
         string GetTarget(dynamic data);
         string GetMessageName(dynamic data);
         object GetContent(dynamic data);
-        IReadOnlyDictionary<string, Func<dynamic, object>> GetParams();
+        IReadOnlyDictionary<string, object> GetParams(dynamic data);
     }
 }

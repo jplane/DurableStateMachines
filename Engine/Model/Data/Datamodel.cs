@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Data;
 
 namespace StateChartsDotNet.Model.Data
