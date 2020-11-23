@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StateChartsDotNet.CoreEngine;
-using StateChartsDotNet.CoreEngine.ModelProvider.Xml.States;
-using System;
+using StateChartsDotNet;
+using StateChartsDotNet.Metadata.Xml.States;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 

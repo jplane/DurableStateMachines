@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StateChartsDotNet.CoreEngine;
-using StateChartsDotNet.CoreEngine.ModelProvider.Fluent.Execution;
-using StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using StateChartsDotNet;
+using StateChartsDotNet.Metadata.Fluent.States;
 using System.Threading.Tasks;
 
 namespace Tests

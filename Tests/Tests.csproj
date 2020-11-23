@@ -2,15 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>StateChartsDotNet.Tests</AssemblyName>
+    <RootNamespace>StateChartsDotNet.Tests</RootNamespace>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CoreEngine.Abstractions\CoreEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\CoreEngine.DurableTask\CoreEngine.DurableTask.csproj" />
-    <ProjectReference Include="..\CoreEngine.ModelProvider.Fluent\CoreEngine.ModelProvider.Fluent.csproj" />
-    <ProjectReference Include="..\CoreEngine.ModelProvider.Xml\CoreEngine.ModelProvider.Xml.csproj" />
-    <ProjectReference Include="..\CoreEngine\CoreEngine.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.DurableTask.Emulator" Version="2.5.0" />
@@ -19,6 +14,14 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\DurableTask\DurableTask.csproj" />
+    <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\Metadata.Fluent\Metadata.Fluent.csproj" />
+    <ProjectReference Include="..\Metadata.Xml\Metadata.Xml.csproj" />
   </ItemGroup>
   
 </Project>

@@ -1,8 +1,7 @@
 ﻿using DurableTask.Emulator;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StateChartsDotNet.CoreEngine.DurableTask;
-using StateChartsDotNet.CoreEngine.ModelProvider.Fluent.States;
+using StateChartsDotNet.DurableTask;
+using StateChartsDotNet.Metadata.Fluent.States;
 using System;
 using System.Threading.Tasks;
 
