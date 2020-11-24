@@ -30,10 +30,10 @@ namespace StateChartsDotNet.Tests
 
         private static string TrimResult(this string s)
         {
-            return new string(s.SkipWhile(c => c != '{')
-                               .TakeWhile(c => c != '}')
-                               .Append('}')
-                               .ToArray());
+            var start = s.IndexOf('{');
+            var end = s.LastIndexOf('}');
+
+            return s.Substring(start, end - start + 1);
         }
     }
 }
