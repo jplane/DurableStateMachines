@@ -194,7 +194,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<InvokeStateChartMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<InvokeStateChartMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<InvokeStateChartMetadata<TParent>>();
 

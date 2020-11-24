@@ -56,55 +56,55 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<TParent> MessageName(string messageName)
+        internal SendMessageMetadata<TParent> MessageName(string messageName)
         {
             _messageNameGetter = _ => messageName;
             return this;
         }
 
-        public SendMessageMetadata<TParent> MessageName(Func<dynamic, string> getter)
+        internal SendMessageMetadata<TParent> MessageName(Func<dynamic, string> getter)
         {
             _messageNameGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Target(string target)
+        internal SendMessageMetadata<TParent> Target(string target)
         {
             _targetGetter = _ => target;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Target(Func<dynamic, string> getter)
+        internal SendMessageMetadata<TParent> Target(Func<dynamic, string> getter)
         {
             _targetGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Type(string type)
+        internal SendMessageMetadata<TParent> Type(string type)
         {
             _typeGetter = _ => type;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Type(Func<dynamic, string> getter)
+        internal SendMessageMetadata<TParent> Type(Func<dynamic, string> getter)
         {
             _typeGetter = getter;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Content(object content)
+        internal SendMessageMetadata<TParent> Content(object content)
         {
             _contentGetter = _ => content;
             return this;
         }
 
-        public SendMessageMetadata<TParent> Content(Func<dynamic, object> getter)
+        internal SendMessageMetadata<TParent> Content(Func<dynamic, object> getter)
         {
             _contentGetter = getter;
             return this;
         }
 
-        public ParamMetadata<SendMessageMetadata<TParent>> Param(string name)
+        internal ParamMetadata<SendMessageMetadata<TParent>> Param(string name)
         {
             var param = new ParamMetadata<SendMessageMetadata<TParent>>(name);
 

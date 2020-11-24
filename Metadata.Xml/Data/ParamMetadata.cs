@@ -13,11 +13,11 @@ namespace StateChartsDotNet.Metadata.Xml.Data
         private readonly Lazy<Func<dynamic, object>> _getExpressionValue;
         private readonly Lazy<string> _uniqueId;
 
-        public ParamMetadata(XElement element)
+        internal ParamMetadata(XElement element)
         {
             this.Name = element.Attribute("name").Value;
-            _location = element.Attribute("location")?.Value ?? string.Empty;
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
+            _location = element.Attribute("location")?.Value;
+            _expression = element.Attribute("expr")?.Value;
 
             _getExpressionValue = new Lazy<Func<dynamic, object>>(() =>
             {
@@ -46,16 +46,15 @@ namespace StateChartsDotNet.Metadata.Xml.Data
 
         public object GetValue(dynamic data)
         {
-
-            if (string.IsNullOrWhiteSpace(_location) && string.IsNullOrWhiteSpace(_expression))
+            if (_location == null && _expression == null)
             {
                 throw new ModelValidationException("Param location or expression must be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(_location) && !string.IsNullOrWhiteSpace(_expression))
+            else if (_location != null && _expression != null)
             {
                 throw new ModelValidationException("Only one of param location and expression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(_location))
+            else if (_location != null)
             {
                 return data[_location];
             }

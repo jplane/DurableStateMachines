@@ -8,7 +8,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
     {
         private readonly Lazy<Func<dynamic, object>> _executor;
 
-        public ScriptMetadata(XElement element)
+        internal ScriptMetadata(XElement element)
             : base(element)
         {
             _executor = new Lazy<Func<dynamic, object>>(() =>

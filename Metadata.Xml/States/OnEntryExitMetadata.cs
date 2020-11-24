@@ -13,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
 
-        public OnEntryExitMetadata(XElement element)
+        internal OnEntryExitMetadata(XElement element)
         {
             _element = element;
 

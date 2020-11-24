@@ -11,7 +11,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
     {
         private readonly Lazy<Func<dynamic, IEnumerable>> _arrayGetter;
 
-        public ForeachMetadata(XElement element)
+        internal ForeachMetadata(XElement element)
             : base(element)
         {
             _arrayGetter = new Lazy<Func<dynamic, IEnumerable>>(() =>

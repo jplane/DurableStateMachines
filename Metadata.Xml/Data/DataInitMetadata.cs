@@ -13,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Xml.Data
         private readonly Lazy<Func<dynamic, object>> _getter;
         private readonly Lazy<string> _uniqueId;
 
-        public DataInitMetadata(XElement element)
+        internal DataInitMetadata(XElement element)
         {
             element.CheckArgNull(nameof(element));
 

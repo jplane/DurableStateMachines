@@ -14,7 +14,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         private readonly Lazy<Func<dynamic, object>> _getContentValue;
 
-        public FinalStateMetadata(XElement element)
+        internal FinalStateMetadata(XElement element)
             : base(element)
         {
             _getContentValue = new Lazy<Func<dynamic, object>>(() =>

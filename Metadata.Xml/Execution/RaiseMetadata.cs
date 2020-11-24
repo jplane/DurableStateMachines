@@ -5,7 +5,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 {
     public class RaiseMetadata : ExecutableContentMetadata, IRaiseMetadata
     {
-        public RaiseMetadata(XElement element)
+        internal RaiseMetadata(XElement element)
             : base(element)
         {
         }

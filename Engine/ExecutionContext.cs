@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
-using System.Runtime.CompilerServices;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.ExternalServices;
-
-[assembly: InternalsVisibleTo("StateChartsDotNet.DurableTask")]
+using StateChartsDotNet.Services.Http;
 
 namespace StateChartsDotNet
 {

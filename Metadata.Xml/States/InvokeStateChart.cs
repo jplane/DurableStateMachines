@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         private readonly Lazy<Func<dynamic, object>> _getContentValue;
         private readonly Lazy<Func<dynamic, string>> _getTypeValue;
 
-        public InvokeStateChart(XElement element)
+        internal InvokeStateChart(XElement element)
         {
             _element = element;
 

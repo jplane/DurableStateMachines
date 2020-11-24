@@ -8,7 +8,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
     {
         private readonly Lazy<Func<dynamic, string>> _messageGetter;
 
-        public LogMetadata(XElement element)
+        internal LogMetadata(XElement element)
             : base(element)
         {
             _messageGetter = new Lazy<Func<dynamic, string>>(() =>

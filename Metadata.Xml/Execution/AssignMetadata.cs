@@ -8,7 +8,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
     {
         private readonly Lazy<Func<dynamic, object>> _getter;
 
-        public AssignMetadata(XElement element)
+        internal AssignMetadata(XElement element)
             : base(element)
         {
             _getter = new Lazy<Func<dynamic, object>>(() =>

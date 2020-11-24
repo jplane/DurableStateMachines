@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StateChartsDotNet;
+using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Xml.States;
+using StateChartsDotNet.Services;
+using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Tests
+namespace StateChartsDotNet.Tests
 {
     [TestClass]
     public class XmlTests
@@ -58,6 +60,46 @@ namespace Tests
             await interpreter.RunAsync(context);
 
             Assert.AreEqual(15, context["sum"]);
+        }
+
+        [TestMethod]
+        public async Task HttpPost()
+        {
+            var listenerTask = Task.Run(() => InProcWebServer.RunAsync("http://localhost:4444/"));
+
+            var xmldoc = @"<?xml version='1.0'?>
+                           <scxml xmlns='http://www.w3.org/2005/07/scxml'
+                                  version='1.0'
+                                  datamodel='csharp'>
+                               <state id='state1'>
+                                   <onentry>
+                                       <http-post>
+                                           <url>http://localhost:4444/</url>
+                                           <body>
+                                             { value: 5 }
+                                           </body>
+                                       </http-post>
+                                   </onentry>
+                                   <transition target='alldone' />
+                               </state>
+                               <final id='alldone' />
+                           </scxml>";
+
+            StateChart.ServiceResolver = XmlResolver.Resolve;
+
+            var machine = new StateChart(XDocument.Parse(xmldoc));
+
+            var context = new ExecutionContext(machine, _logger);
+
+            var interpreter = new Interpreter();
+
+            await interpreter.RunAsync(context);
+
+            var json = (await listenerTask).TrimResult();
+
+            var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
+
+            Assert.AreEqual(5, content.value);
         }
 
         [TestMethod]

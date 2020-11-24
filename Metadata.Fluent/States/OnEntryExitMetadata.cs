@@ -139,7 +139,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<OnEntryExitMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<OnEntryExitMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<OnEntryExitMetadata<TParent>>();
 

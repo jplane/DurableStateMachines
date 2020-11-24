@@ -7,7 +7,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 {
     public class HistoryStateMetadata : StateMetadata, IHistoryStateMetadata
     {
-        public HistoryStateMetadata(XElement element)
+        internal HistoryStateMetadata(XElement element)
             : base(element)
         {
         }

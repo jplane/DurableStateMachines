@@ -12,7 +12,7 @@ namespace StateChartsDotNet.Metadata.Xml.Data
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
 
-        public DatamodelMetadata(XElement element)
+        internal DatamodelMetadata(XElement element)
         {
             _element = element;
 

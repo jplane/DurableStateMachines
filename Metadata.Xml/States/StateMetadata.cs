@@ -13,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         protected readonly XElement _element;
 
-        protected StateMetadata(XElement element)
+        internal StateMetadata(XElement element)
         {
             _element = element;
         }

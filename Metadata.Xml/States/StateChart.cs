@@ -12,6 +12,8 @@ namespace StateChartsDotNet.Metadata.Xml.States
 {
     public class StateChart : StateMetadata, IRootStateMetadata
     {
+        public static Func<XElement, SendMessageMetadata> ServiceResolver = null;
+
         public StateChart(XDocument document)
             : base(document.Root)
         {

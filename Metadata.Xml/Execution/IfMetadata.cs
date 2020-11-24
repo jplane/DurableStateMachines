@@ -11,7 +11,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         private readonly Lazy<Func<dynamic, bool>> _ifCondition;
         private readonly Lazy<Func<dynamic, bool>[]> _elseIfConditions;
 
-        public IfMetadata(XElement element)
+        internal IfMetadata(XElement element)
             : base(element)
         {
             _ifCondition = new Lazy<Func<dynamic, bool>>(() =>
