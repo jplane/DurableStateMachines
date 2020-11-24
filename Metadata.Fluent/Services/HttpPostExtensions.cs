@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace StateChartsDotNet.Services.Http
+namespace StateChartsDotNet.Services.HttpPost
 {
-    public static class FluentExtensions
+    public static class HttpPostExtensions
     {
         public static SendMessageMetadata<OnEntryExitMetadata<TParent>> HttpPost<TParent>(this OnEntryExitMetadata<TParent> metadata)
             where TParent : IModelMetadata

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Services.Http;
+using StateChartsDotNet.Services;
 
 namespace StateChartsDotNet
 {

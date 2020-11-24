@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Services.Http
+namespace StateChartsDotNet.Metadata.Xml.Services
 {
-    public class XmlMetadata : SendMessageMetadata
+    public class HttpPostMetadata : SendMessageMetadata
     {
         private readonly XElement _synthetic;
 
-        public XmlMetadata(XElement element)
+        internal HttpPostMetadata(XElement element)
             : base(element)
         {
             var items = new List<object>();

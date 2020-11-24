@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Fluent.States;
-using StateChartsDotNet.Services.Http;
+using StateChartsDotNet.Services.HttpPost;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests

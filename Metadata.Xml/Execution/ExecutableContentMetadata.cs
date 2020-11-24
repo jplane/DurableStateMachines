@@ -1,7 +1,7 @@
 ﻿using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Metadata.Xml.States;
+using StateChartsDotNet.Metadata.Xml.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,7 +46,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
                 "log" => new LogMetadata(element),
                 "cancel" => new CancelMetadata(element),
                 "assign" => new AssignMetadata(element),
-                _ => StateChart.ServiceResolver(element),
+                _ => Resolver.Resolve(element),
             };
 
             Debug.Assert(content != null);

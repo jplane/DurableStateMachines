@@ -8,9 +8,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Services.Http
+namespace StateChartsDotNet.Services
 {
-    public static class HttpService
+    internal static class HttpService
     {
         private static HttpClient _client = new HttpClient();
 

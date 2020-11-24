@@ -85,8 +85,6 @@ namespace StateChartsDotNet.Tests
                                <final id='alldone' />
                            </scxml>";
 
-            StateChart.ServiceResolver = XmlResolver.Resolve;
-
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
             var context = new ExecutionContext(machine, _logger);
