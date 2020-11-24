@@ -1,10 +1,6 @@
 ﻿using EmbedIO;
 using EmbedIO.Actions;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
@@ -28,11 +24,11 @@ namespace StateChartsDotNet.Tests
             {
                 server.RunAsync();
 
-                return await completion.Task;
+                return (await completion.Task).TrimResult();
             }
         }
 
-        public static string TrimResult(this string s)
+        private static string TrimResult(this string s)
         {
             return new string(s.SkipWhile(c => c != '{')
                                .TakeWhile(c => c != '}')

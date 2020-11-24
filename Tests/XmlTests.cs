@@ -93,7 +93,7 @@ namespace StateChartsDotNet.Tests
 
             await interpreter.RunAsync(context);
 
-            var json = (await listenerTask).TrimResult();
+            var json = await listenerTask;
 
             var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
 
