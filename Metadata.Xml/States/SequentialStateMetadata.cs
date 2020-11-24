@@ -7,7 +7,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 {
     public class SequentialStateMetadata : StateMetadata, ISequentialStateMetadata
     {
-        public SequentialStateMetadata(XElement element)
+        internal SequentialStateMetadata(XElement element)
             : base(element)
         {
         }

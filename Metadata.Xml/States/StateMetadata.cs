@@ -1,7 +1,7 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Xml.DataManipulation;
+using StateChartsDotNet.Metadata.Xml.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         protected readonly XElement _element;
 
-        protected StateMetadata(XElement element)
+        internal StateMetadata(XElement element)
         {
             _element = element;
         }

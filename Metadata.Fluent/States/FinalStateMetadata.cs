@@ -1,14 +1,17 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Fluent.DataManipulation;
+using StateChartsDotNet.Metadata.Fluent.Data;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
     public sealed class FinalStateMetadata<TParent> : StateMetadata, IFinalStateMetadata where TParent : IStateMetadata
     {
-        private ContentMetadata<FinalStateMetadata<TParent>> _content;
+        private Func<dynamic, object> _contentGetter;
         private OnEntryExitMetadata<FinalStateMetadata<TParent>> _onEntry;
         private OnEntryExitMetadata<FinalStateMetadata<TParent>> _onExit;
 
@@ -55,20 +58,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return _onExit;
         }
 
-        public ContentMetadata<FinalStateMetadata<TParent>> Content()
+        public FinalStateMetadata<TParent> Content(Func<dynamic, object> getter)
         {
-            _content = new ContentMetadata<FinalStateMetadata<TParent>>();
-
-            _content.Parent = this;
-
-            _content.UniqueId = $"{((IModelMetadata)this).UniqueId}.Content";
-
-            return _content;
+            _contentGetter = getter;
+            return this;
         }
 
-        public ParamMetadata<FinalStateMetadata<TParent>> Param()
+        public ParamMetadata<FinalStateMetadata<TParent>> Param(string name)
         {
-            var param = new ParamMetadata<FinalStateMetadata<TParent>>();
+            var param = new ParamMetadata<FinalStateMetadata<TParent>>(name);
 
             param.Parent = this;
 
@@ -79,8 +77,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return param;
         }
 
-        IContentMetadata IFinalStateMetadata.GetContent() => _content;
+        object IFinalStateMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
 
-        IEnumerable<IParamMetadata> IFinalStateMetadata.GetParams() => _params;
+        IReadOnlyDictionary<string, object> IFinalStateMetadata.GetParams(dynamic data) =>
+            new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
     }
 }

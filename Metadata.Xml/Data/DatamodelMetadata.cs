@@ -1,18 +1,18 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Metadata.Xml.DataManipulation
+namespace StateChartsDotNet.Metadata.Xml.Data
 {
     public class DatamodelMetadata : IDatamodelMetadata
     {
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
 
-        public DatamodelMetadata(XElement element)
+        internal DatamodelMetadata(XElement element)
         {
             _element = element;
 

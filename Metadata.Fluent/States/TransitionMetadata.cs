@@ -170,7 +170,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public SendMessageMetadata<TransitionMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<TransitionMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<TransitionMetadata<TParent>>();
 

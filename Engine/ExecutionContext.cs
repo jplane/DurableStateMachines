@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
-using System.Runtime.CompilerServices;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
-
-[assembly: InternalsVisibleTo("StateChartsDotNet.DurableTask")]
+using StateChartsDotNet.Services;
 
 namespace StateChartsDotNet
 {
@@ -19,6 +17,7 @@ namespace StateChartsDotNet
         protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
 
+        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<Message> _internalMessages;
         private readonly AsyncProducerConsumerQueue<Message> _externalMessages;
@@ -39,6 +38,9 @@ namespace StateChartsDotNet
             _externalMessages = new AsyncProducerConsumerQueue<Message>();
             _configuration = new Set<State>();
             _statesToInvoke = new Set<State>();
+
+            _externalServices = new Dictionary<string, ExternalServiceDelegate>();
+            _externalServices.Add("http-post", HttpService.PostAsync);
         }
 
         public bool IsRunning { get; internal set; }
@@ -56,6 +58,14 @@ namespace StateChartsDotNet
 
                 _data[key] = value;
             }
+        }
+
+        public void ConfigureExternalService(string id, ExternalServiceDelegate handler)
+        {
+            id.CheckArgNull(nameof(id));
+            handler.CheckArgNull(nameof(handler));
+
+            _externalServices[id] = handler;
         }
 
         public void Stop()
@@ -81,6 +91,18 @@ namespace StateChartsDotNet
         public virtual void Send(Message message)
         {
             _externalMessages.Enqueue(message);
+        }
+
+        internal ExternalServiceDelegate GetExternalService(string id)
+        {
+            id.CheckArgNull(nameof(id));
+
+            if (_externalServices.TryGetValue(id, out ExternalServiceDelegate service))
+            {
+                return service;
+            }
+
+            return null;
         }
 
         internal virtual Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
@@ -151,7 +173,7 @@ namespace StateChartsDotNet
 
             _internalMessages.Enqueue(evt);
 
-            _logger.LogError("Communication error", ex);
+            _logger?.LogError("Communication error", ex);
         }
 
         internal void EnqueueExecutionError(Exception ex)
@@ -165,7 +187,7 @@ namespace StateChartsDotNet
 
             _internalMessages.Enqueue(evt);
 
-            _logger.LogError("Execution error", ex);
+            _logger?.LogError("Execution error", ex);
         }
 
         internal bool HasInternalMessages => _internalMessages.Count > 0;

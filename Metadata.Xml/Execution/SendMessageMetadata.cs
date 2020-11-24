@@ -1,22 +1,24 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Metadata.Xml.DataManipulation;
+using StateChartsDotNet.Metadata.Xml.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.Execution
 {
-    public class SendMessageMetadata : ExecutableContentMetadata, ISendMessageMetadata
+    public abstract class SendMessageMetadata : ExecutableContentMetadata, ISendMessageMetadata
     {
         private readonly Lazy<Func<dynamic, string>> _getType;
         private readonly Lazy<Func<dynamic, string>> _getMessageName;
         private readonly Lazy<Func<dynamic, string>> _getTarget;
         private readonly Lazy<Func<dynamic, string>> _getDelay;
+        private readonly Lazy<Func<dynamic, object>> _getContentValue;
 
-        public SendMessageMetadata(XElement element)
+        internal SendMessageMetadata(XElement element)
             : base(element)
         {
             _getType = new Lazy<Func<dynamic, string>>(() =>
@@ -38,73 +40,79 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
             {
                 return ExpressionCompiler.Compile<string>(this.DelayExpression);
             });
+
+            _getContentValue = new Lazy<Func<dynamic, object>>(() =>
+            {
+                var node = this.Element.ScxmlElement("content");
+
+                if (node == null)
+                {
+                    return _ => string.Empty;
+                }
+
+                var expression = node.Attribute("expr")?.Value;
+
+                if (!string.IsNullOrWhiteSpace(expression))
+                {
+                    return ExpressionCompiler.Compile<object>(expression);
+                }
+                else
+                {
+                    return _ => node.Value ?? string.Empty;
+                }
+            });
         }
 
-        public string Id => _element.Attribute("id")?.Value ?? string.Empty;
+        protected abstract XElement Element { get; }
 
-        public string IdLocation => _element.Attribute("idlocation")?.Value ?? string.Empty;
+        public string Id => this.Element.Attribute("id")?.Value;
 
-        private string Message => _element.Attribute("event")?.Value ?? string.Empty;
+        public string IdLocation => this.Element.Attribute("idlocation")?.Value;
 
-        private string MessageExpression => _element.Attribute("eventexpr")?.Value ?? string.Empty;
+        private string Message => this.Element.Attribute("event")?.Value;
 
-        private string Target => _element.Attribute("target")?.Value ?? string.Empty;
+        private string MessageExpression => this.Element.Attribute("eventexpr")?.Value;
 
-        private string TargetExpression => _element.Attribute("targetexpr")?.Value ?? string.Empty;
+        private string Target => this.Element.Attribute("target")?.Value;
 
-        private string Type => _element.Attribute("type")?.Value ?? string.Empty;
+        private string TargetExpression => this.Element.Attribute("targetexpr")?.Value;
 
-        private string TypeExpression => _element.Attribute("typeexpr")?.Value ?? string.Empty;
+        private string Type => this.Element.Attribute("type")?.Value;
 
-        private string Delay => _element.Attribute("delay")?.Value ?? string.Empty;
+        private string TypeExpression => this.Element.Attribute("typeexpr")?.Value;
 
-        private string DelayExpression => _element.Attribute("delayexpr")?.Value ?? string.Empty;
+        private string Delay => this.Element.Attribute("delay")?.Value;
+
+        private string DelayExpression => this.Element.Attribute("delayexpr")?.Value;
 
         private IEnumerable<string> Namelist
         {
-            get => (_element.Attribute("eventexpr")?.Value ?? string.Empty).Split(" ");
-        }
-
-        public IContentMetadata GetContent()
-        {
-            var node = _element.ScxmlElement("content");
-
-            return node == null ? null : (IContentMetadata) new ContentMetadata(node);
-        }
-
-        public IEnumerable<IParamMetadata> GetParams()
-        {
-            var nodes = _element.ScxmlElements("param");
-
-            if (!this.Namelist.Any() && !nodes.Any())
+            get
             {
-                throw new ModelValidationException("Service namelist or <params> must be specified.");
-            }
-            else if (this.Namelist.Any() && nodes.Any())
-            {
-                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
-            }
-            else if (this.Namelist.Any())
-            {
-                return this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
-            }
-            else
-            {
-                return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
+                var namelist = this.Element.Attribute("namelist")?.Value;
+                
+                if (namelist != null)
+                {
+                    return namelist.Split(" ");
+                }
+                else
+                {
+                    return Enumerable.Empty<string>();
+                }
             }
         }
 
         public string GetType(dynamic data)
         {
-            if (string.IsNullOrWhiteSpace(this.Type) && string.IsNullOrWhiteSpace(this.TypeExpression))
+            if (this.Type == null && this.TypeExpression == null)
             {
                 throw new ModelValidationException("Service type or typeExpression must be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Type) && !string.IsNullOrWhiteSpace(this.TypeExpression))
+            else if (this.Type != null && this.TypeExpression != null)
             {
                 throw new ModelValidationException("Only one of service type and typeExpression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Type))
+            else if (this.Type != null)
             {
                 return this.Type;
             }
@@ -116,35 +124,35 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
         public string GetMessageName(dynamic data)
         {
-            if (string.IsNullOrWhiteSpace(this.Message) && string.IsNullOrWhiteSpace(this.MessageExpression))
-            {
-                throw new ModelValidationException("Service event or eventExpression must be specified.");
-            }
-            else if (!string.IsNullOrWhiteSpace(this.Message) && !string.IsNullOrWhiteSpace(this.MessageExpression))
+            if (this.Message != null && this.MessageExpression != null)
             {
                 throw new ModelValidationException("Only one of service event and eventExpression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Message))
+            else if (this.Message != null)
             {
                 return this.Message;
             }
-            else
+            else if (this.MessageExpression != null)
             {
                 return _getMessageName.Value(data);
+            }
+            else
+            {
+                return null;
             }
         }
 
         public string GetTarget(dynamic data)
         {
-            if (string.IsNullOrWhiteSpace(this.Target) && string.IsNullOrWhiteSpace(this.TargetExpression))
+            if (this.Target == null && this.TargetExpression == null)
             {
                 throw new ModelValidationException("Service target or targetExpression must be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Target) && !string.IsNullOrWhiteSpace(this.TargetExpression))
+            else if (this.Target != null && this.TargetExpression != null)
             {
                 throw new ModelValidationException("Only one of service target and targetExpression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(this.Target))
+            else if (this.Target != null)
             {
                 return this.Target;
             }
@@ -156,11 +164,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
         public TimeSpan GetDelay(dynamic data)
         {
-            if (string.IsNullOrWhiteSpace(this.Delay) && string.IsNullOrWhiteSpace(this.DelayExpression))
-            {
-                throw new ModelValidationException("Service delay or delayExpression must be specified.");
-            }
-            else if (!string.IsNullOrWhiteSpace(this.Delay) && !string.IsNullOrWhiteSpace(this.DelayExpression))
+            if (this.Delay != null && this.DelayExpression != null)
             {
                 throw new ModelValidationException("Only one of service delay and delayExpression can be specified.");
             }
@@ -168,10 +172,42 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
             {
                 return TimeSpan.Parse(this.Delay);
             }
-            else
+            else if (this.DelayExpression != null)
             {
                 return TimeSpan.Parse(_getDelay.Value(data));
             }
+            else
+            {
+                return TimeSpan.Zero;
+            }
+        }
+
+        public object GetContent(dynamic data)
+        {
+            return _getContentValue.Value(data);
+        }
+
+        public IReadOnlyDictionary<string, object> GetParams(dynamic data)
+        {
+            var nodes = this.Element.ScxmlElements("param");
+
+            if (this.Namelist.Any() && nodes.Any())
+            {
+                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
+            }
+
+            IEnumerable<ParamMetadata> parms;
+
+            if (this.Namelist.Any())
+            {
+                parms = this.Namelist.Select(n => new ParamMetadata(n));
+            }
+            else
+            {
+                parms = nodes.Select(n => new ParamMetadata(n));
+            }
+
+            return new ReadOnlyDictionary<string, object>(parms.ToDictionary(p => p.Name, p => p.GetValue(data)));
         }
     }
 }

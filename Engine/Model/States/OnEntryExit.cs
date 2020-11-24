@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using System;

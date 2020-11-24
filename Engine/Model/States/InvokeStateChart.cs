@@ -1,4 +1,4 @@
-﻿using StateChartsDotNet.Model.DataManipulation;
+﻿using StateChartsDotNet.Model.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,9 +12,7 @@ namespace StateChartsDotNet.Model.States
     {
         private readonly IInvokeStateChartMetadata _metadata;
         private readonly string _parentId;
-        private readonly Lazy<Content> _content;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
-        private readonly Lazy<Param[]> _params;
 
         public InvokeStateChart(IInvokeStateChartMetadata metadata, State parent)
         {
@@ -24,24 +22,9 @@ namespace StateChartsDotNet.Model.States
             _metadata = metadata;
             _parentId = parent.Id;
 
-            _content = new Lazy<Content>(() =>
-            {
-                var meta = metadata.GetContent();
-
-                if (meta != null)
-                    return new Content(meta);
-                else
-                    return null;
-            });
-
             _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
                 return metadata.GetFinalizeExecutableContent().Select(ExecutableContent.Create).ToArray();
-            });
-
-            _params = new Lazy<Param[]>(() =>
-            {
-                return _metadata.GetParams().Select(pm => new Param(pm)).ToArray();
             });
         }
 

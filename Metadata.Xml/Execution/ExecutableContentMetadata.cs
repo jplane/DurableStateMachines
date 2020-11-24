@@ -1,5 +1,7 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
+using StateChartsDotNet.Metadata.Xml.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,40 +37,17 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
             IExecutableContentMetadata content = null;
 
-            switch (element.Name.LocalName)
+            content = element.Name.LocalName switch
             {
-                case "if":
-                    content = new IfMetadata(element);
-                    break;
-
-                case "raise":
-                    content = new RaiseMetadata(element);
-                    break;
-
-                case "script":
-                    content = new ScriptMetadata(element);
-                    break;
-
-                case "foreach":
-                    content = new ForeachMetadata(element);
-                    break;
-
-                case "log":
-                    content = new LogMetadata(element);
-                    break;
-
-                case "send":
-                    content = new SendMessageMetadata(element);
-                    break;
-
-                case "cancel":
-                    content = new CancelMetadata(element);
-                    break;
-
-                case "assign":
-                    content = new AssignMetadata(element);
-                    break;
-            }
+                "if" => new IfMetadata(element),
+                "raise" => new RaiseMetadata(element),
+                "script" => new ScriptMetadata(element),
+                "foreach" => new ForeachMetadata(element),
+                "log" => new LogMetadata(element),
+                "cancel" => new CancelMetadata(element),
+                "assign" => new AssignMetadata(element),
+                _ => Resolver.Resolve(element),
+            };
 
             Debug.Assert(content != null);
 

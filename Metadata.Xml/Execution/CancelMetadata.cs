@@ -5,7 +5,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 {
     public class CancelMetadata : ExecutableContentMetadata, ICancelMetadata
     {
-        public CancelMetadata(XElement element)
+        internal CancelMetadata(XElement element)
             : base(element)
         {
         }

@@ -1,10 +1,11 @@
-﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Metadata.Xml.DataManipulation
+namespace StateChartsDotNet.Metadata.Xml.Data
 {
     public class DataInitMetadata : IDataInitMetadata
     {
@@ -12,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Xml.DataManipulation
         private readonly Lazy<Func<dynamic, object>> _getter;
         private readonly Lazy<string> _uniqueId;
 
-        public DataInitMetadata(XElement element)
+        internal DataInitMetadata(XElement element)
         {
             element.CheckArgNull(nameof(element));
 

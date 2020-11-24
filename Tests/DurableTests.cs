@@ -5,7 +5,7 @@ using StateChartsDotNet.Metadata.Fluent.States;
 using System;
 using System.Threading.Tasks;
 
-namespace Tests
+namespace StateChartsDotNet.Tests
 {
     [TestClass]
     public class DurableTests

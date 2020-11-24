@@ -1,23 +1,23 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Metadata.Xml.DataManipulation
+namespace StateChartsDotNet.Metadata.Xml.Data
 {
-    public class ParamMetadata : IParamMetadata
+    public class ParamMetadata
     {
         private readonly string _location;
         private readonly string _expression;
         private readonly Lazy<Func<dynamic, object>> _getExpressionValue;
         private readonly Lazy<string> _uniqueId;
 
-        public ParamMetadata(XElement element)
+        internal ParamMetadata(XElement element)
         {
             this.Name = element.Attribute("name").Value;
-            _location = element.Attribute("location")?.Value ?? string.Empty;
-            _expression = element.Attribute("expr")?.Value ?? string.Empty;
+            _location = element.Attribute("location")?.Value;
+            _expression = element.Attribute("expr")?.Value;
 
             _getExpressionValue = new Lazy<Func<dynamic, object>>(() =>
             {
@@ -37,8 +37,6 @@ namespace StateChartsDotNet.Metadata.Xml.DataManipulation
             _expression = null;
         }
 
-        public string UniqueId => _uniqueId.Value;
-
         public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {
             return true;
@@ -48,16 +46,15 @@ namespace StateChartsDotNet.Metadata.Xml.DataManipulation
 
         public object GetValue(dynamic data)
         {
-
-            if (string.IsNullOrWhiteSpace(_location) && string.IsNullOrWhiteSpace(_expression))
+            if (_location == null && _expression == null)
             {
                 throw new ModelValidationException("Param location or expression must be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(_location) && !string.IsNullOrWhiteSpace(_expression))
+            else if (_location != null && _expression != null)
             {
                 throw new ModelValidationException("Only one of param location and expression can be specified.");
             }
-            else if (!string.IsNullOrWhiteSpace(_location))
+            else if (_location != null)
             {
                 return data[_location];
             }

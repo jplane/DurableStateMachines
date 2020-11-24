@@ -1,11 +1,12 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Xml.DataManipulation;
+using StateChartsDotNet.Metadata.Xml.Data;
 using StateChartsDotNet.Metadata.Xml.Execution;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -15,14 +16,78 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
+        private readonly Lazy<Func<dynamic, object>> _getContentValue;
+        private readonly Lazy<Func<dynamic, string>> _getTypeValue;
 
-        public InvokeStateChart(XElement element)
+        internal InvokeStateChart(XElement element)
         {
             _element = element;
 
             _uniqueId = new Lazy<string>(() =>
             {
                 return element.GetUniqueElementPath();
+            });
+
+            _getContentValue = new Lazy<Func<dynamic, object>>(() =>
+            {
+                var node = _element.ScxmlElement("content");
+
+                if (node == null)
+                {
+                    var src = _element.Attribute("src")?.Value ?? string.Empty;
+                    
+                    if (!string.IsNullOrEmpty(src))
+                    {
+                        return _ => src;
+                    }
+                    else
+                    {
+                        var srcExpression = _element.Attribute("srcexpr")?.Value ?? string.Empty;
+
+                        if (!string.IsNullOrWhiteSpace(srcExpression))
+                        {
+                            return ExpressionCompiler.Compile<object>(srcExpression);
+                        }
+                        else
+                        {
+                            return _ => string.Empty;
+                        }
+                    }
+                }
+
+                var expression = node.Attribute("expr")?.Value;
+
+                if (!string.IsNullOrWhiteSpace(expression))
+                {
+                    return ExpressionCompiler.Compile<object>(expression);
+                }
+                else
+                {
+                    return _ => node.Value ?? string.Empty;
+                }
+            });
+
+            _getTypeValue = new Lazy<Func<dynamic, string>>(() =>
+            {
+                var type = _element.Attribute("type")?.Value ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(type))
+                {
+                    return _ => type;
+                }
+                else
+                {
+                    var typeExpression = _element.Attribute("typeexpr")?.Value ?? string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(typeExpression))
+                    {
+                        return ExpressionCompiler.Compile<string>(typeExpression);
+                    }
+                    else
+                    {
+                        return _ => string.Empty;
+                    }
+                }
             });
         }
 
@@ -71,13 +136,6 @@ namespace StateChartsDotNet.Metadata.Xml.States
             }
         }
 
-        public IContentMetadata GetContent()
-        {
-            var node = _element.ScxmlElement("content");
-
-            return node == null ? null : (IContentMetadata) new ContentMetadata(node);
-        }
-
         public IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent()
         {
             var content = new List<IExecutableContentMetadata>();
@@ -90,26 +148,37 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return content.AsEnumerable();
         }
 
-        public IEnumerable<IParamMetadata> GetParams()
+        public string GetType(dynamic data)
+        {
+            return _getTypeValue.Value(data);
+        }
+
+        public object GetContent(dynamic data)
+        {
+            return _getContentValue.Value(data);
+        }
+
+        public IReadOnlyDictionary<string, object> GetParams(dynamic data)
         {
             var nodes = _element.ScxmlElements("param");
 
-            if (!this.Namelist.Any() && !nodes.Any())
-            {
-                throw new ModelValidationException("Service namelist or <params> must be specified.");
-            }
-            else if (this.Namelist.Any() && nodes.Any())
+            if (this.Namelist.Any() && nodes.Any())
             {
                 throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
             }
-            else if (this.Namelist.Any())
+
+            IEnumerable<ParamMetadata> parms;
+
+            if (this.Namelist.Any())
             {
-                return this.Namelist.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
+                parms = this.Namelist.Select(n => new ParamMetadata(n));
             }
             else
             {
-                return nodes.Select(n => new ParamMetadata(n)).Cast<IParamMetadata>();
+                parms = nodes.Select(n => new ParamMetadata(n));
             }
+
+            return new ReadOnlyDictionary<string, object>(parms.ToDictionary(p => p.Name, p => p.GetValue(data)));
         }
     }
 }

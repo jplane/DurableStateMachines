@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using StateChartsDotNet.Model.DataManipulation;
+using StateChartsDotNet.Common;
 using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.Execution;
 using System.Diagnostics;
@@ -9,28 +9,9 @@ namespace StateChartsDotNet.Model.Execution
 {
     internal class SendMessage : ExecutableContent
     {
-        private readonly Lazy<Content> _content;
-        private readonly Lazy<Param[]> _params;
-
         public SendMessage(ISendMessageMetadata metadata)
             : base(metadata)
         {
-            metadata.CheckArgNull(nameof(metadata));
-
-            _content = new Lazy<Content>(() =>
-            {
-                var meta = metadata.GetContent();
-
-                if (meta != null)
-                    return new Content(meta);
-                else
-                    return null;
-            });
-
-            _params = new Lazy<Param[]>(() =>
-            {
-                return metadata.GetParams().Select(pm => new Param(pm)).ToArray();
-            });
         }
 
         protected override Task _ExecuteAsync(ExecutionContext context)
@@ -52,7 +33,29 @@ namespace StateChartsDotNet.Model.Execution
                     ec.SetDataValue(metadata.IdLocation, syntheticId);
                 }
 
-                throw new NotImplementedException();
+                var type = metadata.GetType(ec.ScriptData);
+
+                if (string.IsNullOrWhiteSpace(type))
+                {
+                    throw new InvalidOperationException("External service type not specified.");
+                }
+
+                var service = ec.GetExternalService(type);
+
+                if (service == null)
+                {
+                    throw new InvalidOperationException($"External service '{type}' configured.");
+                }
+
+                var target = metadata.GetTarget(ec.ScriptData);
+
+                var messageName = metadata.GetMessageName(ec.ScriptData);
+
+                var content = metadata.GetContent(ec.ScriptData);
+
+                var parms = metadata.GetParams(ec.ScriptData);
+
+                await service(target, messageName, content, parms);
             });
         }
     }

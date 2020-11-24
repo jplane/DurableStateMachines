@@ -12,8 +12,7 @@ namespace StateChartsDotNet.DurableTask
     public class DurableExecutionContext : ExecutionContext
     {
         private readonly Action<string, ExecutionContext, Func<ExecutionContext, Task>> _ensureActivityRegistration;
-
-        private OrchestrationContext _orchestrationContext;
+        private readonly OrchestrationContext _orchestrationContext;
 
         public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,

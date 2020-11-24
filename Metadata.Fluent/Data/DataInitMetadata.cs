@@ -1,9 +1,9 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.Metadata.Fluent.DataManipulation
+namespace StateChartsDotNet.Metadata.Fluent.Data
 {
     public sealed class DataInitMetadata<TParent> : IDataInitMetadata where TParent : IDatamodelMetadata
     {

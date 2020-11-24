@@ -156,7 +156,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        public SendMessageMetadata<ForeachMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<ForeachMetadata<TParent>> SendMessage()
         {
             var ec = new SendMessageMetadata<ForeachMetadata<TParent>>();
 

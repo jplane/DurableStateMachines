@@ -7,7 +7,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 {
     public class ParallelStateMetadata : StateMetadata, IParallelStateMetadata
     {
-        public ParallelStateMetadata(XElement element)
+        internal ParallelStateMetadata(XElement element)
             : base(element)
         {
         }

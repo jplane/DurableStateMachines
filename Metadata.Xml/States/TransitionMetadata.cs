@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         private readonly Lazy<Func<dynamic, bool>> _condition;
         private readonly Lazy<string> _uniqueId;
 
-        public TransitionMetadata(XElement element)
+        internal TransitionMetadata(XElement element)
         {
             _element = element;
 

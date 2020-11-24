@@ -1,8 +1,8 @@
 ﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.DataManipulation;
+using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Fluent.DataManipulation;
+using StateChartsDotNet.Metadata.Fluent.Data;
 using StateChartsDotNet.Metadata.Fluent.Execution;
 using System.Collections.Generic;
 using System.Diagnostics;

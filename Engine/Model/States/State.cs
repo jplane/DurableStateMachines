@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using StateChartsDotNet.Model.Execution;
-using StateChartsDotNet.Model.DataManipulation;
+using StateChartsDotNet.Model.Data;
 using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
