@@ -140,7 +140,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         {
             var content = new List<IExecutableContentMetadata>();
 
-            foreach (var node in _element.Elements())
+            foreach (var node in _element.Element("finalize").Elements())
             {
                 content.Add(ExecutableContentMetadata.Create(node));
             }

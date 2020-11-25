@@ -146,5 +146,18 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             return ec;
         }
+
+        internal QueryMetadata<ElseMetadata<TParent>> Query()
+        {
+            var ec = new QueryMetadata<ElseMetadata<TParent>>();
+
+            _executableContent.Add(ec);
+
+            ec.Parent = this;
+
+            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+
+            return ec;
+        }
     }
 }

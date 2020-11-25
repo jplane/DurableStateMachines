@@ -14,6 +14,27 @@ namespace StateChartsDotNet.Services
     {
         private static HttpClient _client = new HttpClient();
 
+        public static async Task<string> GetAsync(string url,
+                                                  IReadOnlyDictionary<string, object> parameters)
+        {
+            url.CheckArgNull(nameof(url));
+            parameters.CheckArgNull(nameof(parameters));
+
+            _client.DefaultRequestHeaders.Clear();
+
+            var queryString = ResolveParameters(parameters);
+
+            var uri = GetUri(url, queryString);
+
+            Debug.Assert(uri != null);
+
+            var response = await Invoke("GET", null, uri);
+
+            Debug.Assert(response != null);
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public static async Task PostAsync(string url,
                                            string ignored,
                                            object content,
@@ -59,8 +80,14 @@ namespace StateChartsDotNet.Services
 
         private static async Task<HttpResponseMessage> Invoke(string verb, object content, Uri uri)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(verb));
+            Debug.Assert(uri != null);
+
             switch (verb.ToUpperInvariant())
             {
+                case "GET":
+                    return await _client.GetAsync(uri);
+
                 case "POST":
 
                     content.CheckArgNull(nameof(content));

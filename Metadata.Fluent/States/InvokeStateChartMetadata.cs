@@ -207,6 +207,19 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return ec;
         }
 
+        internal QueryMetadata<InvokeStateChartMetadata<TParent>> Query()
+        {
+            var ec = new QueryMetadata<InvokeStateChartMetadata<TParent>>();
+
+            _finalizeExecutableContent.Add(ec);
+
+            ec.Parent = this;
+
+            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_finalizeExecutableContent.Count}]";
+
+            return ec;
+        }
+
         bool IInvokeStateChartMetadata.Autoforward => _autoForward;
 
         string IInvokeStateChartMetadata.Id => _id;

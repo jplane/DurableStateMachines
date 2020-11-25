@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Fluent.States;
+using StateChartsDotNet.Queries.HttpGet;
 using StateChartsDotNet.Services.HttpPost;
 using System.Threading.Tasks;
 
@@ -43,7 +44,7 @@ namespace StateChartsDotNet.Tests
         {
             var uri = "http://localhost:4444/";
 
-            var listenerTask = Task.Run(() => InProcWebServer.RunAsync(uri));
+            var listenerTask = Task.Run(() => InProcWebServer.EchoAsync(uri));
 
             var x = 5;
 
@@ -73,6 +74,43 @@ namespace StateChartsDotNet.Tests
             var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
 
             Assert.AreEqual(5, content.value);
+        }
+
+        [TestMethod]
+        public async Task HttpGet()
+        {
+            var uri = "http://localhost:4444/";
+
+            var listenerTask = Task.Run(() => InProcWebServer.JsonResultAsync(uri, new { value = 43 }));
+
+            var machine = StateChart.Define("httptest")
+                                    .AtomicState("state1")
+                                        .OnEntry()
+                                            .HttpGet()
+                                                .Url(uri)
+                                                .ResultLocation("x")
+                                                .Attach()
+                                            .Attach()
+                                        .Transition()
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var context = new ExecutionContext(machine);
+
+            var interpreter = new Interpreter();
+
+            await Task.WhenAll(interpreter.RunAsync(context), listenerTask);
+
+            var json = (string) context["x"];
+
+            Assert.IsNotNull(json);
+
+            var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
+
+            Assert.AreEqual(43, content.value);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace StateChartsDotNet.Tests
         [TestMethod]
         public async Task HttpPost()
         {
-            var listenerTask = Task.Run(() => InProcWebServer.RunAsync("http://localhost:4444/"));
+            var listenerTask = Task.Run(() => InProcWebServer.EchoAsync("http://localhost:4444/"));
 
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
@@ -98,6 +98,45 @@ namespace StateChartsDotNet.Tests
             var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
 
             Assert.AreEqual(5, content.value);
+        }
+
+        [TestMethod]
+        public async Task HttpGet()
+        {
+            var uri = "http://localhost:4444/";
+
+            var listenerTask = Task.Run(() => InProcWebServer.JsonResultAsync(uri, new { value = 43 }));
+
+            var xmldoc = @"<?xml version='1.0'?>
+                           <scxml xmlns='http://www.w3.org/2005/07/scxml'
+                                  version='1.0'
+                                  datamodel='csharp'>
+                               <state id='state1'>
+                                   <onentry>
+                                       <http-get resultlocation='x'>
+                                           <url>http://localhost:4444/</url>
+                                       </http-get>
+                                   </onentry>
+                                   <transition target='alldone' />
+                               </state>
+                               <final id='alldone' />
+                           </scxml>";
+
+            var machine = new StateChart(XDocument.Parse(xmldoc));
+
+            var context = new ExecutionContext(machine);
+
+            var interpreter = new Interpreter();
+
+            await Task.WhenAll(interpreter.RunAsync(context), listenerTask);
+
+            var json = (string)context["x"];
+
+            Assert.IsNotNull(json);
+
+            var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
+
+            Assert.AreEqual(43, content.value);
         }
 
         [TestMethod]

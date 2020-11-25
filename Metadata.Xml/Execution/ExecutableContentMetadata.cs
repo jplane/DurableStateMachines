@@ -1,10 +1,12 @@
 ﻿using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
+using StateChartsDotNet.Metadata.Xml.Queries;
 using StateChartsDotNet.Metadata.Xml.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.Execution
@@ -35,6 +37,12 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             element.CheckArgNull(nameof(element));
 
+            var resolvers = new Func<XElement, IExecutableContentMetadata>[]
+            {
+                ServiceResolver.Resolve,
+                QueryResolver.Resolve 
+            };
+
             IExecutableContentMetadata content = null;
 
             content = element.Name.LocalName switch
@@ -46,10 +54,13 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
                 "log" => new LogMetadata(element),
                 "cancel" => new CancelMetadata(element),
                 "assign" => new AssignMetadata(element),
-                _ => Resolver.Resolve(element),
+                _ => resolvers.Select(func => func(element)).FirstOrDefault(result => result != null)
             };
 
-            Debug.Assert(content != null);
+            if (content == null)
+            {
+                throw new NotSupportedException("Unable to resolve executable content type: " + element.Name.LocalName);
+            }
 
             return content;
         }

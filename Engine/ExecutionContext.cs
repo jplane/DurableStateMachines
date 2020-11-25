@@ -19,6 +19,7 @@ namespace StateChartsDotNet
         protected readonly ILogger _logger;
 
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
+        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
@@ -42,6 +43,9 @@ namespace StateChartsDotNet
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
+
+            _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
+            _externalQueries.Add("http-get", HttpService.GetAsync);
         }
 
         public bool IsRunning { get; internal set; }
@@ -59,6 +63,14 @@ namespace StateChartsDotNet
 
                 _data[key] = value;
             }
+        }
+
+        public void ConfigureExternalQuery(string id, ExternalQueryDelegate handler)
+        {
+            id.CheckArgNull(nameof(id));
+            handler.CheckArgNull(nameof(handler));
+
+            _externalQueries[id] = handler;
         }
 
         public void ConfigureExternalService(string id, ExternalServiceDelegate handler)
@@ -89,6 +101,18 @@ namespace StateChartsDotNet
         public virtual void Send(ExternalMessage message)
         {
             _externalMessages.Enqueue(message);
+        }
+
+        internal ExternalQueryDelegate GetExternalQuery(string id)
+        {
+            id.CheckArgNull(nameof(id));
+
+            if (_externalQueries.TryGetValue(id, out ExternalQueryDelegate query))
+            {
+                return query;
+            }
+
+            return null;
         }
 
         internal ExternalServiceDelegate GetExternalService(string id)

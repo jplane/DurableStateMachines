@@ -49,6 +49,9 @@ namespace StateChartsDotNet.Model.Execution
                 case IAssignMetadata assign:
                     content = new Assign(assign);
                     break;
+                case IQueryMetadata query:
+                    content = new Query(query);
+                    break;
                 default:
                     throw new ArgumentException(message: "Executable Metadata is not a recognized type", paramName: nameof(metadata));
             }

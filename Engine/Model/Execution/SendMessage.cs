@@ -44,7 +44,7 @@ namespace StateChartsDotNet.Model.Execution
 
                 if (service == null)
                 {
-                    throw new InvalidOperationException($"External service '{type}' configured.");
+                    throw new InvalidOperationException($"External service '{type}' not configured.");
                 }
 
                 var target = metadata.GetTarget(ec.ScriptData);

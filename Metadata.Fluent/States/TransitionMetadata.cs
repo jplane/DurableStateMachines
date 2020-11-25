@@ -183,6 +183,19 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return ec;
         }
 
+        internal QueryMetadata<TransitionMetadata<TParent>> Query()
+        {
+            var ec = new QueryMetadata<TransitionMetadata<TParent>>();
+
+            _executableContent.Add(ec);
+
+            ec.Parent = this;
+
+            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+
+            return ec;
+        }
+
         IEnumerable<string> ITransitionMetadata.Targets => _targets;
 
         IEnumerable<string> ITransitionMetadata.Messages => _messages;

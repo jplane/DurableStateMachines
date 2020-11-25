@@ -182,6 +182,19 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return ec;
         }
 
+        internal QueryMetadata<IfMetadata<TParent>> Query()
+        {
+            var ec = new QueryMetadata<IfMetadata<TParent>>();
+
+            _executableContent.Add(ec);
+
+            ec.Parent = this;
+
+            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+
+            return ec;
+        }
+
         bool IIfMetadata.EvalIfCondition(dynamic data) => _eval?.Invoke(data) ?? false;
 
         IEnumerable<IExecutableContentMetadata> IIfMetadata.GetElseExecutableContent() => _else.GetExecutableContent();

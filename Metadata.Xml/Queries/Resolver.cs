@@ -5,17 +5,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace StateChartsDotNet.Metadata.Xml.Services
+namespace StateChartsDotNet.Metadata.Xml.Queries
 {
-    internal static class ServiceResolver
+    internal static class QueryResolver
     {
-        public static SendMessageMetadata Resolve(XElement element)
+        public static QueryMetadata Resolve(XElement element)
         {
             element.CheckArgNull(nameof(element));
             
-            SendMessageMetadata metadata = element.Name.LocalName switch
+            QueryMetadata metadata = element.Name.LocalName switch
             {
-                "http-post" => new HttpPostMetadata(element),
+                "http-get" => new HttpGetMetadata(element),
                 _ => null
             };
 

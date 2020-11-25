@@ -152,6 +152,19 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return ec;
         }
 
+        internal QueryMetadata<OnEntryExitMetadata<TParent>> Query()
+        {
+            var ec = new QueryMetadata<OnEntryExitMetadata<TParent>>();
+
+            _executableContent.Add(ec);
+
+            ec.Parent = this;
+
+            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+
+            return ec;
+        }
+
         bool IOnEntryExitMetadata.IsEntry => _isEntry;
 
         string IModelMetadata.UniqueId => this.UniqueId;
