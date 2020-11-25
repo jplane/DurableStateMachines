@@ -8,5 +8,6 @@ namespace StateChartsDotNet.Common
     public delegate Task ExternalServiceDelegate(string target,
                                                  string messageName,
                                                  object content,
+                                                 string correlationId,
                                                  IReadOnlyDictionary<string, object> parameters);
 }

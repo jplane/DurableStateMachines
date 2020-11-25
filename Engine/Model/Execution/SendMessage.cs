@@ -24,13 +24,13 @@ namespace StateChartsDotNet.Model.Execution
             {
                 Debug.Assert(ec != null);
 
+                var id = metadata.Id ?? Guid.NewGuid().ToString("N");
+
                 if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
                 {
-                    var syntheticId = Guid.NewGuid().ToString("N");
+                    await ec.LogDebugAsync($"Synthentic Id = {id}");
 
-                    await ec.LogDebugAsync($"Synthentic Id = {syntheticId}");
-
-                    ec.SetDataValue(metadata.IdLocation, syntheticId);
+                    ec.SetDataValue(metadata.IdLocation, id);
                 }
 
                 var type = metadata.GetType(ec.ScriptData);
@@ -55,7 +55,7 @@ namespace StateChartsDotNet.Model.Execution
 
                 var parms = metadata.GetParams(ec.ScriptData);
 
-                await service(target, messageName, content, parms);
+                await service(target, messageName, content, id, parms);
             });
         }
     }

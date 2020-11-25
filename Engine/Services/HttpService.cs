@@ -17,6 +17,7 @@ namespace StateChartsDotNet.Services
         public static async Task PostAsync(string url,
                                            string ignored,
                                            object content,
+                                           string correlationId,
                                            IReadOnlyDictionary<string, object> parameters)
         {
             url.CheckArgNull(nameof(url));
@@ -25,6 +26,8 @@ namespace StateChartsDotNet.Services
             _client.DefaultRequestHeaders.Clear();
 
             var queryString = ResolveParameters(parameters);
+
+            AddCorrelationHeader(correlationId);
 
             var uri = GetUri(url, queryString);
 
@@ -35,6 +38,11 @@ namespace StateChartsDotNet.Services
             Debug.Assert(response != null);
 
             response.EnsureSuccessStatusCode();
+        }
+
+        private static void AddCorrelationHeader(string correlationId)
+        {
+            _client.DefaultRequestHeaders.Add("X-SCDN-CORRELATION", correlationId);
         }
 
         private static Uri GetUri(string url, string queryString)
