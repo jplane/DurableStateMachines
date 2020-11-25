@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -80,13 +81,13 @@ namespace StateChartsDotNet.Model.States
             throw new NotImplementedException();
         }
 
-        public Task ProcessExternalMessageAsync(ExecutionContext context, Message externalMessage)
+        public Task ProcessExternalMessageAsync(ExecutionContext context, ResponseMessage externalMessage)
         {
             externalMessage.CheckArgNull(nameof(externalMessage));
 
             var id = GetId(context);
 
-            if (id == externalMessage.InvokeId)
+            if (id == externalMessage.CorrelationId)
             {
                 ApplyFinalize(externalMessage);
             }
@@ -99,7 +100,7 @@ namespace StateChartsDotNet.Model.States
             return Task.CompletedTask;
         }
 
-        private void ApplyFinalize(Message externalMessage)
+        private void ApplyFinalize(ResponseMessage externalMessage)
         {
         }
     }

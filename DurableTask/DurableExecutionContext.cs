@@ -1,6 +1,7 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
@@ -50,12 +51,12 @@ namespace StateChartsDotNet.DurableTask
             return _orchestrationContext.ScheduleTask<bool>(uniqueId, string.Empty);
         }
 
-        internal void EnqueueExternalMessage(Message message)
+        internal void EnqueueExternalMessage(ExternalMessage message)
         {
             base.Send(message);
         }
 
-        public override void Send(Message message)
+        public override void Send(ExternalMessage message)
         {
             message.CheckArgNull(nameof(message));
 

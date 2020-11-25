@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet.Model.States
 {

@@ -9,6 +9,7 @@ using StateChartsDotNet.Common;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Services;
+using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet
 {
@@ -19,8 +20,8 @@ namespace StateChartsDotNet
 
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
-        private readonly Queue<Message> _internalMessages;
-        private readonly AsyncProducerConsumerQueue<Message> _externalMessages;
+        private readonly Queue<InternalMessage> _internalMessages;
+        private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
@@ -34,8 +35,8 @@ namespace StateChartsDotNet
 
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
-            _internalMessages = new Queue<Message>();
-            _externalMessages = new AsyncProducerConsumerQueue<Message>();
+            _internalMessages = new Queue<InternalMessage>();
+            _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
             _configuration = new Set<State>();
             _statesToInvoke = new Set<State>();
 
@@ -73,22 +74,19 @@ namespace StateChartsDotNet
             Send("cancel");
         }
 
-        public void Send(string message, params object[] dataPairs)
+        public void Send(string message, object data = null)
         {
-            var msg = new Message(message)
-            {
-                Type = MessageType.External
-            };
+            message.CheckArgNull(nameof(message));
 
-            for (var idx = 0; idx < dataPairs.Length; idx += 2)
+            var msg = new ExternalMessage(message)
             {
-                msg[(string) dataPairs[idx]] = dataPairs[idx + 1];
-            }
+                Data = data
+            };
 
             Send(msg);
         }
 
-        public virtual void Send(Message message)
+        public virtual void Send(ExternalMessage message)
         {
             _externalMessages.Enqueue(message);
         }
@@ -123,7 +121,7 @@ namespace StateChartsDotNet
 
         internal RootState Root => _root;
 
-        internal async Task<Message> DequeueExternalAsync()
+        internal async Task<ExternalMessage> DequeueExternalAsync()
         {
             var msg = await _externalMessages.DequeueAsync();
 
@@ -144,32 +142,23 @@ namespace StateChartsDotNet
             return _data.TryGetValue(key, out value);
         }
 
-        internal void EnqueueInternal(string eventName, params object[] dataPairs)
+        internal void EnqueueInternal(string message)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(eventName));
-            Debug.Assert(dataPairs.Length % 2 == 0);
+            message.CheckArgNull(nameof(message));
 
-            var evt = new Message(eventName)
-            {
-                Type = MessageType.Internal
-            };
-
-            for (var idx = 0; idx < dataPairs.Length; idx+=2)
-            {
-                evt[(string) dataPairs[idx]] = dataPairs[idx + 1];
-            }
+            var evt = new InternalMessage(message);
 
             _internalMessages.Enqueue(evt);
         }
 
         internal void EnqueueCommunicationError(Exception ex)
         {
-            var evt = new Message("error.communication")
-            {
-                Type = MessageType.Platform
-            };
+            Debug.Assert(ex != null);
 
-            evt["exception"] = ex;
+            var evt = new InternalMessage("error.communication")
+            {
+                Data = ex
+            };
 
             _internalMessages.Enqueue(evt);
 
@@ -178,12 +167,12 @@ namespace StateChartsDotNet
 
         internal void EnqueueExecutionError(Exception ex)
         {
-            var evt = new Message("error.execution")
-            {
-                Type = MessageType.Platform
-            };
+            Debug.Assert(ex != null);
 
-            evt["exception"] = ex;
+            var evt = new InternalMessage("error.execution")
+            {
+                Data = ex
+            };
 
             _internalMessages.Enqueue(evt);
 
@@ -192,9 +181,9 @@ namespace StateChartsDotNet
 
         internal bool HasInternalMessages => _internalMessages.Count > 0;
 
-        internal Message DequeueInternal()
+        internal InternalMessage DequeueInternal()
         {
-            if (_internalMessages.TryDequeue(out Message evt))
+            if (_internalMessages.TryDequeue(out InternalMessage evt))
             {
                 _data["_event"] = evt;
             }

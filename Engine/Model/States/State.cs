@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -138,11 +139,14 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(ExecutionContext context, Message evt)
+        public async Task ProcessExternalMessageAsync(ExecutionContext context, ExternalMessage evt)
         {
             foreach (var invoke in _invokes.Value)
             {
-                await invoke.ProcessExternalMessageAsync(context, evt);
+                if (evt is ResponseMessage response)
+                {
+                    await invoke.ProcessExternalMessageAsync(context, response);
+                }
             }
         }
 

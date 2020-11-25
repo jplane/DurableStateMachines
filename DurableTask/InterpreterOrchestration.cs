@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.DurableTask;
 using System;
@@ -13,7 +14,7 @@ namespace CoreEngine.DurableTask
 {
     public class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
                                                               IDictionary<string, object>,
-                                                              Message,
+                                                              ExternalMessage,
                                                               string>
     {
         private readonly IRootStateMetadata _metadata;
@@ -71,7 +72,7 @@ namespace CoreEngine.DurableTask
             return _executionContext.GetData();
         }
 
-        public override void OnEvent(OrchestrationContext context, string name, Message input)
+        public override void OnEvent(OrchestrationContext context, string name, ExternalMessage input)
         {
             Debug.Assert(_executionContext != null);
 

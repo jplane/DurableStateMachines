@@ -1,6 +1,7 @@
 ﻿using DurableTask.Core;
 using DurableTask.Core.Serializing;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -93,10 +94,10 @@ namespace StateChartsDotNet.DurableTask
 
         public Task StopAsync()
         {
-            return SendMessageAsync(new Message("cancel"));
+            return SendMessageAsync(new ExternalMessage("cancel"));
         }
 
-        public Task SendMessageAsync(Message message)
+        public Task SendMessageAsync(ExternalMessage message)
         {
             if (!IsRunning)
             {
