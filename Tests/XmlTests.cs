@@ -210,5 +210,61 @@ namespace StateChartsDotNet.Tests
 
             Assert.AreEqual(5, context["timer"]);
         }
+
+        [TestMethod]
+        public async Task SimpleParentChild()
+        {
+            var xmldoc = @"<?xml version='1.0'?>
+                           <scxml xmlns='http://www.w3.org/2005/07/scxml'
+                                  version='1.0'
+                                  name='outer'
+                                  datamodel='csharp'>
+                               <state id='outerState1'>
+                                   <invoke>
+                                       <param name='x' location='x' />
+                                       <content>
+                                           <scxml version='1.0'
+                                                  name='inner'
+                                                  datamodel='csharp'>
+                                               <state id='innerState1'>
+                                                   <onentry>
+                                                       <assign location='x' expr='x * 2' />
+                                                   </onentry>
+                                                   <transition target='alldone' />
+                                               </state>
+                                               <final id='alldone'>
+                                                   <donedata>
+                                                       <param name='innerX' location='x' />
+                                                   </donedata>
+                                               </final>
+                                           </scxml>
+                                       </content>
+                                       <finalize>
+                                           <assign location='innerX' expr='_event.Parameters[&quot;innerX&quot;]' />
+                                       </finalize>
+                                   </invoke>
+                                   <transition event='done.invoke.*' target='alldone' />
+                               </state>
+                               <final id='alldone' />
+                           </scxml>";
+
+            var machine = new StateChart(XDocument.Parse(xmldoc));
+
+            var context = new ExecutionContext(machine, _logger);
+
+            context["x"] = 5;
+
+            var interpreter = new Interpreter();
+
+            await interpreter.RunAsync(context);
+
+            var x = (int) context["x"];
+
+            Assert.AreEqual(5, x);
+
+            var innerX = (int) context["innerX"];
+
+            Assert.AreEqual(10, innerX);
+        }
     }
 }

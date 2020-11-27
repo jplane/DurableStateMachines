@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
@@ -7,19 +8,20 @@ using StateChartsDotNet.Metadata.Xml.Execution;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.States
 {
-    public class InvokeStateChart : IInvokeStateChartMetadata
+    public class InvokeStateChartMetadata : IInvokeStateChartMetadata
     {
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
-        private readonly Lazy<Func<dynamic, object>> _getContentValue;
-        private readonly Lazy<Func<dynamic, string>> _getTypeValue;
+        private readonly Lazy<Func<dynamic, string>> _getRootId;
+        private readonly Lazy<Func<dynamic, IRootStateMetadata>> _getRoot;
 
-        internal InvokeStateChart(XElement element)
+        internal InvokeStateChartMetadata(XElement element)
         {
             _element = element;
 
@@ -28,14 +30,14 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 return element.GetUniqueElementPath();
             });
 
-            _getContentValue = new Lazy<Func<dynamic, object>>(() =>
+            _getRootId = new Lazy<Func<dynamic, string>>(() =>
             {
                 var node = _element.ScxmlElement("content");
 
                 if (node == null)
                 {
                     var src = _element.Attribute("src")?.Value ?? string.Empty;
-                    
+
                     if (!string.IsNullOrEmpty(src))
                     {
                         return _ => src;
@@ -46,7 +48,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
                         if (!string.IsNullOrWhiteSpace(srcExpression))
                         {
-                            return ExpressionCompiler.Compile<object>(srcExpression);
+                            return ExpressionCompiler.Compile<string>(srcExpression);
                         }
                         else
                         {
@@ -54,40 +56,56 @@ namespace StateChartsDotNet.Metadata.Xml.States
                         }
                     }
                 }
-
-                var expression = node.Attribute("expr")?.Value;
-
-                if (!string.IsNullOrWhiteSpace(expression))
-                {
-                    return ExpressionCompiler.Compile<object>(expression);
-                }
                 else
                 {
-                    return _ => node.Value ?? string.Empty;
+                    return _ => string.Empty;
                 }
             });
 
-            _getTypeValue = new Lazy<Func<dynamic, string>>(() =>
+            _getRoot = new Lazy<Func<dynamic, IRootStateMetadata>>(() =>
             {
-                var type = _element.Attribute("type")?.Value ?? string.Empty;
+                var node = _element.ScxmlElement("content");
 
-                if (!string.IsNullOrEmpty(type))
+                if (node != null)
                 {
-                    return _ => type;
-                }
-                else
-                {
-                    var typeExpression = _element.Attribute("typeexpr")?.Value ?? string.Empty;
+                    StateChart FromSource(string source)
+                    {
+                        source.CheckArgNull(nameof(source));
 
-                    if (!string.IsNullOrWhiteSpace(typeExpression))
-                    {
-                        return ExpressionCompiler.Compile<string>(typeExpression);
+                        var xdoc = XDocument.Parse(source);
+
+                        Debug.Assert(xdoc != null);
+
+                        return new StateChart(xdoc);
                     }
-                    else
+
+                    var expression = node.Attribute("expr")?.Value;
+
+                    if (!string.IsNullOrWhiteSpace(expression))
                     {
-                        return _ => string.Empty;
+                        return data =>
+                        {
+                            var getSourceFunc = ExpressionCompiler.Compile<string>(expression);
+
+                            Debug.Assert(getSourceFunc != null);
+
+                            var source = getSourceFunc(data);
+
+                            if (string.IsNullOrWhiteSpace(source))
+                            {
+                                throw new InvalidOperationException("Unable to resolve source for child statechart.");
+                            }
+
+                            return FromSource(source);
+                        };
+                    }
+                    else if (node.ScxmlElement("scxml") != null)
+                    {
+                        return _ => FromSource(node.ScxmlElement("scxml").ToString());
                     }
                 }
+
+                return _ => null;
             });
         }
 
@@ -140,7 +158,9 @@ namespace StateChartsDotNet.Metadata.Xml.States
         {
             var content = new List<IExecutableContentMetadata>();
 
-            foreach (var node in _element.Element("finalize").Elements())
+            var elements = _element.ScxmlElement("finalize")?.Elements() ?? Enumerable.Empty<XElement>();
+
+            foreach (var node in elements)
             {
                 content.Add(ExecutableContentMetadata.Create(node));
             }
@@ -148,14 +168,14 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return content.AsEnumerable();
         }
 
-        public string GetType(dynamic data)
+        public string GetRootId(dynamic data)
         {
-            return _getTypeValue.Value(data);
+            return _getRootId.Value(data);
         }
 
-        public object GetContent(dynamic data)
+        public IRootStateMetadata GetRoot(dynamic data)
         {
-            return _getContentValue.Value(data);
+            return _getRoot.Value(data);
         }
 
         public IReadOnlyDictionary<string, object> GetParams(dynamic data)

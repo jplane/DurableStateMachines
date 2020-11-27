@@ -3,6 +3,7 @@ using StateChartsDotNet.Model.Data;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using StateChartsDotNet.Common;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -22,6 +23,19 @@ namespace StateChartsDotNet.Model.States
 
         public override void InitDatamodel(ExecutionContext context, bool recursive)
         {
+        }
+
+        public void SendDoneMessage(ExecutionContext context)
+        {
+            context.CheckArgNull(nameof(context));
+
+            var metadata = (IFinalStateMetadata) _metadata;
+
+            var content = metadata.GetContent(context);
+
+            var parameters = metadata.GetParams(context);
+
+            context.SendDoneMessageToParent(content, parameters);
         }
     }
 }

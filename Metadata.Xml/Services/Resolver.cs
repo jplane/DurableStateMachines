@@ -16,6 +16,8 @@ namespace StateChartsDotNet.Metadata.Xml.Services
             SendMessageMetadata metadata = element.Name.LocalName switch
             {
                 "http-post" => new HttpPostMetadata(element),
+                "send-parent" => new SendParentMetadata(element),
+                "send-child" => new SendChildMetadata(element),
                 _ => null
             };
 

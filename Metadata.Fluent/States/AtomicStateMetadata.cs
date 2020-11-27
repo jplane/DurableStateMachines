@@ -72,7 +72,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        public InvokeStateChartMetadata<AtomicStateMetadata<TParent>> StateChartInvoke()
+        public InvokeStateChartMetadata<AtomicStateMetadata<TParent>> InvokeStateChart()
         {
             var invoke = new InvokeStateChartMetadata<AtomicStateMetadata<TParent>>();
 

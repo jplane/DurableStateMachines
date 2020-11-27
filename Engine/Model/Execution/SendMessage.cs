@@ -24,13 +24,18 @@ namespace StateChartsDotNet.Model.Execution
             {
                 Debug.Assert(ec != null);
 
-                var id = metadata.Id ?? Guid.NewGuid().ToString("N");
+                var id = metadata.Id;
 
-                if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                if (string.IsNullOrWhiteSpace(id))
                 {
+                    id = Guid.NewGuid().ToString("N");
+
                     await ec.LogDebugAsync($"Synthentic Id = {id}");
 
-                    ec.SetDataValue(metadata.IdLocation, id);
+                    if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                    {
+                        ec.SetDataValue(metadata.IdLocation, id);
+                    }
                 }
 
                 var type = metadata.GetType(ec.ScriptData);

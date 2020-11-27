@@ -143,10 +143,7 @@ namespace StateChartsDotNet.Model.States
         {
             foreach (var invoke in _invokes.Value)
             {
-                if (evt is ResponseMessage response)
-                {
-                    await invoke.ProcessExternalMessageAsync(context, response);
-                }
+                await context.ProcessExternalMessageAsync(this.Id, invoke, evt);
             }
         }
 
@@ -257,7 +254,7 @@ namespace StateChartsDotNet.Model.States
 
             foreach (var invoke in _invokes.Value)
             {
-                await invoke.CancelAsync(context);
+                await context.CancelInvokeAsync(this.Id, invoke);
             }
 
             context.Configuration.Remove(this);

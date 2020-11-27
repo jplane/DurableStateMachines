@@ -62,7 +62,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         {
             var nodes = _element.ScxmlElements("invoke");
 
-            return nodes.Select(n => new InvokeStateChart(n)).Cast<IInvokeStateChartMetadata>();
+            return nodes.Select(n => new InvokeStateChartMetadata(n)).Cast<IInvokeStateChartMetadata>();
         }
 
         public IDatamodelMetadata GetDatamodel()

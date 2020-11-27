@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using StateChartsDotNet.Common;
 
@@ -20,7 +21,7 @@ namespace StateChartsDotNet
         {
             indexes.CheckArgNull(nameof(indexes));
 
-            if (indexes.Length != 1 || indexes[0].GetType() != typeof(string))
+            if (indexes.Length != 1 || indexes[0] == null || indexes[0].GetType() != typeof(string))
             {
                 throw new InvalidOperationException("Expecting exactly one string-based index for data lookups.");
             }
@@ -37,6 +38,8 @@ namespace StateChartsDotNet
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(binder.Name));
+
             if (_data.TryGetValue(binder.Name, out result))
             {
                 return true;

@@ -112,5 +112,45 @@ namespace StateChartsDotNet.Tests
 
             Assert.AreEqual(43, content.value);
         }
+
+        [TestMethod]
+        public async Task SimpleParentChild()
+        {
+            var x = 1;
+
+            var machine = StateChart.Define("outer")
+                                    .AtomicState("outerState1")
+                                        .InvokeStateChart()
+                                            .Definition(StateChart.Define("inner")
+                                                                  .AtomicState("innerState1")
+                                                                      .OnEntry()
+                                                                          .Execute(_ => x += 1)
+                                                                          .Attach()
+                                                                      .OnExit()
+                                                                          .Execute(_ => x += 1)
+                                                                          .Attach()
+                                                                      .Transition()
+                                                                          .Target("alldone")
+                                                                          .Attach()
+                                                                      .Attach()
+                                                                  .FinalState("alldone")
+                                                                      .Attach())
+                                            .Attach()
+                                        .Transition()
+                                            .Message("done.invoke.*")
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var context = new ExecutionContext(machine);
+
+            var interpreter = new Interpreter();
+
+            await interpreter.RunAsync(context);
+
+            Assert.AreEqual(3, x);
+        }
     }
 }

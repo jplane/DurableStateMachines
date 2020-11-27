@@ -6,19 +6,19 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.States
 {
     internal class InvokeStateChart
     {
-        private readonly IInvokeStateChartMetadata _metadata;
         private readonly string _parentId;
+        private readonly IInvokeStateChartMetadata _metadata;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
         public InvokeStateChart(IInvokeStateChartMetadata metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
-            parent.CheckArgNull(nameof(parent));
 
             _metadata = metadata;
             _parentId = parent.Id;
@@ -29,79 +29,62 @@ namespace StateChartsDotNet.Model.States
             });
         }
 
-        private string GetId(ExecutionContext context)
+        public async Task ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
-            if (! string.IsNullOrWhiteSpace(_metadata.Id))
+            await context.LogInformationAsync("Start: InvokeStateChart.Execute");
+
+            var invokeId = _metadata.Id;
+
+            if (string.IsNullOrWhiteSpace(invokeId))
             {
-                return _metadata.Id;
+                invokeId = $"{_parentId}.{Guid.NewGuid().ToString("N")}";
+
+                await context.LogDebugAsync($"Synthentic Id = {invokeId}");
+
+                if (!string.IsNullOrWhiteSpace(_metadata.IdLocation))
+                {
+                    context.SetDataValue(_metadata.IdLocation, invokeId);
+                }
             }
-            else if (string.IsNullOrWhiteSpace(_metadata.IdLocation) || !context.TryGet(_metadata.IdLocation, out object value))
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+
+            try
             {
-                throw new InvalidOperationException("Unable to resolve invoke ID.");
+                context.InvokeChildStateChart(_metadata, invokeId);
             }
-            else
+            catch (Exception ex)
             {
-                return (string) value;
+                context.EnqueueExecutionError(ex);
+            }
+            finally
+            {
+                await context.LogInformationAsync("End: InvokeStateChart.Execute");
             }
         }
 
-        public Task ExecuteAsync(ExecutionContext context)
+        public async Task ProcessExternalMessageAsync(string invokeId, ExecutionContext context, ExternalMessage externalMessage)
         {
-            context.LogInformationAsync($"Start: Invoke");
-
-            if (!string.IsNullOrWhiteSpace(_metadata.IdLocation))
-            {
-                var syntheticId = $"{_parentId}.{Guid.NewGuid():N}";
-
-                context.LogDebugAsync($"Synthentic Id = {syntheticId}");
-
-                context.SetDataValue(_metadata.IdLocation, syntheticId);
-            }
-
-            return Task.CompletedTask;
-
-            //try
-            //{
-            //    throw new NotImplementedException();
-            //}
-            //catch (Exception ex)
-            //{
-            //    context.EnqueueCommunicationError(ex);
-            //}
-            //finally
-            //{
-            //    context.LogInformation($"End: Invoke");
-            //}
-        }
-
-        public Task CancelAsync(ExecutionContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ProcessExternalMessageAsync(ExecutionContext context, ResponseMessage externalMessage)
-        {
+            invokeId.CheckArgNull(nameof(invokeId));
+            context.CheckArgNull(nameof(context));
             externalMessage.CheckArgNull(nameof(externalMessage));
 
-            var id = GetId(context);
-
-            if (id == externalMessage.CorrelationId)
+            if (externalMessage is ChildStateChartResponseMessage response && invokeId == response.CorrelationId)
             {
-                ApplyFinalize(externalMessage);
+                foreach (var content in _finalizeContent.Value)
+                {
+                    await content.ExecuteAsync(context);
+                }
+
+                context.ProcessChildStateChartDone(response);
             }
 
-            if (_metadata.Autoforward)
+            if (_metadata.Autoforward && !(externalMessage is ChildStateChartResponseMessage))
             {
-                // send events to service
+                context.SendToChildStateChart(invokeId, externalMessage);
             }
-
-            return Task.CompletedTask;
-        }
-
-        private void ApplyFinalize(ResponseMessage externalMessage)
-        {
         }
     }
 }

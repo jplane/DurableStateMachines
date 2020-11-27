@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         {
             _getContentValue = new Lazy<Func<dynamic, object>>(() =>
             {
-                var node = _element.ScxmlElement("donedata").ScxmlElement("content");
+                var node = _element.ScxmlElement("donedata")?.ScxmlElement("content");
 
                 if (node == null)
                 {
@@ -34,7 +34,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 }
                 else
                 {
-                    return _ => node.Value ?? string.Empty;
+                    return _ => node.ToString();
                 }
             });
         }
@@ -46,7 +46,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public IReadOnlyDictionary<string, object> GetParams(dynamic data)
         {
-            var nodes = _element.ScxmlElement("donedata").ScxmlElements("param");
+            var nodes = _element.ScxmlElement("donedata")?.ScxmlElements("param") ?? Enumerable.Empty<XElement>();
 
             return new ReadOnlyDictionary<string, object>(
                 nodes.Select(n => new ParamMetadata(n)).ToDictionary(p => p.Name, p => p.GetValue(data)));

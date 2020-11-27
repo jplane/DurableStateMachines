@@ -10,8 +10,8 @@ namespace StateChartsDotNet.Common.Model.States
         string Id { get; }
         string IdLocation { get; }
 
-        string GetType(dynamic data);
-        object GetContent(dynamic data);
+        string GetRootId(dynamic data);
+        IRootStateMetadata GetRoot(dynamic data);
         IReadOnlyDictionary<string, object> GetParams(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
      }

@@ -2,12 +2,14 @@
 
 namespace StateChartsDotNet.Common.Messages
 {
-    public class ResponseMessage : ExternalMessage
+    public class ChildStateChartResponseMessage : ExternalMessage
     {
-        public ResponseMessage(string name)
+        public ChildStateChartResponseMessage(string name)
             : base(name)
         {
         }
+
+        public bool IsDone => this.Name.StartsWith("done.invoke.");
 
         public string CorrelationId { get; set; }
     }

@@ -19,8 +19,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private bool _autoForward;
         private string _id;
         private string _idLocation;
-        private Func<dynamic, object> _contentGetter;
-        private Func<dynamic, object> _typeGetter;
+        private Func<dynamic, string> _rootIdGetter;
+        private Func<dynamic, IRootStateMetadata> _rootGetter;
 
         internal InvokeStateChartMetadata()
         {
@@ -57,15 +57,21 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> Content(Func<dynamic, object> getter)
+        public InvokeStateChartMetadata<TParent> Reference(string reference)
         {
-            _contentGetter = getter;
+            _rootIdGetter = _ => reference;
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> Type(Func<dynamic, object> getter)
+        public InvokeStateChartMetadata<TParent> Reference(Func<dynamic, string> getter)
         {
-            _typeGetter = getter;
+            _rootIdGetter = getter;
+            return this;
+        }
+
+        public InvokeStateChartMetadata<TParent> Definition(StateChart statechart)
+        {
+            _rootGetter = _ => statechart;
             return this;
         }
 
@@ -230,9 +236,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() => _finalizeExecutableContent;
 
-        string IInvokeStateChartMetadata.GetType(dynamic data) => _typeGetter?.Invoke(data);
+        string IInvokeStateChartMetadata.GetRootId(dynamic data) => _rootIdGetter?.Invoke(data);
 
-        object IInvokeStateChartMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
+        IRootStateMetadata IInvokeStateChartMetadata.GetRoot(dynamic data) => _rootGetter?.Invoke(data);
 
         IReadOnlyDictionary<string, object> IInvokeStateChartMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));

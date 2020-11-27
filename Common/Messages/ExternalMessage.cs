@@ -11,6 +11,8 @@ namespace StateChartsDotNet.Common.Messages
 
         internal override MessageType Type => MessageType.External;
 
-        public object Data { get; set; }
+        public object Content { get; set; }
+
+        public IReadOnlyDictionary<string, object> Parameters { get; set; }
     }
 }

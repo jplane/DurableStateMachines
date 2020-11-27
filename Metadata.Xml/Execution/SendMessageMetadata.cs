@@ -144,11 +144,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
         public string GetTarget(dynamic data)
         {
-            if (this.Target == null && this.TargetExpression == null)
-            {
-                throw new ModelValidationException("Service target or targetExpression must be specified.");
-            }
-            else if (this.Target != null && this.TargetExpression != null)
+            if (this.Target != null && this.TargetExpression != null)
             {
                 throw new ModelValidationException("Only one of service target and targetExpression can be specified.");
             }

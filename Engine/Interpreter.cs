@@ -129,19 +129,12 @@ namespace StateChartsDotNet
                 {
                     if (state.Parent.IsScxmlRoot)
                     {
-                        ReturnDoneMessage(state);
+                        ((FinalState) state).SendDoneMessage(context);
                     }
                 }
             }
 
             await context.LogInformationAsync("End: event loop");
-        }
-
-        private void ReturnDoneMessage(State state)
-        {
-            // The implementation of returnDoneMessage is platform-dependent, but if this session is the result of an <invoke> in another SCXML session, 
-            //  returnDoneMessage will cause the event done.invoke.<id> to be placed in the external event queue of that session, where <id> is the id 
-            //  generated in that session when the <invoke> was executed.
         }
 
         private async Task MicrostepAsync(ExecutionContext context, IEnumerable<Transition> enabledTransitions)

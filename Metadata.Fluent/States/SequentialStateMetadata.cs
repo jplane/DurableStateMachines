@@ -94,7 +94,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> StateChartInvoke()
+        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> InvokeStateChart()
         {
             var invoke = new InvokeStateChartMetadata<SequentialStateMetadata<TParent>>();
 
