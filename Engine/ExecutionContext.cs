@@ -228,7 +228,44 @@ namespace StateChartsDotNet
             metadata.CheckArgNull(nameof(metadata));
             invokeId.CheckArgNull(nameof(invokeId));
 
-            Debug.Assert(! _childStatechartInstances.ContainsKey(invokeId));
+            Debug.Assert(!_childStatechartInstances.ContainsKey(invokeId));
+
+            var childMachine = ResolveChildStateChart(metadata);
+
+            var context = new ExecutionContext(childMachine,
+                                               _childStatechartMetadata,
+                                               _externalServices,
+                                               _externalQueries,
+                                               _logger);
+
+            ConfigureChildExecutionContext(context, metadata, invokeId);
+
+            var interpreter = new Interpreter();
+
+            var task = Task.Run(() => interpreter.RunAsync(context));
+
+            _childStatechartInstances.Add(invokeId, (task, context));
+        }
+
+        protected void ConfigureChildExecutionContext(ExecutionContext context, IInvokeStateChartMetadata metadata, string invokeId)
+        {
+            Debug.Assert(context != null);
+            Debug.Assert(metadata != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+
+            context.ParentContext = this;
+
+            context["_invokeId"] = invokeId;
+
+            foreach (var param in metadata.GetParams(this.ScriptData))
+            {
+                context[param.Key] = param.Value;
+            }
+        }
+
+        protected IRootStateMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
+        {
+            Debug.Assert(metadata != null);
 
             IRootStateMetadata childMachine;
 
@@ -251,26 +288,7 @@ namespace StateChartsDotNet
                 throw new InvalidOperationException("Unable to resolve metadata for child statechart.");
             }
 
-            var context = new ExecutionContext(childMachine,
-                                               _childStatechartMetadata,
-                                               _externalServices,
-                                               _externalQueries,
-                                               _logger);
-
-            context.ParentContext = this;
-
-            context["_invokeId"] = invokeId;
-
-            foreach (var param in metadata.GetParams(this.ScriptData))
-            {
-                context[param.Key] = param.Value;
-            }
-
-            var interpreter = new Interpreter();
-
-            var task = Task.Run(() => interpreter.RunAsync(context));
-
-            _childStatechartInstances.Add(invokeId, (task, context));
+            return childMachine;
         }
 
         internal async Task CancelInvokeAsync(string parentId, InvokeStateChart invoke)
