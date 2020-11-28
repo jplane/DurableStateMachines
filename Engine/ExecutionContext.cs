@@ -18,10 +18,10 @@ namespace StateChartsDotNet
         protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
         protected readonly Dictionary<string, IRootStateMetadata> _childStatechartMetadata;
+        protected readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
+        protected readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
 
         private readonly Dictionary<string, (Task, ExecutionContext)> _childStatechartInstances;
-        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
@@ -52,6 +52,18 @@ namespace StateChartsDotNet
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
+        }
+
+        private ExecutionContext(IRootStateMetadata metadata,
+                                 Dictionary<string, IRootStateMetadata> childStatechartMetadata,
+                                 Dictionary<string, ExternalServiceDelegate> externalServices,
+                                 Dictionary<string, ExternalQueryDelegate> externalQueries,
+                                 ILogger logger = null)
+            : this(metadata, logger)
+        {
+            _childStatechartMetadata = new Dictionary<string, IRootStateMetadata>(childStatechartMetadata);
+            _externalServices = new Dictionary<string, ExternalServiceDelegate>(externalServices);
+            _externalQueries = new Dictionary<string, ExternalQueryDelegate>(externalQueries);
         }
 
         public bool IsRunning { get; internal set; }
@@ -239,7 +251,11 @@ namespace StateChartsDotNet
                 throw new InvalidOperationException("Unable to resolve metadata for child statechart.");
             }
 
-            var context = new ExecutionContext(childMachine);
+            var context = new ExecutionContext(childMachine,
+                                               _childStatechartMetadata,
+                                               _externalServices,
+                                               _externalQueries,
+                                               _logger);
 
             context.ParentContext = this;
 
@@ -293,7 +309,7 @@ namespace StateChartsDotNet
             }
         }
 
-        internal virtual void ProcessChildStateChartDone(ChildStateChartResponseMessage message)
+        internal void ProcessChildStateChartDone(ChildStateChartResponseMessage message)
         {
             message.CheckArgNull(nameof(message));
 
@@ -305,7 +321,7 @@ namespace StateChartsDotNet
             }
         }
 
-        internal virtual void SendToChildStateChart(string id, ExternalMessage message)
+        internal void SendToChildStateChart(string id, ExternalMessage message)
         {
             id.CheckArgNull(nameof(id));
             message.CheckArgNull(nameof(message));
