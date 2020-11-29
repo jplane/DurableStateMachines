@@ -245,7 +245,7 @@ namespace StateChartsDotNet
 
             var interpreter = new Interpreter();
 
-            var task = Task.Run(() => interpreter.RunAsync(context));
+            var task = interpreter.RunAsync(context);
 
             _childInstances.Add(invokeId, (task, context));
         }

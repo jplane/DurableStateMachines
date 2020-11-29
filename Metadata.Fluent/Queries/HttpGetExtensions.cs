@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace StateChartsDotNet.Queries.HttpGet
+namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
 {
     public static class HttpGetExtensions
     {

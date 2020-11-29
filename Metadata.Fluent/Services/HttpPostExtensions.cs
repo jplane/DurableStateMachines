@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace StateChartsDotNet.Services.HttpPost
+namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
 {
     public static class HttpPostExtensions
     {

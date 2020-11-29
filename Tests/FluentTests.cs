@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Fluent.States;
-using StateChartsDotNet.Queries.HttpGet;
-using StateChartsDotNet.Services.HttpPost;
+using StateChartsDotNet.Metadata.Fluent.Queries.HttpGet;
+using StateChartsDotNet.Metadata.Fluent.Services.HttpPost;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
@@ -118,23 +118,25 @@ namespace StateChartsDotNet.Tests
         {
             var x = 1;
 
+            var innerMachine = StateChart.Define("inner")
+                             .AtomicState("innerState1")
+                                 .OnEntry()
+                                     .Execute(_ => x += 1)
+                                     .Attach()
+                                 .OnExit()
+                                     .Execute(_ => x += 1)
+                                     .Attach()
+                                 .Transition()
+                                     .Target("alldone")
+                                     .Attach()
+                                 .Attach()
+                             .FinalState("alldone")
+                                 .Attach();
+
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
                                         .InvokeStateChart()
-                                            .Definition(StateChart.Define("inner")
-                                                                  .AtomicState("innerState1")
-                                                                      .OnEntry()
-                                                                          .Execute(_ => x += 1)
-                                                                          .Attach()
-                                                                      .OnExit()
-                                                                          .Execute(_ => x += 1)
-                                                                          .Attach()
-                                                                      .Transition()
-                                                                          .Target("alldone")
-                                                                          .Attach()
-                                                                      .Attach()
-                                                                  .FinalState("alldone")
-                                                                      .Attach())
+                                            .Definition(innerMachine)
                                             .Attach()
                                         .Transition()
                                             .Message("done.invoke.*")

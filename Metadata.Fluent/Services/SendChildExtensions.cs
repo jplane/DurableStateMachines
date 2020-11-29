@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace StateChartsDotNet.Services.SendChild
+namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
 {
     public static class SendChildExtensions
     {
