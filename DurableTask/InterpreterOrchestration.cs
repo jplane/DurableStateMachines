@@ -22,7 +22,6 @@ namespace StateChartsDotNet.DurableTask
         private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
-        private readonly IOrchestrationServiceClient _orchestrationClient;
         private readonly ILogger _logger;
 
         private DurableExecutionContext _executionContext;
@@ -33,7 +32,6 @@ namespace StateChartsDotNet.DurableTask
                                         Dictionary<string, IRootStateMetadata> childMetadata,
                                         Dictionary<string, ExternalServiceDelegate> externalServices,
                                         Dictionary<string, ExternalQueryDelegate> externalQueries,
-                                        IOrchestrationServiceClient orchestrationClient,
                                         ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -42,7 +40,6 @@ namespace StateChartsDotNet.DurableTask
             childMetadata.CheckArgNull(nameof(childMetadata));
             externalServices.CheckArgNull(nameof(externalServices));
             externalQueries.CheckArgNull(nameof(externalQueries));
-            orchestrationClient.CheckArgNull(nameof(orchestrationClient));
 
             _metadata = metadata;
             _ensureActivityRegistration = ensureActivityRegistration;
@@ -50,7 +47,6 @@ namespace StateChartsDotNet.DurableTask
             _childMetadata = childMetadata;
             _externalServices = externalServices;
             _externalQueries = externalQueries;
-            _orchestrationClient = orchestrationClient;
             _logger = logger;
         }
 
@@ -65,7 +61,6 @@ namespace StateChartsDotNet.DurableTask
                                                             _childMetadata,
                                                             _externalServices,
                                                             _externalQueries,
-                                                            _orchestrationClient,
                                                             _logger);
 
             if (input != null)

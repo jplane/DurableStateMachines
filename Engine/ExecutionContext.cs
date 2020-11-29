@@ -172,8 +172,8 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
-        internal Task SendDoneMessageToParent(object content,
-                                              IReadOnlyDictionary<string, object> parameters)
+        internal virtual Task SendDoneMessageToParent(object content,
+                                                      IReadOnlyDictionary<string, object> parameters)
         {
             if (this.TryGet("_invokeId", out object invokeId))
             {

@@ -96,7 +96,6 @@ namespace StateChartsDotNet.DurableTask
                                                                                _childMetadata,
                                                                                _externalServices,
                                                                                _externalQueries,
-                                                                               (IOrchestrationServiceClient)_service,
                                                                                _logger));
 
             _worker = new TaskHubWorker(_service, orchestrationResolver, activityResolver);

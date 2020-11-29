@@ -15,10 +15,9 @@ namespace StateChartsDotNet.DurableTask
     public class DurableExecutionContext : ExecutionContext
     {
         private readonly Action<string, Func<TaskActivity>> _ensureActivityRegistration;
-        private readonly OrchestrationContext _orchestrationContext;
-        private readonly IOrchestrationServiceClient _orchestrationClient;
-        private readonly Dictionary<string, DurableStateChartClient> _childInstances;
         private readonly Action<string, Func<InterpreterOrchestration>> _ensureOrchestrationRegistration;
+        private readonly OrchestrationContext _orchestrationContext;
+        private readonly List<string> _childInstances;
 
         public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,
@@ -27,7 +26,6 @@ namespace StateChartsDotNet.DurableTask
                                        Dictionary<string, IRootStateMetadata> childMetadata,
                                        Dictionary<string, ExternalServiceDelegate> externalServices,
                                        Dictionary<string, ExternalQueryDelegate> externalQueries,
-                                       IOrchestrationServiceClient orchestrationClient,
                                        ILogger logger = null)
             : base(metadata, logger)
         {
@@ -37,14 +35,12 @@ namespace StateChartsDotNet.DurableTask
             childMetadata.CheckArgNull(nameof(childMetadata));
             externalServices.CheckArgNull(nameof(externalServices));
             externalQueries.CheckArgNull(nameof(externalQueries));
-            orchestrationClient.CheckArgNull(nameof(orchestrationClient));
 
             _orchestrationContext = orchestrationContext;
             _ensureActivityRegistration = ensureActivityRegistration;
             _ensureOrchestrationRegistration = ensureOrchestrationRegistration;
-            _orchestrationClient = orchestrationClient;
 
-            _childInstances = new Dictionary<string, DurableStateChartClient>();
+            _childInstances = new List<string>();
 
             _childMetadata.AddRange(childMetadata);
             _externalServices.AddRange(externalServices);
@@ -76,20 +72,19 @@ namespace StateChartsDotNet.DurableTask
 
             _ensureOrchestrationRegistration(childMachine.Id, () => CreateOrchestration(childMachine));
 
-            var client = new DurableStateChartClient(_orchestrationClient, childMachine.Id, invokeId);
-
-            client["_parentDurableInstanceId"] = _orchestrationContext.OrchestrationInstance.InstanceId;
-
-            client["_invokeId"] = invokeId;
-
-            foreach (var pair in metadata.GetParams(this.ScriptData))
+            var parameters = new Dictionary<string, object>
             {
-                client[pair.Key] = pair.Value;
-            }
+                { "_parentInstance", _orchestrationContext.OrchestrationInstance }
+            };
 
-            await client.InitAsync();
+            parameters.AddRange(metadata.GetParams(this.ScriptData));
 
-            _childInstances.Add(invokeId, client);
+            await _orchestrationContext.CreateSubOrchestrationInstance<InterpreterOrchestration>("statechart",
+                                                                                                 childMachine.Id,
+                                                                                                 invokeId,
+                                                                                                 parameters);
+
+            _childInstances.Add(invokeId);
         }
 
         private InterpreterOrchestration CreateOrchestration(IRootStateMetadata metadata)
@@ -102,26 +97,44 @@ namespace StateChartsDotNet.DurableTask
                                                 _childMetadata,
                                                 _externalServices,
                                                 _externalQueries,
-                                                _orchestrationClient,
                                                 _logger);
         }
 
-        protected override async Task SendMessageToParentStateChart(string _,
-                                                                    string messageName,
-                                                                    object content,
-                                                                    string __,
-                                                                    IReadOnlyDictionary<string, object> parameters)
+        internal override Task SendDoneMessageToParent(object content,
+                                                       IReadOnlyDictionary<string, object> parameters)
+        {
+            if (_data.TryGetValue("_parentInstance", out object parentInstance))
+            {
+                var instance = (OrchestrationInstance) parentInstance;
+
+                return SendMessageToParentStateChart(null, $"done.invoke.{instance.InstanceId}", content, null, parameters);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        protected override Task SendMessageToParentStateChart(string _,
+                                                              string messageName,
+                                                              object content,
+                                                              string __,
+                                                              IReadOnlyDictionary<string, object> parameters)
         {
             messageName.CheckArgNull(nameof(messageName));
 
-            if (_data.TryGetValue("_parentDurableInstanceId", out object parentInstanceId))
+            if (_data.TryGetValue("_parentInstance", out object parentInstance))
             {
-                await DurableStateChartClient.SendMessageToParent(_orchestrationClient,
-                                                                  (string) parentInstanceId,
-                                                                  messageName,
-                                                                  (string) _data["_invokeId"],
-                                                                  content,
-                                                                  parameters);
+                var msg = new ChildStateChartResponseMessage(messageName)
+                {
+                    CorrelationId = _orchestrationContext.OrchestrationInstance.InstanceId,
+                    Content = content,
+                    Parameters = parameters
+                };
+
+                _orchestrationContext.SendEvent((OrchestrationInstance) parentInstance, messageName, msg);
+
+                return Task.CompletedTask;
             }
             else
             {
@@ -151,26 +164,29 @@ namespace StateChartsDotNet.DurableTask
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
-            Debug.Assert(!_childInstances.ContainsKey(invokeId));
+            Debug.Assert(!_childInstances.Contains(invokeId));
 
             return invokeId;
         }
 
-        internal async override Task CancelInvokesAsync(string parentUniqueId)
+        internal override Task CancelInvokesAsync(string parentUniqueId)
         {
             parentUniqueId.CheckArgNull(nameof(parentUniqueId));
 
-            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
+            foreach (var invokeId in _childInstances.Where(id => id.StartsWith($"{parentUniqueId}.")).ToArray())
             {
-                var invokeId = pair.Key;
-                var client = pair.Value;
+                var instance = new OrchestrationInstance
+                {
+                    InstanceId = invokeId,
+                    ExecutionId = null
+                };
 
-                Debug.Assert(client != null);
-
-                await client.StopAsync();
+                _orchestrationContext.SendEvent(instance, "cancel", null);
 
                 _childInstances.Remove(invokeId);
             }
+
+            return Task.CompletedTask;
         }
 
         internal async override Task ProcessExternalMessageAsync(string parentUniqueId, InvokeStateChart invoke, ExternalMessage message)
@@ -178,10 +194,8 @@ namespace StateChartsDotNet.DurableTask
             parentUniqueId.CheckArgNull(nameof(parentUniqueId));
             invoke.CheckArgNull(nameof(invoke));
 
-            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
+            foreach (var invokeId in _childInstances.Where(id => id.StartsWith($"{parentUniqueId}.")).ToArray())
             {
-                var invokeId = pair.Key;
-
                 await invoke.ProcessExternalMessageAsync(invokeId, this, message);
             }
         }
@@ -192,25 +206,28 @@ namespace StateChartsDotNet.DurableTask
 
             if (message.IsDone)
             {
-                Debug.Assert(_childInstances.ContainsKey(message.CorrelationId));
+                Debug.Assert(_childInstances.Contains(message.CorrelationId));
 
                 _childInstances.Remove(message.CorrelationId);
             }
         }
 
-        internal async override Task SendToChildStateChart(string id, ExternalMessage message)
+        internal override Task SendToChildStateChart(string invokeId, ExternalMessage message)
         {
-            id.CheckArgNull(nameof(id));
+            invokeId.CheckArgNull(nameof(invokeId));
             message.CheckArgNull(nameof(message));
 
-            if (_childInstances.TryGetValue(id, out DurableStateChartClient client))
+            Debug.Assert(_childInstances.Contains(invokeId));
+
+            var instance = new OrchestrationInstance
             {
-                await client.SendMessageAsync(message);
-            }
-            else
-            {
-                Debug.Fail($"Unable to find child statechart {id}.");
-            }
+                InstanceId = invokeId,
+                ExecutionId = null
+            };
+
+            _orchestrationContext.SendEvent(instance, message.Name, message);
+
+            return Task.CompletedTask;
         }
 
         internal override Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
