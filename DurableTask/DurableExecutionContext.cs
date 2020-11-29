@@ -230,6 +230,15 @@ namespace StateChartsDotNet.DurableTask
             return Task.CompletedTask;
         }
 
+        internal override Task DelayAsync(TimeSpan timespan)
+        {
+            Debug.Assert(timespan > TimeSpan.Zero);
+
+            var expiration = _orchestrationContext.CurrentUtcDateTime.Add(timespan);
+
+            return _orchestrationContext.CreateTimer(expiration, 0);
+        }
+
         internal override Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
         {
             uniqueId.CheckArgNull(nameof(func));

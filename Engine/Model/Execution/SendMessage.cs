@@ -14,13 +14,20 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContext context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (ISendMessageMetadata) _metadata;
 
-            return context.ExecuteContentAsync(metadata.UniqueId, async ec =>
+            var delay = metadata.GetDelay(context.ScriptData);
+
+            if (delay > TimeSpan.Zero)
+            {
+                await context.DelayAsync(delay);
+            }
+
+            await context.ExecuteContentAsync(metadata.UniqueId, async ec =>
             {
                 Debug.Assert(ec != null);
 

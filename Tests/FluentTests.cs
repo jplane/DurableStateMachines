@@ -4,6 +4,7 @@ using StateChartsDotNet.Metadata.Fluent.States;
 using StateChartsDotNet.Metadata.Fluent.Queries.HttpGet;
 using StateChartsDotNet.Metadata.Fluent.Services.HttpPost;
 using System.Threading.Tasks;
+using System;
 
 namespace StateChartsDotNet.Tests
 {
@@ -74,6 +75,44 @@ namespace StateChartsDotNet.Tests
             var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(int) });
 
             Assert.AreEqual(5, content.value);
+        }
+
+        [TestMethod]
+        public async Task Delay()
+        {
+            var uri = "http://localhost:4444/";
+
+            var listenerTask = Task.Run(() => InProcWebServer.EchoAsync(uri));
+
+            var now = DateTimeOffset.UtcNow;
+
+            var machine = StateChart.Define("httptest")
+                                    .AtomicState("state1")
+                                        .OnEntry()
+                                            .HttpPost()
+                                                .Url(uri)
+                                                .Delay(TimeSpan.FromSeconds(5))
+                                                .Body(_ => new { value = DateTimeOffset.UtcNow })
+                                                .Attach()
+                                            .Attach()
+                                        .Transition()
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var context = new ExecutionContext(machine);
+
+            var interpreter = new Interpreter();
+
+            await interpreter.RunAsync(context);
+
+            var json = await listenerTask;
+
+            var content = JsonConvert.DeserializeAnonymousType(json, new { value = default(DateTimeOffset) });
+
+            Assert.IsTrue(content.value >= now + TimeSpan.FromSeconds(5));
         }
 
         [TestMethod]

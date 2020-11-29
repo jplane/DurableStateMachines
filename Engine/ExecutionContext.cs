@@ -209,6 +209,13 @@ namespace StateChartsDotNet
             return null;
         }
 
+        internal virtual Task DelayAsync(TimeSpan timespan)
+        {
+            Debug.Assert(timespan > TimeSpan.Zero);
+
+            return Task.Delay(timespan);
+        }
+
         internal virtual Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
         {
             func.CheckArgNull(nameof(func));

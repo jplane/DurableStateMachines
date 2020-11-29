@@ -23,6 +23,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         internal SendMessageMetadata()
         {
             _params = new List<ParamMetadata<SendMessageMetadata<TParent>>>();
+
+            _delayGetter = new Func<dynamic, TimeSpan>(_ => TimeSpan.Zero);
         }
 
         internal TParent Parent { get; set; }
@@ -121,7 +123,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         string ISendMessageMetadata.IdLocation => _idLocation;
 
-        TimeSpan ISendMessageMetadata.GetDelay(dynamic data) => _delayGetter?.Invoke(data);
+        TimeSpan ISendMessageMetadata.GetDelay(dynamic data) => _delayGetter.Invoke(data);
 
         string ISendMessageMetadata.GetMessageName(dynamic data) => _messageNameGetter?.Invoke(data);
 
