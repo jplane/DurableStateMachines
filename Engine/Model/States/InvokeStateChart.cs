@@ -12,16 +12,14 @@ namespace StateChartsDotNet.Model.States
 {
     internal class InvokeStateChart
     {
-        private readonly string _parentId;
         private readonly IInvokeStateChartMetadata _metadata;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
-        public InvokeStateChart(IInvokeStateChartMetadata metadata, State parent)
+        public InvokeStateChart(IInvokeStateChartMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
             _metadata = metadata;
-            _parentId = parent.Id;
 
             _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
@@ -35,25 +33,9 @@ namespace StateChartsDotNet.Model.States
 
             await context.LogInformationAsync("Start: InvokeStateChart.Execute");
 
-            var invokeId = _metadata.Id;
-
-            if (string.IsNullOrWhiteSpace(invokeId))
-            {
-                invokeId = $"{_parentId}.{Guid.NewGuid().ToString("N")}";
-
-                await context.LogDebugAsync($"Synthentic Id = {invokeId}");
-
-                if (!string.IsNullOrWhiteSpace(_metadata.IdLocation))
-                {
-                    context.SetDataValue(_metadata.IdLocation, invokeId);
-                }
-            }
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
-
             try
             {
-                context.InvokeChildStateChart(_metadata, invokeId);
+                await context.InvokeChildStateChart(_metadata);
             }
             catch (Exception ex)
             {
@@ -83,7 +65,7 @@ namespace StateChartsDotNet.Model.States
 
             if (_metadata.Autoforward && !(externalMessage is ChildStateChartResponseMessage))
             {
-                context.SendToChildStateChart(invokeId, externalMessage);
+                await context.SendToChildStateChart(invokeId, externalMessage);
             }
         }
     }

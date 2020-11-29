@@ -4,6 +4,7 @@ using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Fluent.Data;
 using StateChartsDotNet.Metadata.Fluent.Execution;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -32,6 +33,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         }
 
         protected override IStateMetadata _Parent => null;
+
+        public override string UniqueId 
+        {
+            get => this.Id; set => throw new NotSupportedException(); 
+        }
 
         internal override IEnumerable<string> StateNames
         {
@@ -118,6 +124,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             state.Parent = this;
 
             _states.Add(state);
+
+            state.UniqueId = $"{this.UniqueId}.States[{_states.Count}]";
 
             return state;
         }

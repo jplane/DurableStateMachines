@@ -123,6 +123,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _states.Add(state);
 
+            state.UniqueId = $"{this.UniqueId}.States[{_states.Count}]";
+
             return state;
         }
 

@@ -4,13 +4,12 @@ using StateChartsDotNet;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableTask;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace CoreEngine.DurableTask
+namespace StateChartsDotNet.DurableTask
 {
     public class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
                                                               IDictionary<string, object>,
@@ -18,20 +17,40 @@ namespace CoreEngine.DurableTask
                                                               string>
     {
         private readonly IRootStateMetadata _metadata;
-        private readonly Action<string, ExecutionContext, Func<ExecutionContext, Task>> _ensureActivityRegistration;
+        private readonly Action<string, Func<TaskActivity>> _ensureActivityRegistration;
+        private readonly Action<string, Func<InterpreterOrchestration>> _ensureOrchestrationRegistration;
+        private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
+        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
+        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
+        private readonly IOrchestrationServiceClient _orchestrationClient;
         private readonly ILogger _logger;
 
         private DurableExecutionContext _executionContext;
 
         public InterpreterOrchestration(IRootStateMetadata metadata,
-                                        Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration,
+                                        Action<string, Func<TaskActivity>> ensureActivityRegistration,
+                                        Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration,
+                                        Dictionary<string, IRootStateMetadata> childMetadata,
+                                        Dictionary<string, ExternalServiceDelegate> externalServices,
+                                        Dictionary<string, ExternalQueryDelegate> externalQueries,
+                                        IOrchestrationServiceClient orchestrationClient,
                                         ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
             ensureActivityRegistration.CheckArgNull(nameof(ensureActivityRegistration));
+            ensureOrchestrationRegistration.CheckArgNull(nameof(ensureOrchestrationRegistration));
+            childMetadata.CheckArgNull(nameof(childMetadata));
+            externalServices.CheckArgNull(nameof(externalServices));
+            externalQueries.CheckArgNull(nameof(externalQueries));
+            orchestrationClient.CheckArgNull(nameof(orchestrationClient));
 
             _metadata = metadata;
             _ensureActivityRegistration = ensureActivityRegistration;
+            _ensureOrchestrationRegistration = ensureOrchestrationRegistration;
+            _childMetadata = childMetadata;
+            _externalServices = externalServices;
+            _externalQueries = externalQueries;
+            _orchestrationClient = orchestrationClient;
             _logger = logger;
         }
 
@@ -42,6 +61,11 @@ namespace CoreEngine.DurableTask
             _executionContext = new DurableExecutionContext(_metadata,
                                                             context,
                                                             _ensureActivityRegistration,
+                                                            _ensureOrchestrationRegistration,
+                                                            _childMetadata,
+                                                            _externalServices,
+                                                            _externalQueries,
+                                                            _orchestrationClient,
                                                             _logger);
 
             if (input != null)

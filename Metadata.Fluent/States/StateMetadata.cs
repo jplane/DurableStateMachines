@@ -24,9 +24,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             get => new[] { _id };
         }
 
-        string IStateMetadata.Id => _id;
+        public string Id => _id;
 
-        string IModelMetadata.UniqueId => _id;
+        public virtual string UniqueId { get; set; }
 
         int IStateMetadata.DepthFirstCompare(IStateMetadata metadata)
         {

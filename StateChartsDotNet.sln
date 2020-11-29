@@ -20,6 +20,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata.Xml", "Metadata.Xm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{898762AE-3EE2-45DD-8E88-CD7E958BFACC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableTask.Core", "..\durabletask\src\DurableTask.Core\DurableTask.Core.csproj", "{EF8C84DF-131F-402F-90AC-3D9970C93779}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableTask.Emulator", "..\durabletask\src\DurableTask.Emulator\DurableTask.Emulator.csproj", "{4C8435D3-1B03-48FD-9628-7CA1BCBF6B8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +54,14 @@ Global
 		{898762AE-3EE2-45DD-8E88-CD7E958BFACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{898762AE-3EE2-45DD-8E88-CD7E958BFACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{898762AE-3EE2-45DD-8E88-CD7E958BFACC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF8C84DF-131F-402F-90AC-3D9970C93779}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF8C84DF-131F-402F-90AC-3D9970C93779}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF8C84DF-131F-402F-90AC-3D9970C93779}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8C84DF-131F-402F-90AC-3D9970C93779}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C8435D3-1B03-48FD-9628-7CA1BCBF6B8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8435D3-1B03-48FD-9628-7CA1BCBF6B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C8435D3-1B03-48FD-9628-7CA1BCBF6B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C8435D3-1B03-48FD-9628-7CA1BCBF6B8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

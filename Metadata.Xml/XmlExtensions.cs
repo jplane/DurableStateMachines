@@ -43,7 +43,7 @@ namespace StateChartsDotNet.Metadata.Xml
         {
             var siblingOrder = 1 + element.ElementsBeforeSelf().Count();
 
-            var path = $"{element.Name}[{siblingOrder}]";
+            var path = $"{element.Name.LocalName}[{siblingOrder}]";
 
             if (element.Parent == null)
             {

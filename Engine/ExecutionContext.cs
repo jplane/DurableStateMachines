@@ -17,17 +17,19 @@ namespace StateChartsDotNet
     {
         protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
-        protected readonly Dictionary<string, IRootStateMetadata> _childStatechartMetadata;
+        protected readonly Dictionary<string, IRootStateMetadata> _childMetadata;
         protected readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         protected readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
 
-        private readonly Dictionary<string, (Task, ExecutionContext)> _childStatechartInstances;
+        private readonly Dictionary<string, (Task, ExecutionContext)> _childInstances;
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
+
+        private ExecutionContext _parentContext;
 
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
         {
@@ -42,8 +44,8 @@ namespace StateChartsDotNet
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
             _configuration = new Set<State>();
             _statesToInvoke = new Set<State>();
-            _childStatechartMetadata = new Dictionary<string, IRootStateMetadata>();
-            _childStatechartInstances = new Dictionary<string, (Task, ExecutionContext)>();
+            _childMetadata = new Dictionary<string, IRootStateMetadata>();
+            _childInstances = new Dictionary<string, (Task, ExecutionContext)>();
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
@@ -61,7 +63,7 @@ namespace StateChartsDotNet
                                  ILogger logger = null)
             : this(metadata, logger)
         {
-            _childStatechartMetadata = new Dictionary<string, IRootStateMetadata>(childStatechartMetadata);
+            _childMetadata = new Dictionary<string, IRootStateMetadata>(childStatechartMetadata);
             _externalServices = new Dictionary<string, ExternalServiceDelegate>(externalServices);
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>(externalQueries);
         }
@@ -87,7 +89,7 @@ namespace StateChartsDotNet
         {
             statechart.CheckArgNull(nameof(statechart));
 
-            _childStatechartMetadata[statechart.Id] = statechart;
+            _childMetadata[statechart.Id] = statechart;
         }
 
         public void ConfigureExternalQuery(string id, ExternalQueryDelegate handler)
@@ -145,15 +147,15 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
-        private Task SendMessageToParentStateChart(string _,
-                                                   string messageName,
-                                                   object content,
-                                                   string __,
-                                                   IReadOnlyDictionary<string, object> parameters)
+        protected virtual Task SendMessageToParentStateChart(string _,
+                                                             string messageName,
+                                                             object content,
+                                                             string __,
+                                                             IReadOnlyDictionary<string, object> parameters)
         {
             messageName.CheckArgNull(nameof(messageName));
 
-            if (this.ParentContext == null)
+            if (_parentContext == null)
             {
                 throw new InvalidOperationException("Current statechart has no parent.");
             }
@@ -165,32 +167,23 @@ namespace StateChartsDotNet
                 Parameters = parameters
             };
 
-            this.ParentContext.Send(msg);
+            _parentContext.Send(msg);
 
             return Task.CompletedTask;
         }
 
-        internal void SendDoneMessageToParent(object content,
+        internal Task SendDoneMessageToParent(object content,
                                               IReadOnlyDictionary<string, object> parameters)
         {
-            if (this.ParentContext != null)
+            if (this.TryGet("_invokeId", out object invokeId))
             {
-                var invokeId = (string) this["_invokeId"];
-
-                Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
-
-                var msg = new ChildStateChartResponseMessage($"done.invoke.{invokeId}")
-                {
-                    CorrelationId = invokeId,
-                    Content = content,
-                    Parameters = parameters
-                };
-
-                this.ParentContext.Send(msg);
+                return SendMessageToParentStateChart(null, $"done.invoke.{invokeId}", content, null, parameters);
+            }
+            else
+            {
+                return Task.CompletedTask;
             }
         }
-
-        internal ExecutionContext ParentContext { get; set; }
 
         internal ExternalQueryDelegate GetExternalQuery(string id)
         {
@@ -223,37 +216,25 @@ namespace StateChartsDotNet
             return func(this);
         }
 
-        internal virtual void InvokeChildStateChart(IInvokeStateChartMetadata metadata, string invokeId)
+        internal async virtual Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
-            invokeId.CheckArgNull(nameof(invokeId));
 
-            Debug.Assert(!_childStatechartInstances.ContainsKey(invokeId));
+            var invokeId = await ResolveInvokeId(metadata);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
             var childMachine = ResolveChildStateChart(metadata);
 
+            Debug.Assert(childMachine != null);
+
             var context = new ExecutionContext(childMachine,
-                                               _childStatechartMetadata,
+                                               _childMetadata,
                                                _externalServices,
                                                _externalQueries,
                                                _logger);
 
-            ConfigureChildExecutionContext(context, metadata, invokeId);
-
-            var interpreter = new Interpreter();
-
-            var task = Task.Run(() => interpreter.RunAsync(context));
-
-            _childStatechartInstances.Add(invokeId, (task, context));
-        }
-
-        protected void ConfigureChildExecutionContext(ExecutionContext context, IInvokeStateChartMetadata metadata, string invokeId)
-        {
-            Debug.Assert(context != null);
-            Debug.Assert(metadata != null);
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
-
-            context.ParentContext = this;
+            context._parentContext = this;
 
             context["_invokeId"] = invokeId;
 
@@ -261,6 +242,35 @@ namespace StateChartsDotNet
             {
                 context[param.Key] = param.Value;
             }
+
+            var interpreter = new Interpreter();
+
+            var task = Task.Run(() => interpreter.RunAsync(context));
+
+            _childInstances.Add(invokeId, (task, context));
+        }
+
+        protected async virtual Task<string> ResolveInvokeId(IInvokeStateChartMetadata metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            var invokeId = metadata.Id;
+
+            if (string.IsNullOrWhiteSpace(invokeId))
+            {
+                invokeId = $"{metadata.UniqueId}.{Guid.NewGuid().ToString("N")}";
+
+                await this.LogDebugAsync($"Synthentic Id = {invokeId}");
+
+                if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                {
+                    _data[metadata.IdLocation] = invokeId;
+                }
+            }
+            
+            Debug.Assert(!_childInstances.ContainsKey(invokeId));
+
+            return invokeId;
         }
 
         protected IRootStateMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
@@ -273,7 +283,7 @@ namespace StateChartsDotNet
 
             if (!string.IsNullOrWhiteSpace(rootId))
             {
-                if (!_childStatechartMetadata.TryGetValue(rootId, out childMachine))
+                if (!_childMetadata.TryGetValue(rootId, out childMachine))
                 {
                     throw new InvalidOperationException($"Child statechart {rootId} not found.");
                 }
@@ -291,12 +301,11 @@ namespace StateChartsDotNet
             return childMachine;
         }
 
-        internal async Task CancelInvokeAsync(string parentId, InvokeStateChart invoke)
+        internal virtual async Task CancelInvokesAsync(string parentUniqueId)
         {
-            parentId.CheckArgNull(nameof(parentId));
-            invoke.CheckArgNull(nameof(invoke));
+            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
 
-            foreach (var pair in _childStatechartInstances.Where(p => p.Key.StartsWith($"{parentId}.")).ToArray())
+            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
             {
                 var invokeId = pair.Key;
                 var task = pair.Value.Item1;
@@ -310,16 +319,16 @@ namespace StateChartsDotNet
 
                 await task;
 
-                _childStatechartInstances.Remove(invokeId);
+                _childInstances.Remove(invokeId);
             }
         }
 
-        internal async Task ProcessExternalMessageAsync(string parentId, InvokeStateChart invoke, ExternalMessage message)
+        internal virtual async Task ProcessExternalMessageAsync(string parentUniqueId, InvokeStateChart invoke, ExternalMessage message)
         {
-            parentId.CheckArgNull(nameof(parentId));
+            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
             invoke.CheckArgNull(nameof(invoke));
 
-            foreach (var pair in _childStatechartInstances.Where(p => p.Key.StartsWith($"{parentId}.")).ToArray())
+            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
             {
                 var invokeId = pair.Key;
 
@@ -327,24 +336,24 @@ namespace StateChartsDotNet
             }
         }
 
-        internal void ProcessChildStateChartDone(ChildStateChartResponseMessage message)
+        internal virtual void ProcessChildStateChartDone(ChildStateChartResponseMessage message)
         {
             message.CheckArgNull(nameof(message));
 
             if (message.IsDone)
             {
-                Debug.Assert(_childStatechartInstances.ContainsKey(message.CorrelationId));
+                Debug.Assert(_childInstances.ContainsKey(message.CorrelationId));
 
-                _childStatechartInstances.Remove(message.CorrelationId);
+                _childInstances.Remove(message.CorrelationId);
             }
         }
 
-        internal void SendToChildStateChart(string id, ExternalMessage message)
+        internal virtual Task SendToChildStateChart(string id, ExternalMessage message)
         {
             id.CheckArgNull(nameof(id));
             message.CheckArgNull(nameof(message));
 
-            if (_childStatechartInstances.TryGetValue(id, out (Task, ExecutionContext) tuple))
+            if (_childInstances.TryGetValue(id, out (Task, ExecutionContext) tuple))
             {
                 var context = tuple.Item2;
 
@@ -356,6 +365,8 @@ namespace StateChartsDotNet
             {
                 Debug.Fail($"Unable to find child statechart {id}.");
             }
+
+            return Task.CompletedTask;
         }
 
         internal virtual Task InitAsync()

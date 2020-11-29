@@ -32,13 +32,61 @@ namespace StateChartsDotNet.Tests
 
             var emulator = new LocalOrchestrationService();
 
-            var service = new DurableStateChartService(machine, emulator);
+            var service = new DurableStateChartService(emulator, machine);
 
             await service.StartAsync();
 
-            var client = new DurableStateChartClient(emulator);
+            var client = new DurableStateChartClient(emulator, machine.Id);
 
-            await client.StartAsync();
+            await client.InitAsync();
+
+            await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
+
+            await service.StopAsync();
+
+            Assert.AreEqual(3, x);
+        }
+
+        [TestMethod]
+        public async Task SimpleParentChild()
+        {
+            var x = 1;
+
+            var machine = StateChart.Define("outer")
+                                    .AtomicState("outerState1")
+                                        .InvokeStateChart()
+                                            .Definition(StateChart.Define("inner")
+                                                                  .AtomicState("innerState1")
+                                                                      .OnEntry()
+                                                                          .Execute(_ => x += 1)
+                                                                          .Attach()
+                                                                      .OnExit()
+                                                                          .Execute(_ => x += 1)
+                                                                          .Attach()
+                                                                      .Transition()
+                                                                          .Target("alldone")
+                                                                          .Attach()
+                                                                      .Attach()
+                                                                  .FinalState("alldone")
+                                                                      .Attach())
+                                            .Attach()
+                                        .Transition()
+                                            .Message("done.invoke.*")
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var emulator = new LocalOrchestrationService();
+
+            var service = new DurableStateChartService(emulator, machine);
+
+            await service.StartAsync();
+
+            var client = new DurableStateChartClient(emulator, machine.Id);
+
+            await client.InitAsync();
 
             await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
 

@@ -1,5 +1,4 @@
-﻿using CoreEngine.DurableTask;
-using DurableTask.Core;
+﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
@@ -14,19 +13,49 @@ namespace StateChartsDotNet.DurableTask
         private readonly IRootStateMetadata _metadata;
         private readonly IOrchestrationService _service;
         private readonly ILogger _logger;
+        private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
+        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
+        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
 
         private TaskHubWorker _worker;
 
-        public DurableStateChartService(IRootStateMetadata metadata,
-                                        IOrchestrationService service,
+        public DurableStateChartService(IOrchestrationService service,
+                                        IRootStateMetadata metadata,
                                         ILogger logger = null)
         {
-            metadata.CheckArgNull(nameof(metadata));
             service.CheckArgNull(nameof(service));
+            metadata.CheckArgNull(nameof(metadata));
 
             _metadata = metadata;
             _service = service;
             _logger = logger;
+
+            _childMetadata = new Dictionary<string, IRootStateMetadata>();
+            _externalServices = new Dictionary<string, ExternalServiceDelegate>();
+            _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
+        }
+
+        public void ConfigureChildStateChart(IRootStateMetadata statechart)
+        {
+            statechart.CheckArgNull(nameof(statechart));
+
+            _childMetadata[statechart.Id] = statechart;
+        }
+
+        public void ConfigureExternalQuery(string id, ExternalQueryDelegate handler)
+        {
+            id.CheckArgNull(nameof(id));
+            handler.CheckArgNull(nameof(handler));
+
+            _externalQueries[id] = handler;
+        }
+
+        public void ConfigureExternalService(string id, ExternalServiceDelegate handler)
+        {
+            id.CheckArgNull(nameof(id));
+            handler.CheckArgNull(nameof(handler));
+
+            _externalServices[id] = handler;
         }
 
         public async Task StartAsync()
@@ -40,26 +69,37 @@ namespace StateChartsDotNet.DurableTask
 
             var activityResolver = new NameVersionObjectManager<TaskActivity>();
 
-            Action<string, ExecutionContext, Func<ExecutionContext, Task>> ensureActivityRegistration = (uniqueId, ec, func) =>
+            Action<string, Func<TaskActivity>> ensureActivityRegistration = (uniqueId, func) =>
             {
                 uniqueId.CheckArgNull(nameof(uniqueId));
-                ec.CheckArgNull(nameof(ec));
                 func.CheckArgNull(nameof(func));
 
-                var creator = new NameValueObjectCreator<TaskActivity>(uniqueId,
-                                                                       string.Empty,
-                                                                       new ExecutableContentActivity(func, ec));
+                var creator = new NameValueObjectCreator<TaskActivity>(uniqueId, string.Empty, func());
 
                 activityResolver.Add(creator);
             };
 
-            _worker = new TaskHubWorker(_service, orchestrationResolver, activityResolver);
+            Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration = (name, func) =>
+            {
+                name.CheckArgNull(nameof(name));
+                func.CheckArgNull(nameof(func));
 
-            _worker.AddTaskOrchestrations(new NameValueObjectCreator<TaskOrchestration>("statechart",
-                                                                                        string.Empty,
-                                                                                        new InterpreterOrchestration(_metadata,
-                                                                                                                     ensureActivityRegistration,
-                                                                                                                     _logger)));
+                var creator = new NameValueObjectCreator<TaskOrchestration>("statechart", name, func());
+
+                orchestrationResolver.Add(creator);
+            };
+
+            ensureOrchestrationRegistration(_metadata.Id,
+                                            () => new InterpreterOrchestration(_metadata,
+                                                                               ensureActivityRegistration,
+                                                                               ensureOrchestrationRegistration,
+                                                                               _childMetadata,
+                                                                               _externalServices,
+                                                                               _externalQueries,
+                                                                               (IOrchestrationServiceClient)_service,
+                                                                               _logger));
+
+            _worker = new TaskHubWorker(_service, orchestrationResolver, activityResolver);
 
             _worker.AddTaskActivities(typeof(GenerateGuidActivity));
 
@@ -93,7 +133,7 @@ namespace StateChartsDotNet.DurableTask
                 {
                     var key = GetKey(creator.Name, creator.Version);
 
-                    _creators.TryAdd(key, creator);
+                    _creators[key] = creator;
                 }
             }
 

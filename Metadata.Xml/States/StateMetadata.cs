@@ -13,12 +13,19 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         protected readonly XElement _element;
 
+        private readonly Lazy<string> _uniqueId;
+
         internal StateMetadata(XElement element)
         {
             _element = element;
+
+            _uniqueId = new Lazy<string>(() =>
+            {
+                return element.GetUniqueElementPath();
+            });
         }
 
-        public string UniqueId => this.Id;
+        public string UniqueId => _uniqueId.Value;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {
