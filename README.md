@@ -8,7 +8,7 @@ The best definition comes from [here](https://statecharts.github.io/what-is-a-st
 
 > The primary feature of statecharts is that states can be organized in a hierarchy:  A statechart is a [state machine](https://statecharts.github.io/what-is-a-state-machine.html) where each state in the state machine may define its own subordinate state machines, called substates.  Those states can again define substates.
 
-The utility of state machines goes down as system complexity increases, due to [state explosion](https://statecharts.github.io/state-machine-state-explosion.html). Also, state machines by themselves are merely a description of behavior, not behavior itself. Statecharts (and StateChartsDotNet) address both of these limitations.
+The utility of traditional state machines goes down as system complexity increases, due to [state explosion](https://statecharts.github.io/state-machine-state-explosion.html). Also, state machines by themselves are merely a description of behavior, not behavior itself. Statecharts (and StateChartsDotNet) address both of these limitations.
 
 ## Goals
 
@@ -18,15 +18,15 @@ Some specific design and implementation choices:
 
 - An [abstraction](./Common/Model) for describing statecharts that allows for [multiple](./Metadata.Xml) [implementations](./Metadata.Fluent) _(perhaps you've got another one in mind?)_
 
-- Two engines to execute this metadata:
+- Two behaviorally equivalent engines to execute this metadata:
 
   - A fast, in-memory [implementation](./Engine)
 
   - A durable, reliable [implementation](./DurableTask) based on the [Durable Task framework](https://github.com/Azure/durabletask)
 
-- Minimal external library dependencies
-
 - Abstractions for both [synchronous](./Common/Model/Execution/IQueryMetadata.cs) and [asynchronous](./Common/Model/Execution/ISendMessageMetadata.cs) communication to external systems; talk to all your favorite native cloud services from within your statechart!
+
+- In addition to parent-child _state_ relationships within a single statechart, there is also support for parent-child relationships between _statecharts_ themselves (execute statechart A within the context of statechart B, etc.)
 
 ## Usage
 
