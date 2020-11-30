@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\DurableTask\DurableTask.csproj" />
+    <ProjectReference Include="..\DurableEngine\DurableEngine.csproj" />
     <ProjectReference Include="..\Engine\Engine.csproj" />
     <ProjectReference Include="..\Metadata.Fluent\Metadata.Fluent.csproj" />
     <ProjectReference Include="..\Metadata.Xml\Metadata.Xml.csproj" />

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableTask
+namespace StateChartsDotNet.Durable
 {
     public class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
                                                               IDictionary<string, object>,

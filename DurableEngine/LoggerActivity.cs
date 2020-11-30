@@ -1,7 +1,7 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 
-namespace StateChartsDotNet.DurableTask
+namespace StateChartsDotNet.Durable
 {
     internal class LoggerActivity : TaskActivity<(string, string), bool>
     {

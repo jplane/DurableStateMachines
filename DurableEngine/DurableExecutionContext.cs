@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableTask
+namespace StateChartsDotNet.Durable
 {
     public class DurableExecutionContext : ExecutionContext
     {

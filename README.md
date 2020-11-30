@@ -22,7 +22,7 @@ Some specific design and implementation choices:
 
   - A fast, in-memory [implementation](./Engine)
 
-  - A durable, reliable [implementation](./DurableTask) based on the [Durable Task framework](https://github.com/Azure/durabletask)
+  - A durable, reliable [implementation](./DurableEngine) based on the [Durable Task framework](https://github.com/Azure/durabletask)
 
 - Abstractions for both [synchronous](./Common/Model/Execution/IQueryMetadata.cs) and [asynchronous](./Common/Model/Execution/ISendMessageMetadata.cs) communication to external systems; talk to all your favorite native cloud services from within your statechart!
 
@@ -153,6 +153,6 @@ await interpreter.RunAsync(context);
 
 - The [SCXML](https://www.w3.org/TR/scxml/) statecharts spec
 
-- My colleague David Khourshid's excellent Javascript statechart library [XState](https://github.com/davidkpiano/xstate) (with fabulous [docs](https://xstate.js.org/docs/))
+- David Khourshid's excellent Javascript statechart library [XState](https://github.com/davidkpiano/xstate) (with fabulous [docs](https://xstate.js.org/docs/))
 
 - Nerd out on David Harel's original [research](https://www.sciencedirect.com/science/article/pii/0167642387900359/pdf) that formalized statecharts

@@ -1,7 +1,7 @@
 ﻿using DurableTask.Emulator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using StateChartsDotNet.DurableTask;
+using StateChartsDotNet.Durable;
 using StateChartsDotNet.Metadata.Fluent.Services.HttpPost;
 using StateChartsDotNet.Metadata.Fluent.States;
 using System;

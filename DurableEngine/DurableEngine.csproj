@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.DurableTask</AssemblyName>
-    <RootNamespace>StateChartsDotNet.DurableTask</RootNamespace>
+    <AssemblyName>StateChartsDotNet.Durable</AssemblyName>
+    <RootNamespace>StateChartsDotNet.Durable</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 

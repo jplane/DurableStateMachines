@@ -1,7 +1,7 @@
 ﻿using DurableTask.Core;
 using System;
 
-namespace StateChartsDotNet.DurableTask
+namespace StateChartsDotNet.Durable
 {
     internal class GenerateGuidActivity : TaskActivity<string, Guid>
     {
