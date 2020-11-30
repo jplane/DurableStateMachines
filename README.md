@@ -18,7 +18,7 @@ Some specific design and implementation choices:
 
 - An [abstraction](./Common/Model) for describing statecharts that allows for [multiple](./Metadata.Xml) [implementations](./Metadata.Fluent) _(perhaps you've got another one in mind?)_
 
-- Two behaviorally equivalent engines to execute this metadata:
+- Two behaviorally equivalent statechart execution engines:
 
   - A fast, in-memory [implementation](./Engine)
 
