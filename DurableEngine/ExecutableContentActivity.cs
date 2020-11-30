@@ -7,10 +7,10 @@ namespace StateChartsDotNet.Durable
 {
     internal class ExecutableContentActivity : AsyncTaskActivity<string, bool>
     {
-        private readonly Func<ExecutionContext, Task> _func;
-        private readonly ExecutionContext _executionContext;
+        private readonly Func<StateChartsDotNet.ExecutionContext, Task> _func;
+        private readonly StateChartsDotNet.ExecutionContext _executionContext;
 
-        public ExecutableContentActivity(Func<ExecutionContext, Task> func, ExecutionContext context)
+        public ExecutableContentActivity(Func<StateChartsDotNet.ExecutionContext, Task> func, StateChartsDotNet.ExecutionContext context)
         {
             func.CheckArgNull(nameof(func));
             context.CheckArgNull(nameof(context));

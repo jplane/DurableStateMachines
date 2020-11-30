@@ -13,7 +13,7 @@ using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet
 {
-    public class ExecutionContext
+    public class ExecutionContext : IExecutionContext
     {
         protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
@@ -108,24 +108,29 @@ namespace StateChartsDotNet
             _externalServices[id] = handler;
         }
 
-        public void Stop()
+        public Task StopAsync()
         {
-            Send("cancel");
+            return SendAsync("cancel");
         }
 
-        public void Send(string message, object data = null)
+        public Task SendAsync(string message,
+                              object content = null,
+                              IReadOnlyDictionary<string, object> parameters = null)
         {
             message.CheckArgNull(nameof(message));
 
             var msg = new ExternalMessage(message)
             {
-                Content = data
+                Content = content,
+                Parameters = parameters
             };
 
             Send(msg);
+
+            return Task.CompletedTask;
         }
 
-        public virtual void Send(ExternalMessage message)
+        internal virtual void Send(ExternalMessage message)
         {
             _externalMessages.Enqueue(message);
         }
@@ -142,9 +147,7 @@ namespace StateChartsDotNet
                 Parameters = parameters
             };
 
-            SendToChildStateChart(childId, msg);
-
-            return Task.CompletedTask;
+            return SendToChildStateChart(childId, msg);
         }
 
         protected virtual Task SendMessageToParentStateChart(string _,
@@ -320,7 +323,7 @@ namespace StateChartsDotNet
 
                 Debug.Assert(context != null);
 
-                context.Stop();
+                await context.StopAsync();
 
                 Debug.Assert(task != null);
 
@@ -423,7 +426,7 @@ namespace StateChartsDotNet
 
             var evt = new InternalMessage("error.communication")
             {
-                Data = ex
+                Content = ex
             };
 
             _internalMessages.Enqueue(evt);
@@ -437,7 +440,7 @@ namespace StateChartsDotNet
 
             var evt = new InternalMessage("error.execution")
             {
-                Data = ex
+                Content = ex
             };
 
             _internalMessages.Enqueue(evt);

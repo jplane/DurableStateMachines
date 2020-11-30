@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
+    internal class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
                                                               IDictionary<string, object>,
                                                               ExternalMessage,
                                                               string>
@@ -19,9 +19,9 @@ namespace StateChartsDotNet.Durable
         private readonly IRootStateMetadata _metadata;
         private readonly Action<string, Func<TaskActivity>> _ensureActivityRegistration;
         private readonly Action<string, Func<InterpreterOrchestration>> _ensureOrchestrationRegistration;
-        private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
-        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
+        private readonly IReadOnlyDictionary<string, IRootStateMetadata> _childMetadata;
+        private readonly IReadOnlyDictionary<string, ExternalServiceDelegate> _externalServices;
+        private readonly IReadOnlyDictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly ILogger _logger;
 
         private DurableExecutionContext _executionContext;
@@ -29,9 +29,9 @@ namespace StateChartsDotNet.Durable
         public InterpreterOrchestration(IRootStateMetadata metadata,
                                         Action<string, Func<TaskActivity>> ensureActivityRegistration,
                                         Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration,
-                                        Dictionary<string, IRootStateMetadata> childMetadata,
-                                        Dictionary<string, ExternalServiceDelegate> externalServices,
-                                        Dictionary<string, ExternalQueryDelegate> externalQueries,
+                                        IReadOnlyDictionary<string, IRootStateMetadata> childMetadata,
+                                        IReadOnlyDictionary<string, ExternalServiceDelegate> externalServices,
+                                        IReadOnlyDictionary<string, ExternalQueryDelegate> externalQueries,
                                         ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -75,7 +75,7 @@ namespace StateChartsDotNet.Durable
 
             try
             {
-                var interpreter = new Interpreter();
+                var interpreter = new StateChartsDotNet.Interpreter();
 
                 await interpreter.RunAsync(_executionContext);
             }

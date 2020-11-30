@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class DurableExecutionContext : ExecutionContext
+    internal class DurableExecutionContext : StateChartsDotNet.ExecutionContext
     {
         private readonly Action<string, Func<TaskActivity>> _ensureActivityRegistration;
         private readonly Action<string, Func<InterpreterOrchestration>> _ensureOrchestrationRegistration;
@@ -23,9 +23,9 @@ namespace StateChartsDotNet.Durable
                                        OrchestrationContext orchestrationContext,
                                        Action<string, Func<TaskActivity>> ensureActivityRegistration,
                                        Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration,
-                                       Dictionary<string, IRootStateMetadata> childMetadata,
-                                       Dictionary<string, ExternalServiceDelegate> externalServices,
-                                       Dictionary<string, ExternalQueryDelegate> externalQueries,
+                                       IReadOnlyDictionary<string, IRootStateMetadata> childMetadata,
+                                       IReadOnlyDictionary<string, ExternalServiceDelegate> externalServices,
+                                       IReadOnlyDictionary<string, ExternalQueryDelegate> externalQueries,
                                        ILogger logger = null)
             : base(metadata, logger)
         {
@@ -239,7 +239,7 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.CreateTimer(expiration, 0);
         }
 
-        internal override Task ExecuteContentAsync(string uniqueId, Func<ExecutionContext, Task> func)
+        internal override Task ExecuteContentAsync(string uniqueId, Func<StateChartsDotNet.ExecutionContext, Task> func)
         {
             uniqueId.CheckArgNull(nameof(func));
             func.CheckArgNull(nameof(func));
@@ -251,12 +251,14 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<bool>(uniqueId, string.Empty);
         }
 
-        internal void EnqueueExternalMessage(ExternalMessage message)
+        internal Task EnqueueExternalMessage(ExternalMessage message)
         {
             base.Send(message);
+
+            return Task.CompletedTask;
         }
 
-        public override void Send(ExternalMessage message)
+        internal override void Send(ExternalMessage message)
         {
             message.CheckArgNull(nameof(message));
 

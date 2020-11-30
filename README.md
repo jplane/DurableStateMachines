@@ -90,21 +90,15 @@ await interpreter.RunAsync(context);
 ### Durable (fault-tolerant) execution
 
 ```csharp
-var machine = GetMachine();
+var machine = GetStateChart();
 
-var emulator = new LocalOrchestrationService();
+var emulator = new LocalOrchestrationService();     // any durable task orchestration service
 
-var service = new DurableStateChartService(emulator, machine);
+var context = new Durable.ExecutionContext(machine);
 
-await service.StartAsync();
+var interpreter = new Durable.Interpreter(emulator);
 
-var client = new DurableStateChartClient(emulator, machine.Id);
-
-await client.InitAsync();
-
-await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
-
-await service.StopAsync();
+await interpreter.RunAsync(context);
 ```
 
 ### Parent-child statecharts

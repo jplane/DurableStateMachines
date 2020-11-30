@@ -9,7 +9,7 @@ namespace StateChartsDotNet.Common.Messages
         {
         }
 
-        internal override MessageType Type => MessageType.External;
+        public override MessageType Type => MessageType.External;
 
         public object Content { get; set; }
 

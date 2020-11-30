@@ -9,14 +9,14 @@ namespace StateChartsDotNet.Common.Messages
             this.Name = name;
         }
 
-        internal bool IsCancel => this.Name == "cancel";
+        public bool IsCancel => this.Name == "cancel";
 
         public string Name { get; }
 
-        internal abstract MessageType Type { get; }
+        public abstract MessageType Type { get; }
     }
 
-    internal enum MessageType
+    public enum MessageType
     {
         Platform,
         Internal,

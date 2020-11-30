@@ -34,17 +34,11 @@ namespace StateChartsDotNet.Tests
 
             var emulator = new LocalOrchestrationService();
 
-            var service = new DurableStateChartService(emulator, machine);
+            var context = new Durable.ExecutionContext(machine);
 
-            await service.StartAsync();
+            var interpreter = new Durable.Interpreter(emulator);
 
-            var client = new DurableStateChartClient(emulator, machine.Id);
-
-            await client.InitAsync();
-
-            await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
-
-            await service.StopAsync();
+            await interpreter.RunAsync(context);
 
             Assert.AreEqual(3, x);
         }
@@ -84,17 +78,11 @@ namespace StateChartsDotNet.Tests
 
             var emulator = new LocalOrchestrationService();
 
-            var service = new DurableStateChartService(emulator, machine);
+            var context = new Durable.ExecutionContext(machine);
 
-            await service.StartAsync();
+            var interpreter = new Durable.Interpreter(emulator);
 
-            var client = new DurableStateChartClient(emulator, machine.Id);
-
-            await client.InitAsync();
-
-            await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
-
-            await service.StopAsync();
+            await interpreter.RunAsync(context);
 
             Assert.AreEqual(3, x);
         }
@@ -126,17 +114,11 @@ namespace StateChartsDotNet.Tests
 
             var emulator = new LocalOrchestrationService();
 
-            var service = new DurableStateChartService(emulator, machine);
+            var context = new Durable.ExecutionContext(machine);
 
-            await service.StartAsync();
+            var interpreter = new Durable.Interpreter(emulator);
 
-            var client = new DurableStateChartClient(emulator, machine.Id);
-
-            await client.InitAsync();
-
-            await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
-
-            await service.StopAsync();
+            await interpreter.RunAsync(context);
 
             var json = await listenerTask;
 

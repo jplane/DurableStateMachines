@@ -196,15 +196,15 @@ namespace StateChartsDotNet.Tests
 
             await Task.Delay(1000);
 
-            context.Send("turn.on");
+            await context.SendAsync("turn.on");
 
             for (var i = 0; i < 5; i++)
             {
-                context.Send("time");
+                await context.SendAsync("time");
                 await Task.Delay(200);
             }
 
-            context.Stop();
+            await context.StopAsync();
 
             await task;
 

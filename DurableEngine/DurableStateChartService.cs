@@ -8,54 +8,20 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class DurableStateChartService
+    internal class DurableStateChartService
     {
-        private readonly IRootStateMetadata _metadata;
         private readonly IOrchestrationService _service;
-        private readonly ILogger _logger;
-        private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
-        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
+        private readonly ExecutionContext _context;
 
         private TaskHubWorker _worker;
 
-        public DurableStateChartService(IOrchestrationService service,
-                                        IRootStateMetadata metadata,
-                                        ILogger logger = null)
+        public DurableStateChartService(IOrchestrationService service, ExecutionContext context)
         {
             service.CheckArgNull(nameof(service));
-            metadata.CheckArgNull(nameof(metadata));
+            context.CheckArgNull(nameof(context));
 
-            _metadata = metadata;
             _service = service;
-            _logger = logger;
-
-            _childMetadata = new Dictionary<string, IRootStateMetadata>();
-            _externalServices = new Dictionary<string, ExternalServiceDelegate>();
-            _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
-        }
-
-        public void ConfigureChildStateChart(IRootStateMetadata statechart)
-        {
-            statechart.CheckArgNull(nameof(statechart));
-
-            _childMetadata[statechart.Id] = statechart;
-        }
-
-        public void ConfigureExternalQuery(string id, ExternalQueryDelegate handler)
-        {
-            id.CheckArgNull(nameof(id));
-            handler.CheckArgNull(nameof(handler));
-
-            _externalQueries[id] = handler;
-        }
-
-        public void ConfigureExternalService(string id, ExternalServiceDelegate handler)
-        {
-            id.CheckArgNull(nameof(id));
-            handler.CheckArgNull(nameof(handler));
-
-            _externalServices[id] = handler;
+            _context = context;
         }
 
         public async Task StartAsync()
@@ -89,20 +55,20 @@ namespace StateChartsDotNet.Durable
                 orchestrationResolver.Add(creator);
             };
 
-            ensureOrchestrationRegistration(_metadata.Id,
-                                            () => new InterpreterOrchestration(_metadata,
+            ensureOrchestrationRegistration(_context.Metadata.Id,
+                                            () => new InterpreterOrchestration(_context.Metadata,
                                                                                ensureActivityRegistration,
                                                                                ensureOrchestrationRegistration,
-                                                                               _childMetadata,
-                                                                               _externalServices,
-                                                                               _externalQueries,
-                                                                               _logger));
+                                                                               _context.ChildMetadata,
+                                                                               _context.ExternalServices,
+                                                                               _context.ExternalQueries,
+                                                                               _context.Logger));
 
             _worker = new TaskHubWorker(_service, orchestrationResolver, activityResolver);
 
             _worker.AddTaskActivities(typeof(GenerateGuidActivity));
 
-            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_logger)));
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_context.Logger)));
 
             await _worker.StartAsync();
         }

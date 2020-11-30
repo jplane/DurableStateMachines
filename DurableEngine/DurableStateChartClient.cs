@@ -9,67 +9,59 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class DurableStateChartClient
+    internal class DurableStateChartClient
     {
         private readonly TaskHubClient _client;
-        private readonly string _stateChartName;
-        private readonly Dictionary<string, object> _data;
+        private readonly ExecutionContext _context;
+
         private OrchestrationInstance _instance;
         private OrchestrationState _result;
 
-        public DurableStateChartClient(IOrchestrationServiceClient serviceClient, string stateChartName)
+        public DurableStateChartClient(IOrchestrationServiceClient serviceClient, ExecutionContext context)
         {
             serviceClient.CheckArgNull(nameof(serviceClient));
-            stateChartName.CheckArgNull(nameof(stateChartName));
+            context.CheckArgNull(nameof(context));
 
             _client = new TaskHubClient(serviceClient);
-            _stateChartName = stateChartName;
-            _data = new Dictionary<string, object>();
+            _context = context;
         }
-
-        private bool IsRunning => _instance != null;
-
-        public string State => _result?.Status ?? "NotStarted";
 
         public object this[string key]
         {
             get
             {
-                lock (_data)
+                lock (_context)
                 {
-                    return _data[key];
+                    return _context[key];
                 }
             }
 
             set
             {
-                if (IsRunning)
+                lock (_context)
                 {
-                    throw new InvalidOperationException("Cannot set execution state while the state machine is running.");
-                }
-
-                lock (_data)
-                {
-                    _data[key] = value;
+                    _context[key] = value;
                 }
             }
         }
 
         public async Task InitAsync()
         {
-            if (IsRunning)
+            if (_context.IsRunning)
             {
                 throw new InvalidOperationException("Statechart already started.");
             }
 
             _result = null;
 
-            _instance = await _client.CreateOrchestrationInstanceAsync("statechart", _stateChartName, _data);
+            _instance = await _client.CreateOrchestrationInstanceAsync("statechart", _context.Metadata.Id, _context.Data);
+
+            _context.SendMessageHandler = message => _client.RaiseEventAsync(_instance, message.Name, message);
         }
 
         public async Task WaitForCompletionAsync(TimeSpan timeout)
         {
-            if (!IsRunning)
+            if (! _context.IsRunning)
             {
                 throw new InvalidOperationException("Statechart not yet started.");
             }
@@ -78,7 +70,9 @@ namespace StateChartsDotNet.Durable
 
             _instance = null;
 
-            lock (_data)
+            _context.SendMessageHandler = null;
+
+            lock (_context)
             {
                 var dataconverter = new JsonDataConverter();
 
@@ -86,28 +80,8 @@ namespace StateChartsDotNet.Durable
 
                 Debug.Assert(output != null);
 
-                _data.Clear();
-
-                foreach (var pair in output)
-                {
-                    _data[pair.Key] = pair.Value;
-                }
+                _context.Data = output;
             }
-        }
-
-        public Task StopAsync()
-        {
-            return SendMessageAsync(new ExternalMessage("cancel"));
-        }
-
-        public Task SendMessageAsync(ExternalMessage message)
-        {
-            if (!IsRunning)
-            {
-                throw new InvalidOperationException("Statechart not yet started.");
-            }
-
-            return _client.RaiseEventAsync(_instance, message.Name, message);
         }
     }
 }

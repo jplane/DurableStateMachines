@@ -10,8 +10,8 @@ namespace StateChartsDotNet
         {
         }
 
-        internal override MessageType Type => MessageType.Internal;
+        public override MessageType Type => MessageType.Internal;
 
-        public object Data { get; set; }
+        public object Content { get; set; }
     }
 }
