@@ -34,6 +34,6 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         string IAssignMetadata.Location => _location;
 
-        object IAssignMetadata.GetValue(dynamic data) => _getValue;
+        object IAssignMetadata.GetValue(dynamic data) => _getValue(data);
     }
 }

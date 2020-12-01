@@ -31,43 +31,50 @@ namespace StateChartsDotNet.Model.Execution
             {
                 Debug.Assert(ec != null);
 
-                var id = metadata.Id;
-
-                if (string.IsNullOrWhiteSpace(id))
+                try
                 {
-                    id = Guid.NewGuid().ToString("N");
+                    var id = metadata.Id;
 
-                    await ec.LogDebugAsync($"Synthentic Id = {id}");
-
-                    if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                    if (string.IsNullOrWhiteSpace(id))
                     {
-                        ec.SetDataValue(metadata.IdLocation, id);
+                        id = Guid.NewGuid().ToString("N");
+
+                        await ec.LogDebugAsync($"Synthentic Id = {id}");
+
+                        if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+                        {
+                            ec.SetDataValue(metadata.IdLocation, id);
+                        }
                     }
+
+                    var type = metadata.GetType(ec.ScriptData);
+
+                    if (string.IsNullOrWhiteSpace(type))
+                    {
+                        throw new InvalidOperationException("External service type not specified.");
+                    }
+
+                    var service = ec.GetExternalService(type);
+
+                    if (service == null)
+                    {
+                        throw new InvalidOperationException($"External service '{type}' not configured.");
+                    }
+
+                    var target = metadata.GetTarget(ec.ScriptData);
+
+                    var messageName = metadata.GetMessageName(ec.ScriptData);
+
+                    var content = metadata.GetContent(ec.ScriptData);
+
+                    var parms = metadata.GetParams(ec.ScriptData);
+
+                    await service(target, messageName, content, id, parms);
                 }
-
-                var type = metadata.GetType(ec.ScriptData);
-
-                if (string.IsNullOrWhiteSpace(type))
+                catch(Exception ex)
                 {
-                    throw new InvalidOperationException("External service type not specified.");
+                    ec.EnqueueCommunicationError(ex);
                 }
-
-                var service = ec.GetExternalService(type);
-
-                if (service == null)
-                {
-                    throw new InvalidOperationException($"External service '{type}' not configured.");
-                }
-
-                var target = metadata.GetTarget(ec.ScriptData);
-
-                var messageName = metadata.GetMessageName(ec.ScriptData);
-
-                var content = metadata.GetContent(ec.ScriptData);
-
-                var parms = metadata.GetParams(ec.ScriptData);
-
-                await service(target, messageName, content, id, parms);
             });
         }
     }

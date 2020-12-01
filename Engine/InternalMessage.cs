@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet
 {
-    internal class InternalMessage : Message
+    public class InternalMessage : Message
     {
-        public InternalMessage(string name)
+        internal InternalMessage(string name)
             : base(name)
         {
         }

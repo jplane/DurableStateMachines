@@ -32,27 +32,34 @@ namespace StateChartsDotNet.Model.Execution
             {
                 Debug.Assert(ec != null);
 
-                var type = metadata.GetType(ec.ScriptData);
-
-                if (string.IsNullOrWhiteSpace(type))
+                try
                 {
-                    throw new InvalidOperationException("External query type not specified.");
+                    var type = metadata.GetType(ec.ScriptData);
+
+                    if (string.IsNullOrWhiteSpace(type))
+                    {
+                        throw new InvalidOperationException("External query type not specified.");
+                    }
+
+                    var query = ec.GetExternalQuery(type);
+
+                    if (query == null)
+                    {
+                        throw new InvalidOperationException($"External query '{type}' not configured.");
+                    }
+
+                    var target = metadata.GetTarget(ec.ScriptData);
+
+                    var parms = metadata.GetParams(ec.ScriptData);
+
+                    var result = await query(target, parms);
+
+                    ec.SetDataValue(metadata.ResultLocation, result);
                 }
-
-                var query = ec.GetExternalQuery(type);
-
-                if (query == null)
+                catch(Exception ex)
                 {
-                    throw new InvalidOperationException($"External query '{type}' not configured.");
+                    ec.EnqueueCommunicationError(ex);
                 }
-
-                var target = metadata.GetTarget(ec.ScriptData);
-
-                var parms = metadata.GetParams(ec.ScriptData);
-
-                var result = await query(target, parms);
-
-                ec.SetDataValue(metadata.ResultLocation, result);
             });
 
             foreach (var content in _content.Value)

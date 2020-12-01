@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         internal string UniqueId { private get; set; }
 
-        public DatamodelMetadata<TParent> DataInit()
+        public DataInitMetadata<DatamodelMetadata<TParent>> DataInit()
         {
             var datainit = new DataInitMetadata<DatamodelMetadata<TParent>>();
 
@@ -27,7 +27,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
             datainit.UniqueId = $"{((IModelMetadata)this).UniqueId}.DataInits[{_dataInits.Count}]";
 
-            return this;
+            return datainit;
         }
 
         public TParent Attach()
