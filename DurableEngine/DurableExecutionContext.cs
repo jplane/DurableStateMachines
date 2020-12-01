@@ -47,15 +47,15 @@ namespace StateChartsDotNet.Durable
             _externalQueries.AddRange(externalQueries);
         }
 
-        internal IDictionary<string, object> GetData() => _data;
+        internal IDictionary<string, object> GetOutputData() => new Dictionary<string, object>(_data.Where(pair => ! pair.Key.StartsWith("_")));
 
         internal override async Task InitAsync()
         {
             Debug.Assert(_orchestrationContext != null);
 
-            this["_sessionid"] = (await _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty)).ToString("D");
+            _data["_sessionid"] = (await _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty)).ToString("D");
 
-            this["_name"] = this.Root.Name;
+            _data["_name"] = this.Root.Name;
         }
 
         internal async override Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)

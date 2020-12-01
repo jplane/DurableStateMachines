@@ -67,7 +67,7 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var pair in input)
                 {
-                    _executionContext[pair.Key] = pair.Value;
+                    _executionContext.SetDataValue(pair.Key, pair.Value);
                 }
             }
 
@@ -88,7 +88,7 @@ namespace StateChartsDotNet.Durable
                 await _executionContext.LogInformationAsync("End: durable orchestration.");
             }
 
-            return _executionContext.GetData();
+            return _executionContext.GetOutputData();
         }
 
         public override void OnEvent(OrchestrationContext context, string name, ExternalMessage input)

@@ -72,13 +72,26 @@ namespace StateChartsDotNet
 
         public object this[string key]
         {
-            get { return _data[key]; }
+            get
+            {
+                if (this.IsRunning)
+                {
+                    throw new InvalidOperationException("Cannot read execution state while the state machine is running.");
+                }
+
+                if (key.StartsWith("_"))
+                {
+                    throw new KeyNotFoundException($"Value for key '{key}' not found.");
+                }
+
+                return _data[key];
+            }
 
             set
             {
                 if (this.IsRunning)
                 {
-                    throw new InvalidOperationException("Cannot set execution state while the state machine is running.");
+                    throw new InvalidOperationException("Cannot write execution state while the state machine is running.");
                 }
 
                 _data[key] = value;
@@ -246,11 +259,11 @@ namespace StateChartsDotNet
 
             context._parentContext = this;
 
-            context["_invokeId"] = invokeId;
+            context.SetDataValue("_invokeId", invokeId);
 
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
-                context[param.Key] = param.Value;
+                context.SetDataValue(param.Key, param.Value);
             }
 
             var interpreter = new Interpreter();
@@ -381,9 +394,9 @@ namespace StateChartsDotNet
 
         internal virtual Task InitAsync()
         {
-            this["_sessionid"] = Guid.NewGuid().ToString("D");
+            _data["_sessionid"] = Guid.NewGuid().ToString("D");
 
-            this["_name"] = this.Root.Name;
+            _data["_name"] = this.Root.Name;
 
             return Task.CompletedTask;
         }
