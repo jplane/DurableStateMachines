@@ -23,24 +23,8 @@ namespace StateChartsDotNet
 
             await context.InitAsync();
 
-            if (context.Root.Binding == Databinding.Early)
-            {
-                context.Root.InitDatamodel(context, true);
-            }
-
-            context.IsRunning = true;
-
-            context.Root.ExecuteScript(context);
-
             await EnterStatesAsync(context,
                                    new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));
-
-            await DoMessageLoopAsync(context);
-        }
-
-        private async Task DoMessageLoopAsync(ExecutionContext context)
-        {
-            Debug.Assert(context != null);
 
             await context.LogInformationAsync("Start: event loop");
 
@@ -48,18 +32,98 @@ namespace StateChartsDotNet
             {
                 await context.LogInformationAsync("Start: event loop cycle");
 
-                Set<Transition> enabledTransitions = null;
+                await MacrostepAsync(context);
 
-                var macrostepDone = false;
-
-                while (context.IsRunning && !macrostepDone)
+                if (context.IsRunning)
                 {
-                    enabledTransitions = SelectMessagelessTransitions(context);
+                    await ProcessStateChartInvokesAsync(context);
 
-                    if (enabledTransitions.IsEmpty())
+                    if (!context.HasInternalMessages)
                     {
-                        var internalMessage = context.DequeueInternal();
+                        await ProcessExternalMessageAsync(context);
+                    }
+                }
 
+                await context.LogInformationAsync("End: event loop cycle");
+            }
+
+            await ExitStatechartAsync(context);
+
+            await context.LogInformationAsync("End: event loop");
+
+            context.CheckErrorPropagation();
+        }
+
+        private static async Task ExitStatechartAsync(ExecutionContext context)
+        {
+            Debug.Assert(context != null);
+
+            foreach (var state in context.Configuration.Sort(State.ReverseCompare))
+            {
+                await state.ExitAsync(context);
+
+                if (state.IsFinalState)
+                {
+                    Debug.Assert(state.Parent != null);
+
+                    if (state.Parent.IsScxmlRoot)
+                    {
+                        ((FinalState) state).SendDoneMessage(context);
+                    }
+                }
+            }
+        }
+
+        private static async Task ProcessStateChartInvokesAsync(ExecutionContext context)
+        {
+            Debug.Assert(context != null);
+
+            foreach (var state in context.StatesToInvoke.Sort(State.Compare))
+            {
+                await state.InvokeAsync(context);
+            }
+
+            context.StatesToInvoke.Clear();
+        }
+
+        private async Task ProcessExternalMessageAsync(ExecutionContext context)
+        {
+            Debug.Assert(context != null);
+
+            var externalMessage = await context.DequeueExternalAsync();
+
+            foreach (var state in context.Configuration)
+            {
+                await state.ProcessExternalMessageAsync(context, externalMessage);
+            }
+
+            if (context.IsRunning)
+            {
+                var enabledTransitions = SelectTransitions(context, externalMessage);
+
+                if (!enabledTransitions.IsEmpty())
+                {
+                    await MicrostepAsync(context, enabledTransitions);
+                }
+            }
+        }
+
+        private async Task MacrostepAsync(ExecutionContext context)
+        {
+            Debug.Assert(context != null);
+
+            var macrostepDone = false;
+
+            while (context.IsRunning && !macrostepDone)
+            {
+                var enabledTransitions = SelectMessagelessTransitions(context);
+
+                if (enabledTransitions.IsEmpty())
+                {
+                    var internalMessage = context.DequeueInternal();
+
+                    if (context.IsRunning)
+                    {
                         if (internalMessage == null)
                         {
                             macrostepDone = true;
@@ -69,72 +133,13 @@ namespace StateChartsDotNet
                             enabledTransitions = SelectTransitions(context, internalMessage);
                         }
                     }
-
-                    if (!enabledTransitions.IsEmpty())
-                    {
-                        await MicrostepAsync(context, enabledTransitions);
-                    }
                 }
-
-                if (!context.IsRunning)
-                {
-                    await context.LogInformationAsync("End: event loop cycle");
-                    break;
-                }
-
-                foreach (var state in context.StatesToInvoke.Sort(State.Compare))
-                {
-                    await state.InvokeAsync(context);
-                }
-
-                context.StatesToInvoke.Clear();
-
-                if (context.HasInternalMessages)
-                {
-                    await context.LogInformationAsync("End: event loop cycle");
-                    continue;
-                }
-
-                var externalMessage = await context.DequeueExternalAsync();
-
-                if (externalMessage.IsCancel)
-                {
-                    context.IsRunning = false;
-                    
-                    await context.LogInformationAsync("End: event loop cycle");
-                    
-                    continue;
-                }
-
-                foreach (var state in context.Configuration)
-                {
-                    await state.ProcessExternalMessageAsync(context, externalMessage);
-                }
-
-                enabledTransitions = SelectTransitions(context, externalMessage);
 
                 if (!enabledTransitions.IsEmpty())
                 {
                     await MicrostepAsync(context, enabledTransitions);
                 }
-
-                await context.LogInformationAsync("End: event loop cycle");
             }
-
-            foreach (var state in context.Configuration.Sort(State.ReverseCompare))
-            {
-                await state.ExitAsync(context);
-
-                if (state.IsFinalState)
-                {
-                    if (state.Parent.IsScxmlRoot)
-                    {
-                        ((FinalState) state).SendDoneMessage(context);
-                    }
-                }
-            }
-
-            await context.LogInformationAsync("End: event loop");
         }
 
         private async Task MicrostepAsync(ExecutionContext context, IEnumerable<Transition> enabledTransitions)

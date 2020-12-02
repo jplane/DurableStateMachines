@@ -6,6 +6,7 @@ namespace StateChartsDotNet.Common.Messages
     {
         internal Message(string name)
         {
+            name.CheckArgNull(nameof(name));
             this.Name = name;
         }
 

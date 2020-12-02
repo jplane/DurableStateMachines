@@ -11,6 +11,8 @@ namespace StateChartsDotNet.Common.Messages
 
         public bool IsDone => this.Name.StartsWith("done.invoke.");
 
+        public bool IsInvokeError => this.Name.StartsWith("done.invoke.error.");
+
         public string CorrelationId { get; set; }
     }
 }

@@ -49,13 +49,9 @@ namespace StateChartsDotNet.Durable
 
         internal IDictionary<string, object> GetOutputData() => new Dictionary<string, object>(_data.Where(pair => ! pair.Key.StartsWith("_")));
 
-        internal override async Task InitAsync()
+        protected override Task<Guid> GenerateSessionId()
         {
-            Debug.Assert(_orchestrationContext != null);
-
-            _data["_sessionid"] = (await _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty)).ToString("D");
-
-            _data["_name"] = this.Root.Name;
+            return _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty);
         }
 
         internal async override Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
@@ -107,7 +103,14 @@ namespace StateChartsDotNet.Durable
             {
                 var instance = (OrchestrationInstance) parentInstance;
 
-                return SendMessageToParentStateChart(null, $"done.invoke.{instance.InstanceId}", content, null, parameters);
+                if (_error != null)
+                {
+                    return SendMessageToParentStateChart(null, $"done.invoke.error.{instance.InstanceId}", _error, null, null);
+                }
+                else
+                {
+                    return SendMessageToParentStateChart(null, $"done.invoke.{instance.InstanceId}", content, null, parameters);
+                }
             }
             else
             {
@@ -189,15 +192,9 @@ namespace StateChartsDotNet.Durable
             return Task.CompletedTask;
         }
 
-        internal async override Task ProcessExternalMessageAsync(string parentUniqueId, InvokeStateChart invoke, ExternalMessage message)
+        internal override IEnumerable<string> GetInvokeIdsForParent(string parentUniqueId)
         {
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
-            invoke.CheckArgNull(nameof(invoke));
-
-            foreach (var invokeId in _childInstances.Where(id => id.StartsWith($"{parentUniqueId}.")).ToArray())
-            {
-                await invoke.ProcessExternalMessageAsync(invokeId, this, message);
-            }
+            return _childInstances.Where(id => id.StartsWith($"{parentUniqueId}.")).ToArray();
         }
 
         internal override void ProcessChildStateChartDone(ChildStateChartResponseMessage message)

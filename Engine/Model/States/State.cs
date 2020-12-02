@@ -8,6 +8,7 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -139,11 +140,18 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(ExecutionContext context, ExternalMessage evt)
+        public async Task ProcessExternalMessageAsync(ExecutionContext context, ExternalMessage message)
         {
+            var invokeIds = context.GetInvokeIdsForParent(_metadata.UniqueId)?.ToArray();
+
+            Debug.Assert(invokeIds != null);
+
             foreach (var invoke in _invokes.Value)
             {
-                await context.ProcessExternalMessageAsync(_metadata.UniqueId, invoke, evt);
+                foreach (var invokeId in invokeIds)
+                {
+                    await invoke.ProcessExternalMessageAsync(invokeId, context, message);
+                }
             }
         }
 
@@ -209,7 +217,7 @@ namespace StateChartsDotNet.Model.States
             {
                 if (_parent.IsScxmlRoot)
                 {
-                    context.IsRunning = false;
+                    context.EnterFinalRootState();
                 }
                 else
                 {

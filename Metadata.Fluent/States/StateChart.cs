@@ -18,6 +18,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private readonly List<TransitionMetadata<StateChart>> _transitions;
 
         private DatamodelMetadata<StateChart> _datamodel;
+        private bool _failFast;
         private Databinding _databinding;
         private TransitionMetadata<StateChart> _initialTransition;
         private ScriptMetadata<StateChart> _script;
@@ -47,6 +48,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         public static StateChart Define(string name)
         {
             return new StateChart(name);
+        }
+
+        public StateChart FailFast(bool failFast)
+        {
+            _failFast = failFast;
+            return this;
         }
 
         public StateChart Databinding(Databinding databinding)
@@ -129,6 +136,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             return state;
         }
+
+        bool IRootStateMetadata.FailFast => _failFast;
 
         Databinding IRootStateMetadata.Databinding => _databinding;
 

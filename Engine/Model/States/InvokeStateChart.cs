@@ -55,17 +55,25 @@ namespace StateChartsDotNet.Model.States
 
             if (externalMessage is ChildStateChartResponseMessage response && invokeId == response.CorrelationId)
             {
-                foreach (var content in _finalizeContent.Value)
+                // skip executing finalize executable content if we received an error and we're failing fast
+
+                if (context.IsRunning)
                 {
-                    await content.ExecuteAsync(context);
+                    foreach (var content in _finalizeContent.Value)
+                    {
+                        await content.ExecuteAsync(context);
+                    }
                 }
 
                 context.ProcessChildStateChartDone(response);
             }
 
-            if (_metadata.Autoforward && !(externalMessage is ChildStateChartResponseMessage))
+            if (context.IsRunning)
             {
-                await context.SendToChildStateChart(invokeId, externalMessage);
+                if (_metadata.Autoforward && !(externalMessage is ChildStateChartResponseMessage))
+                {
+                    await context.SendToChildStateChart(invokeId, externalMessage);
+                }
             }
         }
     }

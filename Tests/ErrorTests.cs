@@ -73,5 +73,28 @@ namespace StateChartsDotNet.Tests
 
             Assert.AreEqual("boo!", ex.Message);
         }
+
+        [TestMethod]
+        public async Task FailFast()
+        {
+            var machine = StateChart.Define("test")
+                                    .FailFast(true)
+                                    .AtomicState("state1")
+                                        .OnEntry()
+                                            .Execute(_ => throw new Exception("boo!"))
+                                            .Attach()
+                                        .Transition()
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var context = new ExecutionContext(machine);
+
+            var interpreter = new Interpreter();
+
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => interpreter.RunAsync(context));
+        }
     }
 }

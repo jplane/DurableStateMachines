@@ -19,6 +19,11 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public override string Id => _element.Attribute("name")?.Value ?? string.Empty;
 
+        public bool FailFast
+        {
+            get => bool.Parse(_element.Attribute("failfast")?.Value ?? "false");
+        }
+
         public Databinding Databinding
         {
             get => (Databinding) Enum.Parse(typeof(Databinding),

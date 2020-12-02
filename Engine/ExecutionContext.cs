@@ -10,6 +10,7 @@ using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Services;
 using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Model;
 
 namespace StateChartsDotNet
 {
@@ -29,7 +30,9 @@ namespace StateChartsDotNet
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
 
+        protected Exception _error;
         private ExecutionContext _parentContext;
+        private bool _isRunning = false;
 
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
         {
@@ -68,7 +71,10 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>(externalQueries);
         }
 
-        public bool IsRunning { get; internal set; }
+        public bool IsRunning
+        {
+            get => _isRunning && (!this.FailFast || _error == null);
+        }
 
         public object this[string key]
         {
@@ -126,6 +132,14 @@ namespace StateChartsDotNet
             return SendAsync("cancel");
         }
 
+        internal void CheckErrorPropagation()
+        {
+            if (this.FailFast && _error != null)
+            {
+                throw new InvalidOperationException("An error occurred during statechart execution.", _error);
+            }
+        }
+
         public Task SendAsync(string message,
                               object content = null,
                               IReadOnlyDictionary<string, object> parameters = null)
@@ -163,6 +177,11 @@ namespace StateChartsDotNet
             return SendToChildStateChart(childId, msg);
         }
 
+        internal void EnterFinalRootState()
+        {
+            _isRunning = false;
+        }
+
         protected virtual Task SendMessageToParentStateChart(string _,
                                                              string messageName,
                                                              object content,
@@ -188,12 +207,21 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
+        internal bool FailFast => _root.FailFast;
+
         internal virtual Task SendDoneMessageToParent(object content,
                                                       IReadOnlyDictionary<string, object> parameters)
         {
             if (this.TryGet("_invokeId", out object invokeId))
             {
-                return SendMessageToParentStateChart(null, $"done.invoke.{invokeId}", content, null, parameters);
+                if (_error != null)
+                {
+                    return SendMessageToParentStateChart(null, $"done.invoke.error.{invokeId}", _error, null, null);
+                }
+                else
+                {
+                    return SendMessageToParentStateChart(null, $"done.invoke.{invokeId}", content, null, parameters);
+                }
             }
             else
             {
@@ -346,17 +374,11 @@ namespace StateChartsDotNet
             }
         }
 
-        internal virtual async Task ProcessExternalMessageAsync(string parentUniqueId, InvokeStateChart invoke, ExternalMessage message)
+        internal virtual IEnumerable<string> GetInvokeIdsForParent(string parentUniqueId)
         {
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
-            invoke.CheckArgNull(nameof(invoke));
-
-            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
-            {
-                var invokeId = pair.Key;
-
-                await invoke.ProcessExternalMessageAsync(invokeId, this, message);
-            }
+            return _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}."))
+                                  .Select(p => p.Key)
+                                  .ToArray();
         }
 
         internal virtual void ProcessChildStateChartDone(ChildStateChartResponseMessage message)
@@ -392,13 +414,25 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
-        internal virtual Task InitAsync()
+        protected virtual Task<Guid> GenerateSessionId()
         {
-            _data["_sessionid"] = Guid.NewGuid().ToString("D");
+            return Task.FromResult(Guid.NewGuid());
+        }
+
+        internal async Task InitAsync()
+        {
+            _data["_sessionid"] = (await GenerateSessionId()).ToString("D");
 
             _data["_name"] = this.Root.Name;
 
-            return Task.CompletedTask;
+            _isRunning = true;
+
+            if (this.Root.Binding == Databinding.Early)
+            {
+                this.Root.InitDatamodel(this, true);
+            }
+
+            this.Root.ExecuteScript(this);
         }
 
         internal RootState Root => _root;
@@ -408,6 +442,18 @@ namespace StateChartsDotNet
             var msg = await _externalMessages.DequeueAsync();
 
             _data["_event"] = msg;
+
+            if (msg.IsCancel)
+            {
+                _isRunning = false;
+            }
+            else if (msg is ChildStateChartResponseMessage rm && rm.IsInvokeError)
+            {
+                Debug.Assert(msg.Content != null);
+                Debug.Assert(msg.Content is Exception);
+
+                _error = (Exception) msg.Content;
+            }
 
             return msg;
         }
@@ -442,6 +488,8 @@ namespace StateChartsDotNet
                 Content = ex
             };
 
+            _error = ex;
+
             _internalMessages.Enqueue(evt);
 
             _logger?.LogError("Communication error", ex);
@@ -455,6 +503,8 @@ namespace StateChartsDotNet
             {
                 Content = ex
             };
+
+            _error = ex;
 
             _internalMessages.Enqueue(evt);
 

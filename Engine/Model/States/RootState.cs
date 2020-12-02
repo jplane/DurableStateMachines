@@ -71,6 +71,8 @@ namespace StateChartsDotNet.Model.States
             _script.Value?.ExecuteAsync(context);
         }
 
+        public bool FailFast => ((IRootStateMetadata) _metadata).FailFast;
+
         public Databinding Binding => ((IRootStateMetadata) _metadata).Databinding;
 
         public string Name => ((IRootStateMetadata) _metadata).Id;
