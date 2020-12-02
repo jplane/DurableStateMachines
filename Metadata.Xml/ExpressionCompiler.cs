@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 
 namespace StateChartsDotNet.Metadata.Xml
 {
@@ -54,7 +55,7 @@ namespace StateChartsDotNet.Metadata.Xml
 
             if (errorDiagnostics.Any())
             {
-                throw new Exception(string.Join(Environment.NewLine, errorDiagnostics.Select(ed => ed.GetMessage())));
+                throw new ExecutionException(string.Join(Environment.NewLine, errorDiagnostics.Select(ed => ed.GetMessage())));
             }
 
             using (var peStream = new MemoryStream())
@@ -71,7 +72,7 @@ namespace StateChartsDotNet.Metadata.Xml
                 {
                     errorDiagnostics = emitResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error);
 
-                    throw new Exception(string.Join(Environment.NewLine, errorDiagnostics.Select(ed => ed.GetMessage())));
+                    throw new ExecutionException(string.Join(Environment.NewLine, errorDiagnostics.Select(ed => ed.GetMessage())));
                 }
             }
         }

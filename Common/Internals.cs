@@ -5,3 +5,5 @@ using System.Text;
 
 [assembly: InternalsVisibleTo("StateChartsDotNet")]
 [assembly: InternalsVisibleTo("StateChartsDotNet.Durable")]
+[assembly: InternalsVisibleTo("StateChartsDotNet.Metadata.Xml")]
+[assembly: InternalsVisibleTo("StateChartsDotNet.Metadata.Fluent")]

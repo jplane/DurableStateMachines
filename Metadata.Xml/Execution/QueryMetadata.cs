@@ -1,5 +1,4 @@
-﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Data;
+﻿using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Xml.Data;
 using System;
@@ -62,11 +61,11 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Type == null && this.TypeExpression == null)
             {
-                throw new ModelValidationException("Service type or typeExpression must be specified.");
+                throw new MetadataValidationException("Service type or typeExpression must be specified.");
             }
             else if (this.Type != null && this.TypeExpression != null)
             {
-                throw new ModelValidationException("Only one of service type and typeExpression can be specified.");
+                throw new MetadataValidationException("Only one of service type and typeExpression can be specified.");
             }
             else if (this.Type != null)
             {
@@ -82,11 +81,11 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Target == null && this.TargetExpression == null)
             {
-                throw new ModelValidationException("Service target or targetExpression must be specified.");
+                throw new MetadataValidationException("Service target or targetExpression must be specified.");
             }
             else if (this.Target != null && this.TargetExpression != null)
             {
-                throw new ModelValidationException("Only one of service target and targetExpression can be specified.");
+                throw new MetadataValidationException("Only one of service target and targetExpression can be specified.");
             }
             else if (this.Target != null)
             {
@@ -104,7 +103,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
             if (this.Namelist.Any() && nodes.Any())
             {
-                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
+                throw new MetadataValidationException("Only one of service namelist and <params> can be specified.");
             }
 
             IEnumerable<ParamMetadata> parms;

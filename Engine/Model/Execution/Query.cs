@@ -36,17 +36,11 @@ namespace StateChartsDotNet.Model.Execution
                 {
                     var type = metadata.GetType(ec.ScriptData);
 
-                    if (string.IsNullOrWhiteSpace(type))
-                    {
-                        throw new InvalidOperationException("External query type not specified.");
-                    }
+                    Debug.Assert(!string.IsNullOrWhiteSpace(type));
 
                     var query = ec.GetExternalQuery(type);
 
-                    if (query == null)
-                    {
-                        throw new InvalidOperationException($"External query '{type}' not configured.");
-                    }
+                    Debug.Assert(query != null);
 
                     var target = metadata.GetTarget(ec.ScriptData);
 

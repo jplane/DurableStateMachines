@@ -83,7 +83,7 @@ namespace StateChartsDotNet.Model.States
 
         public override Task InvokeAsync(ExecutionContext context)
         {
-            throw new InvalidOperationException("Unexpected invocation.");
+            throw new NotImplementedException();
         }
 
         public override Transition GetInitialStateTransition()

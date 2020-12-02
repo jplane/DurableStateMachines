@@ -11,6 +11,8 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Services;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
+using StateChartsDotNet.Common.Exceptions;
+using System.Runtime.ExceptionServices;
 
 namespace StateChartsDotNet
 {
@@ -136,7 +138,9 @@ namespace StateChartsDotNet
         {
             if (this.FailFast && _error != null)
             {
-                throw new InvalidOperationException("An error occurred during statechart execution.", _error);
+                Debug.Assert(_error is StateChartException);
+
+                ExceptionDispatchInfo.Capture(_error).Throw();
             }
         }
 
@@ -192,7 +196,7 @@ namespace StateChartsDotNet
 
             if (_parentContext == null)
             {
-                throw new InvalidOperationException("Current statechart has no parent.");
+                throw new ExecutionException("Current statechart has no parent.");
             }
 
             var msg = new ChildStateChartResponseMessage(messageName)
@@ -336,7 +340,7 @@ namespace StateChartsDotNet
             {
                 if (!_childMetadata.TryGetValue(rootId, out childMachine))
                 {
-                    throw new InvalidOperationException($"Child statechart {rootId} not found.");
+                    throw new ExecutionException($"Child statechart {rootId} not found.");
                 }
             }
             else
@@ -346,7 +350,7 @@ namespace StateChartsDotNet
 
             if (childMachine == null)
             {
-                throw new InvalidOperationException("Unable to resolve metadata for child statechart.");
+                throw new ExecutionException("Unable to resolve metadata for child statechart.");
             }
 
             return childMachine;
@@ -483,6 +487,11 @@ namespace StateChartsDotNet
         {
             Debug.Assert(ex != null);
 
+            if (! (ex is CommunicationException))
+            {
+                ex = new CommunicationException("A communication error occurred during statechart processing.", ex);
+            }
+
             var evt = new InternalMessage("error.communication")
             {
                 Content = ex
@@ -498,6 +507,11 @@ namespace StateChartsDotNet
         internal void EnqueueExecutionError(Exception ex)
         {
             Debug.Assert(ex != null);
+
+            if (! (ex is ExecutionException))
+            {
+                ex = new ExecutionException("An error occurred during statechart processing.", ex);
+            }
 
             var evt = new InternalMessage("error.execution")
             {

@@ -1,5 +1,5 @@
-﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Data;
+﻿using StateChartsDotNet.Common.Exceptions;
+using StateChartsDotNet.Common.Model;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
@@ -48,11 +48,11 @@ namespace StateChartsDotNet.Metadata.Xml.Data
         {
             if (_location == null && _expression == null)
             {
-                throw new ModelValidationException("Param location or expression must be specified.");
+                throw new MetadataValidationException("Param location or expression must be specified.");
             }
             else if (_location != null && _expression != null)
             {
-                throw new ModelValidationException("Only one of param location and expression can be specified.");
+                throw new MetadataValidationException("Only one of param location and expression can be specified.");
             }
             else if (_location != null)
             {

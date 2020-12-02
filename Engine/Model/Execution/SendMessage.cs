@@ -49,17 +49,11 @@ namespace StateChartsDotNet.Model.Execution
 
                     var type = metadata.GetType(ec.ScriptData);
 
-                    if (string.IsNullOrWhiteSpace(type))
-                    {
-                        throw new InvalidOperationException("External service type not specified.");
-                    }
+                    Debug.Assert(!string.IsNullOrWhiteSpace(type));
 
                     var service = ec.GetExternalService(type);
 
-                    if (service == null)
-                    {
-                        throw new InvalidOperationException($"External service '{type}' not configured.");
-                    }
+                    Debug.Assert(service != null);
 
                     var target = metadata.GetTarget(ec.ScriptData);
 

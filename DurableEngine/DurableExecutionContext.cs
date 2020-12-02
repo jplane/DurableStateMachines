@@ -1,6 +1,7 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.States;
@@ -141,7 +142,7 @@ namespace StateChartsDotNet.Durable
             }
             else
             {
-                throw new InvalidOperationException("Current statechart has no parent.");
+                throw new ExecutionException("Current statechart has no parent.");
             }
         }
 

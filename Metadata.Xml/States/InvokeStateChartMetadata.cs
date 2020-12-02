@@ -1,6 +1,6 @@
 ﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Xml.Data;
@@ -93,7 +93,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
                             if (string.IsNullOrWhiteSpace(source))
                             {
-                                throw new InvalidOperationException("Unable to resolve source for child statechart.");
+                                throw new MetadataValidationException("Unable to resolve source for child statechart.");
                             }
 
                             return FromSource(source);
@@ -184,7 +184,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
             if (this.Namelist.Any() && nodes.Any())
             {
-                throw new ModelValidationException("Only one of service namelist and <params> can be specified.");
+                throw new MetadataValidationException("Only one of service namelist and <params> can be specified.");
             }
 
             IEnumerable<ParamMetadata> parms;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 
 namespace StateChartsDotNet
 {
@@ -23,7 +24,7 @@ namespace StateChartsDotNet
 
             if (indexes.Length != 1 || indexes[0] == null || indexes[0].GetType() != typeof(string))
             {
-                throw new InvalidOperationException("Expecting exactly one string-based index for data lookups.");
+                throw new ExecutionException("Expecting exactly one string-based index for data lookups.");
             }
 
             if (_data.TryGetValue((string) indexes[0], out result))

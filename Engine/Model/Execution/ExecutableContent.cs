@@ -1,6 +1,7 @@
 ﻿using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -52,11 +53,9 @@ namespace StateChartsDotNet.Model.Execution
                 case IQueryMetadata query:
                     content = new Query(query);
                     break;
-                default:
-                    throw new ArgumentException(message: "Executable Metadata is not a recognized type", paramName: nameof(metadata));
             }
 
-            Debug.Assert(content != null);
+            Debug.Assert(content != null, $"Executable Metadata is not a recognized type: {metadata.GetType().FullName}");
 
             return content;
         }

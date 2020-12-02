@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Metadata.Fluent.States;
 using System;
 using System.Collections.Generic;
@@ -70,8 +71,10 @@ namespace StateChartsDotNet.Tests
             var ex = (Exception) context["err"];
 
             Assert.IsNotNull(ex);
+            Assert.IsInstanceOfType(ex, typeof(ExecutionException));
+            Assert.IsNotNull(ex.InnerException);
 
-            Assert.AreEqual("boo!", ex.Message);
+            Assert.AreEqual("boo!", ex.InnerException.Message);
         }
 
         [TestMethod]
@@ -94,7 +97,7 @@ namespace StateChartsDotNet.Tests
 
             var interpreter = new Interpreter();
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => interpreter.RunAsync(context));
+            await Assert.ThrowsExceptionAsync<ExecutionException>(() => interpreter.RunAsync(context));
         }
     }
 }

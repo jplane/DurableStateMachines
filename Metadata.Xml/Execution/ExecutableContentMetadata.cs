@@ -1,4 +1,5 @@
 ﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Xml.Queries;
@@ -59,7 +60,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
             if (content == null)
             {
-                throw new NotSupportedException("Unable to resolve executable content type: " + element.Name.LocalName);
+                throw new MetadataValidationException("Unable to resolve executable content type: " + element.Name.LocalName);
             }
 
             return content;
