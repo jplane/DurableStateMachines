@@ -27,7 +27,7 @@ namespace StateChartsDotNet.Model.States
             });
         }
 
-        public async Task ExecuteAsync(ExecutionContext context)
+        public async Task ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -47,7 +47,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(string invokeId, ExecutionContext context, ExternalMessage externalMessage)
+        public async Task ProcessExternalMessageAsync(string invokeId, ExecutionContextBase context, ExternalMessage externalMessage)
         {
             invokeId.CheckArgNull(nameof(invokeId));
             context.CheckArgNull(nameof(context));
@@ -65,7 +65,7 @@ namespace StateChartsDotNet.Model.States
                     }
                 }
 
-                context.ProcessChildStateChartDone(response);
+                await context.ProcessChildStateChartDoneAsync(response);
             }
 
             if (context.IsRunning)

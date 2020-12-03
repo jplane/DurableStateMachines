@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model.States;
+﻿using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,10 +12,8 @@ namespace StateChartsDotNet.Common
         bool IsRunning { get; }
         object this[string key] { get; set; }
 
-        void ConfigureChildStateChart(IRootStateMetadata statechart);
-        void ConfigureExternalQuery(string id, ExternalQueryDelegate handler);
-        void ConfigureExternalService(string id, ExternalServiceDelegate handler);
         Task StopAsync();
+        Task SendAsync(ExternalMessage message);
         Task SendAsync(string message, object content = null, IReadOnlyDictionary<string, object> parameters = null);
     }
 }

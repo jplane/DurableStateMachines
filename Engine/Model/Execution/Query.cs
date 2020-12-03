@@ -22,43 +22,42 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (IQueryMetadata) _metadata;
 
-            await context.ExecuteContentAsync(metadata.UniqueId, async ec =>
+            var type = metadata.GetType(context.ScriptData);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(type));
+
+            var target = metadata.GetTarget(context.ScriptData);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(target));
+
+            var parms = metadata.GetParams(context.ScriptData);
+
+            Debug.Assert(parms != null);
+
+            try
             {
-                Debug.Assert(ec != null);
+                var result = await context.QueryAsync(type, target, parms);
 
-                try
+                context.SetDataValue(metadata.ResultLocation, result);
+
+                foreach (var content in _content.Value)
                 {
-                    var type = metadata.GetType(ec.ScriptData);
-
-                    Debug.Assert(!string.IsNullOrWhiteSpace(type));
-
-                    var query = ec.GetExternalQuery(type);
-
-                    Debug.Assert(query != null);
-
-                    var target = metadata.GetTarget(ec.ScriptData);
-
-                    var parms = metadata.GetParams(ec.ScriptData);
-
-                    var result = await query(target, parms);
-
-                    ec.SetDataValue(metadata.ResultLocation, result);
+                    await content.ExecuteAsync(context);
                 }
-                catch(Exception ex)
-                {
-                    ec.EnqueueCommunicationError(ex);
-                }
-            });
-
-            foreach (var content in _content.Value)
+            }
+            catch (TaskCanceledException)
             {
-                await content.ExecuteAsync(context);
+                context.InternalCancel();
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueCommunicationError(ex);
             }
         }
     }

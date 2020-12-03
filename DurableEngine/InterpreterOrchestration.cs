@@ -1,75 +1,54 @@
 ﻿using DurableTask.Core;
+using DurableTask.Core.Serializing;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using StateChartsDotNet;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    internal class InterpreterOrchestration : TaskOrchestration<IDictionary<string, object>,
-                                                              IDictionary<string, object>,
-                                                              ExternalMessage,
-                                                              string>
+    internal class InterpreterOrchestration : TaskOrchestration<(Dictionary<string, object>, Exception),
+                                                                Dictionary<string, object>,
+                                                                ExternalMessage,
+                                                                string>
     {
         private readonly IRootStateMetadata _metadata;
-        private readonly Action<string, Func<TaskActivity>> _ensureActivityRegistration;
-        private readonly Action<string, Func<InterpreterOrchestration>> _ensureOrchestrationRegistration;
-        private readonly IReadOnlyDictionary<string, IRootStateMetadata> _childMetadata;
-        private readonly IReadOnlyDictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly IReadOnlyDictionary<string, ExternalQueryDelegate> _externalQueries;
+        private readonly CancellationToken _cancelToken;
         private readonly ILogger _logger;
-
+        
         private DurableExecutionContext _executionContext;
 
         public InterpreterOrchestration(IRootStateMetadata metadata,
-                                        Action<string, Func<TaskActivity>> ensureActivityRegistration,
-                                        Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration,
-                                        IReadOnlyDictionary<string, IRootStateMetadata> childMetadata,
-                                        IReadOnlyDictionary<string, ExternalServiceDelegate> externalServices,
-                                        IReadOnlyDictionary<string, ExternalQueryDelegate> externalQueries,
+                                        CancellationToken cancelToken,
                                         ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
-            ensureActivityRegistration.CheckArgNull(nameof(ensureActivityRegistration));
-            ensureOrchestrationRegistration.CheckArgNull(nameof(ensureOrchestrationRegistration));
-            childMetadata.CheckArgNull(nameof(childMetadata));
-            externalServices.CheckArgNull(nameof(externalServices));
-            externalQueries.CheckArgNull(nameof(externalQueries));
 
             _metadata = metadata;
-            _ensureActivityRegistration = ensureActivityRegistration;
-            _ensureOrchestrationRegistration = ensureOrchestrationRegistration;
-            _childMetadata = childMetadata;
-            _externalServices = externalServices;
-            _externalQueries = externalQueries;
+            _cancelToken = cancelToken;
             _logger = logger;
+
+            this.DataConverter = new JsonDataConverter(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All                
+            });
         }
 
-        public override async Task<IDictionary<string, object>> RunTask(OrchestrationContext context, IDictionary<string, object> input)
+        public override async Task<(Dictionary<string, object>, Exception)> RunTask(OrchestrationContext context, Dictionary<string, object> data)
         {
+            data.CheckArgNull(nameof(data));
+
             Debug.Assert(context != null);
 
-            _executionContext = new DurableExecutionContext(_metadata,
-                                                            context,
-                                                            _ensureActivityRegistration,
-                                                            _ensureOrchestrationRegistration,
-                                                            _childMetadata,
-                                                            _externalServices,
-                                                            _externalQueries,
-                                                            _logger);
-
-            if (input != null)
-            {
-                foreach (var pair in input)
-                {
-                    _executionContext.SetDataValue(pair.Key, pair.Value);
-                }
-            }
+            _executionContext = new DurableExecutionContext(_metadata, context, data, _logger);
 
             await _executionContext.LogInformationAsync("Start: durable orchestration.");
 
@@ -77,18 +56,27 @@ namespace StateChartsDotNet.Durable
             {
                 var interpreter = new StateChartsDotNet.Interpreter();
 
-                await interpreter.RunAsync(_executionContext);
+                await interpreter.RunAsync(_executionContext, _cancelToken);
+
+                return (_executionContext.ResultData, null);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger?.LogError("Error during orchestration: " + ex);
+                if (ex is StateChartException)
+                {
+                    Debug.Assert(_executionContext.FailFast);
+                }
+                else
+                {
+                    _logger?.LogError("Unexpected error during orchestration: " + ex);
+                }
+
+                return (null, ex);
             }
             finally
             {
                 await _executionContext.LogInformationAsync("End: durable orchestration.");
             }
-
-            return _executionContext.GetOutputData();
         }
 
         public override void OnEvent(OrchestrationContext context, string name, ExternalMessage input)

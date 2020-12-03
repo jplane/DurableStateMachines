@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Xml.States;
 using StateChartsDotNet.Services;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -24,7 +25,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task Foreach()
+        [TestScaffold]
+        public async Task Foreach(ScaffoldFactoryDelegate factory, string _)
         {
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
@@ -53,17 +55,18 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var context = new ExecutionContext(machine, _logger);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
-            Assert.AreEqual(15, context["sum"]);
+            Assert.AreEqual(15, Convert.ToInt32(context["sum"]));
         }
 
         [TestMethod]
-        public async Task HttpPost()
+        [TestScaffold]
+        public async Task HttpPost(ScaffoldFactoryDelegate factory, string _)
         {
             var listenerTask = Task.Run(() => InProcWebServer.EchoAsync("http://localhost:4444/"));
 
@@ -87,11 +90,11 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var context = new ExecutionContext(machine, _logger);
+            var scaffold = factory(machine, CancellationToken.None, _logger);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             var json = await listenerTask;
 
@@ -101,7 +104,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task HttpGet()
+        [TestScaffold]
+        public async Task HttpGet(ScaffoldFactoryDelegate factory, string _)
         {
             var uri = "http://localhost:4444/";
 
@@ -124,11 +128,11 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, _logger);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await Task.WhenAll(interpreter.RunAsync(context), listenerTask);
+            await Task.WhenAll(scaffold.Item2(), listenerTask);
 
             var json = (string)context["x"];
 
@@ -140,7 +144,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task Microwave()
+        [TestScaffold]
+        public async Task Microwave(ScaffoldFactoryDelegate factory, string _)
         {
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
@@ -188,11 +193,11 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var context = new ExecutionContext(machine, _logger);
+            var scaffold = factory(machine, CancellationToken.None, _logger);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            var task = interpreter.RunAsync(context);
+            var task = scaffold.Item2();
 
             await Task.Delay(1000);
 
@@ -208,11 +213,12 @@ namespace StateChartsDotNet.Tests
 
             await task;
 
-            Assert.AreEqual(5, context["timer"]);
+            Assert.AreEqual(5, Convert.ToInt32(context["timer"]));
         }
 
         [TestMethod]
-        public async Task SimpleParentChild()
+        [TestScaffold]
+        public async Task SimpleParentChild(ScaffoldFactoryDelegate factory, string _)
         {
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
@@ -250,19 +256,19 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var context = new ExecutionContext(machine, _logger);
+            var scaffold = factory(machine, CancellationToken.None, _logger);
+
+            var context = scaffold.Item1;
 
             context["x"] = 5;
 
-            var interpreter = new Interpreter();
+            await scaffold.Item2();
 
-            await interpreter.RunAsync(context);
-
-            var x = (int) context["x"];
+            var x = Convert.ToInt32(context["x"]);
 
             Assert.AreEqual(5, x);
 
-            var innerX = (int) context["innerX"];
+            var innerX = Convert.ToInt32(context["innerX"]);
 
             Assert.AreEqual(10, innerX);
         }

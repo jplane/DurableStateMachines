@@ -21,7 +21,7 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        public async Task Execute(ExecutionContext context)
+        public async Task Execute(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

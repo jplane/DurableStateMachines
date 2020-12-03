@@ -14,62 +14,49 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (ISendMessageMetadata) _metadata;
 
-            var delay = metadata.GetDelay(context.ScriptData);
-
-            if (delay > TimeSpan.Zero)
+            try
             {
-                await context.DelayAsync(delay);
+                var delay = metadata.GetDelay(context.ScriptData);
+
+                if (delay > TimeSpan.Zero)
+                {
+                    await context.DelayAsync(delay);
+                }
+
+                var id = await context.ResolveSendMessageId(metadata);
+
+                var type = metadata.GetType(context.ScriptData);
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(type));
+
+                var target = metadata.GetTarget(context.ScriptData);
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(target));
+
+                var messageName = metadata.GetMessageName(context.ScriptData);
+
+                var content = metadata.GetContent(context.ScriptData);
+
+                var parms = metadata.GetParams(context.ScriptData);
+
+                Debug.Assert(parms != null);
+
+                await context.SendMessageAsync(type, target, messageName, content, id, parms);
             }
-
-            await context.ExecuteContentAsync(metadata.UniqueId, async ec =>
+            catch (TaskCanceledException)
             {
-                Debug.Assert(ec != null);
-
-                try
-                {
-                    var id = metadata.Id;
-
-                    if (string.IsNullOrWhiteSpace(id))
-                    {
-                        id = Guid.NewGuid().ToString("N");
-
-                        await ec.LogDebugAsync($"Synthentic Id = {id}");
-
-                        if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
-                        {
-                            ec.SetDataValue(metadata.IdLocation, id);
-                        }
-                    }
-
-                    var type = metadata.GetType(ec.ScriptData);
-
-                    Debug.Assert(!string.IsNullOrWhiteSpace(type));
-
-                    var service = ec.GetExternalService(type);
-
-                    Debug.Assert(service != null);
-
-                    var target = metadata.GetTarget(ec.ScriptData);
-
-                    var messageName = metadata.GetMessageName(ec.ScriptData);
-
-                    var content = metadata.GetContent(ec.ScriptData);
-
-                    var parms = metadata.GetParams(ec.ScriptData);
-
-                    await service(target, messageName, content, id, parms);
-                }
-                catch(Exception ex)
-                {
-                    ec.EnqueueCommunicationError(ex);
-                }
-            });
+                context.InternalCancel();
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueCommunicationError(ex);
+            }
         }
     }
 }

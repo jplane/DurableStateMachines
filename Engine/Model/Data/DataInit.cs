@@ -1,6 +1,7 @@
 ﻿using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Data;
 using System;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.Data
 {
@@ -15,28 +16,15 @@ namespace StateChartsDotNet.Model.Data
             _metadata = metadata;
         }
 
-        public void Init(ExecutionContext context)
+        public async Task Init(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformationAsync("Start: DataInit");
+            var value = _metadata.GetValue(context.ScriptData);
 
-            try
-            {
-                var value = _metadata.GetValue(context.ScriptData);
+            context.SetDataValue(_metadata.Id, value);
 
-                context.SetDataValue(_metadata.Id, value);
-
-                context.LogDebugAsync($"Set {_metadata.Id} = {value}");
-            }
-            catch (Exception ex)
-            {
-                context.EnqueueExecutionError(ex);
-            }
-            finally
-            {
-                context.LogInformationAsync("End: DataInit");
-            }
+            await context.LogDebugAsync($"Set {_metadata.Id} = {value}");
         }
     }
 }

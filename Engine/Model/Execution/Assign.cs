@@ -11,7 +11,7 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -21,9 +21,7 @@ namespace StateChartsDotNet.Model.Execution
 
             context.SetDataValue(assignMetadata.Location, value);
 
-            context.LogDebugAsync($"Set {assignMetadata.Location} = {value}");
-
-            return Task.CompletedTask;
+            await context.LogDebugAsync($"Set {assignMetadata.Location} = {value}");
         }
     }
 }

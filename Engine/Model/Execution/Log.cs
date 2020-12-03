@@ -12,20 +12,15 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (ILogMetadata) _metadata;
 
-            return context.ExecuteContentAsync(metadata.UniqueId, async ec =>
-            {
-                Debug.Assert(ec != null);
+            var message = metadata.GetMessage(context.ScriptData);
 
-                var message = metadata.GetMessage(ec.ScriptData);
-
-                await ec.LogInformationAsync("Log: " + message);
-            });
+            await context.LogInformationAsync("Log: " + message);
         }
     }
 }

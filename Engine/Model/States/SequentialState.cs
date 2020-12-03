@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Model.States
             return _initialTransition.Value;
         }
 
-        public override bool IsInFinalState(ExecutionContext context)
+        public override bool IsInFinalState(ExecutionContextBase context)
         {
             foreach (var child in GetChildStates())
             {

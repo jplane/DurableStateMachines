@@ -66,9 +66,12 @@ namespace StateChartsDotNet.Model.States
             });
         }
 
-        public void ExecuteScript(ExecutionContext context)
+        public async Task ExecuteScript(ExecutionContextBase context)
         {
-            _script.Value?.ExecuteAsync(context);
+            if (_script.Value != null)
+            {
+                await _script.Value.ExecuteAsync(context);
+            }
         }
 
         public bool FailFast => ((IRootStateMetadata) _metadata).FailFast;
@@ -81,7 +84,7 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsScxmlRoot => true;
 
-        public override Task InvokeAsync(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContextBase context)
         {
             throw new NotImplementedException();
         }
@@ -91,7 +94,7 @@ namespace StateChartsDotNet.Model.States
             return _initialTransition.Value;
         }
 
-        public override void RecordHistory(ExecutionContext context)
+        public override void RecordHistory(ExecutionContextBase context)
         {
             throw new NotImplementedException();
         }

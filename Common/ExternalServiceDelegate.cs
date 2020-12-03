@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Common
@@ -9,5 +10,6 @@ namespace StateChartsDotNet.Common
                                                  string messageName,
                                                  object content,
                                                  string correlationId,
-                                                 IReadOnlyDictionary<string, object> parameters);
+                                                 IReadOnlyDictionary<string, object> parameters,
+                                                 CancellationToken cancelToken);
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
@@ -14,23 +15,16 @@ namespace StateChartsDotNet.Durable
     {
         private readonly IRootStateMetadata _metadata;
         private readonly ILogger _logger;
-        private readonly Dictionary<string, IRootStateMetadata> _childMetadata;
-        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
 
         private Dictionary<string, object> _data;
         private Func<ExternalMessage, Task> _sendMessageHandler;
 
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
         {
-            Debug.Assert(metadata != null);
+            metadata.CheckArgNull(nameof(metadata));
 
             _metadata = metadata;
             _logger = logger;
-
-            _childMetadata = new Dictionary<string, IRootStateMetadata>();
-            _externalServices = new Dictionary<string, ExternalServiceDelegate>();
-            _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _data = new Dictionary<string, object>();
         }
 
@@ -38,67 +32,29 @@ namespace StateChartsDotNet.Durable
 
         internal ILogger Logger => _logger;
 
-        internal IReadOnlyDictionary<string, IRootStateMetadata> ChildMetadata => _childMetadata;
-
-        internal IReadOnlyDictionary<string, ExternalServiceDelegate> ExternalServices => _externalServices;
-
-        internal IReadOnlyDictionary<string, ExternalQueryDelegate> ExternalQueries => _externalQueries;
-
-        internal IReadOnlyDictionary<string, object> Data
-        {
-            get => _data;
-            set => _data = new Dictionary<string, object>(value);
-        }
-
         internal Func<ExternalMessage, Task> SendMessageHandler
         {
             set => _sendMessageHandler = value;
         }
 
+        internal Dictionary<string, object> Data
+        {
+            get => _data;
+            set => _data = value;
+        }
+
         public object this[string key]
         {
-            get { return _data[key]; }
-
-            set
-            {
-                if (this.IsRunning)
-                {
-                    throw new InvalidOperationException("Cannot set execution state while the state machine is running.");
-                }
-
-                _data[key] = value;
-            }
+            get => _data[key]; 
+            set => _data[key] = value;
         }
 
         public bool IsRunning => _sendMessageHandler != null;
 
-        public void ConfigureChildStateChart(IRootStateMetadata statechart)
+        public Task SendAsync(ExternalMessage message)
         {
-            statechart.CheckArgNull(nameof(statechart));
+            message.CheckArgNull(nameof(message));
 
-            _childMetadata[statechart.Id] = statechart;
-        }
-
-        public void ConfigureExternalQuery(string id, ExternalQueryDelegate handler)
-        {
-            id.CheckArgNull(nameof(id));
-            handler.CheckArgNull(nameof(handler));
-
-            _externalQueries[id] = handler;
-        }
-
-        public void ConfigureExternalService(string id, ExternalServiceDelegate handler)
-        {
-            id.CheckArgNull(nameof(id));
-            handler.CheckArgNull(nameof(handler));
-
-            _externalServices[id] = handler;
-        }
-
-        public Task SendAsync(string message,
-                              object content = null,
-                              IReadOnlyDictionary<string, object> parameters = null)
-        {
             if (!this.IsRunning)
             {
                 throw new InvalidOperationException("Cannot send messages until the state machine is running.");
@@ -106,13 +62,22 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(_sendMessageHandler != null);
 
+            return _sendMessageHandler(message);
+        }
+
+        public Task SendAsync(string message,
+                              object content = null,
+                              IReadOnlyDictionary<string, object> parameters = null)
+        {
+            message.CheckArgNull(nameof(message));
+
             var msg = new ExternalMessage(message)
             {
                 Content = content,
                 Parameters = parameters
             };
 
-            return _sendMessageHandler(msg);
+            return SendAsync(msg);
         }
 
         public Task StopAsync()

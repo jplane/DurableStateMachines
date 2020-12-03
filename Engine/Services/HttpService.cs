@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Services
@@ -15,7 +16,8 @@ namespace StateChartsDotNet.Services
         private static HttpClient _client = new HttpClient();
 
         public static async Task<string> GetAsync(string url,
-                                                  IReadOnlyDictionary<string, object> parameters)
+                                                  IReadOnlyDictionary<string, object> parameters,
+                                                  CancellationToken token)
         {
             url.CheckArgNull(nameof(url));
             parameters.CheckArgNull(nameof(parameters));
@@ -28,7 +30,7 @@ namespace StateChartsDotNet.Services
 
             Debug.Assert(uri != null);
 
-            var response = await Invoke("GET", null, uri);
+            var response = await Invoke("GET", null, uri, token);
 
             Debug.Assert(response != null);
 
@@ -36,10 +38,11 @@ namespace StateChartsDotNet.Services
         }
 
         public static async Task PostAsync(string url,
-                                           string ignored,
+                                           string _,
                                            object content,
                                            string correlationId,
-                                           IReadOnlyDictionary<string, object> parameters)
+                                           IReadOnlyDictionary<string, object> parameters,
+                                           CancellationToken token)
         {
             url.CheckArgNull(nameof(url));
             parameters.CheckArgNull(nameof(parameters));
@@ -54,7 +57,7 @@ namespace StateChartsDotNet.Services
 
             Debug.Assert(uri != null);
 
-            var response = await Invoke("POST", content, uri);
+            var response = await Invoke("POST", content, uri, token);
 
             Debug.Assert(response != null);
 
@@ -63,7 +66,10 @@ namespace StateChartsDotNet.Services
 
         private static void AddCorrelationHeader(string correlationId)
         {
-            _client.DefaultRequestHeaders.Add("X-SCDN-CORRELATION", correlationId);
+            if (!string.IsNullOrWhiteSpace(correlationId))
+            {
+                _client.DefaultRequestHeaders.Add("X-SCDN-CORRELATION", correlationId);
+            }
         }
 
         private static Uri GetUri(string url, string queryString)
@@ -78,7 +84,10 @@ namespace StateChartsDotNet.Services
             }
         }
 
-        private static async Task<HttpResponseMessage> Invoke(string verb, object content, Uri uri)
+        private static async Task<HttpResponseMessage> Invoke(string verb,
+                                                              object content,
+                                                              Uri uri,
+                                                              CancellationToken token)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(verb));
             Debug.Assert(uri != null);
@@ -86,7 +95,7 @@ namespace StateChartsDotNet.Services
             switch (verb.ToUpperInvariant())
             {
                 case "GET":
-                    return await _client.GetAsync(uri);
+                    return await _client.GetAsync(uri, token);
 
                 case "POST":
 
@@ -96,7 +105,7 @@ namespace StateChartsDotNet.Services
                                                         Encoding.UTF8,
                                                         "application/json");
 
-                    return await _client.PostAsync(uri, httpContent);
+                    return await _client.PostAsync(uri, httpContent, token);
 
                 default:
                     throw new InvalidOperationException("HTTP verb not supported: " + verb);

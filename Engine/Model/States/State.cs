@@ -101,12 +101,15 @@ namespace StateChartsDotNet.Model.States
             throw new NotImplementedException();
         }
 
-        public virtual void InitDatamodel(ExecutionContext context, bool recursive)
+        public virtual async Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
-            _datamodel.Value?.Init(context);
+            if (_datamodel.Value != null)
+            {
+                await _datamodel.Value.Init(context);
+            }
         }
 
-        public virtual async Task InvokeAsync(ExecutionContext context)
+        public virtual async Task InvokeAsync(ExecutionContextBase context)
         {
             foreach (var invoke in _invokes.Value)
             {
@@ -114,7 +117,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public virtual void RecordHistory(ExecutionContext context)
+        public virtual void RecordHistory(ExecutionContextBase context)
         {
         }
 
@@ -123,7 +126,7 @@ namespace StateChartsDotNet.Model.States
             return Enumerable.Empty<State>();
         }
 
-        public virtual bool IsInFinalState(ExecutionContext context)
+        public virtual bool IsInFinalState(ExecutionContextBase context)
         {
             return false;
         }
@@ -140,22 +143,25 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(ExecutionContext context, ExternalMessage message)
+        public async Task ProcessExternalMessageAsync(ExecutionContextBase context, ExternalMessage message)
         {
-            var invokeIds = context.GetInvokeIdsForParent(_metadata.UniqueId)?.ToArray();
+            var invokeIds = context.GetInvokeIdsForParent(_metadata.UniqueId);
 
-            Debug.Assert(invokeIds != null);
-
-            foreach (var invoke in _invokes.Value)
+            if (invokeIds != null)
             {
-                foreach (var invokeId in invokeIds)
+                invokeIds = invokeIds.ToArray();
+
+                foreach (var invoke in _invokes.Value)
                 {
-                    await invoke.ProcessExternalMessageAsync(invokeId, context, message);
+                    foreach (var invokeId in invokeIds)
+                    {
+                        await invoke.ProcessExternalMessageAsync(invokeId, context, message);
+                    }
                 }
             }
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context)
+        public Set<State> GetEffectiveTargetStates(ExecutionContextBase context)
         {
             var set = new Set<State>();
 
@@ -169,7 +175,7 @@ namespace StateChartsDotNet.Model.States
             return set;
         }
 
-        public async Task EnterAsync(ExecutionContext context,
+        public async Task EnterAsync(ExecutionContextBase context,
                                      Set<State> statesForDefaultEntry,
                                      Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
@@ -185,7 +191,7 @@ namespace StateChartsDotNet.Model.States
 
             if (context.Root.Binding == Databinding.Late && _firstEntry)
             {
-                this.InitDatamodel(context, false);
+                await this.InitDatamodel(context, false);
 
                 _firstEntry = false;
             }
@@ -249,7 +255,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ExitAsync(ExecutionContext context)
+        public async Task ExitAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

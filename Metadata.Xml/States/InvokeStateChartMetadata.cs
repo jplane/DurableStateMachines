@@ -18,8 +18,6 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         private readonly XElement _element;
         private readonly Lazy<string> _uniqueId;
-        private readonly Lazy<Func<dynamic, string>> _getRootId;
-        private readonly Lazy<Func<dynamic, IRootStateMetadata>> _getRoot;
 
         internal InvokeStateChartMetadata(XElement element)
         {
@@ -28,84 +26,6 @@ namespace StateChartsDotNet.Metadata.Xml.States
             _uniqueId = new Lazy<string>(() =>
             {
                 return element.GetUniqueElementPath();
-            });
-
-            _getRootId = new Lazy<Func<dynamic, string>>(() =>
-            {
-                var node = _element.ScxmlElement("content");
-
-                if (node == null)
-                {
-                    var src = _element.Attribute("src")?.Value ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(src))
-                    {
-                        return _ => src;
-                    }
-                    else
-                    {
-                        var srcExpression = _element.Attribute("srcexpr")?.Value ?? string.Empty;
-
-                        if (!string.IsNullOrWhiteSpace(srcExpression))
-                        {
-                            return ExpressionCompiler.Compile<string>(srcExpression);
-                        }
-                        else
-                        {
-                            return _ => string.Empty;
-                        }
-                    }
-                }
-                else
-                {
-                    return _ => string.Empty;
-                }
-            });
-
-            _getRoot = new Lazy<Func<dynamic, IRootStateMetadata>>(() =>
-            {
-                var node = _element.ScxmlElement("content");
-
-                if (node != null)
-                {
-                    StateChart FromSource(string source)
-                    {
-                        source.CheckArgNull(nameof(source));
-
-                        var xdoc = XDocument.Parse(source);
-
-                        Debug.Assert(xdoc != null);
-
-                        return new StateChart(xdoc);
-                    }
-
-                    var expression = node.Attribute("expr")?.Value;
-
-                    if (!string.IsNullOrWhiteSpace(expression))
-                    {
-                        return data =>
-                        {
-                            var getSourceFunc = ExpressionCompiler.Compile<string>(expression);
-
-                            Debug.Assert(getSourceFunc != null);
-
-                            var source = getSourceFunc(data);
-
-                            if (string.IsNullOrWhiteSpace(source))
-                            {
-                                throw new MetadataValidationException("Unable to resolve source for child statechart.");
-                            }
-
-                            return FromSource(source);
-                        };
-                    }
-                    else if (node.ScxmlElement("scxml") != null)
-                    {
-                        return _ => FromSource(node.ScxmlElement("scxml").ToString());
-                    }
-                }
-
-                return _ => null;
             });
         }
 
@@ -168,14 +88,23 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return content.AsEnumerable();
         }
 
-        public string GetRootId(dynamic data)
+        public IRootStateMetadata GetRoot()
         {
-            return _getRootId.Value(data);
-        }
+            var node = _element.ScxmlElement("content");
 
-        public IRootStateMetadata GetRoot(dynamic data)
-        {
-            return _getRoot.Value(data);
+            if (node != null)
+            {
+                if (node.ScxmlElement("scxml") != null)
+                {
+                    var xdoc = XDocument.Parse(node.ScxmlElement("scxml").ToString());
+
+                    Debug.Assert(xdoc != null);
+
+                    return new StateChart(xdoc);
+                }
+            }
+
+            return null;
         }
 
         public IReadOnlyDictionary<string, object> GetParams(dynamic data)

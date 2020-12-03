@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -47,20 +48,20 @@ namespace StateChartsDotNet.Model.States
             return null;
         }
 
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
+        public override async Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
-            base.InitDatamodel(context, recursive);
+            await base.InitDatamodel(context, recursive);
 
             if (recursive)
             {
                 foreach (var child in GetChildStates())
                 {
-                    child.InitDatamodel(context, recursive);
+                    await child.InitDatamodel(context, recursive);
                 }
             }
         }
 
-        public override void RecordHistory(ExecutionContext context)
+        public override void RecordHistory(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

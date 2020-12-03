@@ -8,25 +8,28 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
+using System.Threading;
 
 namespace StateChartsDotNet
 {
-    public class Interpreter
+    public sealed class Interpreter
     {
         public Interpreter()
         {
         }
 
-        public async Task RunAsync(ExecutionContext context)
+        public Task RunAsync(ExecutionContextBase context)
+        {
+            return RunAsync(context, CancellationToken.None);
+        }
+
+        public async Task RunAsync(ExecutionContextBase context, CancellationToken cancelToken)
         {
             context.CheckArgNull(nameof(context));
 
-            await context.InitAsync();
-
-            await EnterStatesAsync(context,
-                                   new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));
-
             await context.LogInformationAsync("Start: event loop");
+
+            await EnterStatechartAsync(context, cancelToken);
 
             while (context.IsRunning)
             {
@@ -54,7 +57,17 @@ namespace StateChartsDotNet
             context.CheckErrorPropagation();
         }
 
-        private static async Task ExitStatechartAsync(ExecutionContext context)
+        private async Task EnterStatechartAsync(ExecutionContextBase context, CancellationToken cancelToken)
+        {
+            Debug.Assert(context != null);
+
+            await context.InitAsync(cancelToken);
+
+            await EnterStatesAsync(context,
+                                   new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));
+        }
+
+        private static async Task ExitStatechartAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -68,13 +81,13 @@ namespace StateChartsDotNet
 
                     if (state.Parent.IsScxmlRoot)
                     {
-                        ((FinalState) state).SendDoneMessage(context);
+                        await ((FinalState) state).SendDoneMessage(context);
                     }
                 }
             }
         }
 
-        private static async Task ProcessStateChartInvokesAsync(ExecutionContext context)
+        private static async Task ProcessStateChartInvokesAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -86,7 +99,7 @@ namespace StateChartsDotNet
             context.StatesToInvoke.Clear();
         }
 
-        private async Task ProcessExternalMessageAsync(ExecutionContext context)
+        private async Task ProcessExternalMessageAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -108,7 +121,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task MacrostepAsync(ExecutionContext context)
+        private async Task MacrostepAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -142,7 +155,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task MicrostepAsync(ExecutionContext context, IEnumerable<Transition> enabledTransitions)
+        private async Task MicrostepAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(enabledTransitions != null);
 
@@ -158,7 +171,7 @@ namespace StateChartsDotNet
             await EnterStatesAsync(context, enabledTransitions);
         }
 
-        private async Task ExitStatesAsync(ExecutionContext context, IEnumerable<Transition> enabledTransitions)
+        private async Task ExitStatesAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
             var exitSet = ComputeExitSet(context, enabledTransitions);
 
@@ -181,7 +194,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private Set<State> ComputeExitSet(ExecutionContext context, IEnumerable<Transition> transitions)
+        private Set<State> ComputeExitSet(ExecutionContextBase context, IEnumerable<Transition> transitions)
         {
             Debug.Assert(context != null);
             Debug.Assert(transitions != null);
@@ -211,21 +224,21 @@ namespace StateChartsDotNet
             return statesToExit;
         }
 
-        private Set<Transition> SelectTransitions(ExecutionContext context, Message evt)
+        private Set<Transition> SelectTransitions(ExecutionContextBase context, Message evt)
         {
             return SelectTransitions(context,
                                      transition => transition.MatchesMessage(evt) &&
                                                    transition.EvaluateCondition(context));
         }
 
-        private Set<Transition> SelectMessagelessTransitions(ExecutionContext context)
+        private Set<Transition> SelectMessagelessTransitions(ExecutionContextBase context)
         {
             return SelectTransitions(context,
                                      transition => !transition.HasMessage &&
                                                    transition.EvaluateCondition(context));
         }
 
-        private Set<Transition> SelectTransitions(ExecutionContext context, Func<Transition, bool> predicate)
+        private Set<Transition> SelectTransitions(ExecutionContextBase context, Func<Transition, bool> predicate)
         {
             Debug.Assert(context != null);
             Debug.Assert(predicate != null);
@@ -273,7 +286,7 @@ namespace StateChartsDotNet
             return enabledTransitions;
         }
 
-        private Set<Transition> RemoveConflictingTransitions(ExecutionContext context,
+        private Set<Transition> RemoveConflictingTransitions(ExecutionContextBase context,
                                                              IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(context != null);
@@ -331,7 +344,7 @@ namespace StateChartsDotNet
             return filteredTransitions;
         }
 
-        private async Task EnterStatesAsync(ExecutionContext context, IEnumerable<Transition> enabledTransitions)
+        private async Task EnterStatesAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
             var statesToEnter = new Set<State>();
 
@@ -349,7 +362,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task ComputeEntrySetAsync(ExecutionContext context,
+        private async Task ComputeEntrySetAsync(ExecutionContextBase context,
                                                 IEnumerable<Transition> enabledTransitions,
                                                 Set<State> statesToEnter,
                                                 Set<State> statesForDefaultEntry,
@@ -384,7 +397,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task AddAncestorStatesToEnterAsync(ExecutionContext context,
+        private async Task AddAncestorStatesToEnterAsync(ExecutionContextBase context,
                                                          State state,
                                                          State ancestor,
                                                          Set<State> statesToEnter,
@@ -423,7 +436,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task AddDescendentStatesToEnterAsync(ExecutionContext context,
+        private async Task AddDescendentStatesToEnterAsync(ExecutionContextBase context,
                                                            State state,
                                                            Set<State> statesToEnter,
                                                            Set<State> statesForDefaultEntry,

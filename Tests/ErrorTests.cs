@@ -4,6 +4,7 @@ using StateChartsDotNet.Metadata.Fluent.States;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
@@ -12,7 +13,8 @@ namespace StateChartsDotNet.Tests
     public class ErrorTests
     {
         [TestMethod]
-        public async Task ErrorMessateNotHandled()
+        [TestScaffold]
+        public async Task ErrorMessateNotHandled(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
@@ -26,17 +28,18 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             Assert.IsTrue(true, "Internal error message not handled. Statechart processing successful.");
         }
 
         [TestMethod]
-        public async Task ErrorMessageHandled()
+        [TestScaffold]
+        public async Task ErrorMessageHandled(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
@@ -62,23 +65,22 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
-            var ex = (Exception) context["err"];
+            var error = (Exception) context["err"];
 
-            Assert.IsNotNull(ex);
-            Assert.IsInstanceOfType(ex, typeof(ExecutionException));
-            Assert.IsNotNull(ex.InnerException);
-
-            Assert.AreEqual("boo!", ex.InnerException.Message);
+            Assert.IsInstanceOfType(error, typeof(ExecutionException));
+            Assert.IsNotNull(error.InnerException);
+            Assert.AreEqual("boo!", error.InnerException.Message);
         }
 
         [TestMethod]
-        public async Task FailFast()
+        [TestScaffold]
+        public async Task FailFast(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
                                     .FailFast(true)
@@ -93,11 +95,11 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await Assert.ThrowsExceptionAsync<ExecutionException>(() => interpreter.RunAsync(context));
+            await Assert.ThrowsExceptionAsync<ExecutionException>(() => scaffold.Item2());
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Data;
 
@@ -19,22 +20,26 @@ namespace StateChartsDotNet.Model.Data
             });
         }
 
-        public void Init(ExecutionContext context)
+        public async Task Init(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
-            context.LogInformationAsync("Start: Datamodel.Init");
+            await context.LogInformationAsync("Start: Datamodel.Init");
 
             try
             {
                 foreach (var data in _data.Value)
                 {
-                    data.Init(context);
+                    await data.Init(context);
                 }
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueExecutionError(ex);
             }
             finally
             {
-                context.LogInformationAsync("End: Datamodel.Init");
+                await context.LogInformationAsync("End: Datamodel.Init");
             }
         }
     }

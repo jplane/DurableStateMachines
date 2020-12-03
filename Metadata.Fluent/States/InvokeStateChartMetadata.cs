@@ -19,8 +19,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private bool _autoForward;
         private string _id;
         private string _idLocation;
-        private Func<dynamic, string> _rootIdGetter;
-        private Func<dynamic, IRootStateMetadata> _rootGetter;
+        private IRootStateMetadata _root;
 
         internal InvokeStateChartMetadata()
         {
@@ -57,21 +56,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public InvokeStateChartMetadata<TParent> Reference(string reference)
-        {
-            _rootIdGetter = _ => reference;
-            return this;
-        }
-
-        public InvokeStateChartMetadata<TParent> Reference(Func<dynamic, string> getter)
-        {
-            _rootIdGetter = getter;
-            return this;
-        }
-
         public InvokeStateChartMetadata<TParent> Definition(StateChart statechart)
         {
-            _rootGetter = _ => statechart;
+            _root = statechart;
             return this;
         }
 
@@ -236,9 +223,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() => _finalizeExecutableContent;
 
-        string IInvokeStateChartMetadata.GetRootId(dynamic data) => _rootIdGetter?.Invoke(data);
-
-        IRootStateMetadata IInvokeStateChartMetadata.GetRoot(dynamic data) => _rootGetter?.Invoke(data);
+        IRootStateMetadata IInvokeStateChartMetadata.GetRoot() => _root;
 
         IReadOnlyDictionary<string, object> IInvokeStateChartMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));

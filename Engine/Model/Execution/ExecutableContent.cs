@@ -1,4 +1,5 @@
 ﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Data.Common;
@@ -60,15 +61,19 @@ namespace StateChartsDotNet.Model.Execution
             return content;
         }
 
-        protected abstract Task _ExecuteAsync(ExecutionContext context);
+        protected abstract Task _ExecuteAsync(ExecutionContextBase context);
 
-        public async Task ExecuteAsync(ExecutionContext context)
+        public async Task ExecuteAsync(ExecutionContextBase context)
         {
             await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
 
             try
             {
                 await _ExecuteAsync(context);
+            }
+            catch (StateChartException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

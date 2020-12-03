@@ -5,6 +5,7 @@ using StateChartsDotNet.Metadata.Fluent.Queries.HttpGet;
 using StateChartsDotNet.Metadata.Fluent.Services.HttpPost;
 using System.Threading.Tasks;
 using System;
+using System.Threading;
 
 namespace StateChartsDotNet.Tests
 {
@@ -12,7 +13,8 @@ namespace StateChartsDotNet.Tests
     public class FluentTests
     {
         [TestMethod]
-        public async Task SimpleTransition()
+        [TestScaffold]
+        public async Task SimpleTransition(ScaffoldFactoryDelegate factory, string _)
         {
             var x = 1;
 
@@ -31,17 +33,18 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             Assert.AreEqual(3, x);
         }
 
         [TestMethod]
-        public async Task HttpPost()
+        [TestScaffold]
+        public async Task HttpPost(ScaffoldFactoryDelegate factory, string _)
         {
             var uri = "http://localhost:4444/";
 
@@ -64,11 +67,11 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             var json = await listenerTask;
 
@@ -78,7 +81,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task Delay()
+        [TestScaffold]
+        public async Task Delay(ScaffoldFactoryDelegate factory, string _)
         {
             var uri = "http://localhost:4444/";
 
@@ -102,11 +106,11 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             var json = await listenerTask;
 
@@ -116,7 +120,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task HttpGet()
+        [TestScaffold]
+        public async Task HttpGet(ScaffoldFactoryDelegate factory, string _)
         {
             var uri = "http://localhost:4444/";
 
@@ -137,13 +142,13 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await Task.WhenAll(interpreter.RunAsync(context), listenerTask);
+            await Task.WhenAll(scaffold.Item2(), listenerTask);
 
-            var json = (string) context["x"];
+            var json = (string)context["x"];
 
             Assert.IsNotNull(json);
 
@@ -153,7 +158,8 @@ namespace StateChartsDotNet.Tests
         }
 
         [TestMethod]
-        public async Task SimpleParentChild()
+        [TestScaffold]
+        public async Task SimpleParentChild(ScaffoldFactoryDelegate factory, string _)
         {
             var x = 1;
 
@@ -185,11 +191,11 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var context = new ExecutionContext(machine);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
-            var interpreter = new Interpreter();
+            var context = scaffold.Item1;
 
-            await interpreter.RunAsync(context);
+            await scaffold.Item2();
 
             Assert.AreEqual(3, x);
         }

@@ -24,7 +24,7 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        public async Task<bool> ConditionalExecuteAsync(ExecutionContext context)
+        public async Task<bool> ConditionalExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

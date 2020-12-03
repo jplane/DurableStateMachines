@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         {
         }
 
-        public override string Id => _element.Attribute("name")?.Value ?? string.Empty;
+        protected override string IdAttributeName => "name";
 
         public bool FailFast
         {

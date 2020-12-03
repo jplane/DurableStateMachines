@@ -2,7 +2,8 @@
 using StateChartsDotNet.Common;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
@@ -23,21 +24,41 @@ namespace StateChartsDotNet.Durable
             _orchestrationService = orchestrationService;
         }
 
-        public async Task RunAsync(ExecutionContext context)
+        public async Task RunAsync(ExecutionContext context, CancellationToken cancelToken)
         {
             context.CheckArgNull(nameof(context));
 
-            var service = new DurableStateChartService(_orchestrationService, context);
+            var timeout = Debugger.IsAttached ? TimeSpan.FromMinutes(5) : TimeSpan.FromMinutes(1);  // TODO: expose externally
 
-            await service.StartAsync();
+            var instanceId = context.Metadata.Id;
 
-            var client = new DurableStateChartClient((IOrchestrationServiceClient) _orchestrationService, context);
+            var orchestrationManager = new DurableOrchestrationManager(_orchestrationService, context.Logger);
 
-            await client.InitAsync();
+            context.SendMessageHandler = msg => orchestrationManager.SendMessageAsync(instanceId, msg);
 
-            await client.WaitForCompletionAsync(TimeSpan.FromSeconds(60));
+            try
+            {
+                await orchestrationManager.StartAsync(context, cancelToken);
 
-            await service.StopAsync();
+                try
+                {
+                    await orchestrationManager.StartOrchestrationAsync();
+
+                    var output = await orchestrationManager.WaitForCompletionAsync(instanceId, timeout, cancelToken);
+
+                    Debug.Assert(output != null);
+
+                    context.Data = new Dictionary<string, object>(output);
+                }
+                finally
+                {
+                    await orchestrationManager.StopAsync();
+                }
+            }
+            finally
+            {
+                context.SendMessageHandler = null;
+            }
         }
     }
 }

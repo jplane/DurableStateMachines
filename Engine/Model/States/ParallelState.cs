@@ -42,7 +42,7 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsParallelState => true;
 
-        public override bool IsInFinalState(ExecutionContext context)
+        public override bool IsInFinalState(ExecutionContextBase context)
         {
             foreach (var child in GetChildStates())
             {

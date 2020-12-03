@@ -11,7 +11,7 @@ namespace StateChartsDotNet.Model.Execution
         {
         }
 
-        protected override Task _ExecuteAsync(ExecutionContext context)
+        protected override Task _ExecuteAsync(ExecutionContextBase context)
         {
             throw new NotImplementedException();
         }

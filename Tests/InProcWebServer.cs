@@ -35,12 +35,18 @@ namespace StateChartsDotNet.Tests
             }
         }
 
-        public static async Task<string> EchoAsync(string uri)
+        public static Task<string> EchoAsync(string uri)
+        {
+            return DelayEchoAsync(uri, TimeSpan.Zero);
+        }
+
+        public static async Task<string> DelayEchoAsync(string uri, TimeSpan delay)
         {
             var completion = new TaskCompletionSource<string>();
 
             RequestHandlerCallback callback = async ctx =>
             {
+                await Task.Delay(delay);
                 completion.SetResult(await ctx.GetRequestBodyAsStringAsync());
             };
 

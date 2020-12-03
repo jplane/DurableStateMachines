@@ -19,13 +19,14 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsDeepHistoryState => ((IHistoryStateMetadata) _metadata).Type == HistoryType.Deep;
 
-        public override Task InvokeAsync(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContextBase context)
         {
             throw new NotImplementedException();
         }
 
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
+        public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
+            return Task.CompletedTask;
         }
 
         public void VisitTransition(List<State> targetStates,

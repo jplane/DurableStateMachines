@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using StateChartsDotNet.Common;
+using System.Threading;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -16,16 +17,17 @@ namespace StateChartsDotNet.Model.States
 
         public override bool IsFinalState => true;
 
-        public override Task InvokeAsync(ExecutionContext context)
+        public override Task InvokeAsync(ExecutionContextBase context)
         {
             throw new NotImplementedException();
         }
 
-        public override void InitDatamodel(ExecutionContext context, bool recursive)
+        public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
+            return Task.CompletedTask;
         }
 
-        public void SendDoneMessage(ExecutionContext context)
+        public Task SendDoneMessage(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -35,7 +37,7 @@ namespace StateChartsDotNet.Model.States
 
             var parameters = metadata.GetParams(context);
 
-            context.SendDoneMessageToParent(content, parameters);
+            return context.SendDoneMessageToParentAsync(content, parameters);
         }
     }
 }

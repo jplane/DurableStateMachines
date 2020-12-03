@@ -1,9 +1,13 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
+using StateChartsDotNet.Durable.Activities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
@@ -11,64 +15,48 @@ namespace StateChartsDotNet.Durable
     internal class DurableStateChartService
     {
         private readonly IOrchestrationService _service;
-        private readonly ExecutionContext _context;
+        private readonly IStateChartOrchestrationManager _orchestrationManager;
+        private readonly ILogger _logger;
+        private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
+        private readonly NameVersionObjectManager<TaskActivity> _activityResolver;
+        private readonly Func<string, ExternalServiceDelegate> _getServices;
+        private readonly Func<string, ExternalQueryDelegate> _getQueries;
 
         private TaskHubWorker _worker;
 
-        public DurableStateChartService(IOrchestrationService service, ExecutionContext context)
+        public DurableStateChartService(IOrchestrationService service,
+                                        IStateChartOrchestrationManager orchestrationManager,
+                                        Func<string, ExternalServiceDelegate> getServices,
+                                        Func<string, ExternalQueryDelegate> getQueries,
+                                        ILogger logger)
         {
             service.CheckArgNull(nameof(service));
-            context.CheckArgNull(nameof(context));
+            orchestrationManager.CheckArgNull(nameof(orchestrationManager));
+            getServices.CheckArgNull(nameof(getServices));
+            getQueries.CheckArgNull(nameof(getQueries));
 
             _service = service;
-            _context = context;
+            _orchestrationManager = orchestrationManager;
+            _getServices = getServices;
+            _getQueries = getQueries;
+            _logger = logger;
+
+            _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
+            _activityResolver = new NameVersionObjectManager<TaskActivity>();
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(IRootStateMetadata metadata, CancellationToken token)
         {
             if (_worker != null)
             {
                 throw new InvalidOperationException("Service already started.");
             }
 
-            var orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
+            RegisterMetadata(metadata, token);
 
-            var activityResolver = new NameVersionObjectManager<TaskActivity>();
+            _worker = new TaskHubWorker(_service, _orchestrationResolver, _activityResolver);
 
-            Action<string, Func<TaskActivity>> ensureActivityRegistration = (uniqueId, func) =>
-            {
-                uniqueId.CheckArgNull(nameof(uniqueId));
-                func.CheckArgNull(nameof(func));
-
-                var creator = new NameValueObjectCreator<TaskActivity>(uniqueId, string.Empty, func());
-
-                activityResolver.Add(creator);
-            };
-
-            Action<string, Func<InterpreterOrchestration>> ensureOrchestrationRegistration = (name, func) =>
-            {
-                name.CheckArgNull(nameof(name));
-                func.CheckArgNull(nameof(func));
-
-                var creator = new NameValueObjectCreator<TaskOrchestration>("statechart", name, func());
-
-                orchestrationResolver.Add(creator);
-            };
-
-            ensureOrchestrationRegistration(_context.Metadata.Id,
-                                            () => new InterpreterOrchestration(_context.Metadata,
-                                                                               ensureActivityRegistration,
-                                                                               ensureOrchestrationRegistration,
-                                                                               _context.ChildMetadata,
-                                                                               _context.ExternalServices,
-                                                                               _context.ExternalQueries,
-                                                                               _context.Logger));
-
-            _worker = new TaskHubWorker(_service, orchestrationResolver, activityResolver);
-
-            _worker.AddTaskActivities(typeof(GenerateGuidActivity));
-
-            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_context.Logger)));
+            AddTaskActivities(token);
 
             await _worker.StartAsync();
         }
@@ -80,7 +68,74 @@ namespace StateChartsDotNet.Durable
                 throw new InvalidOperationException("Service not started.");
             }
 
+            _orchestrationResolver.Clear();
+
+            _activityResolver.Clear();
+
             return _worker.StopAsync();
+        }
+
+        private void RegisterStateChart(string instanceId, IRootStateMetadata metadata, CancellationToken token)
+        {
+            instanceId.CheckArgNull(nameof(instanceId));
+            metadata.CheckArgNull(nameof(metadata));
+
+            // this is the durable activity for starting a child statechart from within its parent
+
+            var createActivity = new CreateChildOrchestrationActivity(metadata, _orchestrationManager);
+
+            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", instanceId, createActivity);
+
+            _activityResolver.Add(activityCreator);
+
+            // this is the orchestration that runs a statechart instance (parent or child)
+
+            var orchestrator = new InterpreterOrchestration(metadata, token, _logger);
+
+            var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", instanceId, orchestrator);
+
+            _orchestrationResolver.Add(orchestrationCreator);
+        }
+
+        private void RegisterScript(IScriptMetadata metadata)
+        {
+            metadata.CheckArgNull(nameof(metadata));
+
+            var scriptActivity = new ExecuteScriptActivity(metadata);
+
+            var activityCreator = new NameValueObjectCreator<TaskActivity>("script", metadata.UniqueId, scriptActivity);
+
+            _activityResolver.Add(activityCreator);
+        }
+
+        private void RegisterMetadata(IRootStateMetadata metadata, CancellationToken token)
+        {
+            Debug.Assert(metadata != null);
+
+            RegisterStateChart(metadata.UniqueId, metadata, token);
+
+            metadata.RegisterStateChartInvokes((id, root) => RegisterStateChart(id, root, token));
+
+            metadata.RegisterScripts(RegisterScript);
+        }
+
+        private void AddTaskActivities(CancellationToken token)
+        {
+            _worker.AddTaskActivities(typeof(GenerateGuidActivity));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("sendparentchildmessage",
+                                                                               string.Empty,
+                                                                               new SendParentChildMessageActivity(_orchestrationManager)));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("waitforcompletion",
+                                                                               string.Empty,
+                                                                               new WaitForCompletionActivity(_orchestrationManager, token)));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_logger)));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("query", string.Empty, new QueryActivity(_getQueries, token)));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("sendmessage", string.Empty, new SendMessageActivity(_getServices, token)));
         }
 
         private class NameVersionObjectManager<T> : INameVersionObjectManager<T>
@@ -92,13 +147,20 @@ namespace StateChartsDotNet.Durable
                 _creators = new Dictionary<string, ObjectCreator<T>>();
             }
 
+            public void Clear()
+            {
+                _creators.Clear();
+            }
+
             public void Add(ObjectCreator<T> creator)
             {
+                var key = GetKey(creator.Name, creator.Version);
+
                 lock (_creators)
                 {
-                    var key = GetKey(creator.Name, creator.Version);
+                    Debug.Assert(!_creators.ContainsKey(key));
 
-                    _creators[key] = creator;
+                    _creators.TryAdd(key, creator);
                 }
             }
 

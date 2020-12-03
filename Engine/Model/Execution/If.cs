@@ -57,7 +57,7 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -82,7 +82,10 @@ namespace StateChartsDotNet.Model.Execution
                     }
                 }
 
-                _else.Value?.Execute(context);
+                if (_else.Value != null)
+                {
+                    await _else.Value.Execute(context);
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
+using System.Collections;
 
 namespace StateChartsDotNet.Model.Execution
 {
@@ -22,7 +23,7 @@ namespace StateChartsDotNet.Model.Execution
             });
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContext context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -36,40 +37,28 @@ namespace StateChartsDotNet.Model.Execution
                 return;
             }
 
-            var shallowCopy = enumerable.OfType<object>().ToArray();
+            var items = enumerable.Cast<object>().ToArray();
 
-            await context.LogDebugAsync($"Foreach: Array length {shallowCopy.Length}");
+            await context.LogDebugAsync($"Foreach: Array length {items.Length}");
 
             Debug.Assert(foreachMetadata.Item != null);
 
-            for (var idx = 0; idx < shallowCopy.Length; idx++)
+            for (var idx = 0; idx < items.Length; idx++)
             {
-                var item = shallowCopy[idx];
+                await context.LogDebugAsync($"Foreach: Array item index {idx}");
+
+                var item = items[idx];
 
                 context.SetDataValue(foreachMetadata.Item, item);
 
                 if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
                 {
                     context.SetDataValue(foreachMetadata.Index, idx);
-
-                    await context.LogDebugAsync($"Foreach: Array item index {foreachMetadata.Index}");
                 }
 
-                try
+                foreach (var content in _content.Value)
                 {
-                    foreach (var content in _content.Value)
-                    {
-                        await content.ExecuteAsync(context);
-                    }
-                }
-                finally
-                {
-                    context.SetDataValue(foreachMetadata.Item, null);
-
-                    if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
-                    {
-                        context.SetDataValue(foreachMetadata.Index, null);
-                    }
+                    await content.ExecuteAsync(context);
                 }
             }
         }

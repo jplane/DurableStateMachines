@@ -68,7 +68,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public bool EvaluateCondition(ExecutionContext context)
+        public bool EvaluateCondition(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -84,7 +84,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ExecuteContentAsync(ExecutionContext context)
+        public async Task ExecuteContentAsync(ExecutionContextBase context)
         {
             foreach (var content in _content.Value)
             {
@@ -113,7 +113,7 @@ namespace StateChartsDotNet.Model.States
             return targets.AsEnumerable();
         }
 
-        public Set<State> GetEffectiveTargetStates(ExecutionContext context)
+        public Set<State> GetEffectiveTargetStates(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -141,7 +141,7 @@ namespace StateChartsDotNet.Model.States
             return targets;
         }
 
-        public State GetTransitionDomain(ExecutionContext context)
+        public State GetTransitionDomain(ExecutionContextBase context)
         {
             var targetStates = GetEffectiveTargetStates(context);
 
