@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <MSTestV2>
-    <TestTimeout>30000</TestTimeout>
+    <TestTimeout>600000</TestTimeout>
   </MSTestV2>
 </RunSettings>

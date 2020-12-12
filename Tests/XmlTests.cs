@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using StateChartsDotNet.Metadata.Xml.States;
 using StateChartsDotNet.Services;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -11,19 +12,8 @@ using System.Xml.Linq;
 namespace StateChartsDotNet.Tests
 {
     [TestClass]
-    public class XmlTests
+    public class XmlTests : TestBase
     {
-        private static ILogger _logger;
-
-        [ClassInitialize]
-        public static void Init(TestContext context)
-        {
-            var loggerFactory = LoggerFactory.Create(
-                                    builder => builder.AddFilter("XmlTests", level => true).AddDebug());
-
-            _logger = loggerFactory.CreateLogger("XmlTests");
-        }
-
         [TestMethod]
         [TestScaffold]
         public async Task Foreach(ScaffoldFactoryDelegate factory, string _)
@@ -90,7 +80,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, _logger);
+            var scaffold = factory(machine, CancellationToken.None, Logger);
 
             var context = scaffold.Item1;
 
@@ -128,7 +118,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, _logger);
+            var scaffold = factory(machine, CancellationToken.None, Logger);
 
             var context = scaffold.Item1;
 
@@ -193,7 +183,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, _logger);
+            var scaffold = factory(machine, CancellationToken.None, Logger);
 
             var context = scaffold.Item1;
 
@@ -256,7 +246,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, _logger);
+            var scaffold = factory(machine, CancellationToken.None, Logger);
 
             var context = scaffold.Item1;
 

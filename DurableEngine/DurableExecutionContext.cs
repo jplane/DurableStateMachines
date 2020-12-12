@@ -1,5 +1,6 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Messages;
@@ -20,7 +21,7 @@ namespace StateChartsDotNet.Durable
         private readonly List<string> _childInstances;
         private readonly OrchestrationContext _orchestrationContext;
 
-        private TaskCompletionSource<ExternalMessage> _externalMessageSource;
+        private TaskCompletionSource<bool> _externalMessageAvailable;
 
         public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,
@@ -39,7 +40,7 @@ namespace StateChartsDotNet.Durable
             }
 
             _childInstances = new List<string>();
-            _externalMessageSource = new TaskCompletionSource<ExternalMessage>();
+            _externalMessageAvailable = new TaskCompletionSource<bool>();
         }
 
         public Dictionary<string, object> ResultData => new Dictionary<string, object>(_data.Where(pair => !pair.Key.StartsWith("_")));
@@ -47,15 +48,6 @@ namespace StateChartsDotNet.Durable
         protected override Task<Guid> GenerateGuid()
         {
             return _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty);
-        }
-
-        protected override async Task<ExternalMessage> GetNextExternalMessageAsync()
-        {
-            var message = await _externalMessageSource.Task;
-
-            _externalMessageSource = new TaskCompletionSource<ExternalMessage>();
-
-            return message;
         }
 
         internal override Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
@@ -112,15 +104,15 @@ namespace StateChartsDotNet.Durable
 
             if (message.IsDone)
             {
-                Debug.Assert(_childInstances.Contains(message.CorrelationId), "Expected to find child state machine instance: " + message.CorrelationId);
-
-                await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+                if (_childInstances.Remove(message.CorrelationId))
+                {
+                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+                }
+                else
+                {
+                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
+                }
             }
-        }
-
-        public override Task SendAsync(ExternalMessage message)
-        {
-            throw new NotImplementedException();    // should never be called
         }
 
         protected override async Task SendMessageToParentStateChart(string _,
@@ -155,11 +147,9 @@ namespace StateChartsDotNet.Durable
 
         internal override void InternalCancel()
         {
-            Debug.Assert(_externalMessageSource != null);
-
             if (!_data.ContainsKey("_parentInvokeId"))
             {
-                _externalMessageSource.SetResult(new ExternalMessage("cancel"));
+                EnqueueExternalMessage(new ExternalMessage("cancel"));
             }
         }
 
@@ -221,13 +211,23 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<object>("script", metadata.UniqueId, _data);
         }
 
+        protected override async Task<ExternalMessage> GetNextExternalMessageAsync()
+        {
+            using (this.CancelToken.Register(() => _externalMessageAvailable.SetCanceled()))
+            {
+                await _externalMessageAvailable.Task;
+            }
+
+            return await _externalMessages.DequeueAsync(this.CancelToken);
+        }
+
         internal void EnqueueExternalMessage(ExternalMessage message)
         {
             message.CheckArgNull(nameof(message));
 
-            Debug.Assert(_externalMessageSource != null);
+            _externalMessages.Enqueue(message);
 
-            _externalMessageSource.SetResult(message);
+            _externalMessageAvailable.TrySetResult(true);
         }
 
         internal override Task LogDebugAsync(string message)

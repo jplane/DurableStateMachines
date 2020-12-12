@@ -14,6 +14,7 @@ using StateChartsDotNet.Common.Exceptions;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
+using Nito.AsyncEx;
 
 namespace StateChartsDotNet
 {
@@ -21,6 +22,7 @@ namespace StateChartsDotNet
     {
         protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
+        protected readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
 
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
@@ -39,6 +41,7 @@ namespace StateChartsDotNet
 
             _root = new RootState(metadata);
             _logger = logger;
+            _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
 
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
@@ -47,8 +50,6 @@ namespace StateChartsDotNet
             _statesToInvoke = new Set<State>();
 
         }
-
-        public abstract Task SendAsync(ExternalMessage message);
 
         internal abstract Task CancelInvokesAsync(string parentUniqueId);
 
@@ -81,14 +82,41 @@ namespace StateChartsDotNet
 
         protected abstract Task<Guid> GenerateGuid();
 
-        protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
-
         protected abstract Task SendMessageToParentStateChart(string _,
                                                               string messageName,
                                                               object content,
                                                               string __,
                                                               IReadOnlyDictionary<string, object> parameters,
                                                               CancellationToken ___);
+
+        public Task StopAsync()
+        {
+            return SendAsync("cancel");
+        }
+
+        public Task SendAsync(string message,
+                              object content = null,
+                              IReadOnlyDictionary<string, object> parameters = null)
+        {
+            message.CheckArgNull(nameof(message));
+
+            var msg = new ExternalMessage(message)
+            {
+                Content = content,
+                Parameters = parameters
+            };
+
+            return SendAsync(msg);
+        }
+
+        public Task SendAsync(ExternalMessage message)
+        {
+            message.CheckArgNull(nameof(message));
+
+            _externalMessages.Enqueue(message);
+
+            return Task.CompletedTask;
+        }
 
         public bool IsRunning
         {
@@ -133,26 +161,6 @@ namespace StateChartsDotNet
             }
         }
 
-        public Task StopAsync()
-        {
-            return SendAsync("cancel");
-        }
-
-        public Task SendAsync(string message,
-                              object content = null,
-                              IReadOnlyDictionary<string, object> parameters = null)
-        {
-            message.CheckArgNull(nameof(message));
-
-            var msg = new ExternalMessage(message)
-            {
-                Content = content,
-                Parameters = parameters
-            };
-
-            return SendAsync(msg);
-        }
-
         protected Task SendMessageToChildStateChart(string childId,
                                                     string messageName,
                                                     object content,
@@ -191,7 +199,7 @@ namespace StateChartsDotNet
                                                          _error,
                                                          null,
                                                          null,
-                                                         this.CancelToken);
+                                                         _cancelToken);
                 }
                 else
                 {
@@ -200,7 +208,7 @@ namespace StateChartsDotNet
                                                          content,
                                                          null,
                                                          parameters,
-                                                         this.CancelToken);
+                                                         _cancelToken);
                 }
             }
             else
@@ -266,9 +274,23 @@ namespace StateChartsDotNet
 
         internal CancellationToken CancelToken => _cancelToken;
 
+        protected virtual Task<ExternalMessage> GetNextExternalMessageAsync()
+        {
+            return _externalMessages.DequeueAsync(_cancelToken);
+        }
+
         internal async Task<ExternalMessage> DequeueExternalAsync()
         {
-            var msg = await GetNextExternalMessageAsync();
+            ExternalMessage msg;
+
+            try
+            {
+                msg = await GetNextExternalMessageAsync();
+            }
+            catch (TaskCanceledException)
+            {
+                msg = new ExternalMessage("cancel");
+            }
 
             _data["_event"] = msg;
 

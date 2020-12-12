@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace StateChartsDotNet.Tests
 {
     [TestClass]
-    public class ErrorTests
+    public class ErrorTests : TestBase
     {
         [TestMethod]
         [TestScaffold]

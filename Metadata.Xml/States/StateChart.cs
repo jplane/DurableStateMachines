@@ -12,12 +12,15 @@ namespace StateChartsDotNet.Metadata.Xml.States
 {
     public class StateChart : StateMetadata, IRootStateMetadata
     {
+        private readonly string _name;
+
         public StateChart(XDocument document)
             : base(document.Root)
         {
+            _name = _element.Attribute("name")?.Value;
         }
 
-        protected override string IdAttributeName => "name";
+        public override string Id => _name ?? this.UniqueId;
 
         public bool FailFast
         {

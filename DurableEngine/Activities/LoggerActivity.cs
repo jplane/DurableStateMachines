@@ -1,5 +1,6 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.Durable.Activities
 {
@@ -14,14 +15,19 @@ namespace StateChartsDotNet.Durable.Activities
 
         protected override bool Execute(TaskContext context, (string, string) tuple)
         {
-            switch(tuple.Item1.ToLowerInvariant())
+            Debug.Assert(_logger != null);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(tuple.Item1));
+            Debug.Assert(!string.IsNullOrWhiteSpace(tuple.Item2));
+
+            switch (tuple.Item1.ToLowerInvariant())
             {
                 case "information":
-                    _logger?.LogInformation(tuple.Item2);
+                    _logger.LogInformation(tuple.Item2);
                     break;
 
                 case "debug":
-                    _logger?.LogDebug(tuple.Item2);
+                    _logger.LogDebug(tuple.Item2);
                     break;
             }
 

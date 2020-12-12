@@ -21,8 +21,6 @@ namespace StateChartsDotNet
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly Dictionary<string, (Task, ExecutionContext)> _childInstances =
             new Dictionary<string, (Task, ExecutionContext)>();
-        private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages =
-            new AsyncProducerConsumerQueue<ExternalMessage>();
         
         private ExecutionContext _parentContext;
 
@@ -34,15 +32,6 @@ namespace StateChartsDotNet
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
-        }
-
-        public override Task SendAsync(ExternalMessage message)
-        {
-            message.CheckArgNull(nameof(message));
-
-            _externalMessages.Enqueue(message);
-
-            return Task.CompletedTask;
         }
 
         protected override Task SendMessageToParentStateChart(string _,
@@ -167,19 +156,11 @@ namespace StateChartsDotNet
 
             foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
             {
-                var invokeId = pair.Key;
-                var task = pair.Value.Item1;
                 var context = pair.Value.Item2;
 
                 Debug.Assert(context != null);
 
                 await context.StopAsync();
-
-                Debug.Assert(task != null);
-
-                await task;
-
-                _childInstances.Remove(invokeId);
             }
         }
 
@@ -237,11 +218,6 @@ namespace StateChartsDotNet
             {
                 _externalMessages.Enqueue(new ExternalMessage("cancel"));
             }
-        }
-
-        protected override Task<ExternalMessage> GetNextExternalMessageAsync()
-        {
-            return _externalMessages.DequeueAsync();
         }
 
         internal override Task LogDebugAsync(string message)

@@ -24,13 +24,11 @@ namespace StateChartsDotNet.Durable
             _orchestrationService = orchestrationService;
         }
 
-        public async Task RunAsync(ExecutionContext context, CancellationToken cancelToken)
+        public async Task RunAsync(ExecutionContext context, TimeSpan timeout, CancellationToken cancelToken)
         {
             context.CheckArgNull(nameof(context));
 
-            var timeout = Debugger.IsAttached ? TimeSpan.FromMinutes(5) : TimeSpan.FromMinutes(1);  // TODO: expose externally
-
-            var instanceId = context.Metadata.Id;
+            var instanceId = context.Metadata.UniqueId;
 
             var orchestrationManager = new DurableOrchestrationManager(_orchestrationService, context.Logger);
 
@@ -38,7 +36,7 @@ namespace StateChartsDotNet.Durable
 
             try
             {
-                await orchestrationManager.StartAsync(context, cancelToken);
+                await orchestrationManager.StartAsync(context, timeout, cancelToken);
 
                 try
                 {
@@ -49,6 +47,10 @@ namespace StateChartsDotNet.Durable
                     Debug.Assert(output != null);
 
                     context.Data = new Dictionary<string, object>(output);
+                }
+                catch (TimeoutException)
+                {
+                    // if cancellation token fires
                 }
                 finally
                 {

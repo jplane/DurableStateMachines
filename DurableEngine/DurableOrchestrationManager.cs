@@ -46,7 +46,7 @@ namespace StateChartsDotNet.Durable
             _externalQueries.Add("http-get", HttpService.GetAsync);
         }
 
-        public Task StartAsync(ExecutionContext context, CancellationToken token)
+        public Task StartAsync(ExecutionContext context, TimeSpan timeout, CancellationToken token)
         {
             context.CheckArgNull(nameof(context));
 
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Durable
                 return func;
             };
 
-            _service = new DurableStateChartService(_orchestrationService, this, getService, getQuery, _logger);
+            _service = new DurableStateChartService(_orchestrationService, this, getService, getQuery, timeout, _logger);
 
             return _service.StartAsync(context.Metadata, token);
         }

@@ -62,15 +62,6 @@ namespace StateChartsDotNet.Durable
             }
             catch (Exception ex)
             {
-                if (ex is StateChartException)
-                {
-                    Debug.Assert(_executionContext.FailFast);
-                }
-                else
-                {
-                    _logger?.LogError("Unexpected error during orchestration: " + ex);
-                }
-
                 return (null, ex);
             }
             finally

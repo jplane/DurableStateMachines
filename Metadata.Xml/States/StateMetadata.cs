@@ -13,17 +13,14 @@ namespace StateChartsDotNet.Metadata.Xml.States
     {
         protected readonly XElement _element;
 
-        private readonly Lazy<string> _id;
+        private readonly string _id;
         private readonly Lazy<string> _uniqueId;
 
         internal StateMetadata(XElement element)
         {
             _element = element;
 
-            _id = new Lazy<string>(() =>
-            {
-                return _element.Attribute(this.IdAttributeName)?.Value ?? _uniqueId.Value;
-            });
+            _id = _element.Attribute("id")?.Value;
 
             _uniqueId = new Lazy<string>(() =>
             {
@@ -31,9 +28,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
             });
         }
 
-        protected virtual string IdAttributeName => "id";
-
-        public string Id => _id.Value;
+        public virtual string Id => _id ?? _uniqueId.Value;
 
         public string UniqueId => _uniqueId.Value;
 

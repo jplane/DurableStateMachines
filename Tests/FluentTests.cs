@@ -10,7 +10,7 @@ using System.Threading;
 namespace StateChartsDotNet.Tests
 {
     [TestClass]
-    public class FluentTests
+    public class FluentTests : TestBase
     {
         [TestMethod]
         [TestScaffold]

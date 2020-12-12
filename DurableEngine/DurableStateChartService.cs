@@ -21,6 +21,7 @@ namespace StateChartsDotNet.Durable
         private readonly NameVersionObjectManager<TaskActivity> _activityResolver;
         private readonly Func<string, ExternalServiceDelegate> _getServices;
         private readonly Func<string, ExternalQueryDelegate> _getQueries;
+        private readonly TimeSpan _timeout;
 
         private TaskHubWorker _worker;
 
@@ -28,6 +29,7 @@ namespace StateChartsDotNet.Durable
                                         IStateChartOrchestrationManager orchestrationManager,
                                         Func<string, ExternalServiceDelegate> getServices,
                                         Func<string, ExternalQueryDelegate> getQueries,
+                                        TimeSpan timeout,
                                         ILogger logger)
         {
             service.CheckArgNull(nameof(service));
@@ -40,6 +42,7 @@ namespace StateChartsDotNet.Durable
             _getServices = getServices;
             _getQueries = getQueries;
             _logger = logger;
+            _timeout = timeout;
 
             _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
             _activityResolver = new NameVersionObjectManager<TaskActivity>();
@@ -129,7 +132,7 @@ namespace StateChartsDotNet.Durable
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("waitforcompletion",
                                                                                string.Empty,
-                                                                               new WaitForCompletionActivity(_orchestrationManager, token)));
+                                                                               new WaitForCompletionActivity(_orchestrationManager, _timeout / 2, token)));
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_logger)));
 

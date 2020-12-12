@@ -10,14 +10,17 @@ namespace StateChartsDotNet.Durable.Activities
     internal class WaitForCompletionActivity : AsyncTaskActivity<string, string>
     {
         private readonly IStateChartOrchestrationManager _orchestrationManager;
+        private readonly TimeSpan _timeout;
         private readonly CancellationToken _token;
 
         public WaitForCompletionActivity(IStateChartOrchestrationManager orchestrationManager,
+                                         TimeSpan timeout,
                                          CancellationToken token)
         {
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 
             _orchestrationManager = orchestrationManager;
+            _timeout = timeout;
             _token = token;
         }
 
@@ -25,7 +28,7 @@ namespace StateChartsDotNet.Durable.Activities
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(input));
 
-            await _orchestrationManager.WaitForCompletionAsync(input, TimeSpan.FromSeconds(30) /* TODO: configure */, _token);
+            await _orchestrationManager.WaitForCompletionAsync(input, _timeout, _token);
 
             return string.Empty;
         }
