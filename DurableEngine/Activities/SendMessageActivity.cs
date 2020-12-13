@@ -53,7 +53,7 @@ namespace StateChartsDotNet.Durable.Activities
                 throw new InvalidOperationException("Unable to resolve external service type: " + serviceType);
             }
 
-            await service(target, messageName, content, correlationId, parameters, _token);
+            await service(target, messageName, content, correlationId, parameters, _token).ConfigureAwait(false);
 
             return null;
         }

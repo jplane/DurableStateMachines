@@ -50,7 +50,7 @@ namespace StateChartsDotNet.Durable
                 }
                 catch (TimeoutException)
                 {
-                    // if cancellation token fires
+                    // cancellation token fired
                 }
                 finally
                 {

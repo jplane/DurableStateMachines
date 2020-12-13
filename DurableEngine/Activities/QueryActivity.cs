@@ -44,7 +44,7 @@ namespace StateChartsDotNet.Durable.Activities
                 throw new InvalidOperationException("Unable to resolve external query type: " + queryType);
             }
 
-            return await query(target, parameters, _token);
+            return await query(target, parameters, _token).ConfigureAwait(false);
         }
     }
 }

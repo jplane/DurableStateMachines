@@ -218,7 +218,7 @@ namespace StateChartsDotNet.Durable
                 await _externalMessageAvailable.Task;
             }
 
-            return await _externalMessages.DequeueAsync(this.CancelToken);
+            return await _externalMessages.DequeueAsync(this.CancelToken).ConfigureAwait(false);
         }
 
         internal void EnqueueExternalMessage(ExternalMessage message)
