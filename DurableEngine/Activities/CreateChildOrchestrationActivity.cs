@@ -26,10 +26,13 @@ namespace StateChartsDotNet.Durable.Activities
 
         protected override async Task<string> ExecuteAsync(TaskContext context, (string, Dictionary<string, object>) input)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(input.Item1));
-            Debug.Assert(input.Item2 != null);
+            var instanceId = input.Item1;
+            var data = input.Item2;
 
-            await _orchestrationManager.StartOrchestrationAsync(input.Item1, _metadata, input.Item2);
+            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
+            Debug.Assert(data != null);
+
+            await _orchestrationManager.StartOrchestrationAsync(instanceId, _metadata, data);
 
             return string.Empty;
         }

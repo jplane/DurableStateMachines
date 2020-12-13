@@ -24,11 +24,11 @@ namespace StateChartsDotNet.Durable.Activities
             _token = token;
         }
 
-        protected override async Task<string> ExecuteAsync(TaskContext context, string input)
+        protected override async Task<string> ExecuteAsync(TaskContext context, string instanceId)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(input));
+            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            await _orchestrationManager.WaitForCompletionAsync(input, _timeout, _token);
+            await _orchestrationManager.WaitForCompletionAsync(instanceId, _timeout, _token);
 
             return string.Empty;
         }
