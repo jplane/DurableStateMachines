@@ -183,7 +183,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, Logger);
+            var scaffold = factory(machine, CancellationToken.None, null);
 
             var context = scaffold.Item1;
 
@@ -195,9 +195,11 @@ namespace StateChartsDotNet.Tests
 
             for (var i = 0; i < 5; i++)
             {
+                await Task.Delay(1000);
                 await context.SendAsync("time");
-                await Task.Delay(200);
             }
+
+            await Task.Delay(1000);
 
             await context.StopAsync();
 

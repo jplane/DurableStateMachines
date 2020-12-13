@@ -218,6 +218,10 @@ namespace StateChartsDotNet.Durable
                 await _externalMessageAvailable.Task;
             }
 
+            // forcing a replay here ensures we never block on the queue
+
+            await GenerateGuid();
+
             return await _externalMessages.DequeueAsync(this.CancelToken).ConfigureAwait(false);
         }
 
