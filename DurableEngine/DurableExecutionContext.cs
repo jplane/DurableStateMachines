@@ -18,8 +18,8 @@ namespace StateChartsDotNet.Durable
 {
     internal class DurableExecutionContext : ExecutionContextBase
     {
-        private readonly List<string> _childInstances;
-        private readonly OrchestrationContext _orchestrationContext;
+        protected readonly List<string> _childInstances;
+        protected readonly OrchestrationContext _orchestrationContext;
 
         private TaskCompletionSource<bool> _externalMessageAvailable;
 
@@ -58,23 +58,50 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(childMachine != null);
 
+            var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
+
             var invokeId = metadata.UniqueId;
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+
+            inputs["_invokeId"] = invokeId;
 
             var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
             Debug.Assert(!string.IsNullOrWhiteSpace(parentInvokeId));
 
-            var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
-
             inputs["_parentInvokeId"] = parentInvokeId;
-
-            inputs["_invokeId"] = invokeId;
 
             _childInstances.Add(invokeId);
 
-            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", invokeId, (invokeId, inputs));
+            return StartChildOrchestrationAsync(invokeId, inputs);
+        }
+
+        protected virtual Task StartChildOrchestrationAsync(string invokeId, Dictionary<string, object> data)
+        {
+            invokeId.CheckArgNull(nameof(invokeId));
+            data.CheckArgNull(nameof(data));
+
+            Debug.Assert(_orchestrationContext != null);
+
+            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", invokeId, (invokeId, data));
+        }
+
+        internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
+        {
+            message.CheckArgNull(nameof(message));
+
+            if (message.IsDone)
+            {
+                if (_childInstances.Remove(message.CorrelationId))
+                {
+                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+                }
+                else
+                {
+                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
+                }
+            }
         }
 
         internal async override Task CancelInvokesAsync(string parentUniqueId)
@@ -98,29 +125,12 @@ namespace StateChartsDotNet.Durable
             return _childInstances.Where(invokeId => invokeId.StartsWith($"{parentUniqueId}.")).ToArray();
         }
 
-        internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
-        {
-            message.CheckArgNull(nameof(message));
-
-            if (message.IsDone)
-            {
-                if (_childInstances.Remove(message.CorrelationId))
-                {
-                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
-                }
-                else
-                {
-                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
-                }
-            }
-        }
-
-        protected override async Task SendMessageToParentStateChart(string _,
-                                                                    string messageName,
-                                                                    object content,
-                                                                    string __,
-                                                                    IReadOnlyDictionary<string, object> parameters,
-                                                                    CancellationToken ___)
+        protected override Task SendMessageToParentStateChart(string _,
+                                                              string messageName,
+                                                              object content,
+                                                              string __,
+                                                              IReadOnlyDictionary<string, object> parameters,
+                                                              CancellationToken ___)
         {
             messageName.CheckArgNull(nameof(messageName));
 
@@ -135,14 +145,22 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(!string.IsNullOrWhiteSpace(correlationId));
 
-            var msg = new ChildStateChartResponseMessage(messageName)
+            ExternalMessage msg = new ChildStateChartResponseMessage(messageName)
             {
                 CorrelationId = correlationId,
                 Content = content,
                 Parameters = parameters
             };
 
-            await _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInvokeId, (ExternalMessage) msg));
+            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInvokeId, msg));
+        }
+
+        internal override Task SendToChildStateChart(string childInvokeId, ExternalMessage message)
+        {
+            childInvokeId.CheckArgNull(nameof(childInvokeId));
+            message.CheckArgNull(nameof(message));
+
+            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInvokeId, message));
         }
 
         internal override void InternalCancel()
@@ -151,14 +169,6 @@ namespace StateChartsDotNet.Durable
             {
                 EnqueueExternalMessage(new ExternalMessage("cancel"));
             }
-        }
-
-        internal override Task SendToChildStateChart(string invokeId, ExternalMessage message)
-        {
-            invokeId.CheckArgNull(nameof(invokeId));
-            message.CheckArgNull(nameof(message));
-
-            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (invokeId, message));
         }
 
         internal override Task DelayAsync(TimeSpan timespan)

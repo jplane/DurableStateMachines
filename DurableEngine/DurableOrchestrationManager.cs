@@ -172,7 +172,7 @@ namespace StateChartsDotNet.Durable
             return client.RaiseEventAsync(instance, message.Name, message);
         }
 
-        private void RegisterStateChart(string instanceId, IRootStateMetadata metadata)
+        private void RegisterStateChart(string instanceId, IRootStateMetadata metadata, bool executeInline = false)
         {
             instanceId.CheckArgNull(nameof(instanceId));
             metadata.CheckArgNull(nameof(metadata));
@@ -187,7 +187,7 @@ namespace StateChartsDotNet.Durable
 
             // this is the orchestration that runs a statechart instance (parent or child)
 
-            var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, _logger);
+            var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, executeInline, _logger);
 
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", instanceId, orchestrator);
 
@@ -211,7 +211,7 @@ namespace StateChartsDotNet.Durable
 
             RegisterStateChart(metadata.UniqueId, metadata);
 
-            metadata.RegisterStateChartInvokes((id, root) => RegisterStateChart(id, root));
+            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline));
 
             metadata.RegisterScripts(RegisterScript);
         }

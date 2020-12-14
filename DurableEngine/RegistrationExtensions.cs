@@ -10,7 +10,7 @@ namespace StateChartsDotNet.Durable
 {
     internal static class RegistrationExtensions
     {
-        public static void RegisterStateChartInvokes(this IRootStateMetadata metadata, Action<string, IRootStateMetadata> register)
+        public static void RegisterStateChartInvokes(this IRootStateMetadata metadata, Action<string, IRootStateMetadata, bool> register)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
@@ -39,7 +39,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public static void RegisterStateChartInvokes(this IStateMetadata metadata, Action<string, IRootStateMetadata> register)
+        public static void RegisterStateChartInvokes(this IStateMetadata metadata, Action<string, IRootStateMetadata, bool> register)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
@@ -48,7 +48,7 @@ namespace StateChartsDotNet.Durable
             {
                 var root = invoke.GetRoot();
 
-                register(invoke.UniqueId, root);
+                register(invoke.UniqueId, root, invoke.Autoforward);
 
                 root.RegisterStateChartInvokes(register);
             }
@@ -98,7 +98,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata, Action<string, IRootStateMetadata> register)
+        public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata, Action<string, IRootStateMetadata, bool> register)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
@@ -124,7 +124,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata, Action<string, IRootStateMetadata> register)
+        public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata, Action<string, IRootStateMetadata, bool> register)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));

@@ -68,12 +68,11 @@ namespace StateChartsDotNet.Model.States
                 await context.ProcessChildStateChartDoneAsync(response);
             }
 
-            if (context.IsRunning)
+            if (context.IsRunning &&
+                _metadata.Autoforward &&
+                !(externalMessage is ChildStateChartResponseMessage))
             {
-                if (_metadata.Autoforward && !(externalMessage is ChildStateChartResponseMessage))
-                {
-                    await context.SendToChildStateChart(invokeId, externalMessage);
-                }
+                await context.SendToChildStateChart(invokeId, externalMessage);
             }
         }
     }

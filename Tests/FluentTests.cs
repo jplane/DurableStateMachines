@@ -156,48 +156,5 @@ namespace StateChartsDotNet.Tests
 
             Assert.AreEqual(43, content.value);
         }
-
-        [TestMethod]
-        [TestScaffold]
-        public async Task SimpleParentChild(ScaffoldFactoryDelegate factory, string _)
-        {
-            var x = 1;
-
-            var innerMachine = StateChart.Define("inner")
-                             .AtomicState("innerState1")
-                                 .OnEntry()
-                                     .Execute(_ => x += 1)
-                                     .Attach()
-                                 .OnExit()
-                                     .Execute(_ => x += 1)
-                                     .Attach()
-                                 .Transition()
-                                     .Target("alldone")
-                                     .Attach()
-                                 .Attach()
-                             .FinalState("alldone")
-                                 .Attach();
-
-            var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
-                                        .InvokeStateChart()
-                                            .Definition(innerMachine)
-                                            .Attach()
-                                        .Transition()
-                                            .Message("done.invoke.*")
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
-
-            var scaffold = factory(machine, CancellationToken.None, null);
-
-            var context = scaffold.Item1;
-
-            await scaffold.Item2();
-
-            Assert.AreEqual(3, x);
-        }
     }
 }
