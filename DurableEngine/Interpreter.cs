@@ -30,19 +30,19 @@ namespace StateChartsDotNet.Durable
 
             var instanceId = context.Metadata.UniqueId;
 
-            var orchestrationManager = new DurableOrchestrationManager(_orchestrationService, context.Logger);
+            var orchestrationManager = new DurableOrchestrationManager(_orchestrationService, timeout, cancelToken, context.Logger);
 
             context.SendMessageHandler = msg => orchestrationManager.SendMessageAsync(instanceId, msg);
 
             try
             {
-                await orchestrationManager.StartAsync(context, timeout, cancelToken);
+                await orchestrationManager.StartAsync();
 
                 try
                 {
-                    await orchestrationManager.StartOrchestrationAsync();
+                    await orchestrationManager.StartOrchestrationAsync(instanceId, context);
 
-                    var output = await orchestrationManager.WaitForCompletionAsync(instanceId, timeout, cancelToken);
+                    var output = await orchestrationManager.WaitForCompletionAsync(instanceId);
 
                     Debug.Assert(output != null);
 
@@ -50,7 +50,7 @@ namespace StateChartsDotNet.Durable
                 }
                 catch (TimeoutException)
                 {
-                    // cancellation token fired
+                    // cancellation token fired, we want to eat this one here
                 }
                 finally
                 {

@@ -11,24 +11,20 @@ namespace StateChartsDotNet.Durable.Activities
     {
         private readonly IStateChartOrchestrationManager _orchestrationManager;
         private readonly TimeSpan _timeout;
-        private readonly CancellationToken _token;
 
-        public WaitForCompletionActivity(IStateChartOrchestrationManager orchestrationManager,
-                                         TimeSpan timeout,
-                                         CancellationToken token)
+        public WaitForCompletionActivity(IStateChartOrchestrationManager orchestrationManager, TimeSpan timeout)
         {
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 
             _orchestrationManager = orchestrationManager;
             _timeout = timeout;
-            _token = token;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, string instanceId)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            await _orchestrationManager.WaitForCompletionAsync(instanceId, _timeout, _token);
+            await _orchestrationManager.WaitForCompletionAsync(instanceId, _timeout);
 
             return string.Empty;
         }
