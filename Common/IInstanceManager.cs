@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Common
 {
-    public interface IExecutionContext
+    public interface IInstanceManager
     {
-        IDictionary<string, object> Data { get; }
-
-        Task SendStopMessageAsync();
-        Task SendMessageAsync(string message, object content = null, IReadOnlyDictionary<string, object> parameters = null);
+        Task StartAsync();
+        Task StartAsync(CancellationToken token);
+        Task WaitForCompletionAsync();
+        Task WaitForCompletionAsync(CancellationToken token);
     }
 }

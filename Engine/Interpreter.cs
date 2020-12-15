@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace StateChartsDotNet
 {
-    public sealed class Interpreter
+    internal class Interpreter
     {
         public Interpreter()
         {

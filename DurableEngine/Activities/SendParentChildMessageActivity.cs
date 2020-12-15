@@ -11,9 +11,9 @@ namespace StateChartsDotNet.Durable.Activities
 {
     internal class SendParentChildMessageActivity : AsyncTaskActivity<(string, ExternalMessage), string>
     {
-        private readonly IStateChartOrchestrationManager _orchestrationManager;
+        private readonly IOrchestrationManager _orchestrationManager;
 
-        public SendParentChildMessageActivity(IStateChartOrchestrationManager orchestrationManager)
+        public SendParentChildMessageActivity(IOrchestrationManager orchestrationManager)
         {
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 

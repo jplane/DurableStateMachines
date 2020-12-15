@@ -1,88 +1,139 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DurableTask.Core;
+using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class ExecutionContext : IExecutionContext
+    public class ExecutionContext : IExecutionContext, IInstanceManager
     {
+        private readonly AsyncLock _lock;
         private readonly IRootStateMetadata _metadata;
-        private readonly ILogger _logger;
+        private readonly IOrchestrationManager _orchestrationManager;
 
         private Dictionary<string, object> _data;
-        private Func<ExternalMessage, Task> _sendMessageHandler;
 
-        public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
+        public ExecutionContext(IRootStateMetadata metadata,
+                                IOrchestrationService service,
+                                TimeSpan timeout,
+                                ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
+            service.CheckArgNull(nameof(service));
 
             _metadata = metadata;
-            _logger = logger;
+            _orchestrationManager = new DurableOrchestrationManager(service, timeout, logger);
+
+            _lock = new AsyncLock();
             _data = new Dictionary<string, object>();
         }
 
-        internal IRootStateMetadata Metadata => _metadata;
-
-        internal ILogger Logger => _logger;
-
-        internal Func<ExternalMessage, Task> SendMessageHandler
+        public Task StartAsync()
         {
-            set => _sendMessageHandler = value;
+            return StartAsync(CancellationToken.None);
         }
 
-        internal Dictionary<string, object> Data
+        public async Task StartAsync(CancellationToken token)
         {
-            get => _data;
-            set => _data = value;
-        }
+            Debug.Assert(_orchestrationManager != null);
 
-        public object this[string key]
-        {
-            get => _data[key]; 
-            set => _data[key] = value;
-        }
-
-        public bool IsRunning => _sendMessageHandler != null;
-
-        public Task SendAsync(ExternalMessage message)
-        {
-            message.CheckArgNull(nameof(message));
-
-            if (!this.IsRunning)
+            using (_lock.Lock())
             {
-                throw new InvalidOperationException("Cannot send messages until the state machine is running.");
+                if (_data.ContainsKey("_invokeId"))
+                {
+                    throw new InvalidOperationException("StateChart instance is already running.");
+                }
+
+                await _orchestrationManager.StartAsync();
+
+                var instanceId = $"{_metadata.UniqueId}.{Guid.NewGuid():N}";
+
+                _data["_invokeId"] = instanceId;
+
+                await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, token, true);
+            } 
+        }
+
+        public Task WaitForCompletionAsync()
+        {
+            return WaitForCompletionAsync(CancellationToken.None);
+        }
+
+        public async Task WaitForCompletionAsync(CancellationToken token)
+        {
+            Debug.Assert(_orchestrationManager != null);
+
+            using (await _lock.LockAsync())
+            {
+                try
+                {
+                    if (!_data.ContainsKey("_invokeId"))
+                    {
+                        throw new InvalidOperationException("StateChart instance is not running.");
+                    }
+
+                    var instanceId = (string) _data["_invokeId"];
+
+                    var output = await _orchestrationManager.WaitForCompletionAsync(instanceId, token);
+
+                    Debug.Assert(output != null);
+
+                    _data = new Dictionary<string, object>(output);
+                }
+                catch (TimeoutException)
+                {
+                    // cancellation token fired, we want to eat this one here
+                }
+                finally
+                {
+                    _data.Remove("_invokeId");
+
+                    await _orchestrationManager.StopAsync();
+                }
             }
-
-            Debug.Assert(_sendMessageHandler != null);
-
-            return _sendMessageHandler(message);
         }
 
-        public Task SendAsync(string message,
-                              object content = null,
-                              IReadOnlyDictionary<string, object> parameters = null)
+        public IDictionary<string, object> Data => new ExternalDictionary(_data);
+
+        public async Task SendMessageAsync(string message,
+                                           object content = null,
+                                           IReadOnlyDictionary<string, object> parameters = null)
         {
             message.CheckArgNull(nameof(message));
 
-            var msg = new ExternalMessage(message)
-            {
-                Content = content,
-                Parameters = parameters
-            };
+            Debug.Assert(_orchestrationManager != null);
 
-            return SendAsync(msg);
+            using (await _lock.LockAsync())
+            {
+                if (!_data.ContainsKey("_invokeId"))
+                {
+                    throw new InvalidOperationException("StateChart instance is not running.");
+                }
+
+                var instanceId = (string)_data["_invokeId"];
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
+
+                var msg = new ExternalMessage(message)
+                {
+                    Content = content,
+                    Parameters = parameters
+                };
+
+                await _orchestrationManager.SendMessageAsync(instanceId, msg);
+            }
         }
 
-        public Task StopAsync()
+        public Task SendStopMessageAsync()
         {
-            return SendAsync("cancel");
+            return SendMessageAsync("cancel");
         }
     }
 }

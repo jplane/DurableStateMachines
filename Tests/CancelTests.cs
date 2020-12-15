@@ -22,17 +22,18 @@ namespace StateChartsDotNet.Tests
             var machine = StateChart.Define("test")
                                     .AtomicState("state1").Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
+            var context = tuple.Item2;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync();
 
             await Task.Delay(500);
 
-            await context.StopAsync();
+            await context.SendStopMessageAsync();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -46,17 +47,17 @@ namespace StateChartsDotNet.Tests
 
             var source = new CancellationTokenSource();
 
-            var scaffold = factory(machine, source.Token, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync(source.Token);
 
             await Task.Delay(500);
 
             source.Cancel();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -86,17 +87,18 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
+            var context = tuple.Item2;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync();
 
             await Task.Delay(2000);
 
-            await context.StopAsync();
+            await context.SendStopMessageAsync();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -130,17 +132,17 @@ namespace StateChartsDotNet.Tests
 
             var start = DateTimeOffset.UtcNow;
 
-            var scaffold = factory(machine, source.Token, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync(source.Token);
 
             await Task.Delay(2000);
 
             source.Cancel();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             var elapsed = DateTimeOffset.UtcNow - start;
 
@@ -173,17 +175,18 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
+            var context = tuple.Item2;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync();
 
             await Task.Delay(2000);
 
-            await context.StopAsync();
+            await context.SendStopMessageAsync();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -218,17 +221,17 @@ namespace StateChartsDotNet.Tests
 
             var start = DateTimeOffset.UtcNow;
 
-            var scaffold = factory(machine, source.Token, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync(source.Token);
 
             await Task.Delay(2000);
 
             source.Cancel();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             var elapsed = DateTimeOffset.UtcNow - start;
 
@@ -249,17 +252,18 @@ namespace StateChartsDotNet.Tests
                                             .Attach()
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
- 
-            var task = scaffold.Item2();
+            var instanceMgr = tuple.Item1;
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
 
             await Task.Delay(2000);
 
-            await context.StopAsync();
+            await context.SendStopMessageAsync();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -280,17 +284,17 @@ namespace StateChartsDotNet.Tests
 
             var source = new CancellationTokenSource();
 
-            var scaffold = factory(machine, source.Token, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            var task = scaffold.Item2();
+            await instanceMgr.StartAsync(source.Token);
 
             await Task.Delay(2000);
 
             source.Cancel();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }

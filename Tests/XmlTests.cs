@@ -45,13 +45,17 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
 
-            Assert.AreEqual(15, Convert.ToInt32(context["sum"]));
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
+
+            Assert.AreEqual(15, Convert.ToInt32(context.Data["sum"]));
         }
 
         [TestMethod]
@@ -80,11 +84,15 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, Logger);
+            var tuple = factory(machine, Logger);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -118,13 +126,19 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, Logger);
+            var tuple = factory(machine, Logger);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await Task.WhenAll(scaffold.Item2(), listenerTask);
+            var context = tuple.Item2;
 
-            var json = (string)context["x"];
+            await instanceMgr.StartAsync();
+
+            var task = instanceMgr.WaitForCompletionAsync();
+
+            await Task.WhenAll(task, listenerTask);
+
+            var json = (string) context.Data["x"];
 
             Assert.IsNotNull(json);
 
@@ -183,29 +197,31 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            var task = scaffold.Item2();
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
 
             await Task.Delay(1000);
 
-            await context.SendAsync("turn.on");
+            await context.SendMessageAsync("turn.on");
 
             for (var i = 0; i < 5; i++)
             {
                 await Task.Delay(1000);
-                await context.SendAsync("time");
+                await context.SendMessageAsync("time");
             }
 
             await Task.Delay(1000);
 
-            await context.StopAsync();
+            await context.SendStopMessageAsync();
 
-            await task;
+            await instanceMgr.WaitForCompletionAsync();
 
-            Assert.AreEqual(5, Convert.ToInt32(context["timer"]));
+            Assert.AreEqual(5, Convert.ToInt32(context.Data["timer"]));
         }
 
         [TestMethod]
@@ -248,19 +264,23 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(XDocument.Parse(xmldoc));
 
-            var scaffold = factory(machine, CancellationToken.None, Logger);
+            var tuple = factory(machine, Logger);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            context["x"] = 5;
+            var context = tuple.Item2;
 
-            await scaffold.Item2();
+            context.Data["x"] = 5;
 
-            var x = Convert.ToInt32(context["x"]);
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
+
+            var x = Convert.ToInt32(context.Data["x"]);
 
             Assert.AreEqual(5, x);
 
-            var innerX = Convert.ToInt32(context["innerX"]);
+            var innerX = Convert.ToInt32(context.Data["innerX"]);
 
             Assert.AreEqual(10, innerX);
         }

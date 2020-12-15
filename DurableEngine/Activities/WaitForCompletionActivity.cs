@@ -9,22 +9,22 @@ namespace StateChartsDotNet.Durable.Activities
 {
     internal class WaitForCompletionActivity : AsyncTaskActivity<string, string>
     {
-        private readonly IStateChartOrchestrationManager _orchestrationManager;
-        private readonly TimeSpan _timeout;
+        private readonly IOrchestrationManager _orchestrationManager;
+        private readonly CancellationToken _cancelToken;
 
-        public WaitForCompletionActivity(IStateChartOrchestrationManager orchestrationManager, TimeSpan timeout)
+        public WaitForCompletionActivity(IOrchestrationManager orchestrationManager, CancellationToken cancelToken)
         {
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 
             _orchestrationManager = orchestrationManager;
-            _timeout = timeout;
+            _cancelToken = cancelToken;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, string instanceId)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            await _orchestrationManager.WaitForCompletionAsync(instanceId, _timeout);
+            await _orchestrationManager.WaitForCompletionAsync(instanceId, _cancelToken);
 
             return string.Empty;
         }

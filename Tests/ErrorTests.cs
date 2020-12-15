@@ -3,6 +3,7 @@ using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Metadata.Fluent.States;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,11 +29,13 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.IsTrue(true, "Internal error message not handled. Statechart processing successful.");
         }
@@ -65,13 +68,17 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
 
-            var error = (Exception) context["err"];
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
+
+            var error = (Exception) context.Data["err"];
 
             Assert.IsInstanceOfType(error, typeof(ExecutionException));
             Assert.IsNotNull(error.InnerException);
@@ -95,11 +102,15 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await Assert.ThrowsExceptionAsync<ExecutionException>(() => scaffold.Item2());
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
+
+            await Assert.ThrowsExceptionAsync<ExecutionException>(() => instanceMgr.WaitForCompletionAsync());
         }
     }
 }

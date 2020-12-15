@@ -33,11 +33,15 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
 
             Assert.AreEqual(3, x);
         }
@@ -67,11 +71,15 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -106,11 +114,15 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await scaffold.Item2();
+            var context = tuple.Item2;
+
+            await instanceMgr.StartAsync();
+
+            await instanceMgr.WaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -142,13 +154,19 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var scaffold = factory(machine, CancellationToken.None, null);
+            var tuple = factory(machine, null);
 
-            var context = scaffold.Item1;
+            var instanceMgr = tuple.Item1;
 
-            await Task.WhenAll(scaffold.Item2(), listenerTask);
+            var context = tuple.Item2;
 
-            var json = (string)context["x"];
+            await instanceMgr.StartAsync();
+
+            var task = instanceMgr.WaitForCompletionAsync();
+
+            await Task.WhenAll(task, listenerTask);
+
+            var json = (string) context.Data["x"];
 
             Assert.IsNotNull(json);
 

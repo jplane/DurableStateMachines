@@ -2,6 +2,7 @@
 using DurableTask.Core.Serializing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.Execution;
@@ -17,37 +18,61 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    internal interface IStateChartOrchestrationManager
+    internal interface IOrchestrationManager
     {
-        Task StartOrchestrationAsync(IRootStateMetadata metadata, string metadataId, string instanceId, Dictionary<string, object> data);
-        Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId, TimeSpan timeout);
+        Task StartAsync();
+
+        Task StopAsync();
+
+        Task StartOrchestrationAsync(IRootStateMetadata metadata,
+                                     string metadataId,
+                                     string instanceId,
+                                     IDictionary<string, object> data,
+                                     CancellationToken cancelToken,
+                                     bool isRoot = false);
+
+        Task StartOrchestrationAsync(IRootStateMetadata metadata,
+                                     string metadataId,
+                                     string instanceId,
+                                     IDictionary<string, object> data,
+                                     bool isRoot = false);
+
+        Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId);
+
+        Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId, CancellationToken cancelToken);
+
         Task SendMessageAsync(string instanceId, ExternalMessage message);
     }
 
-    internal class DurableOrchestrationManager : IStateChartOrchestrationManager
+    internal class DurableOrchestrationManager : IOrchestrationManager
     {
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
         private readonly NameVersionObjectManager<TaskActivity> _activityResolver;
         private readonly IOrchestrationService _orchestrationService;
-        private readonly TimeSpan _timeout;
         private readonly ILogger _logger;
-        private readonly CancellationToken _cancelToken;
+        private readonly TimeSpan _timeout;
+        private readonly AsyncLock _lock;
 
         private TaskHubWorker _worker;
 
         public DurableOrchestrationManager(IOrchestrationService orchestrationService,
                                            TimeSpan timeout,
-                                           CancellationToken cancelToken,
                                            ILogger logger = null)
         {
             orchestrationService.CheckArgNull(nameof(orchestrationService));
 
+            if (!(orchestrationService is IOrchestrationServiceClient))
+            {
+                throw new ArgumentException("Expecting orchestration service to implement both client and service interfaces.");
+            }
+
             _orchestrationService = orchestrationService;
-            _logger = logger;
-            _cancelToken = cancelToken;
             _timeout = timeout;
+            _logger = logger;
+
+            _lock = new AsyncLock();
 
             _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
             _activityResolver = new NameVersionObjectManager<TaskActivity>();
@@ -59,78 +84,84 @@ namespace StateChartsDotNet.Durable
             _externalQueries.Add("http-get", HttpService.GetAsync);
         }
 
-        public Task StartAsync()
+        public async Task StartAsync()
         {
-            if (_worker != null)
+            using (await _lock.LockAsync())
             {
-                throw new InvalidOperationException("Service already started.");
+                if (_worker == null)
+                {
+                    _worker = new TaskHubWorker(_orchestrationService, _orchestrationResolver, _activityResolver);
+
+                    await _worker.StartAsync();
+                }
             }
-
-            _worker = new TaskHubWorker(_orchestrationService, _orchestrationResolver, _activityResolver);
-
-            return _worker.StartAsync();
         }
 
         public async Task StopAsync()
         {
-            if (_worker == null)
+            using (await _lock.LockAsync())
             {
-                throw new InvalidOperationException("Service not started.");
+                if (_worker != null)
+                {
+                    _orchestrationResolver.Clear();
+                    _activityResolver.Clear();
+
+                    await _worker.StopAsync();
+
+                    _worker = null;
+                }
             }
-
-            _orchestrationResolver.Clear();
-            _activityResolver.Clear();
-
-            await _worker.StopAsync();
-
-            _worker = null;
         }
 
-        public Task StartOrchestrationAsync(string instanceId, ExecutionContext context)
+        public Task StartOrchestrationAsync(IRootStateMetadata metadata,
+                                    string metadataId,
+                                    string instanceId,
+                                    IDictionary<string, object> data,
+                                    bool isRoot = false)
         {
-            instanceId.CheckArgNull(nameof(instanceId));
-            context.CheckArgNull(nameof(context));
-
-            if (_worker == null)
-            {
-                throw new InvalidOperationException("Service not started.");
-            }
-
-            RegisterMetadata(context.Metadata);
-
-            AddTaskActivities();
-
-            return StartOrchestrationAsync(context.Metadata, context.Metadata.UniqueId, instanceId, context.Data);
+            return StartOrchestrationAsync(metadata, metadataId, instanceId, data, CancellationToken.None, isRoot);
         }
 
-        public Task StartOrchestrationAsync(IRootStateMetadata metadata, string metadataId, string instanceId, Dictionary<string, object> data)
+        public async Task StartOrchestrationAsync(IRootStateMetadata metadata,
+                                                  string metadataId,
+                                                  string instanceId,
+                                                  IDictionary<string, object> data,
+                                                  CancellationToken cancelToken,
+                                                  bool isRoot = false)
         {
             metadata.CheckArgNull(nameof(metadata));
             metadataId.CheckArgNull(nameof(metadataId));
             instanceId.CheckArgNull(nameof(instanceId));
             data.CheckArgNull(nameof(data));
 
-            if (_worker == null)
+            using (await _lock.LockAsync())
             {
-                throw new InvalidOperationException("Service already started.");
+                if (_worker == null)
+                {
+                    throw new InvalidOperationException("Service already started.");
+                }
+
+                if (isRoot)
+                {
+                    RegisterMetadata(metadata, cancelToken);
+
+                    AddTaskActivities(cancelToken);
+                }
+
+                var client = new TaskHubClient((IOrchestrationServiceClient)_orchestrationService);
+
+                await client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
             }
-
-            var client = new TaskHubClient((IOrchestrationServiceClient)_orchestrationService);
-
-            return client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
         }
 
         public Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId)
         {
-            return WaitForCompletionAsync(instanceId, _timeout);
+            return WaitForCompletionAsync(instanceId, CancellationToken.None);
         }
 
-        public async Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId, TimeSpan timeout)
+        public async Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId, CancellationToken cancelToken)
         {
-            if (_worker == null)
-            {
-                throw new InvalidOperationException("Service already started.");
-            }
+            instanceId.CheckArgNull(nameof(instanceId));
 
             var instance = new OrchestrationInstance
             {
@@ -139,7 +170,7 @@ namespace StateChartsDotNet.Durable
 
             var client = new TaskHubClient((IOrchestrationServiceClient) _orchestrationService);
 
-            var result = await client.WaitForOrchestrationAsync(instance, _timeout, _cancelToken);
+            var result = await client.WaitForOrchestrationAsync(instance, _timeout, cancelToken);
 
             var dataconverter = new JsonDataConverter(new JsonSerializerSettings
             {
@@ -161,6 +192,7 @@ namespace StateChartsDotNet.Durable
 
         public Task SendMessageAsync(string instanceId, ExternalMessage message)
         {
+            instanceId.CheckArgNull(nameof(instanceId));
             message.CheckArgNull(nameof(message));
 
             var instance = new OrchestrationInstance
@@ -173,7 +205,7 @@ namespace StateChartsDotNet.Durable
             return client.RaiseEventAsync(instance, message.Name, message);
         }
 
-        private void RegisterStateChart(string uniqueId, IRootStateMetadata metadata, bool executeInline = false)
+        private void RegisterStateChart(string uniqueId, IRootStateMetadata metadata, CancellationToken cancelToken, bool executeInline = false)
         {
             uniqueId.CheckArgNull(nameof(uniqueId));
             metadata.CheckArgNull(nameof(metadata));
@@ -188,7 +220,7 @@ namespace StateChartsDotNet.Durable
 
             // this is the orchestration that runs a statechart instance (parent or child)
 
-            var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, executeInline, _logger);
+            var orchestrator = new InterpreterOrchestration(metadata, cancelToken, executeInline, _logger);
 
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", uniqueId, orchestrator);
 
@@ -206,18 +238,18 @@ namespace StateChartsDotNet.Durable
             _activityResolver.Add(activityCreator);
         }
 
-        private void RegisterMetadata(IRootStateMetadata metadata)
+        private void RegisterMetadata(IRootStateMetadata metadata, CancellationToken cancelToken)
         {
             Debug.Assert(metadata != null);
 
-            RegisterStateChart(metadata.UniqueId, metadata);
+            RegisterStateChart(metadata.UniqueId, metadata, cancelToken);
 
-            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline));
+            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, cancelToken, inline));
 
             metadata.RegisterScripts(RegisterScript);
         }
 
-        private void AddTaskActivities()
+        private void AddTaskActivities(CancellationToken cancelToken)
         {
             _worker.AddTaskActivities(typeof(GenerateGuidActivity));
 
@@ -227,7 +259,7 @@ namespace StateChartsDotNet.Durable
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("waitforcompletion",
                                                                                string.Empty,
-                                                                               new WaitForCompletionActivity(this, _timeout / 2)));
+                                                                               new WaitForCompletionActivity(this, cancelToken)));
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_logger)));
 
@@ -243,9 +275,9 @@ namespace StateChartsDotNet.Durable
                 return func;
             };
 
-            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("query", string.Empty, new QueryActivity(getQuery, _cancelToken)));
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("query", string.Empty, new QueryActivity(getQuery, cancelToken)));
 
-            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("sendmessage", string.Empty, new SendMessageActivity(getService, _cancelToken)));
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("sendmessage", string.Empty, new SendMessageActivity(getService, cancelToken)));
         }
     }
 }

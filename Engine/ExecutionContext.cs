@@ -15,18 +15,22 @@ using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet
 {
-    public sealed class ExecutionContext : ExecutionContextBase
+    public class ExecutionContext : ExecutionContextBase, IExecutionContext, IInstanceManager
     {
+        private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
-        private readonly Dictionary<string, (Task, ExecutionContext)> _childInstances =
-            new Dictionary<string, (Task, ExecutionContext)>();
-        
+        private readonly Dictionary<string, ExecutionContext> _childInstances;
+
+        private Task _executeTask;
         private ExecutionContext _parentContext;
 
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
             : base(metadata, logger)
         {
+            _interpreter = new Interpreter();
+            _childInstances = new Dictionary<string, ExecutionContext>();
+
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
 
@@ -34,6 +38,44 @@ namespace StateChartsDotNet
             _externalQueries.Add("http-get", HttpService.GetAsync);
 
             _data["_invokeId"] = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
+        }
+
+        public Task StartAsync()
+        {
+            return StartAsync(CancellationToken.None);
+        }
+
+        public Task StartAsync(CancellationToken token)
+        {
+            lock (_interpreter)
+            {
+                if (_executeTask != null && !_executeTask.IsCompleted)
+                {
+                    throw new InvalidOperationException("StateChart instance is already running.");
+                }
+
+                _executeTask = _interpreter.RunAsync(this, token);
+
+                return Task.CompletedTask;
+            }
+        }
+
+        public Task WaitForCompletionAsync()
+        {
+            return WaitForCompletionAsync(CancellationToken.None);
+        }
+
+        public Task WaitForCompletionAsync(CancellationToken token)
+        {
+            lock (_interpreter)
+            {
+                if (_executeTask == null)
+                {
+                    throw new InvalidOperationException("StateChart instance is already running.");
+                }
+
+                return _executeTask;    // task is already bounded by token passed in StartAsync()
+            }
         }
 
         protected override Task SendMessageToParentStateChart(string _,
@@ -138,18 +180,16 @@ namespace StateChartsDotNet
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
-            context.SetDataValue("_invokeId", invokeId);
+            context._data["_invokeId"] = invokeId;
 
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
-                context.SetDataValue(param.Key, param.Value);
+                context._data[param.Key] = param.Value;
             }
 
-            var interpreter = new Interpreter();
+            await context.StartAsync(this.CancelToken);
 
-            var task = interpreter.RunAsync(context, this.CancelToken);
-
-            _childInstances.Add(invokeId, (task, context));
+            _childInstances.Add(invokeId, context);
         }
 
         internal override async Task CancelInvokesAsync(string parentUniqueId)
@@ -158,11 +198,11 @@ namespace StateChartsDotNet
 
             foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
             {
-                var context = pair.Value.Item2;
+                var context = pair.Value;
 
                 Debug.Assert(context != null);
 
-                await context.StopAsync();
+                await context.SendStopMessageAsync();
             }
         }
 
@@ -179,9 +219,9 @@ namespace StateChartsDotNet
 
             if (message.IsDone)
             {
-                if (_childInstances.Remove(message.CorrelationId, out (Task, ExecutionContext) tuple))
+                if (_childInstances.Remove(message.CorrelationId, out ExecutionContext context))
                 {
-                    await tuple.Item1;
+                    await context.WaitForCompletionAsync(this.CancelToken);
                 }
                 else
                 {
@@ -195,12 +235,8 @@ namespace StateChartsDotNet
             id.CheckArgNull(nameof(id));
             message.CheckArgNull(nameof(message));
 
-            if (_childInstances.TryGetValue(id, out (Task, ExecutionContext) tuple))
+            if (_childInstances.TryGetValue(id, out ExecutionContext context))
             {
-                var context = tuple.Item2;
-
-                Debug.Assert(context != null);
-
                 await context.SendAsync(message);
             }
             else

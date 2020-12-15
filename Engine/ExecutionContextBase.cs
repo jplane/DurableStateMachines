@@ -18,9 +18,8 @@ using Nito.AsyncEx;
 
 namespace StateChartsDotNet
 {
-    public abstract class ExecutionContextBase : IExecutionContext
+    public abstract class ExecutionContextBase
     {
-        protected readonly Dictionary<string, object> _data;
         protected readonly ILogger _logger;
         protected readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
 
@@ -29,6 +28,8 @@ namespace StateChartsDotNet
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly RootState _root;
+
+        protected IDictionary<string, object> _data;
 
         private CancellationToken _cancelToken;
         private Exception _error;
@@ -91,14 +92,14 @@ namespace StateChartsDotNet
 
         protected abstract bool IsChildStateChart { get; }
 
-        public Task StopAsync()
+        public Task SendStopMessageAsync()
         {
-            return SendAsync("cancel");
+            return SendMessageAsync("cancel");
         }
 
-        public Task SendAsync(string message,
-                              object content = null,
-                              IReadOnlyDictionary<string, object> parameters = null)
+        public Task SendMessageAsync(string message,
+                                     object content = null,
+                                     IReadOnlyDictionary<string, object> parameters = null)
         {
             message.CheckArgNull(nameof(message));
 
@@ -125,7 +126,7 @@ namespace StateChartsDotNet
             get => _isRunning && (!this.FailFast || _error == null);
         }
 
-        public object this[string key]
+        public IDictionary<string, object> Data
         {
             get
             {
@@ -134,22 +135,7 @@ namespace StateChartsDotNet
                     throw new InvalidOperationException("Cannot read execution state while the state machine is running.");
                 }
 
-                if (key.StartsWith("_"))
-                {
-                    throw new KeyNotFoundException($"Value for key '{key}' not found.");
-                }
-
-                return _data[key];
-            }
-
-            set
-            {
-                if (this.IsRunning)
-                {
-                    throw new InvalidOperationException("Cannot write execution state while the state machine is running.");
-                }
-
-                _data[key] = value;
+                return new ExternalDictionary(_data);
             }
         }
 

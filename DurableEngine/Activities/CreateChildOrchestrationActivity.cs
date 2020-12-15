@@ -13,11 +13,11 @@ namespace StateChartsDotNet.Durable.Activities
     {
         private readonly IRootStateMetadata _metadata;
         private readonly string _uniqueId;
-        private readonly IStateChartOrchestrationManager _orchestrationManager;
+        private readonly IOrchestrationManager _orchestrationManager;
 
         public CreateChildOrchestrationActivity(IRootStateMetadata metadata,
                                                 string uniqueId,
-                                                IStateChartOrchestrationManager orchestrationManager)
+                                                IOrchestrationManager orchestrationManager)
         {
             metadata.CheckArgNull(nameof(metadata));
             uniqueId.CheckArgNull(nameof(uniqueId));

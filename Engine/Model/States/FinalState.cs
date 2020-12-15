@@ -33,9 +33,9 @@ namespace StateChartsDotNet.Model.States
 
             var metadata = (IFinalStateMetadata) _metadata;
 
-            var content = metadata.GetContent(context);
+            var content = metadata.GetContent(context.ScriptData);
 
-            var parameters = metadata.GetParams(context);
+            var parameters = metadata.GetParams(context.ScriptData);
 
             return context.SendDoneMessageToParentAsync(content, parameters);
         }

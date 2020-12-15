@@ -1,6 +1,5 @@
 ﻿using DurableTask.Core;
 using Microsoft.Extensions.Logging;
-using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Messages;
@@ -21,7 +20,7 @@ namespace StateChartsDotNet.Durable
         protected readonly List<string> _childInstances;
         protected readonly OrchestrationContext _orchestrationContext;
 
-        private TaskCompletionSource<bool> _externalMessageAvailable;
+        private readonly TaskCompletionSource<bool> _externalMessageAvailable;
 
         public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,
