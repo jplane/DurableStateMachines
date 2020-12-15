@@ -52,9 +52,9 @@ var machine = StateChart.Define("test")
 
 var context = new ExecutionContext(machine);
 
-var interpreter = new Interpreter();
+await context.StartAsync(context);
 
-await interpreter.RunAsync(context);
+await context.WaitForCompletionAsync();
 ```
 
 ### [SCXML-compliant](https://www.w3.org/TR/scxml/) API
@@ -82,9 +82,9 @@ var machine = new StateChart(XDocument.Parse(xmldoc));
 
 var context = new ExecutionContext(machine, _logger);
 
-var interpreter = new Interpreter();
+await context.StartAsync(context);
 
-await interpreter.RunAsync(context);
+await context.WaitForCompletionAsync();
 ```
 
 ### Durable (fault-tolerant) execution
@@ -94,11 +94,11 @@ var machine = GetStateChart();
 
 var emulator = new LocalOrchestrationService();     // any durable task orchestration service
 
-var context = new Durable.ExecutionContext(machine);
+var context = new Durable.ExecutionContext(machine, emulator, TimeSpan.FromMinutes(1));
 
-var interpreter = new Durable.Interpreter(emulator);
+await context.StartAsync(context);
 
-await interpreter.RunAsync(context);
+await context.WaitForCompletionAsync();
 ```
 
 ### Parent-child statecharts
@@ -136,9 +136,9 @@ var machine = StateChart.Define("outer")
 
 var context = new ExecutionContext(machine);
 
-var interpreter = new Interpreter();
+await context.StartAsync(context);
 
-await interpreter.RunAsync(context);
+await context.WaitForCompletionAsync();
 ```
 
 ## Background and Resources
