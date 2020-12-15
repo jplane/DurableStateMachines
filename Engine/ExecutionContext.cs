@@ -32,6 +32,8 @@ namespace StateChartsDotNet
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
+
+            _data["_invokeId"] = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
         }
 
         protected override Task SendMessageToParentStateChart(string _,
@@ -124,10 +126,6 @@ namespace StateChartsDotNet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
-
             var childMachine = ResolveChildStateChart(metadata);
 
             Debug.Assert(childMachine != null);
@@ -135,6 +133,10 @@ namespace StateChartsDotNet
             var context = new ExecutionContext(childMachine, _logger);
 
             context._parentContext = this;
+
+            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
             context.SetDataValue("_invokeId", invokeId);
 
