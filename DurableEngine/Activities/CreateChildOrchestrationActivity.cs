@@ -12,15 +12,19 @@ namespace StateChartsDotNet.Durable.Activities
     internal class CreateChildOrchestrationActivity : AsyncTaskActivity<(string, Dictionary<string, object>), string>
     {
         private readonly IRootStateMetadata _metadata;
+        private readonly string _uniqueId;
         private readonly IStateChartOrchestrationManager _orchestrationManager;
 
         public CreateChildOrchestrationActivity(IRootStateMetadata metadata,
+                                                string uniqueId,
                                                 IStateChartOrchestrationManager orchestrationManager)
         {
             metadata.CheckArgNull(nameof(metadata));
+            uniqueId.CheckArgNull(nameof(uniqueId));
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 
             _metadata = metadata;
+            _uniqueId = uniqueId;
             _orchestrationManager = orchestrationManager;
         }
 
@@ -32,7 +36,7 @@ namespace StateChartsDotNet.Durable.Activities
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
             Debug.Assert(data != null);
 
-            await _orchestrationManager.StartOrchestrationAsync(instanceId, _metadata, data);
+            await _orchestrationManager.StartOrchestrationAsync(_metadata, _uniqueId, instanceId, data);
 
             return string.Empty;
         }

@@ -118,11 +118,13 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
-        internal override Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
+        protected override bool IsChildStateChart => _parentContext != null;
+
+        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var invokeId = metadata.UniqueId;
+            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
@@ -146,8 +148,6 @@ namespace StateChartsDotNet
             var task = interpreter.RunAsync(context, this.CancelToken);
 
             _childInstances.Add(invokeId, (task, context));
-
-            return Task.CompletedTask;
         }
 
         internal override async Task CancelInvokesAsync(string parentUniqueId)

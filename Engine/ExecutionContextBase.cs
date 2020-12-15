@@ -89,6 +89,8 @@ namespace StateChartsDotNet
                                                               IReadOnlyDictionary<string, object> parameters,
                                                               CancellationToken ___);
 
+        protected abstract bool IsChildStateChart { get; }
+
         public Task StopAsync()
         {
             return SendAsync("cancel");
@@ -190,8 +192,10 @@ namespace StateChartsDotNet
         internal Task SendDoneMessageToParentAsync(object content,
                                                    IReadOnlyDictionary<string, object> parameters)
         {
-            if (_data.TryGetValue("_invokeId", out object invokeId))
+            if (IsChildStateChart)
             {
+                var invokeId = _data["_invokeId"];
+
                 if (_error != null)
                 {
                     return SendMessageToParentStateChart(null,
@@ -255,8 +259,6 @@ namespace StateChartsDotNet
         internal async Task InitAsync(CancellationToken cancelToken)
         {
             _cancelToken = cancelToken;
-
-            _data["_sessionid"] = (await GenerateGuid()).ToString("D");
 
             _data["_name"] = this.Root.Name;
 

@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Durable
 {
     internal interface IStateChartOrchestrationManager
     {
-        Task StartOrchestrationAsync(string instanceId, IRootStateMetadata metadata, Dictionary<string, object> data);
+        Task StartOrchestrationAsync(IRootStateMetadata metadata, string metadataId, string instanceId, Dictionary<string, object> data);
         Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId, TimeSpan timeout);
         Task SendMessageAsync(string instanceId, ExternalMessage message);
     }
@@ -100,13 +100,14 @@ namespace StateChartsDotNet.Durable
 
             AddTaskActivities();
 
-            return StartOrchestrationAsync(instanceId, context.Metadata, context.Data);
+            return StartOrchestrationAsync(context.Metadata, context.Metadata.UniqueId, instanceId, context.Data);
         }
 
-        public Task StartOrchestrationAsync(string instanceId, IRootStateMetadata metadata, Dictionary<string, object> data)
+        public Task StartOrchestrationAsync(IRootStateMetadata metadata, string metadataId, string instanceId, Dictionary<string, object> data)
         {
-            instanceId.CheckArgNull(nameof(instanceId));
             metadata.CheckArgNull(nameof(metadata));
+            metadataId.CheckArgNull(nameof(metadataId));
+            instanceId.CheckArgNull(nameof(instanceId));
             data.CheckArgNull(nameof(data));
 
             if (_worker == null)
@@ -116,7 +117,7 @@ namespace StateChartsDotNet.Durable
 
             var client = new TaskHubClient((IOrchestrationServiceClient)_orchestrationService);
 
-            return client.CreateOrchestrationInstanceAsync("statechart", instanceId, instanceId, data);
+            return client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
         }
 
         public Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId)
@@ -172,16 +173,16 @@ namespace StateChartsDotNet.Durable
             return client.RaiseEventAsync(instance, message.Name, message);
         }
 
-        private void RegisterStateChart(string instanceId, IRootStateMetadata metadata, bool executeInline = false)
+        private void RegisterStateChart(string uniqueId, IRootStateMetadata metadata, bool executeInline = false)
         {
-            instanceId.CheckArgNull(nameof(instanceId));
+            uniqueId.CheckArgNull(nameof(uniqueId));
             metadata.CheckArgNull(nameof(metadata));
 
             // this is the durable activity for starting a child statechart from within its parent
 
-            var createActivity = new CreateChildOrchestrationActivity(metadata, this);
+            var createActivity = new CreateChildOrchestrationActivity(metadata, uniqueId, this);
 
-            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", instanceId, createActivity);
+            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", uniqueId, createActivity);
 
             _activityResolver.Add(activityCreator);
 
@@ -189,7 +190,7 @@ namespace StateChartsDotNet.Durable
 
             var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, executeInline, _logger);
 
-            var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", instanceId, orchestrator);
+            var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", uniqueId, orchestrator);
 
             _orchestrationResolver.Add(orchestrationCreator);
         }

@@ -28,7 +28,9 @@ namespace StateChartsDotNet.Durable
         {
             context.CheckArgNull(nameof(context));
 
-            var instanceId = context.Metadata.UniqueId;
+            var instanceId = $"{context.Metadata.UniqueId}.{Guid.NewGuid():N}";
+
+            context["_invokeId"] = instanceId;
 
             var orchestrationManager = new DurableOrchestrationManager(_orchestrationService, timeout, cancelToken, context.Logger);
 

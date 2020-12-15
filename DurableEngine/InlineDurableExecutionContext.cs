@@ -21,12 +21,15 @@ namespace StateChartsDotNet.Durable
         {
         }
 
-        protected override Task StartChildOrchestrationAsync(string invokeId, Dictionary<string, object> data)
+        protected override Task StartChildOrchestrationAsync(string uniqueId, string invokeId, Dictionary<string, object> data)
         {
-            invokeId.CheckArgNull(nameof(invokeId));
-            data.CheckArgNull(nameof(data));
+            Debug.Assert(!string.IsNullOrWhiteSpace(uniqueId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+            Debug.Assert(data != null);
 
-            return _orchestrationContext.CreateSubOrchestrationInstance<(Dictionary<string, object>, Exception)>("statechart", invokeId, (invokeId, data));
+            Debug.Assert(_orchestrationContext != null);
+
+            return _orchestrationContext.CreateSubOrchestrationInstance<(Dictionary<string, object>, Exception)>("statechart", uniqueId, invokeId, data);
         }
 
         internal override Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)

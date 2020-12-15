@@ -50,7 +50,7 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty);
         }
 
-        internal override Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
+        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -60,7 +60,7 @@ namespace StateChartsDotNet.Durable
 
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
 
-            var invokeId = metadata.UniqueId;
+            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
@@ -74,17 +74,20 @@ namespace StateChartsDotNet.Durable
 
             _childInstances.Add(invokeId);
 
-            return StartChildOrchestrationAsync(invokeId, inputs);
+            await StartChildOrchestrationAsync(metadata.UniqueId, invokeId, inputs);
         }
 
-        protected virtual Task StartChildOrchestrationAsync(string invokeId, Dictionary<string, object> data)
+        protected override bool IsChildStateChart => _data.ContainsKey("_parentInvokeId");
+
+        protected virtual Task StartChildOrchestrationAsync(string uniqueId, string invokeId, Dictionary<string, object> data)
         {
-            invokeId.CheckArgNull(nameof(invokeId));
-            data.CheckArgNull(nameof(data));
+            Debug.Assert(!string.IsNullOrWhiteSpace(uniqueId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+            Debug.Assert(data != null);
 
             Debug.Assert(_orchestrationContext != null);
 
-            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", invokeId, (invokeId, data));
+            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", uniqueId, (invokeId, data));
         }
 
         internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
