@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    public class ExecutionContext : IExecutionContext, IInstanceManager
+    public class ExecutionContext : IExecutionContext
     {
         private readonly AsyncLock _lock;
         private readonly IRootStateMetadata _metadata;
@@ -22,6 +22,7 @@ namespace StateChartsDotNet.Durable
 
         public ExecutionContext(IRootStateMetadata metadata,
                                 IOrchestrationService service,
+                                CancellationToken cancelToken,
                                 TimeSpan timeout,
                                 ILogger logger = null)
         {
@@ -29,58 +30,39 @@ namespace StateChartsDotNet.Durable
             service.CheckArgNull(nameof(service));
 
             _metadata = metadata;
-            _orchestrationManager = new DurableOrchestrationManager(service, timeout, logger);
+            _orchestrationManager = new DurableOrchestrationManager(metadata, service, timeout, cancelToken, logger);
 
             _lock = new AsyncLock();
             _data = new Dictionary<string, object>();
         }
 
-        public Task StartAsync()
+        public async Task StartAsync()
         {
-            return StartAsync(CancellationToken.None);
-        }
-
-        public async Task StartAsync(CancellationToken token)
-        {
-            Debug.Assert(_orchestrationManager != null);
-
             using (await _lock.LockAsync())
             {
-                await _StartAsync(token);
+                await _StartAsync();
             } 
         }
 
-        public Task WaitForCompletionAsync()
-        {
-            return WaitForCompletionAsync(CancellationToken.None);
-        }
-
-        public async Task WaitForCompletionAsync(CancellationToken token)
-        {
-            Debug.Assert(_orchestrationManager != null);
-
-            using (await _lock.LockAsync())
-            {
-                await _WaitForCompletionAsync(token);
-            }
-        }
-
-        public Task StartAndWaitForCompletionAsync()
-        {
-            return StartAndWaitForCompletionAsync(CancellationToken.None);
-        }
-
-        public async Task StartAndWaitForCompletionAsync(CancellationToken token)
+        public async Task WaitForCompletionAsync()
         {
             using (await _lock.LockAsync())
             {
-                await _StartAsync(token);
-
-                await _WaitForCompletionAsync(token);
+                await _WaitForCompletionAsync();
             }
         }
 
-        private async Task _StartAsync(CancellationToken token)
+        public async Task StartAndWaitForCompletionAsync()
+        {
+            using (await _lock.LockAsync())
+            {
+                await _StartAsync();
+
+                await _WaitForCompletionAsync();
+            }
+        }
+
+        private async Task _StartAsync()
         {
             Debug.Assert(_orchestrationManager != null);
 
@@ -95,10 +77,10 @@ namespace StateChartsDotNet.Durable
 
             _data["_invokeId"] = instanceId;
 
-            await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, token, true);
+            await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, true);
         }
 
-        private async Task _WaitForCompletionAsync(CancellationToken token)
+        private async Task _WaitForCompletionAsync()
         {
             Debug.Assert(_orchestrationManager != null);
 
@@ -111,7 +93,7 @@ namespace StateChartsDotNet.Durable
 
                 var instanceId = (string)_data["_invokeId"];
 
-                var output = await _orchestrationManager.WaitForCompletionAsync(instanceId, token);
+                var output = await _orchestrationManager.WaitForCompletionAsync(instanceId);
 
                 Debug.Assert(output != null);
 

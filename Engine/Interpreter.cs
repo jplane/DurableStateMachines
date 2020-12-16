@@ -18,18 +18,13 @@ namespace StateChartsDotNet
         {
         }
 
-        public Task RunAsync(ExecutionContextBase context)
-        {
-            return RunAsync(context, CancellationToken.None);
-        }
-
-        public async Task RunAsync(ExecutionContextBase context, CancellationToken cancelToken)
+        public async Task RunAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
             await context.LogInformationAsync("Start: event loop");
 
-            await EnterStatechartAsync(context, cancelToken);
+            await EnterStatechartAsync(context);
 
             while (context.IsRunning)
             {
@@ -57,11 +52,11 @@ namespace StateChartsDotNet
             context.CheckErrorPropagation();
         }
 
-        private async Task EnterStatechartAsync(ExecutionContextBase context, CancellationToken cancelToken)
+        private async Task EnterStatechartAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
-            await context.InitAsync(cancelToken);
+            await context.InitAsync();
 
             await EnterStatesAsync(context,
                                    new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));

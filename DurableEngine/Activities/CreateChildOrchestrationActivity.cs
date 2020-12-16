@@ -15,12 +15,10 @@ namespace StateChartsDotNet.Durable.Activities
         private readonly IRootStateMetadata _metadata;
         private readonly string _uniqueId;
         private readonly IOrchestrationManager _orchestrationManager;
-        private readonly CancellationToken _cancelToken;
 
         public CreateChildOrchestrationActivity(IRootStateMetadata metadata,
                                                 string uniqueId,
-                                                IOrchestrationManager orchestrationManager,
-                                                CancellationToken cancelToken)
+                                                IOrchestrationManager orchestrationManager)
         {
             metadata.CheckArgNull(nameof(metadata));
             uniqueId.CheckArgNull(nameof(uniqueId));
@@ -29,7 +27,6 @@ namespace StateChartsDotNet.Durable.Activities
             _metadata = metadata;
             _uniqueId = uniqueId;
             _orchestrationManager = orchestrationManager;
-            _cancelToken = cancelToken;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, (string, Dictionary<string, object>) input)
@@ -40,7 +37,7 @@ namespace StateChartsDotNet.Durable.Activities
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
             Debug.Assert(data != null);
 
-            await _orchestrationManager.StartOrchestrationAsync(_metadata, _uniqueId, instanceId, data, _cancelToken);
+            await _orchestrationManager.StartOrchestrationAsync(_metadata, _uniqueId, instanceId, data);
 
             return string.Empty;
         }

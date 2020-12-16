@@ -52,11 +52,11 @@ namespace StateChartsDotNet.Durable
 
             if (_executeInline)
             {
-                _executionContext = new InlineDurableExecutionContext(_metadata, context, data, _logger);
+                _executionContext = new InlineDurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
             }
             else
             {
-                _executionContext = new DurableExecutionContext(_metadata, context, data, _logger);
+                _executionContext = new DurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
             }
         }
 
@@ -76,7 +76,7 @@ namespace StateChartsDotNet.Durable
             {
                 var interpreter = new Interpreter();
 
-                await interpreter.RunAsync(_executionContext, _cancelToken);
+                await interpreter.RunAsync(_executionContext);
 
                 return (_executionContext.ResultData, null);
             }

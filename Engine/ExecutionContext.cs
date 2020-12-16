@@ -15,7 +15,7 @@ using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet
 {
-    public class ExecutionContext : ExecutionContextBase, IExecutionContext, IInstanceManager
+    public class ExecutionContext : ExecutionContextBase, IExecutionContext
     {
         private readonly AsyncLock _lock;
         private readonly Interpreter _interpreter;
@@ -26,8 +26,8 @@ namespace StateChartsDotNet
         private Task _executeTask;
         private ExecutionContext _parentContext;
 
-        public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
-            : base(metadata, logger)
+        public ExecutionContext(IRootStateMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
+            : base(metadata, cancelToken, logger)
         {
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
@@ -42,12 +42,7 @@ namespace StateChartsDotNet
             _data["_invokeId"] = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
         }
 
-        public Task StartAsync()
-        {
-            return StartAsync(CancellationToken.None);
-        }
-
-        public async Task StartAsync(CancellationToken token)
+        public async Task StartAsync()
         {
             using (await _lock.LockAsync())
             {
@@ -56,16 +51,11 @@ namespace StateChartsDotNet
                     throw new InvalidOperationException("StateChart instance is already running.");
                 }
 
-                _executeTask = _interpreter.RunAsync(this, token);
+                _executeTask = _interpreter.RunAsync(this);
             }
         }
 
-        public Task WaitForCompletionAsync()
-        {
-            return WaitForCompletionAsync(CancellationToken.None);
-        }
-
-        public async Task WaitForCompletionAsync(CancellationToken token)
+        public async Task WaitForCompletionAsync()
         {
             using (await _lock.LockAsync())
             {
@@ -78,12 +68,7 @@ namespace StateChartsDotNet
             }
         }
 
-        public Task StartAndWaitForCompletionAsync()
-        {
-            return StartAndWaitForCompletionAsync(CancellationToken.None);
-        }
-
-        public async Task StartAndWaitForCompletionAsync(CancellationToken token)
+        public async Task StartAndWaitForCompletionAsync()
         {
             using (await _lock.LockAsync())
             {
@@ -92,7 +77,7 @@ namespace StateChartsDotNet
                     throw new InvalidOperationException("StateChart instance is already running.");
                 }
 
-                _executeTask = _interpreter.RunAsync(this, token);
+                _executeTask = _interpreter.RunAsync(this);
 
                 await _executeTask;
             }
@@ -192,7 +177,7 @@ namespace StateChartsDotNet
 
             Debug.Assert(childMachine != null);
 
-            var context = new ExecutionContext(childMachine, _logger);
+            var context = new ExecutionContext(childMachine, this.CancelToken, _logger);
 
             context._parentContext = this;
 
@@ -207,7 +192,7 @@ namespace StateChartsDotNet
                 context._data[param.Key] = param.Value;
             }
 
-            await context.StartAsync(this.CancelToken);
+            await context.StartAsync();
 
             _childInstances.Add(invokeId, context);
         }
@@ -241,7 +226,7 @@ namespace StateChartsDotNet
             {
                 if (_childInstances.Remove(message.CorrelationId, out ExecutionContext context))
                 {
-                    await context.WaitForCompletionAsync(this.CancelToken);
+                    await context.WaitForCompletionAsync();
                 }
                 else
                 {

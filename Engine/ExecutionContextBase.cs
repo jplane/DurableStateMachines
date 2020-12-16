@@ -36,11 +36,13 @@ namespace StateChartsDotNet
         private bool _isRunning = false;
 
         internal ExecutionContextBase(IRootStateMetadata metadata,
+                                      CancellationToken cancelToken,
                                       ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
             _root = new RootState(metadata);
+            _cancelToken = cancelToken;
             _logger = logger;
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
 
@@ -49,7 +51,6 @@ namespace StateChartsDotNet
             _internalMessages = new Queue<InternalMessage>();
             _configuration = new Set<State>();
             _statesToInvoke = new Set<State>();
-
         }
 
         internal abstract Task CancelInvokesAsync(string parentUniqueId);
@@ -248,10 +249,8 @@ namespace StateChartsDotNet
             return childMachine;
         }
 
-        internal async Task InitAsync(CancellationToken cancelToken)
+        internal async Task InitAsync()
         {
-            _cancelToken = cancelToken;
-
             _data["_name"] = this.Root.Name;
 
             _isRunning = true;

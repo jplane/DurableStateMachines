@@ -1,9 +1,4 @@
-﻿using StateChartsDotNet.Common.Messages;
-using StateChartsDotNet.Common.Model.States;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Common
@@ -14,5 +9,9 @@ namespace StateChartsDotNet.Common
 
         Task SendStopMessageAsync();
         Task SendMessageAsync(string message, object content = null, IReadOnlyDictionary<string, object> parameters = null);
+
+        Task StartAsync();
+        Task WaitForCompletionAsync();
+        Task StartAndWaitForCompletionAsync();
     }
 }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
 {
-    public delegate (IInstanceManager, IExecutionContext) ScaffoldFactoryDelegate(IRootStateMetadata metadata, ILogger logger);
+    public delegate (IExecutionContext, CancellationTokenSource) ScaffoldFactoryDelegate(IRootStateMetadata metadata, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
     public class TestScaffoldAttribute : Attribute, ITestDataSource
@@ -26,8 +26,11 @@ namespace StateChartsDotNet.Tests
             {
                 (ScaffoldFactoryDelegate) ((machine, logger) =>
                 {
-                    var context = new ExecutionContext(machine, logger);
-                    return (context, context);
+                    var cts = new CancellationTokenSource();
+
+                    var context = new ExecutionContext(machine, cts.Token, logger);
+                    
+                    return (context, cts);
                 }),
                 "Lite"
             };
@@ -36,11 +39,13 @@ namespace StateChartsDotNet.Tests
             {
                 (ScaffoldFactoryDelegate) ((machine, logger) =>
                 {
+                    var cts = new CancellationTokenSource();
+
                     var emulator = new LocalOrchestrationService();
 
-                    var context = new Durable.ExecutionContext(machine, emulator, ExecutionTimeout, logger);
+                    var context = new Durable.ExecutionContext(machine, emulator, cts.Token, ExecutionTimeout, logger);
 
-                    return (context, context);
+                    return (context, cts);
                 }),
                 "Durable"
             };

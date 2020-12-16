@@ -47,11 +47,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             Assert.AreEqual(15, Convert.ToInt32(context.Data["sum"]));
         }
@@ -84,11 +82,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, Logger);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -124,11 +120,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, Logger);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            var task = instanceMgr.StartAndWaitForCompletionAsync();
+            var task = context.StartAndWaitForCompletionAsync();
 
             await Task.WhenAll(task, listenerTask);
 
@@ -193,11 +187,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAsync();
+            await context.StartAsync();
 
             await Task.Delay(1000);
 
@@ -213,7 +205,7 @@ namespace StateChartsDotNet.Tests
 
             await context.SendStopMessageAsync();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.AreEqual(5, Convert.ToInt32(context.Data["timer"]));
         }
@@ -260,13 +252,11 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, Logger);
 
-            var instanceMgr = tuple.Item1;
-
-            var context = tuple.Item2;
+            var context = tuple.Item1;
 
             context.Data["x"] = 5;
 
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             var x = Convert.ToInt32(context.Data["x"]);
 

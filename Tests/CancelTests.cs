@@ -24,17 +24,15 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAsync();
+            await context.StartAsync();
 
             await Task.Delay(500);
 
             await context.SendStopMessageAsync();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -46,19 +44,19 @@ namespace StateChartsDotNet.Tests
             var machine = StateChart.Define("test")
                                     .AtomicState("state1").Attach();
 
-            var source = new CancellationTokenSource();
-
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            await instanceMgr.StartAsync(source.Token);
+            var cts = tuple.Item2;
+
+            await context.StartAsync();
 
             await Task.Delay(500);
 
-            source.Cancel();
+            cts.Cancel();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -90,17 +88,15 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAsync();
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
             await context.SendStopMessageAsync();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -130,21 +126,21 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var source = new CancellationTokenSource();
-
             var start = DateTimeOffset.UtcNow;
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            await instanceMgr.StartAsync(source.Token);
+            var cts = tuple.Item2;
+
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
-            source.Cancel();
+            cts.Cancel();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             var elapsed = DateTimeOffset.UtcNow - start;
 
@@ -179,17 +175,15 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAsync();
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
             await context.SendStopMessageAsync();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -218,21 +212,21 @@ namespace StateChartsDotNet.Tests
                                     .FinalState("alldone")
                                         .Attach();
 
-            var source = new CancellationTokenSource();
-
             var start = DateTimeOffset.UtcNow;
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            await instanceMgr.StartAsync(source.Token);
+            var cts = tuple.Item2;
+
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
-            source.Cancel();
+            cts.Cancel();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             var elapsed = DateTimeOffset.UtcNow - start;
 
@@ -255,17 +249,15 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAsync();
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
             await context.SendStopMessageAsync();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }
@@ -284,19 +276,19 @@ namespace StateChartsDotNet.Tests
                                             .Attach()
                                         .Attach();
 
-            var source = new CancellationTokenSource();
-
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            await instanceMgr.StartAsync(source.Token);
+            var cts = tuple.Item2;
+
+            await context.StartAsync();
 
             await Task.Delay(2000);
 
-            source.Cancel();
+            cts.Cancel();
 
-            await instanceMgr.WaitForCompletionAsync();
+            await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);
         }

@@ -31,9 +31,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             Assert.IsTrue(true, "Internal error message not handled. Statechart processing successful.");
         }
@@ -68,11 +68,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             var error = (Exception) context.Data["err"];
 
@@ -100,13 +98,11 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
+            await context.StartAsync();
 
-            await instanceMgr.StartAsync();
-
-            await Assert.ThrowsExceptionAsync<ExecutionException>(() => instanceMgr.WaitForCompletionAsync());
+            await Assert.ThrowsExceptionAsync<ExecutionException>(() => context.WaitForCompletionAsync());
         }
     }
 }

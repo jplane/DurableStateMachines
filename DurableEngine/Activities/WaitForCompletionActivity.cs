@@ -10,21 +10,19 @@ namespace StateChartsDotNet.Durable.Activities
     internal class WaitForCompletionActivity : AsyncTaskActivity<string, string>
     {
         private readonly IOrchestrationManager _orchestrationManager;
-        private readonly CancellationToken _cancelToken;
 
-        public WaitForCompletionActivity(IOrchestrationManager orchestrationManager, CancellationToken cancelToken)
+        public WaitForCompletionActivity(IOrchestrationManager orchestrationManager)
         {
             orchestrationManager.CheckArgNull(nameof(orchestrationManager));
 
             _orchestrationManager = orchestrationManager;
-            _cancelToken = cancelToken;
         }
 
         protected override async Task<string> ExecuteAsync(TaskContext context, string instanceId)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            await _orchestrationManager.WaitForCompletionAsync(instanceId, _cancelToken);
+            await _orchestrationManager.WaitForCompletionAsync(instanceId);
 
             return string.Empty;
         }

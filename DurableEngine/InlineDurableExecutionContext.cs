@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
@@ -16,8 +17,9 @@ namespace StateChartsDotNet.Durable
         public InlineDurableExecutionContext(IRootStateMetadata metadata,
                                              OrchestrationContext orchestrationContext,
                                              IDictionary<string, object> data,
+                                             CancellationToken cancelToken,
                                              ILogger logger = null)
-            : base(metadata, orchestrationContext, data, logger)
+            : base(metadata, orchestrationContext, data, cancelToken, logger)
         {
         }
 

@@ -25,8 +25,9 @@ namespace StateChartsDotNet.Durable
         public DurableExecutionContext(IRootStateMetadata metadata,
                                        OrchestrationContext orchestrationContext,
                                        IDictionary<string, object> data,
+                                       CancellationToken cancelToken,
                                        ILogger logger = null)
-            : base(metadata, logger)
+            : base(metadata, cancelToken, logger)
         {
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
             data.CheckArgNull(nameof(data));

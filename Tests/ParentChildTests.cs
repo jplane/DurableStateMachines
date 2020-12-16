@@ -49,11 +49,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             Assert.AreEqual(3, x);
         }
@@ -95,11 +93,9 @@ namespace StateChartsDotNet.Tests
 
             var tuple = factory(machine, null);
 
-            var instanceMgr = tuple.Item1;
+            var context = tuple.Item1;
 
-            var context = tuple.Item2;
-
-            await instanceMgr.StartAndWaitForCompletionAsync();
+            await context.StartAndWaitForCompletionAsync();
 
             Assert.AreEqual(3, x);
         }
