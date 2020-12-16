@@ -44,20 +44,9 @@ namespace StateChartsDotNet.Durable
         {
             Debug.Assert(_orchestrationManager != null);
 
-            using (_lock.Lock())
+            using (await _lock.LockAsync())
             {
-                if (_data.ContainsKey("_invokeId"))
-                {
-                    throw new InvalidOperationException("StateChart instance is already running.");
-                }
-
-                await _orchestrationManager.StartAsync();
-
-                var instanceId = $"{_metadata.UniqueId}.{Guid.NewGuid():N}";
-
-                _data["_invokeId"] = instanceId;
-
-                await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, token, true);
+                await _StartAsync(token);
             } 
         }
 
@@ -72,33 +61,74 @@ namespace StateChartsDotNet.Durable
 
             using (await _lock.LockAsync())
             {
-                try
-                {
-                    if (!_data.ContainsKey("_invokeId"))
-                    {
-                        throw new InvalidOperationException("StateChart instance is not running.");
-                    }
-
-                    var instanceId = (string) _data["_invokeId"];
-
-                    var output = await _orchestrationManager.WaitForCompletionAsync(instanceId, token);
-
-                    Debug.Assert(output != null);
-
-                    _data = new Dictionary<string, object>(output);
-                }
-                catch (TimeoutException)
-                {
-                    // cancellation token fired, we want to eat this one here
-                }
-                finally
-                {
-                    _data.Remove("_invokeId");
-
-                    await _orchestrationManager.StopAsync();
-                }
+                await _WaitForCompletionAsync(token);
             }
         }
+
+        public Task StartAndWaitForCompletionAsync()
+        {
+            return StartAndWaitForCompletionAsync(CancellationToken.None);
+        }
+
+        public async Task StartAndWaitForCompletionAsync(CancellationToken token)
+        {
+            using (await _lock.LockAsync())
+            {
+                await _StartAsync(token);
+
+                await _WaitForCompletionAsync(token);
+            }
+        }
+
+        private async Task _StartAsync(CancellationToken token)
+        {
+            Debug.Assert(_orchestrationManager != null);
+
+            if (_data.ContainsKey("_invokeId"))
+            {
+                throw new InvalidOperationException("StateChart instance is already running.");
+            }
+
+            await _orchestrationManager.StartAsync();
+
+            var instanceId = $"{_metadata.UniqueId}.{Guid.NewGuid():N}";
+
+            _data["_invokeId"] = instanceId;
+
+            await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, token, true);
+        }
+
+        private async Task _WaitForCompletionAsync(CancellationToken token)
+        {
+            Debug.Assert(_orchestrationManager != null);
+
+            try
+            {
+                if (!_data.ContainsKey("_invokeId"))
+                {
+                    throw new InvalidOperationException("StateChart instance is not running.");
+                }
+
+                var instanceId = (string)_data["_invokeId"];
+
+                var output = await _orchestrationManager.WaitForCompletionAsync(instanceId, token);
+
+                Debug.Assert(output != null);
+
+                _data = new Dictionary<string, object>(output);
+            }
+            catch (TimeoutException)
+            {
+                // cancellation token fired, we want to eat this one here
+            }
+            finally
+            {
+                _data.Remove("_invokeId");
+
+                await _orchestrationManager.StopAsync();
+            }
+        }
+
 
         public IDictionary<string, object> Data => new ExternalDictionary(_data);
 

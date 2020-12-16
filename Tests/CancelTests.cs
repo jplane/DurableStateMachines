@@ -25,6 +25,7 @@ namespace StateChartsDotNet.Tests
             var tuple = factory(machine, null);
 
             var instanceMgr = tuple.Item1;
+
             var context = tuple.Item2;
 
             await instanceMgr.StartAsync();
@@ -90,6 +91,7 @@ namespace StateChartsDotNet.Tests
             var tuple = factory(machine, null);
 
             var instanceMgr = tuple.Item1;
+
             var context = tuple.Item2;
 
             await instanceMgr.StartAsync();
@@ -178,6 +180,7 @@ namespace StateChartsDotNet.Tests
             var tuple = factory(machine, null);
 
             var instanceMgr = tuple.Item1;
+
             var context = tuple.Item2;
 
             await instanceMgr.StartAsync();
@@ -253,6 +256,7 @@ namespace StateChartsDotNet.Tests
             var tuple = factory(machine, null);
 
             var instanceMgr = tuple.Item1;
+
             var context = tuple.Item2;
 
             await instanceMgr.StartAsync();

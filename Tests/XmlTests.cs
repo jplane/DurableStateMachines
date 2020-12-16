@@ -51,9 +51,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             Assert.AreEqual(15, Convert.ToInt32(context.Data["sum"]));
         }
@@ -90,9 +88,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -132,9 +128,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            var task = instanceMgr.WaitForCompletionAsync();
+            var task = instanceMgr.StartAndWaitForCompletionAsync();
 
             await Task.WhenAll(task, listenerTask);
 
@@ -272,9 +266,7 @@ namespace StateChartsDotNet.Tests
 
             context.Data["x"] = 5;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             var x = Convert.ToInt32(context.Data["x"]);
 

@@ -14,5 +14,7 @@ namespace StateChartsDotNet.Common
         Task StartAsync(CancellationToken token);
         Task WaitForCompletionAsync();
         Task WaitForCompletionAsync(CancellationToken token);
+        Task StartAndWaitForCompletionAsync();
+        Task StartAndWaitForCompletionAsync(CancellationToken token);
     }
 }

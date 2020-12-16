@@ -39,9 +39,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             Assert.AreEqual(3, x);
         }
@@ -77,9 +75,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -120,9 +116,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            await instanceMgr.WaitForCompletionAsync();
+            await instanceMgr.StartAndWaitForCompletionAsync();
 
             var json = await listenerTask;
 
@@ -160,9 +154,7 @@ namespace StateChartsDotNet.Tests
 
             var context = tuple.Item2;
 
-            await instanceMgr.StartAsync();
-
-            var task = instanceMgr.WaitForCompletionAsync();
+            var task = instanceMgr.StartAndWaitForCompletionAsync();
 
             await Task.WhenAll(task, listenerTask);
 

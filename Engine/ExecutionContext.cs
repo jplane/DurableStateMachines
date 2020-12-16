@@ -17,6 +17,7 @@ namespace StateChartsDotNet
 {
     public class ExecutionContext : ExecutionContextBase, IExecutionContext, IInstanceManager
     {
+        private readonly AsyncLock _lock;
         private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
@@ -28,6 +29,7 @@ namespace StateChartsDotNet
         public ExecutionContext(IRootStateMetadata metadata, ILogger logger = null)
             : base(metadata, logger)
         {
+            _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _childInstances = new Dictionary<string, ExecutionContext>();
 
@@ -45,9 +47,9 @@ namespace StateChartsDotNet
             return StartAsync(CancellationToken.None);
         }
 
-        public Task StartAsync(CancellationToken token)
+        public async Task StartAsync(CancellationToken token)
         {
-            lock (_interpreter)
+            using (await _lock.LockAsync())
             {
                 if (_executeTask != null && !_executeTask.IsCompleted)
                 {
@@ -55,8 +57,6 @@ namespace StateChartsDotNet
                 }
 
                 _executeTask = _interpreter.RunAsync(this, token);
-
-                return Task.CompletedTask;
             }
         }
 
@@ -65,16 +65,36 @@ namespace StateChartsDotNet
             return WaitForCompletionAsync(CancellationToken.None);
         }
 
-        public Task WaitForCompletionAsync(CancellationToken token)
+        public async Task WaitForCompletionAsync(CancellationToken token)
         {
-            lock (_interpreter)
+            using (await _lock.LockAsync())
             {
                 if (_executeTask == null)
                 {
                     throw new InvalidOperationException("StateChart instance is already running.");
                 }
 
-                return _executeTask;    // task is already bounded by token passed in StartAsync()
+                await _executeTask;    // task is already bounded by token passed in StartAsync()
+            }
+        }
+
+        public Task StartAndWaitForCompletionAsync()
+        {
+            return StartAndWaitForCompletionAsync(CancellationToken.None);
+        }
+
+        public async Task StartAndWaitForCompletionAsync(CancellationToken token)
+        {
+            using (await _lock.LockAsync())
+            {
+                if (_executeTask != null && !_executeTask.IsCompleted)
+                {
+                    throw new InvalidOperationException("StateChart instance is already running.");
+                }
+
+                _executeTask = _interpreter.RunAsync(this, token);
+
+                await _executeTask;
             }
         }
 
