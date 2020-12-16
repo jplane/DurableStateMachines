@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
 {
-    public delegate (IExecutionContext, CancellationTokenSource) ScaffoldFactoryDelegate(IRootStateMetadata metadata, ILogger logger);
+    public delegate (IExecutionContext, CancellationTokenSource) ScaffoldFactoryDelegate(IStateChartMetadata metadata, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
     public class TestScaffoldAttribute : Attribute, ITestDataSource

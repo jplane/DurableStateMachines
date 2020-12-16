@@ -20,14 +20,14 @@ namespace StateChartsDotNet.Durable
                                                                 ExternalMessage,
                                                                 string>
     {
-        private readonly IRootStateMetadata _metadata;
+        private readonly IStateChartMetadata _metadata;
         private readonly CancellationToken _cancelToken;
         private readonly ILogger _logger;
         private readonly bool _executeInline;
         
         private DurableExecutionContext _executionContext;
 
-        public InterpreterOrchestration(IRootStateMetadata metadata,
+        public InterpreterOrchestration(IStateChartMetadata metadata,
                                         CancellationToken cancelToken,
                                         bool executeInline,
                                         ILogger logger = null)

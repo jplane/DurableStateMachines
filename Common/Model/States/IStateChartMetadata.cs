@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.Common.Model.States
 {
-    public interface IRootStateMetadata : IStateMetadata
+    public interface IStateChartMetadata : IStateMetadata
     {
         bool FailFast { get; }
         Databinding Databinding { get; }

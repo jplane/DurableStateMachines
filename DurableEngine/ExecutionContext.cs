@@ -15,12 +15,12 @@ namespace StateChartsDotNet.Durable
     public class ExecutionContext : IExecutionContext
     {
         private readonly AsyncLock _lock;
-        private readonly IRootStateMetadata _metadata;
+        private readonly IStateChartMetadata _metadata;
         private readonly IOrchestrationManager _orchestrationManager;
 
         private Dictionary<string, object> _data;
 
-        public ExecutionContext(IRootStateMetadata metadata,
+        public ExecutionContext(IStateChartMetadata metadata,
                                 IOrchestrationService service,
                                 CancellationToken cancelToken,
                                 TimeSpan timeout,

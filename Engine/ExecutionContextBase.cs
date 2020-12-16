@@ -27,7 +27,7 @@ namespace StateChartsDotNet
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
-        private readonly RootState _root;
+        private readonly StartChart _root;
 
         protected IDictionary<string, object> _data;
 
@@ -35,13 +35,13 @@ namespace StateChartsDotNet
         private Exception _error;
         private bool _isRunning = false;
 
-        internal ExecutionContextBase(IRootStateMetadata metadata,
+        internal ExecutionContextBase(IStateChartMetadata metadata,
                                       CancellationToken cancelToken,
                                       ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _root = new RootState(metadata);
+            _root = new StartChart(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
@@ -235,7 +235,7 @@ namespace StateChartsDotNet
             return id;
         }
 
-        protected IRootStateMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
+        protected IStateChartMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
         {
             Debug.Assert(metadata != null);
 
@@ -263,7 +263,7 @@ namespace StateChartsDotNet
             await this.Root.ExecuteScript(this);
         }
 
-        internal RootState Root => _root;
+        internal StartChart Root => _root;
 
         internal CancellationToken CancelToken => _cancelToken;
 

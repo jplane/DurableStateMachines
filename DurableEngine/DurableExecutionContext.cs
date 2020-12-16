@@ -22,7 +22,7 @@ namespace StateChartsDotNet.Durable
 
         private readonly TaskCompletionSource<bool> _externalMessageAvailable;
 
-        public DurableExecutionContext(IRootStateMetadata metadata,
+        public DurableExecutionContext(IStateChartMetadata metadata,
                                        OrchestrationContext orchestrationContext,
                                        IDictionary<string, object> data,
                                        CancellationToken cancelToken,

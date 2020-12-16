@@ -10,7 +10,7 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.States
 {
-    public class StateChart : StateMetadata, IRootStateMetadata
+    public class StateChart : StateMetadata, IStateChartMetadata
     {
         private readonly string _name;
 

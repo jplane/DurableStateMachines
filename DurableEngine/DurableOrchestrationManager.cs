@@ -24,7 +24,7 @@ namespace StateChartsDotNet.Durable
 
         Task StopAsync();
 
-        Task StartOrchestrationAsync(IRootStateMetadata metadata,
+        Task StartOrchestrationAsync(IStateChartMetadata metadata,
                                      string metadataId,
                                      string instanceId,
                                      IDictionary<string, object> data,
@@ -37,7 +37,7 @@ namespace StateChartsDotNet.Durable
 
     internal class DurableOrchestrationManager : IOrchestrationManager
     {
-        private readonly IRootStateMetadata _metadata;
+        private readonly IStateChartMetadata _metadata;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
@@ -50,7 +50,7 @@ namespace StateChartsDotNet.Durable
 
         private TaskHubWorker _worker;
 
-        public DurableOrchestrationManager(IRootStateMetadata metadata,
+        public DurableOrchestrationManager(IStateChartMetadata metadata,
                                            IOrchestrationService orchestrationService,
                                            TimeSpan timeout,
                                            CancellationToken cancelToken,
@@ -111,7 +111,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task StartOrchestrationAsync(IRootStateMetadata metadata,
+        public async Task StartOrchestrationAsync(IStateChartMetadata metadata,
                                                   string metadataId,
                                                   string instanceId,
                                                   IDictionary<string, object> data,
@@ -188,7 +188,7 @@ namespace StateChartsDotNet.Durable
             return client.RaiseEventAsync(instance, message.Name, message);
         }
 
-        private void RegisterStateChart(string uniqueId, IRootStateMetadata metadata, bool executeInline = false)
+        private void RegisterStateChart(string uniqueId, IStateChartMetadata metadata, bool executeInline = false)
         {
             uniqueId.CheckArgNull(nameof(uniqueId));
             metadata.CheckArgNull(nameof(metadata));
@@ -221,7 +221,7 @@ namespace StateChartsDotNet.Durable
             _activityResolver.Add(activityCreator);
         }
 
-        private void RegisterMetadata(IRootStateMetadata metadata)
+        private void RegisterMetadata(IStateChartMetadata metadata)
         {
             Debug.Assert(metadata != null);
 

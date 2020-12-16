@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class RootState : CompoundState
+    internal class StartChart : CompoundState
     {
         private readonly Lazy<Script> _script;
         private readonly Lazy<Transition> _initialTransition;
         
-        public RootState(IRootStateMetadata metadata)
+        public StartChart(IStateChartMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -74,11 +74,11 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public bool FailFast => ((IRootStateMetadata) _metadata).FailFast;
+        public bool FailFast => ((IStateChartMetadata) _metadata).FailFast;
 
-        public Databinding Binding => ((IRootStateMetadata) _metadata).Databinding;
+        public Databinding Binding => ((IStateChartMetadata) _metadata).Databinding;
 
-        public string Name => ((IRootStateMetadata) _metadata).Id;
+        public string Name => ((IStateChartMetadata) _metadata).Id;
 
         public override string Id => "scxml_root";
 

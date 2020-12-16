@@ -31,7 +31,7 @@ namespace StateChartsDotNet.Model.States
 
         public void VisitTransition(List<State> targetStates,
                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
-                                    RootState root)
+                                    StartChart root)
         {
             var transition = _transitions.Value.Single();
 

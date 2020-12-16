@@ -13,8 +13,8 @@ namespace StateChartsDotNet.Common
         Task StartAsync();
         Task StopAsync();
 
-        Task<string> StartInstanceAsync(IRootStateMetadata metadata);
-        Task<string> StartInstanceAsync(IRootStateMetadata metadata, CancellationToken token);
+        Task<string> StartInstanceAsync(IStateChartMetadata metadata);
+        Task<string> StartInstanceAsync(IStateChartMetadata metadata, CancellationToken token);
         Task WaitForInstanceCompletionAsync(string instanceId);
         Task WaitForInstanceCompletionAsync(string instanceId, CancellationToken token);
     }

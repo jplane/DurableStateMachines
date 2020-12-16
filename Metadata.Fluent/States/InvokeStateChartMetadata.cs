@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private bool _autoForward;
         private string _id;
         private string _idLocation;
-        private IRootStateMetadata _root;
+        private IStateChartMetadata _root;
 
         internal InvokeStateChartMetadata()
         {
@@ -223,7 +223,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() => _finalizeExecutableContent;
 
-        IRootStateMetadata IInvokeStateChartMetadata.GetRoot() => _root;
+        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => _root;
 
         IReadOnlyDictionary<string, object> IInvokeStateChartMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));

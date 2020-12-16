@@ -26,7 +26,7 @@ namespace StateChartsDotNet
         private Task _executeTask;
         private ExecutionContext _parentContext;
 
-        public ExecutionContext(IRootStateMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
+        public ExecutionContext(IStateChartMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
             : base(metadata, cancelToken, logger)
         {
             _lock = new AsyncLock();

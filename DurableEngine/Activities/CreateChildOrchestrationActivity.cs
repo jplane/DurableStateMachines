@@ -12,11 +12,11 @@ namespace StateChartsDotNet.Durable.Activities
 {
     internal class CreateChildOrchestrationActivity : AsyncTaskActivity<(string, Dictionary<string, object>), string>
     {
-        private readonly IRootStateMetadata _metadata;
+        private readonly IStateChartMetadata _metadata;
         private readonly string _uniqueId;
         private readonly IOrchestrationManager _orchestrationManager;
 
-        public CreateChildOrchestrationActivity(IRootStateMetadata metadata,
+        public CreateChildOrchestrationActivity(IStateChartMetadata metadata,
                                                 string uniqueId,
                                                 IOrchestrationManager orchestrationManager)
         {

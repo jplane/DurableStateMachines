@@ -14,7 +14,7 @@ namespace StateChartsDotNet.Durable
 {
     internal class InlineDurableExecutionContext : DurableExecutionContext
     {
-        public InlineDurableExecutionContext(IRootStateMetadata metadata,
+        public InlineDurableExecutionContext(IStateChartMetadata metadata,
                                              OrchestrationContext orchestrationContext,
                                              IDictionary<string, object> data,
                                              CancellationToken cancelToken,

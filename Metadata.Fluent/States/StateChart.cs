@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
-    public sealed class StateChart : StateMetadata, IRootStateMetadata
+    public sealed class StateChart : StateMetadata, IStateChartMetadata
     {
         private readonly List<InvokeStateChartMetadata<StateChart>> _stateChartInvokes;
         private readonly List<TransitionMetadata<StateChart>> _transitions;
@@ -137,11 +137,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return state;
         }
 
-        bool IRootStateMetadata.FailFast => _failFast;
+        bool IStateChartMetadata.FailFast => _failFast;
 
-        Databinding IRootStateMetadata.Databinding => _databinding;
+        Databinding IStateChartMetadata.Databinding => _databinding;
 
-        ITransitionMetadata IRootStateMetadata.GetInitialTransition()
+        ITransitionMetadata IStateChartMetadata.GetInitialTransition()
         {
             if (_initialTransition != null)
             {
@@ -158,8 +158,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        IScriptMetadata IRootStateMetadata.GetScript() => _script;
+        IScriptMetadata IStateChartMetadata.GetScript() => _script;
 
-        IEnumerable<IStateMetadata> IRootStateMetadata.GetStates() => _states;
+        IEnumerable<IStateMetadata> IStateChartMetadata.GetStates() => _states;
     }
 }

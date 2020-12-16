@@ -88,7 +88,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return content.AsEnumerable();
         }
 
-        public IRootStateMetadata GetRoot()
+        public IStateChartMetadata GetRoot()
         {
             var node = _element.ScxmlElement("content");
 
