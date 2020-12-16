@@ -60,8 +60,6 @@ namespace StateChartsDotNet
 
         internal abstract Task SendToChildStateChart(string id, ExternalMessage message);
 
-        internal abstract void InternalCancel();
-
         internal abstract Task DelayAsync(TimeSpan timespan);
 
         internal abstract Task<string> QueryAsync(string type, string target, IReadOnlyDictionary<string, object> parameters);
@@ -91,6 +89,14 @@ namespace StateChartsDotNet
                                                               CancellationToken ___);
 
         protected abstract bool IsChildStateChart { get; }
+
+        internal void InternalCancel()
+        {
+            if (!IsChildStateChart)
+            {
+                _isRunning = false;
+            }
+        }
 
         public Task SendStopMessageAsync()
         {

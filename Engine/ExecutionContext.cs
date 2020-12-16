@@ -250,14 +250,6 @@ namespace StateChartsDotNet
             return Task.FromResult(Guid.NewGuid());
         }
 
-        internal override void InternalCancel()
-        {
-            if (_parentContext == null)
-            {
-                _externalMessages.Enqueue(new ExternalMessage("cancel"));
-            }
-        }
-
         internal override Task LogDebugAsync(string message)
         {
             _logger?.LogDebug(message);

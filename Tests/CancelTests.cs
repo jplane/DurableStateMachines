@@ -197,8 +197,6 @@ namespace StateChartsDotNet.Tests
         {
             var uri = "http://localhost:4444/";
 
-            var listenerTask = Task.Run(() => InProcWebServer.EchoAsync(uri));
-
             var now = DateTimeOffset.UtcNow;
 
             var machine = StateChart.Define("httptest")

@@ -74,7 +74,7 @@ namespace StateChartsDotNet.Durable
 
             try
             {
-                var interpreter = new StateChartsDotNet.Interpreter();
+                var interpreter = new Interpreter();
 
                 await interpreter.RunAsync(_executionContext, _cancelToken);
 

@@ -165,14 +165,6 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInvokeId, message));
         }
 
-        internal override void InternalCancel()
-        {
-            if (!_data.ContainsKey("_parentInvokeId"))
-            {
-                EnqueueExternalMessage(new ExternalMessage("cancel"));
-            }
-        }
-
         internal override Task DelayAsync(TimeSpan timespan)
         {
             Debug.Assert(timespan > TimeSpan.Zero);
@@ -230,9 +222,7 @@ namespace StateChartsDotNet.Durable
                 await _externalMessageAvailable.Task;
             }
 
-            // forcing a replay here ensures we never block on the queue
-
-            await GenerateGuid();
+            await GenerateGuid();   // forcing a replay here ensures we never block on the queue
 
             return await _externalMessages.DequeueAsync(this.CancelToken).ConfigureAwait(false);
         }

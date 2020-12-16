@@ -114,10 +114,10 @@ namespace StateChartsDotNet.Durable
         }
 
         public Task StartOrchestrationAsync(IRootStateMetadata metadata,
-                                    string metadataId,
-                                    string instanceId,
-                                    IDictionary<string, object> data,
-                                    bool isRoot = false)
+                                            string metadataId,
+                                            string instanceId,
+                                            IDictionary<string, object> data,
+                                            bool isRoot = false)
         {
             return StartOrchestrationAsync(metadata, metadataId, instanceId, data, CancellationToken.None, isRoot);
         }
@@ -212,7 +212,7 @@ namespace StateChartsDotNet.Durable
 
             // this is the durable activity for starting a child statechart from within its parent
 
-            var createActivity = new CreateChildOrchestrationActivity(metadata, uniqueId, this);
+            var createActivity = new CreateChildOrchestrationActivity(metadata, uniqueId, this, cancelToken);
 
             var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", uniqueId, createActivity);
 
