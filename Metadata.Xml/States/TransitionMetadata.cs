@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Xml.Execution;

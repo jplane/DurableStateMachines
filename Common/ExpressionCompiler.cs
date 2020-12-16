@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Exceptions;
 
-namespace StateChartsDotNet.Metadata.Xml
+namespace StateChartsDotNet.Common
 {
     internal static class ExpressionCompiler
     {

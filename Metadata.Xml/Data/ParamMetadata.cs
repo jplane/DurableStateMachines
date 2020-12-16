@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Exceptions;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model;
 using System;
 using System.Collections.Generic;
