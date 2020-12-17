@@ -58,7 +58,11 @@ namespace StateChartsDotNet.Tests
             {
                 server.RunAsync();
 
-                return (await completion.Task).TrimResult();
+                var result = await completion.Task;
+
+                var trimmedResult = JsonConvert.DeserializeObject<string>(result);
+
+                return trimmedResult;
             }
         }
 
