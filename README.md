@@ -26,7 +26,7 @@ Some specific design and implementation choices:
 
 - Abstractions for both [pull](./Common/Model/Execution/IQueryMetadata.cs)- and [push](./Common/Model/Execution/ISendMessageMetadata.cs)-based communication with external systems; talk to all your favorite native cloud services from within your statechart!
 
-- In addition to parent-child _state_ relationships within a single statechart, there is also support for parent-child relationships between _statecharts_ themselves (execute statechart A within the context of statechart B, etc.)
+- In addition to parent-child state relationships _within_ a single statechart, there is also support for parent-child relationships _between_ statechart instances (execute statechart A within the context of statechart B, etc.)
 
 ## Usage
 
@@ -167,6 +167,105 @@ var machine = StateChart.Define("outer")
 var context = new ExecutionContext(machine);
 
 await context.StartAndWaitForCompletionAsync();
+```
+
+### [ASP.NET Core host](./Web)
+
+#### /api/start request example payload
+```json
+{
+    "inputs": {
+        "x": 5
+    },
+    "statechart": {
+        "name": "outer",
+        "states": [
+            {
+                "id": "outerState1",
+                "invokes": [
+                    {
+                        "params": [
+                            {
+                                "name": "x",
+                                "location": "x"
+                            }
+                        ],
+                        "content": {
+                            "name": "inner",
+                            "states": [
+                                {
+                                    "id": "innerState1",
+                                    "onentry": {
+                                        "content": [
+                                            {
+                                                "type": "assign",
+                                                "location": "x",
+                                                "expr": "x * 2"
+                                            }
+                                        ]
+                                    },
+                                    "transitions": [
+                                        {
+                                            "target": "alldone"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "alldone",
+                                    "type": "final",
+                                    "donedata": {
+                                        "params": [
+                                            {
+                                                "name": "innerX",
+                                                "location": "x"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "finalize": [
+                            {
+                                "type": "assign",
+                                "location": "innerX",
+                                "expr": "_event.Parameters[\"innerX\"]"
+                            }
+                        ]
+                    }
+                ],
+                "transitions": [
+                    {
+                        "event": "done.invoke.*",
+                        "target": "alldone"
+                    }
+                ]
+            },
+            {
+                "id": "alldone",
+                "type": "final"
+            }
+        ]
+    }
+}
+```
+
+#### /api/status response example payload
+```json
+{
+    "StartTime": "2020-12-18T18:15:12.3280769Z",
+    "EndTime": "2020-12-18T18:15:24.4911782Z",
+    "LastUpdateTime": "2020-12-18T18:15:24.4914133Z",
+    "Status": "Completed",
+    "InstanceId": "030c677c251a463485dbb409f146fecf",
+    "Input": {
+        "x": 5
+    },
+    "Output": {
+        "x": 5,
+        "innerX": 10
+    },
+    "Error": null
+}
 ```
 
 ## Background and Resources
