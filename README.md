@@ -185,10 +185,7 @@ await context.StartAndWaitForCompletionAsync();
                 "invokes": [
                     {
                         "params": [
-                            {
-                                "name": "x",
-                                "location": "x"
-                            }
+                            { "name": "x", "location": "x" }
                         ],
                         "content": {
                             "name": "inner",
@@ -197,17 +194,11 @@ await context.StartAndWaitForCompletionAsync();
                                     "id": "innerState1",
                                     "onentry": {
                                         "content": [
-                                            {
-                                                "type": "assign",
-                                                "location": "x",
-                                                "expr": "x * 2"
-                                            }
+                                            { "type": "assign", "location": "x", "expr": "x * 2" }
                                         ]
                                     },
                                     "transitions": [
-                                        {
-                                            "target": "alldone"
-                                        }
+                                        { "target": "alldone" }
                                     ]
                                 },
                                 {
@@ -215,35 +206,22 @@ await context.StartAndWaitForCompletionAsync();
                                     "type": "final",
                                     "donedata": {
                                         "params": [
-                                            {
-                                                "name": "innerX",
-                                                "location": "x"
-                                            }
+                                            { "name": "innerX", "location": "x" }
                                         ]
                                     }
                                 }
                             ]
                         },
                         "finalize": [
-                            {
-                                "type": "assign",
-                                "location": "innerX",
-                                "expr": "_event.Parameters[\"innerX\"]"
-                            }
+                            { "type": "assign", "location": "innerX", "expr": "_event.Parameters[\"innerX\"]" }
                         ]
                     }
                 ],
                 "transitions": [
-                    {
-                        "event": "done.invoke.*",
-                        "target": "alldone"
-                    }
+                    { "event": "done.invoke.*", "target": "alldone" }
                 ]
             },
-            {
-                "id": "alldone",
-                "type": "final"
-            }
+            { "id": "alldone", "type": "final" }
         ]
     }
 }
@@ -252,19 +230,19 @@ await context.StartAndWaitForCompletionAsync();
 #### /api/status response example payload
 ```json
 {
-    "StartTime": "2020-12-18T18:15:12.3280769Z",
-    "EndTime": "2020-12-18T18:15:24.4911782Z",
-    "LastUpdateTime": "2020-12-18T18:15:24.4914133Z",
-    "Status": "Completed",
-    "InstanceId": "030c677c251a463485dbb409f146fecf",
-    "Input": {
+    "startTime": "2020-12-18T18:15:12.3280769Z",
+    "endTime": "2020-12-18T18:15:24.4911782Z",
+    "lastUpdateTime": "2020-12-18T18:15:24.4914133Z",
+    "status": "Completed",
+    "instanceId": "030c677c251a463485dbb409f146fecf",
+    "input": {
         "x": 5
     },
-    "Output": {
+    "output": {
         "x": 5,
         "innerX": 10
     },
-    "Error": null
+    "error": null
 }
 ```
 

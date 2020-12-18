@@ -226,14 +226,14 @@ namespace StateChartsDotNet.Web
 
                 var output = new
                 {
-                    StartTime = state.CreatedTime,
-                    EndTime = state.CompletedTime,
-                    LastUpdateTime = state.LastUpdatedTime,
-                    Status = state.OrchestrationStatus.ToString(),
-                    InstanceId = instanceId,
-                    Input = DeserializeInput(state.Input),
-                    Output = result.Item1,
-                    Error = result.Item2
+                    startTime = state.CreatedTime,
+                    endTime = state.CompletedTime,
+                    lastUpdateTime = state.LastUpdatedTime,
+                    status = state.OrchestrationStatus.ToString(),
+                    instanceId = instanceId,
+                    input = DeserializeInput(state.Input),
+                    output = result.Item1,
+                    error = result.Item2
                 };
 
                 context.Response.ContentType = "application/json";
