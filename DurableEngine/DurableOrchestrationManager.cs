@@ -24,11 +24,7 @@ namespace StateChartsDotNet.Durable
 
         Task StopAsync();
 
-        Task StartOrchestrationAsync(IStateChartMetadata metadata,
-                                     string metadataId,
-                                     string instanceId,
-                                     IDictionary<string, object> data,
-                                     bool isRoot = false);
+        Task StartOrchestrationAsync(string metadataId, string instanceId, IDictionary<string, object> data);
 
         Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId);
 
@@ -38,6 +34,7 @@ namespace StateChartsDotNet.Durable
     internal class DurableOrchestrationManager : IOrchestrationManager
     {
         private readonly IStateChartMetadata _metadata;
+        private readonly Dictionary<string, IStateChartMetadata> _metadataMap;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
@@ -71,6 +68,7 @@ namespace StateChartsDotNet.Durable
             _logger = logger;
 
             _lock = new AsyncLock();
+            _metadataMap = new Dictionary<string, IStateChartMetadata>();
 
             _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
             _activityResolver = new NameVersionObjectManager<TaskActivity>();
@@ -91,6 +89,10 @@ namespace StateChartsDotNet.Durable
                     _worker = new TaskHubWorker(_orchestrationService, _orchestrationResolver, _activityResolver);
 
                     await _worker.StartAsync();
+
+                    RegisterMetadata();
+
+                    AddTaskActivities();
                 }
             }
         }
@@ -103,6 +105,7 @@ namespace StateChartsDotNet.Durable
                 {
                     _orchestrationResolver.Clear();
                     _activityResolver.Clear();
+                    _metadataMap.Clear();
 
                     await _worker.StopAsync();
 
@@ -111,40 +114,32 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task StartOrchestrationAsync(IStateChartMetadata metadata,
-                                                  string metadataId,
+        public async Task StartOrchestrationAsync(string metadataId,
                                                   string instanceId,
-                                                  IDictionary<string, object> data,
-                                                  bool isRoot = false)
+                                                  IDictionary<string, object> data)
         {
-            metadata.CheckArgNull(nameof(metadata));
             metadataId.CheckArgNull(nameof(metadataId));
             instanceId.CheckArgNull(nameof(instanceId));
             data.CheckArgNull(nameof(data));
 
-            using (await _lock.LockAsync())
+            if (_worker == null)
             {
-                if (_worker == null)
-                {
-                    throw new InvalidOperationException("Service already started.");
-                }
-
-                if (isRoot)
-                {
-                    RegisterMetadata(metadata);
-
-                    AddTaskActivities();
-                }
-
-                var client = new TaskHubClient((IOrchestrationServiceClient)_orchestrationService);
-
-                await client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
+                throw new InvalidOperationException("Service not started.");
             }
+
+            var client = new TaskHubClient((IOrchestrationServiceClient) _orchestrationService);
+
+            await client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
         }
 
         public async Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId)
         {
             instanceId.CheckArgNull(nameof(instanceId));
+
+            if (_worker == null)
+            {
+                throw new InvalidOperationException("Service not started.");
+            }
 
             var instance = new OrchestrationInstance
             {
@@ -178,6 +173,11 @@ namespace StateChartsDotNet.Durable
             instanceId.CheckArgNull(nameof(instanceId));
             message.CheckArgNull(nameof(message));
 
+            if (_worker == null)
+            {
+                throw new InvalidOperationException("Service not started.");
+            }
+
             var instance = new OrchestrationInstance
             {
                 InstanceId = instanceId
@@ -195,7 +195,7 @@ namespace StateChartsDotNet.Durable
 
             // this is the durable activity for starting a child statechart from within its parent
 
-            var createActivity = new CreateChildOrchestrationActivity(metadata, uniqueId, this);
+            var createActivity = new CreateChildOrchestrationActivity(uniqueId, this);
 
             var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", uniqueId, createActivity);
 
@@ -208,6 +208,8 @@ namespace StateChartsDotNet.Durable
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", uniqueId, orchestrator);
 
             _orchestrationResolver.Add(orchestrationCreator);
+
+            _metadataMap.Add(uniqueId, metadata);
         }
 
         private void RegisterScript(IScriptMetadata metadata)
@@ -221,15 +223,15 @@ namespace StateChartsDotNet.Durable
             _activityResolver.Add(activityCreator);
         }
 
-        private void RegisterMetadata(IStateChartMetadata metadata)
+        private void RegisterMetadata()
         {
-            Debug.Assert(metadata != null);
+            Debug.Assert(_metadata != null);
 
-            RegisterStateChart(metadata.UniqueId, metadata);
+            RegisterStateChart(_metadata.UniqueId, _metadata);
 
-            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline));
+            _metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline));
 
-            metadata.RegisterScripts(RegisterScript);
+            _metadata.RegisterScripts(RegisterScript);
         }
 
         private void AddTaskActivities()

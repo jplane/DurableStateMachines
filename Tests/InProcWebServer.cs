@@ -60,9 +60,14 @@ namespace StateChartsDotNet.Tests
 
                 var result = await completion.Task;
 
-                var trimmedResult = JsonConvert.DeserializeObject<string>(result);
-
-                return trimmedResult;
+                try
+                {
+                    return JsonConvert.DeserializeObject<string>(result);
+                }
+                catch
+                {
+                    return result;
+                }
             }
         }
 

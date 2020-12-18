@@ -77,7 +77,7 @@ namespace StateChartsDotNet.Durable
 
             _data["_invokeId"] = instanceId;
 
-            await _orchestrationManager.StartOrchestrationAsync(_metadata, _metadata.UniqueId, instanceId, _data, true);
+            await _orchestrationManager.StartOrchestrationAsync(_metadata.UniqueId, instanceId, _data);
         }
 
         private async Task _WaitForCompletionAsync()
@@ -91,7 +91,7 @@ namespace StateChartsDotNet.Durable
                     throw new InvalidOperationException("StateChart instance is not running.");
                 }
 
-                var instanceId = (string)_data["_invokeId"];
+                var instanceId = (string) _data["_invokeId"];
 
                 var output = await _orchestrationManager.WaitForCompletionAsync(instanceId);
 
@@ -129,7 +129,7 @@ namespace StateChartsDotNet.Durable
                     throw new InvalidOperationException("StateChart instance is not running.");
                 }
 
-                var instanceId = (string)_data["_invokeId"];
+                var instanceId = (string) _data["_invokeId"];
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
