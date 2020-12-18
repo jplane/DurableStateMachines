@@ -83,6 +83,42 @@ var context = new ExecutionContext(machine, _logger);
 await context.StartAndWaitForCompletionAsync();
 ```
 
+### JSON API
+
+```csharp
+var json = @"{
+                 'states': [
+                     {
+                         'id': 'state1',
+                         'onentry': {
+                             'content': [
+                                 {
+                                     'type': 'http-post',
+                                     'url': 'http://localhost:4444/',
+                                     'body': {
+                                         'value': 5
+                                     }
+                                 }
+                             ]
+                         },
+                         'transitions': [
+                             { 'target': 'alldone' }
+                         ]
+                     },
+                     {
+                         'id': 'alldone',
+                         'type': 'final'
+                     }
+                 ]
+             }";
+
+var machine = new StateChart(JObject.Parse(json));
+
+var context = new ExecutionContext(machine, _logger);
+
+await context.StartAndWaitForCompletionAsync();
+```
+
 ### Durable (fault-tolerant) execution
 
 ```csharp
