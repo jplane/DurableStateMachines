@@ -24,7 +24,7 @@ Some specific design and implementation choices:
 
   - A durable, reliable [implementation](./DurableEngine) based on the [Durable Task framework](https://github.com/Azure/durabletask)
 
-- Abstractions for both [synchronous](./Common/Model/Execution/IQueryMetadata.cs) and [asynchronous](./Common/Model/Execution/ISendMessageMetadata.cs) communication to external systems; talk to all your favorite native cloud services from within your statechart!
+- Abstractions for both [pull](./Common/Model/Execution/IQueryMetadata.cs)- and [push](./Common/Model/Execution/ISendMessageMetadata.cs)-based communication with external systems; talk to all your favorite native cloud services from within your statechart!
 
 - In addition to parent-child _state_ relationships within a single statechart, there is also support for parent-child relationships between _statecharts_ themselves (execute statechart A within the context of statechart B, etc.)
 
