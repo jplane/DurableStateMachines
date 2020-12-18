@@ -29,6 +29,8 @@ namespace StateChartsDotNet.Durable
         Task<IReadOnlyDictionary<string, object>> WaitForCompletionAsync(string instanceId);
 
         Task SendMessageAsync(string instanceId, ExternalMessage message);
+
+        Task<OrchestrationState> GetStateAsync(string instanceId);
     }
 
     internal class DurableOrchestrationManager : IOrchestrationManager
@@ -166,6 +168,20 @@ namespace StateChartsDotNet.Durable
             {
                 return tuple.Item1;
             }
+        }
+
+        public Task<OrchestrationState> GetStateAsync(string instanceId)
+        {
+            instanceId.CheckArgNull(nameof(instanceId));
+
+            if (_worker == null)
+            {
+                throw new InvalidOperationException("Service not started.");
+            }
+
+            var client = new TaskHubClient((IOrchestrationServiceClient) _orchestrationService);
+
+            return client.GetOrchestrationStateAsync(instanceId);
         }
 
         public Task SendMessageAsync(string instanceId, ExternalMessage message)
