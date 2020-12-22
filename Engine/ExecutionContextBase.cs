@@ -53,7 +53,7 @@ namespace StateChartsDotNet
 
         internal abstract Task CancelInvokesAsync(string parentMetadataId);
 
-        internal abstract IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId);
+        internal abstract IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId);
 
         internal abstract Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message);
 
@@ -183,12 +183,12 @@ namespace StateChartsDotNet
         {
             if (IsChildStateChart)
             {
-                var invokeId = _data["_invokeId"];
+                var instanceId = _data["_instanceId"];
 
                 if (_error != null)
                 {
                     return SendMessageToParentStateChart(null,
-                                                         $"done.invoke.error.{invokeId}",
+                                                         $"done.invoke.error.{instanceId}",
                                                          _error,
                                                          null,
                                                          null,
@@ -197,7 +197,7 @@ namespace StateChartsDotNet
                 else
                 {
                     return SendMessageToParentStateChart(null,
-                                                         $"done.invoke.{invokeId}",
+                                                         $"done.invoke.{instanceId}",
                                                          content,
                                                          null,
                                                          parameters,

@@ -50,13 +50,13 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(string invokeId, ExecutionContextBase context, ExternalMessage externalMessage)
+        public async Task ProcessExternalMessageAsync(string instanceId, ExecutionContextBase context, ExternalMessage externalMessage)
         {
-            invokeId.CheckArgNull(nameof(invokeId));
+            instanceId.CheckArgNull(nameof(instanceId));
             context.CheckArgNull(nameof(context));
             externalMessage.CheckArgNull(nameof(externalMessage));
 
-            if (externalMessage is ChildStateChartResponseMessage response && invokeId == response.CorrelationId)
+            if (externalMessage is ChildStateChartResponseMessage response && instanceId == response.CorrelationId)
             {
                 // skip executing finalize executable content if we received an error and we're failing fast
 
@@ -75,7 +75,7 @@ namespace StateChartsDotNet.Model.States
                 _metadata.Autoforward &&
                 !(externalMessage is ChildStateChartResponseMessage))
             {
-                await context.SendToChildStateChart(invokeId, externalMessage);
+                await context.SendToChildStateChart(instanceId, externalMessage);
             }
         }
     }

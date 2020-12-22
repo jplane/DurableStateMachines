@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Xsl;
 
 namespace StateChartsDotNet.Durable
 {
@@ -65,50 +64,50 @@ namespace StateChartsDotNet.Durable
 
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
 
-            var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
+            var parentInstanceId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(parentInvokeId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(parentInstanceId));
 
-            inputs["_parentInvokeId"] = parentInvokeId;
+            inputs["_parentInstanceId"] = parentInstanceId;
 
-            var invokeId = $"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}.{await GenerateGuid():N}";
+            var instanceId = $"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}.{await GenerateGuid():N}";
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            inputs["_invokeId"] = invokeId;
+            inputs["_instanceId"] = instanceId;
 
             if (! _childInstances.TryGetValue(parentStateMetadataId, out List<string> instances))
             {
                 _childInstances[parentStateMetadataId] = instances = new List<string>();
             }
 
-            instances.Add(invokeId);
+            instances.Add(instanceId);
 
-            await StartChildOrchestrationAsync($"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}", invokeId, inputs);
+            await StartChildOrchestrationAsync($"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}", instanceId, inputs);
         }
 
         private string GetParentStatechartMetadataId()
         {
-            var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
+            var parentInstanceId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(parentInvokeId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(parentInstanceId));
 
-            var idx = parentInvokeId.LastIndexOf('.');
+            var idx = parentInstanceId.LastIndexOf('.');
 
-            return parentInvokeId.Substring(0, idx);
+            return parentInstanceId.Substring(0, idx);
         }
 
-        protected override bool IsChildStateChart => _data.ContainsKey("_parentInvokeId");
+        protected override bool IsChildStateChart => _data.ContainsKey("_parentInstanceId");
 
-        protected virtual Task StartChildOrchestrationAsync(string metadataId, string invokeId, Dictionary<string, object> data)
+        protected virtual Task StartChildOrchestrationAsync(string metadataId, string instanceId, Dictionary<string, object> data)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
             Debug.Assert(data != null);
 
             Debug.Assert(_orchestrationContext != null);
 
-            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", metadataId, (invokeId, data));
+            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", metadataId, (instanceId, data));
         }
 
         internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
@@ -142,15 +141,15 @@ namespace StateChartsDotNet.Durable
 
             var message = new ExternalMessage("cancel");
 
-            var childrenForParent = GetInvokeIdsForParent(parentMetadataId);
+            var childrenForParent = GetInstanceIdsForParent(parentMetadataId);
 
-            foreach (var invokeId in childrenForParent)
+            foreach (var instanceId in childrenForParent)
             {
-                await SendToChildStateChart(invokeId, message);
+                await SendToChildStateChart(instanceId, message);
             }
         }
 
-        internal override IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId)
+        internal override IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId)
         {
             parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
@@ -173,12 +172,12 @@ namespace StateChartsDotNet.Durable
         {
             messageName.CheckArgNull(nameof(messageName));
 
-            if (!_data.TryGetValue("_parentInvokeId", out object parentInvokeId))
+            if (!_data.TryGetValue("_parentInstanceId", out object parentInstanceId))
             {
                 throw new ExecutionException("Statechart has no parent.");
             }
 
-            Debug.Assert(parentInvokeId != null);
+            Debug.Assert(parentInstanceId != null);
 
             var correlationId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
@@ -191,15 +190,15 @@ namespace StateChartsDotNet.Durable
                 Parameters = parameters
             };
 
-            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInvokeId, msg));
+            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInstanceId, msg));
         }
 
-        internal override Task SendToChildStateChart(string childInvokeId, ExternalMessage message)
+        internal override Task SendToChildStateChart(string childInstanceId, ExternalMessage message)
         {
-            childInvokeId.CheckArgNull(nameof(childInvokeId));
+            childInstanceId.CheckArgNull(nameof(childInstanceId));
             message.CheckArgNull(nameof(message));
 
-            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInvokeId, message));
+            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInstanceId, message));
         }
 
         internal override Task DelayAsync(TimeSpan timespan)

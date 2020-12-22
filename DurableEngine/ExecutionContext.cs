@@ -69,7 +69,7 @@ namespace StateChartsDotNet.Durable
         {
             Debug.Assert(_orchestrationManager != null);
 
-            if (_data.ContainsKey("_invokeId"))
+            if (_data.ContainsKey("_instanceId"))
             {
                 throw new InvalidOperationException("StateChart instance is already running.");
             }
@@ -78,7 +78,7 @@ namespace StateChartsDotNet.Durable
 
             var instanceId = $"{_metadata.MetadataId}.{Guid.NewGuid():N}";
 
-            _data["_invokeId"] = instanceId;
+            _data["_instanceId"] = instanceId;
 
             await _orchestrationManager.RegisterAsync(_metadata);
 
@@ -91,12 +91,12 @@ namespace StateChartsDotNet.Durable
 
             try
             {
-                if (!_data.ContainsKey("_invokeId"))
+                if (!_data.ContainsKey("_instanceId"))
                 {
                     throw new InvalidOperationException("StateChart instance is not running.");
                 }
 
-                var instanceId = (string) _data["_invokeId"];
+                var instanceId = (string) _data["_instanceId"];
 
                 var output = await _orchestrationManager.WaitForInstanceAsync(instanceId);
 
@@ -116,7 +116,7 @@ namespace StateChartsDotNet.Durable
             }
             finally
             {
-                _data.Remove("_invokeId");
+                _data.Remove("_instanceId");
 
                 await _orchestrationManager.StopAsync();
             }
@@ -134,12 +134,12 @@ namespace StateChartsDotNet.Durable
 
             using (await _lock.LockAsync())
             {
-                if (!_data.ContainsKey("_invokeId"))
+                if (!_data.ContainsKey("_instanceId"))
                 {
                     throw new InvalidOperationException("StateChart instance is not running.");
                 }
 
-                var instanceId = (string) _data["_invokeId"];
+                var instanceId = (string) _data["_instanceId"];
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 

@@ -41,7 +41,7 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
 
-            _data["_invokeId"] = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
+            _data["_instanceId"] = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
         }
 
         public async Task StartAsync()
@@ -110,7 +110,7 @@ namespace StateChartsDotNet
 
             var msg = new ChildStateChartResponseMessage(messageName)
             {
-                CorrelationId = (string) _data["_invokeId"],
+                CorrelationId = (string) _data["_instanceId"],
                 Content = content,
                 Parameters = parameters
             };
@@ -192,11 +192,11 @@ namespace StateChartsDotNet
 
             context._parentContext = this;
 
-            var invokeId = $"{metadata.MetadataId}.{await GenerateGuid():N}";
+            var instanceId = $"{metadata.MetadataId}.{await GenerateGuid():N}";
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            context._data["_invokeId"] = invokeId;
+            context._data["_instanceId"] = instanceId;
 
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
@@ -205,7 +205,7 @@ namespace StateChartsDotNet
 
             await context.StartAsync();
 
-            _childInstances.Add(invokeId, context);
+            _childInstances.Add(instanceId, context);
         }
 
         internal override async Task CancelInvokesAsync(string parentMetadataId)
@@ -222,7 +222,7 @@ namespace StateChartsDotNet
             }
         }
 
-        internal override IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId)
+        internal override IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId)
         {
             return _childInstances.Where(p => p.Key.StartsWith($"{parentMetadataId}."))
                                   .Select(p => p.Key)

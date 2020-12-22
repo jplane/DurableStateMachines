@@ -145,17 +145,17 @@ namespace StateChartsDotNet.Model.States
 
         public async Task ProcessExternalMessageAsync(ExecutionContextBase context, ExternalMessage message)
         {
-            var invokeIds = context.GetInvokeIdsForParent(_metadata.MetadataId);
+            var instanceIds = context.GetInstanceIdsForParent(_metadata.MetadataId);
 
-            if (invokeIds != null)
+            if (instanceIds != null)
             {
-                invokeIds = invokeIds.ToArray();
+                instanceIds = instanceIds.ToArray();
 
                 foreach (var invoke in _invokes.Value)
                 {
-                    foreach (var invokeId in invokeIds)
+                    foreach (var instanceId in instanceIds)
                     {
-                        await invoke.ProcessExternalMessageAsync(invokeId, context, message);
+                        await invoke.ProcessExternalMessageAsync(instanceId, context, message);
                     }
                 }
             }
