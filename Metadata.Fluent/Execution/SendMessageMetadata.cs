@@ -114,7 +114,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             _params.Add(param);
 
-            param.UniqueId = $"{((IModelMetadata)this).UniqueId}.Params[{_params.Count}]";
+            param.MetadataId = $"{((IModelMetadata)this).MetadataId}.Params[{_params.Count}]";
 
             return param;
         }

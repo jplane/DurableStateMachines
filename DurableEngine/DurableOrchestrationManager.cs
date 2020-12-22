@@ -103,9 +103,9 @@ namespace StateChartsDotNet.Durable
 
                 AddTaskActivities();
 
-                await _storage.DeserializeAsync(async (uniqueId, deserializationType, stream) =>
+                await _storage.DeserializeAsync(async (metadataId, deserializationType, stream) =>
                 {
-                    Debug.Assert(!string.IsNullOrWhiteSpace(uniqueId));
+                    Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
                     Debug.Assert(!string.IsNullOrWhiteSpace(deserializationType));
                     Debug.Assert(stream != null);
 
@@ -126,7 +126,7 @@ namespace StateChartsDotNet.Durable
 
                     Debug.Assert(metadata != null);
 
-                    Debug.Assert(metadata.UniqueId == uniqueId);
+                    Debug.Assert(metadata.MetadataId == metadataId);
 
                     Register(metadata);
                 });
@@ -162,7 +162,7 @@ namespace StateChartsDotNet.Durable
 
             using (await _lock.LockAsync())
             {
-                if (_statecharts.Contains(metadata.UniqueId))
+                if (_statecharts.Contains(metadata.MetadataId))
                 {
                     return;
                 }
@@ -175,7 +175,7 @@ namespace StateChartsDotNet.Durable
 
                     stream.Position = 0;
 
-                    await _storage.SerializeAsync(metadata.UniqueId, deserializationType, stream);
+                    await _storage.SerializeAsync(metadata.MetadataId, deserializationType, stream);
                 }
 
                 Register(metadata);
@@ -266,27 +266,27 @@ namespace StateChartsDotNet.Durable
         {
             Debug.Assert(metadata != null);
 
-            RegisterStateChart(metadata.UniqueId, metadata);
+            RegisterStateChart(metadata.MetadataId, metadata);
 
-            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline), metadata.UniqueId);
+            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline), metadata.MetadataId);
 
-            metadata.RegisterScripts((id, metadata) => RegisterScript(id, metadata), metadata.UniqueId);
+            metadata.RegisterScripts((id, metadata) => RegisterScript(id, metadata), metadata.MetadataId);
         }
 
-        private void RegisterStateChart(string uniqueId, IStateChartMetadata metadata, bool executeInline = false)
+        private void RegisterStateChart(string metadataId, IStateChartMetadata metadata, bool executeInline = false)
         {
-            uniqueId.CheckArgNull(nameof(uniqueId));
+            metadataId.CheckArgNull(nameof(metadataId));
             metadata.CheckArgNull(nameof(metadata));
 
-            Debug.Assert(! _statecharts.Contains(uniqueId));
+            Debug.Assert(! _statecharts.Contains(metadataId));
 
-            _statecharts.Add(uniqueId);
+            _statecharts.Add(metadataId);
 
             // this is the durable activity for starting a child statechart from within its parent
 
-            var createActivity = new CreateChildOrchestrationActivity(uniqueId, this);
+            var createActivity = new CreateChildOrchestrationActivity(metadataId, this);
 
-            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", uniqueId, createActivity);
+            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", metadataId, createActivity);
 
             _activityResolver.Add(activityCreator);
 
@@ -294,19 +294,19 @@ namespace StateChartsDotNet.Durable
 
             var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, executeInline, _logger);
 
-            var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", uniqueId, orchestrator);
+            var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", metadataId, orchestrator);
 
             _orchestrationResolver.Add(orchestrationCreator);
         }
 
-        private void RegisterScript(string uniqueId, IScriptMetadata metadata)
+        private void RegisterScript(string metadataId, IScriptMetadata metadata)
         {
-            uniqueId.CheckArgNull(nameof(uniqueId));
+            metadataId.CheckArgNull(nameof(metadataId));
             metadata.CheckArgNull(nameof(metadata));
 
             var scriptActivity = new ExecuteScriptActivity(metadata);
 
-            var activityCreator = new NameValueObjectCreator<TaskActivity>("script", uniqueId, scriptActivity);
+            var activityCreator = new NameValueObjectCreator<TaskActivity>("script", metadataId, scriptActivity);
 
             _activityResolver.Add(activityCreator);
         }

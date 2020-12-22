@@ -119,9 +119,9 @@ namespace StateChartsDotNet.Web
 
             var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
 
-            var instanceId = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
+            var instanceId = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
 
-            await _manager.StartInstanceAsync(metadata.UniqueId, instanceId, input);
+            await _manager.StartInstanceAsync(metadata.MetadataId, instanceId, input);
 
             context.Response.ContentType = "application/json";
 

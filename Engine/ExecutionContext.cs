@@ -41,7 +41,7 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
 
-            _data["_invokeId"] = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
+            _data["_invokeId"] = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
         }
 
         public async Task StartAsync()
@@ -192,7 +192,7 @@ namespace StateChartsDotNet
 
             context._parentContext = this;
 
-            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
+            var invokeId = $"{metadata.MetadataId}.{await GenerateGuid():N}";
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
@@ -208,11 +208,11 @@ namespace StateChartsDotNet
             _childInstances.Add(invokeId, context);
         }
 
-        internal override async Task CancelInvokesAsync(string parentUniqueId)
+        internal override async Task CancelInvokesAsync(string parentMetadataId)
         {
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
+            parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
-            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}.")).ToArray())
+            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentMetadataId}.")).ToArray())
             {
                 var context = pair.Value;
 
@@ -222,9 +222,9 @@ namespace StateChartsDotNet
             }
         }
 
-        internal override IEnumerable<string> GetInvokeIdsForParent(string parentUniqueId)
+        internal override IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId)
         {
-            return _childInstances.Where(p => p.Key.StartsWith($"{parentUniqueId}."))
+            return _childInstances.Where(p => p.Key.StartsWith($"{parentMetadataId}."))
                                   .Select(p => p.Key)
                                   .ToArray();
         }

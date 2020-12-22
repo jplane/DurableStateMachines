@@ -48,7 +48,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _initialTransition.Parent = this;
 
-            _initialTransition.UniqueId = $"{((IModelMetadata)this).UniqueId}.InitialTransition";
+            _initialTransition.MetadataId = $"{((IModelMetadata)this).MetadataId}.InitialTransition";
 
             return _initialTransition;
         }
@@ -61,7 +61,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _datamodel.Parent = this;
 
-            _datamodel.UniqueId = $"{((IModelMetadata)this).UniqueId}.Datamodel";
+            _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
 
             return _datamodel;
         }
@@ -74,7 +74,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _onEntry.Parent = this;
 
-            _onEntry.UniqueId = $"{((IModelMetadata)this).UniqueId}.OnEntry";
+            _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
 
             return _onEntry;
         }
@@ -87,7 +87,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _onExit.Parent = this;
 
-            _onExit.UniqueId = $"{((IModelMetadata)this).UniqueId}.OnExit";
+            _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
 
             return _onExit;
         }
@@ -102,7 +102,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _stateChartInvokes.Add(invoke);
 
-            invoke.UniqueId = $"{((IModelMetadata)this).UniqueId}.StateChartInvokes[{_stateChartInvokes.Count}]";
+            invoke.MetadataId = $"{((IModelMetadata)this).MetadataId}.StateChartInvokes[{_stateChartInvokes.Count}]";
 
             return invoke;
         }
@@ -117,7 +117,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _transitions.Add(transition);
 
-            transition.UniqueId = $"{((IModelMetadata)this).UniqueId}.Transitions[{_transitions.Count}]";
+            transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
 
             return transition;
         }
@@ -162,7 +162,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _states.Add(state);
 
-            state.UniqueId = $"{this.UniqueId}.States[{_states.Count}]";
+            state.MetadataId = $"{this.MetadataId}.States[{_states.Count}]";
 
             return state;
         }

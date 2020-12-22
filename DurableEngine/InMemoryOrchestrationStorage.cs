@@ -42,22 +42,22 @@ namespace StateChartsDotNet.Durable
             } 
         }
 
-        public async Task RemoveAsync(params string[] uniqueIds)
+        public async Task RemoveAsync(params string[] metadataIds)
         {
-            uniqueIds.CheckArgNull(nameof(uniqueIds));
+            metadataIds.CheckArgNull(nameof(metadataIds));
 
             using (await _lock.LockAsync())
             {
-                foreach (var uniqueId in uniqueIds)
+                foreach (var metadataId in metadataIds)
                 {
-                    _instances.Remove(uniqueId);
+                    _instances.Remove(metadataId);
                 }
             } 
         }
 
-        public async Task SerializeAsync(string uniqueId, string deserializationType, Stream stream)
+        public async Task SerializeAsync(string metadataId, string deserializationType, Stream stream)
         {
-            uniqueId.CheckArgNull(nameof(uniqueId));
+            metadataId.CheckArgNull(nameof(metadataId));
             deserializationType.CheckArgNull(nameof(deserializationType));
             stream.CheckArgNull(nameof(stream));
 
@@ -67,7 +67,7 @@ namespace StateChartsDotNet.Durable
 
                 await stream.CopyToAsync(ms);
 
-                _instances.Add(uniqueId, (deserializationType, ms.ToArray()));
+                _instances.Add(metadataId, (deserializationType, ms.ToArray()));
             }
         }
     }

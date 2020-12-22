@@ -40,7 +40,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _onEntry.Parent = this;
 
-            _onEntry.UniqueId = $"{((IModelMetadata)this).UniqueId}.OnEntry";
+            _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
 
             return _onEntry;
         }
@@ -53,7 +53,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _onExit.Parent = this;
 
-            _onExit.UniqueId = $"{((IModelMetadata)this).UniqueId}.OnExit";
+            _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
 
             return _onExit;
         }
@@ -72,7 +72,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _params.Add(param);
 
-            param.UniqueId = $"{((IModelMetadata)this).UniqueId}.Params[{_params.Count}]";
+            param.MetadataId = $"{((IModelMetadata)this).MetadataId}.Params[{_params.Count}]";
 
             return param;
         }

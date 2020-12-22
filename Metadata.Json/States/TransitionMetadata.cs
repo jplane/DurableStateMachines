@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Metadata.Json.States
         private readonly JProperty _prop;
         private readonly string _target = string.Empty;
         private readonly Lazy<Func<dynamic, bool>> _condition;
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
 
         internal TransitionMetadata(JObject element)
         {
@@ -35,10 +35,7 @@ namespace StateChartsDotNet.Metadata.Json.States
                 }
             });
 
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
         public TransitionMetadata(JProperty prop)
@@ -65,7 +62,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             _condition = new Lazy<Func<dynamic, bool>>(() => EvalTrue);
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

@@ -11,19 +11,15 @@ namespace StateChartsDotNet.Metadata.Xml.States
     public class OnEntryExitMetadata : IOnEntryExitMetadata
     {
         private readonly XElement _element;
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
 
         internal OnEntryExitMetadata(XElement element)
         {
             _element = element;
-
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

@@ -27,7 +27,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         internal TParent Parent { get; set; }
 
-        internal string UniqueId { private get; set; }
+        internal string MetadataId { private get; set; }
 
         public TParent Attach()
         {
@@ -66,7 +66,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -92,7 +92,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -105,7 +105,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -120,7 +120,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -135,7 +135,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -150,7 +150,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -165,7 +165,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -178,7 +178,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -191,7 +191,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -202,7 +202,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         TransitionType ITransitionMetadata.Type => _type;
 
-        string IModelMetadata.UniqueId => this.UniqueId;
+        string IModelMetadata.MetadataId => this.MetadataId;
 
         bool ITransitionMetadata.EvalCondition(dynamic data) => _evalCondition?.Invoke(data) ?? true;
 

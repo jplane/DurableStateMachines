@@ -51,9 +51,9 @@ namespace StateChartsDotNet
             _statesToInvoke = new Set<State>();
         }
 
-        internal abstract Task CancelInvokesAsync(string parentUniqueId);
+        internal abstract Task CancelInvokesAsync(string parentMetadataId);
 
-        internal abstract IEnumerable<string> GetInvokeIdsForParent(string parentUniqueId);
+        internal abstract IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId);
 
         internal abstract Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message);
 
@@ -72,7 +72,7 @@ namespace StateChartsDotNet
 
         internal abstract Task ExecuteScriptAsync(IScriptMetadata metadata);
 
-        internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentUniqueId);
+        internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 
         internal abstract Task LogDebugAsync(string message);
 

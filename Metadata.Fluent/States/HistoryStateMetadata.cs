@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _transition.Parent = this;
 
-            _transition.UniqueId = $"{((IModelMetadata)this).UniqueId}.Transition";
+            _transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transition";
 
             return _transition;
         }

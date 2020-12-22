@@ -51,7 +51,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public override string Id => _name;
 
-        public override string UniqueId => _name;
+        public override string MetadataId => _name;
 
         public bool FailFast
         {

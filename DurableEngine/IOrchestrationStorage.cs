@@ -10,9 +10,9 @@ namespace StateChartsDotNet.Durable
     {
         Task ClearAsync();
 
-        Task RemoveAsync(params string[] uniqueIds);
+        Task RemoveAsync(params string[] metadataIds);
 
-        Task SerializeAsync(string uniqueId, string deserializationType, Stream stream);
+        Task SerializeAsync(string metadataId, string deserializationType, Stream stream);
 
         Task DeserializeAsync(Func<string, string, Stream, Task> deserializeInstanceFunc);
     }

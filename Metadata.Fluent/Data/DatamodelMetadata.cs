@@ -15,7 +15,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         internal TParent Parent { get; set; }
 
-        internal string UniqueId { private get; set; }
+        internal string MetadataId { private get; set; }
 
         public DataInitMetadata<DatamodelMetadata<TParent>> DataInit()
         {
@@ -25,7 +25,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
             _dataInits.Add(datainit);
 
-            datainit.UniqueId = $"{((IModelMetadata)this).UniqueId}.DataInits[{_dataInits.Count}]";
+            datainit.MetadataId = $"{((IModelMetadata)this).MetadataId}.DataInits[{_dataInits.Count}]";
 
             return datainit;
         }
@@ -35,7 +35,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
             return this.Parent;
         }
 
-        string IModelMetadata.UniqueId => this.UniqueId;
+        string IModelMetadata.MetadataId => this.MetadataId;
 
         bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

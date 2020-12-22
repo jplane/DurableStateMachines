@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         internal TParent Parent { get; set; }
 
-        internal string UniqueId { private get; set; }
+        internal string MetadataId { private get; set; }
 
         public ParamMetadata<TParent> Value(Func<dynamic, object> getter)
         {

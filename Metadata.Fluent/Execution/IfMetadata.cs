@@ -41,7 +41,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             elseif.Parent = this;
 
-            elseif.UniqueId = $"{((IModelMetadata)this).UniqueId}.ElseIf[{_elseIfs.Count}]";
+            elseif.MetadataId = $"{((IModelMetadata)this).MetadataId}.ElseIf[{_elseIfs.Count}]";
 
             return elseif;
         }
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             _else.Parent = this;
 
-            _else.UniqueId = $"{((IModelMetadata)this).UniqueId}.Else";
+            _else.MetadataId = $"{((IModelMetadata)this).MetadataId}.Else";
 
             return _else;
         }
@@ -65,7 +65,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -78,7 +78,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -91,7 +91,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -104,7 +104,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -119,7 +119,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -134,7 +134,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -149,7 +149,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -164,7 +164,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -177,7 +177,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -190,7 +190,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }

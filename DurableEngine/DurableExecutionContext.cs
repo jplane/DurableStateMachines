@@ -54,10 +54,10 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty);
         }
 
-        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentUniqueId)
+        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
+            parentStateMetadataId.CheckArgNull(nameof(parentStateMetadataId));
 
             var childMachine = ResolveChildStateChart(metadata);
 
@@ -71,23 +71,23 @@ namespace StateChartsDotNet.Durable
 
             inputs["_parentInvokeId"] = parentInvokeId;
 
-            var invokeId = $"{GetAncestorUniqueId()}.{childMachine.UniqueId}.{await GenerateGuid():N}";
+            var invokeId = $"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}.{await GenerateGuid():N}";
 
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
 
             inputs["_invokeId"] = invokeId;
 
-            if (! _childInstances.TryGetValue(parentUniqueId, out List<string> instances))
+            if (! _childInstances.TryGetValue(parentStateMetadataId, out List<string> instances))
             {
-                _childInstances[parentUniqueId] = instances = new List<string>();
+                _childInstances[parentStateMetadataId] = instances = new List<string>();
             }
 
             instances.Add(invokeId);
 
-            await StartChildOrchestrationAsync($"{GetAncestorUniqueId()}.{childMachine.UniqueId}", invokeId, inputs);
+            await StartChildOrchestrationAsync($"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}", invokeId, inputs);
         }
 
-        private string GetAncestorUniqueId()
+        private string GetParentStatechartMetadataId()
         {
             var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
@@ -100,15 +100,15 @@ namespace StateChartsDotNet.Durable
 
         protected override bool IsChildStateChart => _data.ContainsKey("_parentInvokeId");
 
-        protected virtual Task StartChildOrchestrationAsync(string uniqueId, string invokeId, Dictionary<string, object> data)
+        protected virtual Task StartChildOrchestrationAsync(string metadataId, string invokeId, Dictionary<string, object> data)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(uniqueId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
             Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
             Debug.Assert(data != null);
 
             Debug.Assert(_orchestrationContext != null);
 
-            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", uniqueId, (invokeId, data));
+            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", metadataId, (invokeId, data));
         }
 
         internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
@@ -136,13 +136,13 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        internal async override Task CancelInvokesAsync(string parentUniqueId)
+        internal async override Task CancelInvokesAsync(string parentMetadataId)
         {
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
+            parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
             var message = new ExternalMessage("cancel");
 
-            var childrenForParent = GetInvokeIdsForParent(parentUniqueId);
+            var childrenForParent = GetInvokeIdsForParent(parentMetadataId);
 
             foreach (var invokeId in childrenForParent)
             {
@@ -150,11 +150,11 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        internal override IEnumerable<string> GetInvokeIdsForParent(string parentUniqueId)
+        internal override IEnumerable<string> GetInvokeIdsForParent(string parentMetadataId)
         {
-            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
+            parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
-            if (_childInstances.TryGetValue(parentUniqueId, out List<string> instances))
+            if (_childInstances.TryGetValue(parentMetadataId, out List<string> instances))
             {
                 return instances;
             }
@@ -249,9 +249,9 @@ namespace StateChartsDotNet.Durable
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var uniqueId = $"{GetAncestorUniqueId()}.{metadata.UniqueId}";
+            var metadataId = $"{GetParentStatechartMetadataId()}.{metadata.MetadataId}";
 
-            return _orchestrationContext.ScheduleTask<object>("script", uniqueId, _data);
+            return _orchestrationContext.ScheduleTask<object>("script", metadataId, _data);
         }
 
         protected override async Task<ExternalMessage> GetNextExternalMessageAsync()

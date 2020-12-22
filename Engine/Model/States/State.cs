@@ -59,7 +59,7 @@ namespace StateChartsDotNet.Model.States
 
             _invokes = new Lazy<InvokeStateChart[]>(() =>
             {
-                return _metadata.GetStateChartInvokes().Select(sm => new InvokeStateChart(sm, _metadata.UniqueId)).ToArray();
+                return _metadata.GetStateChartInvokes().Select(sm => new InvokeStateChart(sm, _metadata.MetadataId)).ToArray();
             });
 
             _datamodel = new Lazy<Datamodel>(() =>
@@ -145,7 +145,7 @@ namespace StateChartsDotNet.Model.States
 
         public async Task ProcessExternalMessageAsync(ExecutionContextBase context, ExternalMessage message)
         {
-            var invokeIds = context.GetInvokeIdsForParent(_metadata.UniqueId);
+            var invokeIds = context.GetInvokeIdsForParent(_metadata.MetadataId);
 
             if (invokeIds != null)
             {
@@ -266,7 +266,7 @@ namespace StateChartsDotNet.Model.States
                 await _onExit.Value.ExecuteAsync(context);
             }
 
-            await context.CancelInvokesAsync(_metadata.UniqueId);
+            await context.CancelInvokesAsync(_metadata.MetadataId);
 
             context.Configuration.Remove(this);
         }

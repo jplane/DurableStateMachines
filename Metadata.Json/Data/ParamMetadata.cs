@@ -13,7 +13,6 @@ namespace StateChartsDotNet.Metadata.Json.Data
         private readonly string _location;
         private readonly string _expression;
         private readonly Lazy<Func<dynamic, object>> _getExpressionValue;
-        private readonly Lazy<string> _uniqueId;
 
         internal ParamMetadata(JObject element)
         {
@@ -24,11 +23,6 @@ namespace StateChartsDotNet.Metadata.Json.Data
             _getExpressionValue = new Lazy<Func<dynamic, object>>(() =>
             {
                 return ExpressionCompiler.Compile<object>(_expression);
-            });
-
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
             });
         }
 

@@ -54,9 +54,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return Task.FromResult(this.GetType().AssemblyQualifiedName);
         }
 
-        public static Task<IStateChartMetadata> DeserializeAsync(string uniqueId, Stream stream)
+        public static Task<IStateChartMetadata> DeserializeAsync(string metadataId, Stream stream)
         {
-            uniqueId.CheckArgNull(nameof(uniqueId));
             stream.CheckArgNull(nameof(stream));
 
             var serializer = new JsonSerializer();
@@ -67,7 +66,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return Task.FromResult((IStateChartMetadata) serializer.Deserialize<StateChart>(reader));
         }
 
-        public override string UniqueId 
+        public override string MetadataId 
         {
             get => this.Id; set => throw new NotSupportedException(); 
         }
@@ -100,7 +99,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _initialTransition.Parent = this;
 
-            _initialTransition.UniqueId = $"{((IModelMetadata)this).UniqueId}.InitialTransition";
+            _initialTransition.MetadataId = $"{((IModelMetadata)this).MetadataId}.InitialTransition";
 
             return this;
         }
@@ -111,7 +110,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _script.Parent = this;
 
-            _script.UniqueId = $"{((IModelMetadata)this).UniqueId}.Script";
+            _script.MetadataId = $"{((IModelMetadata)this).MetadataId}.Script";
 
             return _script;
         }
@@ -124,7 +123,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _datamodel.Parent = this;
 
-            _datamodel.UniqueId = $"{((IModelMetadata)this).UniqueId}.Datamodel";
+            _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
 
             return _datamodel;
         }
@@ -164,7 +163,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _states.Add(state);
 
-            state.UniqueId = $"{this.UniqueId}.States[{_states.Count}]";
+            state.MetadataId = $"{this.MetadataId}.States[{_states.Count}]";
 
             return state;
         }

@@ -10,19 +10,15 @@ namespace StateChartsDotNet.Metadata.Xml.Data
     public class DatamodelMetadata : IDatamodelMetadata
     {
         private readonly XElement _element;
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
 
         internal DatamodelMetadata(XElement element)
         {
             _element = element;
-
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

@@ -15,20 +15,16 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 {
     public abstract class ExecutableContentMetadata : IExecutableContentMetadata
     {
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
         protected readonly JObject _element;
 
         protected ExecutableContentMetadata(JObject element)
         {
             _element = element;
-
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

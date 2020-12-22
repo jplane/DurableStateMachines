@@ -11,9 +11,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
         }
 
-        internal string UniqueId { private get; set; }
+        internal string MetadataId { private get; set; }
 
-        string IModelMetadata.UniqueId => this.UniqueId;
+        string IModelMetadata.MetadataId => this.MetadataId;
 
         bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

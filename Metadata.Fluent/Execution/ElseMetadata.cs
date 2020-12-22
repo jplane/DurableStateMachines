@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -43,7 +43,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -56,7 +56,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -69,7 +69,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -84,7 +84,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -99,7 +99,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -114,7 +114,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -129,7 +129,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return this;
         }
@@ -142,7 +142,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }
@@ -155,7 +155,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.Parent = this;
 
-            ec.UniqueId = $"{((IModelMetadata)this).UniqueId}.ExecutableContent[{_executableContent.Count}]";
+            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
             return ec;
         }

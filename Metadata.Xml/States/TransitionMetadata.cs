@@ -16,7 +16,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
         private readonly XAttribute _attribute;
         private readonly string _target = string.Empty;
         private readonly Lazy<Func<dynamic, bool>> _condition;
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
 
         internal TransitionMetadata(XElement element)
         {
@@ -34,10 +34,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 }
             });
 
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
         public TransitionMetadata(XAttribute attribute)
@@ -64,7 +61,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
             _condition = new Lazy<Func<dynamic, bool>>(() => EvalTrue);
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

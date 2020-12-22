@@ -4,7 +4,7 @@ namespace StateChartsDotNet.Common.Model
 {
     public interface IModelMetadata
     {
-        string UniqueId { get; }
+        string MetadataId { get; }
 
         bool Validate(Dictionary<IModelMetadata, List<string>> errors);
     }

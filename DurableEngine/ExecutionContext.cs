@@ -76,13 +76,13 @@ namespace StateChartsDotNet.Durable
 
             await _orchestrationManager.StartAsync();
 
-            var instanceId = $"{_metadata.UniqueId}.{Guid.NewGuid():N}";
+            var instanceId = $"{_metadata.MetadataId}.{Guid.NewGuid():N}";
 
             _data["_invokeId"] = instanceId;
 
             await _orchestrationManager.RegisterAsync(_metadata);
 
-            await _orchestrationManager.StartInstanceAsync(_metadata.UniqueId, instanceId, _data);
+            await _orchestrationManager.StartInstanceAsync(_metadata.MetadataId, instanceId, _data);
         }
 
         private async Task _WaitForCompletionAsync()

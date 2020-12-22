@@ -33,7 +33,7 @@ namespace StateChartsDotNet.Durable
 
             if (script != null)
             {
-                register($"{parentId}.{metadata.UniqueId}", metadata.GetScript());
+                register($"{parentId}.{metadata.MetadataId}", metadata.GetScript());
             }
 
             foreach (var state in metadata.GetStates())
@@ -54,11 +54,11 @@ namespace StateChartsDotNet.Durable
             {
                 var root = invoke.GetRoot();
 
-                var uniqueId = $"{parentId}.{root.UniqueId}";
+                var metadataId = $"{parentId}.{root.MetadataId}";
 
-                register(uniqueId, root, invoke.Autoforward);
+                register(metadataId, root, invoke.Autoforward);
 
-                root.RegisterStateChartInvokes(register, uniqueId);
+                root.RegisterStateChartInvokes(register, metadataId);
             }
         }
 
@@ -72,7 +72,7 @@ namespace StateChartsDotNet.Durable
             {
                 var root = invoke.GetRoot();
                 
-                root.RegisterScripts(register, $"{parentId}.{root.UniqueId}");
+                root.RegisterScripts(register, $"{parentId}.{root.MetadataId}");
 
                 foreach (var content in invoke.GetFinalizeExecutableContent())
                 {
@@ -223,7 +223,7 @@ namespace StateChartsDotNet.Durable
 
             if (metadata is IScriptMetadata script)
             {
-                register($"{parentId}.{script.UniqueId}", script);
+                register($"{parentId}.{script.MetadataId}", script);
             }
         }
     }

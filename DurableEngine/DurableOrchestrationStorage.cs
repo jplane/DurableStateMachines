@@ -50,23 +50,23 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task RemoveAsync(params string[] uniqueIds)
+        public async Task RemoveAsync(params string[] metadataIds)
         {
-            uniqueIds.CheckArgNull(nameof(uniqueIds));
+            metadataIds.CheckArgNull(nameof(metadataIds));
 
-            foreach (var uniqueId in uniqueIds)
+            foreach (var metadataId in metadataIds)
             {
-                await _client.DeleteBlobAsync(uniqueId);
+                await _client.DeleteBlobAsync(metadataId);
             }
         }
 
-        public async Task SerializeAsync(string uniqueId, string deserializationType, Stream stream)
+        public async Task SerializeAsync(string metadataId, string deserializationType, Stream stream)
         {
-            uniqueId.CheckArgNull(nameof(uniqueId));
+            metadataId.CheckArgNull(nameof(metadataId));
             deserializationType.CheckArgNull(nameof(deserializationType));
             stream.CheckArgNull(nameof(stream));
 
-            var blobClient = _client.GetBlockBlobClient(uniqueId);
+            var blobClient = _client.GetBlockBlobClient(metadataId);
 
             using (var blobStream = await blobClient.OpenWriteAsync(true, cancellationToken: _token))
             {

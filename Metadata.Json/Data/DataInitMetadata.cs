@@ -11,7 +11,7 @@ namespace StateChartsDotNet.Metadata.Json.Data
     {
         private readonly JObject _element;
         private readonly Lazy<Func<dynamic, object>> _getter;
-        private readonly Lazy<string> _uniqueId;
+        private readonly string _metadataId;
 
         internal DataInitMetadata(JObject element)
         {
@@ -31,13 +31,10 @@ namespace StateChartsDotNet.Metadata.Json.Data
                 }
             });
 
-            _uniqueId = new Lazy<string>(() =>
-            {
-                return element.GetUniqueElementPath();
-            });
+            _metadataId = element.GetUniqueElementPath();
         }
 
-        public string UniqueId => _uniqueId.Value;
+        public string MetadataId => _metadataId;
 
         public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {
