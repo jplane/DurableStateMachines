@@ -1,5 +1,8 @@
 ﻿using StateChartsDotNet.Common.Model.Execution;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Common.Model.States
 {
@@ -11,5 +14,7 @@ namespace StateChartsDotNet.Common.Model.States
         IEnumerable<IStateMetadata> GetStates();
         ITransitionMetadata GetInitialTransition();
         IScriptMetadata GetScript();
+
+        Task<string> SerializeAsync(Stream stream, CancellationToken token = default);
     }
 }

@@ -1,5 +1,4 @@
-﻿using DurableTask.Core;
-using DurableTask.Emulator;
+﻿using DurableTask.AzureStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -10,11 +9,9 @@ using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Durable;
 using StateChartsDotNet.Metadata.Json.States;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,28 +19,22 @@ namespace StateChartsDotNet.Web
 {
     public class Startup
     {
-        private readonly ConcurrentDictionary<string, IOrchestrationManager> _instances;
-        private readonly IOrchestrationService _orchestrationService;
-
+        private IOrchestrationManager _manager;
         private CancellationToken _cancelToken;
 
-        public Startup(IConfiguration configuration)
+        public Startup()
         {
-            Configuration = configuration;
-
             _cancelToken = CancellationToken.None;
-            _orchestrationService = new LocalOrchestrationService();
-            _instances = new ConcurrentDictionary<string, IOrchestrationManager>();
         }
 
-        public IConfiguration Configuration { get; }
-
-        public void Configure(IApplicationBuilder app, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IConfiguration config, IHostApplicationLifetime lifetime)
         {
             lifetime.ApplicationStarted.Register(OnAppStarted);
             lifetime.ApplicationStopped.Register(OnAppStopped);
 
             _cancelToken = lifetime.ApplicationStopping;
+
+            ConfigureManager(config);
 
             bool IsJsonPost(HttpContext context, string path)
             {
@@ -71,27 +62,46 @@ namespace StateChartsDotNet.Web
             app.MapWhen(context => IsGet(context, "/api/status"), ab => ab.Run(GetInstanceStatusAsync));
         }
 
+        private void ConfigureManager(IConfiguration config)
+        {
+            Debug.Assert(config != null);
+
+            var timeout = TimeSpan.Parse(config["timeout"] ?? "00:01:00");
+
+            var connectionString = config["storageConnectionString"];
+
+            var settings = new AzureStorageOrchestrationServiceSettings
+            {
+                AppName = "StateChartsDotNet",
+                TaskHubName = config["hubName"] ?? "default",
+                StorageConnectionString = connectionString
+            };
+
+            var service = new AzureStorageOrchestrationService(settings);
+
+            var storage = new DurableOrchestrationStorage(connectionString, _cancelToken);
+
+            _manager = new DurableOrchestrationManager(service, storage, timeout, _cancelToken);
+        }
+
         private void OnAppStopped()
         {
-            foreach (var instance in _instances.Values)
-            {
-                instance.StopAsync().Wait();
-            }
+            Debug.Assert(_manager != null);
 
-            _instances.Clear();
-
-            _orchestrationService.StopAsync(false).Wait();
+            _manager.StopAsync(false).Wait();
         }
 
         private void OnAppStarted()
         {
-            _orchestrationService.StartAsync().Wait();
+            Debug.Assert(_manager != null);
 
-            // restart any not-yet-complete instances
+            _manager.StartAsync().Wait();
         }
 
         private async Task StartInstanceAsync(HttpContext context)
         {
+            Debug.Assert(_manager != null);
+
             var json = await ReadJsonAsync(context.Request);
 
             Debug.Assert(json != null);
@@ -105,19 +115,13 @@ namespace StateChartsDotNet.Web
 
             var metadata = new StateChart(statechart);
 
+            await _manager.RegisterAsync(metadata);
+
             var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
 
-            var timeout = json["timeout"]?.ToObject<TimeSpan>() ?? TimeSpan.FromMinutes(5);
+            var instanceId = $"{metadata.UniqueId}.{Guid.NewGuid():N}";
 
-            var manager = new DurableOrchestrationManager(metadata, _orchestrationService, timeout, _cancelToken);
-
-            var instanceId = Guid.NewGuid().ToString("N");
-
-            _instances.TryAdd(instanceId, manager);
-
-            await manager.StartAsync();
-
-            await manager.StartOrchestrationAsync(metadata.UniqueId, instanceId, input);
+            await _manager.StartInstanceAsync(metadata.UniqueId, instanceId, input);
 
             context.Response.ContentType = "application/json";
 
@@ -128,21 +132,19 @@ namespace StateChartsDotNet.Web
 
         private async Task StopInstanceAsync(HttpContext context)
         {
+            Debug.Assert(_manager != null);
+
             var instanceId = context.Request.Query["instanceId"].ToString();
 
             if (string.IsNullOrWhiteSpace(instanceId))
             {
                 throw new InvalidOperationException("HTTP payload does not contain statechart instanceId.");
             }
-            else if (! _instances.TryGetValue(instanceId, out IOrchestrationManager manager))
-            {
-                throw new InvalidOperationException("Unable to find statechart instance for instanceId: " + instanceId);
-            }
             else
             {
-                await manager.SendMessageAsync(instanceId, new ExternalMessage("cancel"));
+                await _manager.SendMessageAsync(instanceId, new ExternalMessage("cancel"));
 
-                await manager.WaitForCompletionAsync(instanceId);
+                await _manager.WaitForInstanceAsync(instanceId);
 
                 context.Response.StatusCode = 204;
             }
@@ -150,6 +152,8 @@ namespace StateChartsDotNet.Web
 
         private async Task SendMessageToInstanceAsync(HttpContext context)
         {
+            Debug.Assert(_manager != null);
+
             var json = await ReadJsonAsync(context.Request);
 
             Debug.Assert(json != null);
@@ -160,17 +164,13 @@ namespace StateChartsDotNet.Web
             {
                 throw new InvalidOperationException("HTTP payload does not contain statechart instanceId.");
             }
-            else if (!_instances.TryGetValue(instanceId, out IOrchestrationManager manager))
-            {
-                throw new InvalidOperationException("Unable to find statechart instance for instanceId: " + instanceId);
-            }
             else
             {
                 var message = json.ToObject<ExternalMessage>();
 
                 Debug.Assert(message != null);
 
-                await manager.SendMessageAsync(instanceId, message);
+                await _manager.SendMessageAsync(instanceId, message);
 
                 context.Response.StatusCode = 204;
             }
@@ -178,15 +178,13 @@ namespace StateChartsDotNet.Web
 
         private async Task GetInstanceStatusAsync(HttpContext context)
         {
+            Debug.Assert(_manager != null);
+
             var instanceId = context.Request.Query["instanceId"].ToString();
 
             if (string.IsNullOrWhiteSpace(instanceId))
             {
                 throw new InvalidOperationException("HTTP query string does not contain statechart instanceId.");
-            }
-            else if (!_instances.TryGetValue(instanceId, out IOrchestrationManager manager))
-            {
-                throw new InvalidOperationException("Unable to find statechart instance for instanceId: " + instanceId);
             }
             else
             {
@@ -220,7 +218,7 @@ namespace StateChartsDotNet.Web
                     return JsonConvert.DeserializeObject<(Dictionary<string, object>, Exception)>(fragment, settings);
                 }
 
-                var state = await manager.GetStateAsync(instanceId);
+                var state = await _manager.GetInstanceAsync(instanceId);
 
                 var result = DeserializeOutput(state.Output);
 

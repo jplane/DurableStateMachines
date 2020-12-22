@@ -21,6 +21,7 @@ namespace StateChartsDotNet.Tests
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
                                   version='1.0'
+                                  name='test'
                                   datamodel='csharp'
                                   initial='loop'>
                                <datamodel>
@@ -63,6 +64,7 @@ namespace StateChartsDotNet.Tests
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
                                   version='1.0'
+                                  name='test'
                                   datamodel='csharp'>
                                <state id='state1'>
                                    <onentry>
@@ -104,6 +106,7 @@ namespace StateChartsDotNet.Tests
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
                                   version='1.0'
+                                  name='test'
                                   datamodel='csharp'>
                                <state id='state1'>
                                    <onentry>
@@ -142,6 +145,7 @@ namespace StateChartsDotNet.Tests
             var xmldoc = @"<?xml version='1.0'?>
                            <scxml xmlns='http://www.w3.org/2005/07/scxml'
                                   version='1.0'
+                                  name='test'
                                   datamodel='csharp'
                                   initial='off'>
 

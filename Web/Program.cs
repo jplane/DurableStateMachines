@@ -13,17 +13,18 @@ namespace StateChartsDotNet.Web
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var host_port = Environment.GetEnvironmentVariable("FUNCTIONS_CUSTOMHANDLER_PORT");
-
-            if (!int.TryParse(host_port, out int port))
-            {
-                port = 8081;
-            }
-
             return Host.CreateDefaultBuilder(args)
-                       .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>()
-                                                                         .UseUrls($"http://*:{port}")
-                                                                         .UseShutdownTimeout(TimeSpan.FromSeconds(10)));
+                       .ConfigureWebHostDefaults(webBuilder =>
+                       {
+                           webBuilder.UseStartup<Startup>();
+
+                           var port_config = webBuilder.GetSetting("FUNCTIONS_CUSTOMHANDLER_PORT");
+
+                           if (int.TryParse(port_config, out int port))
+                           {
+                               webBuilder.UseUrls($"http://*:{port}");
+                           }
+                       });
         }
     }
 }

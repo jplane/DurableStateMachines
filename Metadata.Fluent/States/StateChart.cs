@@ -1,4 +1,6 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using Newtonsoft.Json;
+using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
@@ -7,8 +9,11 @@ using StateChartsDotNet.Metadata.Fluent.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
@@ -34,6 +39,33 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         }
 
         protected override IStateMetadata _Parent => null;
+
+        public Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            var serializer = new JsonSerializer();
+
+            using var sw = new StreamWriter(stream, leaveOpen: true);
+            using var writer = new JsonTextWriter(sw);
+
+            serializer.Serialize(writer, this);
+
+            return Task.FromResult(this.GetType().AssemblyQualifiedName);
+        }
+
+        public static Task<IStateChartMetadata> DeserializeAsync(string uniqueId, Stream stream)
+        {
+            uniqueId.CheckArgNull(nameof(uniqueId));
+            stream.CheckArgNull(nameof(stream));
+
+            var serializer = new JsonSerializer();
+
+            using var sr = new StreamReader(stream);
+            using var reader = new JsonTextReader(sr);
+
+            return Task.FromResult((IStateChartMetadata) serializer.Deserialize<StateChart>(reader));
+        }
 
         public override string UniqueId 
         {

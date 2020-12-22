@@ -12,15 +12,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Xsl;
 
 namespace StateChartsDotNet.Durable
 {
     internal class DurableExecutionContext : ExecutionContextBase
     {
-        protected readonly List<string> _childInstances;
+        protected readonly Dictionary<string, List<string>> _childInstances;
         protected readonly OrchestrationContext _orchestrationContext;
 
-        private readonly TaskCompletionSource<bool> _externalMessageAvailable;
+        private readonly Queue<ExternalMessage> _externalMessages;
+
+        private TaskCompletionSource<bool> _externalMessageAvailable;
 
         public DurableExecutionContext(IStateChartMetadata metadata,
                                        OrchestrationContext orchestrationContext,
@@ -39,8 +42,9 @@ namespace StateChartsDotNet.Durable
                 _data[pair.Key] = pair.Value;
             }
 
-            _childInstances = new List<string>();
+            _childInstances = new Dictionary<string, List<string>>();
             _externalMessageAvailable = new TaskCompletionSource<bool>();
+            _externalMessages = new Queue<ExternalMessage>();
         }
 
         public Dictionary<string, object> ResultData => new Dictionary<string, object>(_data.Where(pair => !pair.Key.StartsWith("_")));
@@ -50,9 +54,10 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<Guid>(typeof(GenerateGuidActivity), string.Empty);
         }
 
-        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
+        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentUniqueId)
         {
             metadata.CheckArgNull(nameof(metadata));
+            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
 
             var childMachine = ResolveChildStateChart(metadata);
 
@@ -60,21 +65,37 @@ namespace StateChartsDotNet.Durable
 
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
 
-            var invokeId = $"{metadata.UniqueId}.{await GenerateGuid():N}";
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
-
-            inputs["_invokeId"] = invokeId;
-
             var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
             Debug.Assert(!string.IsNullOrWhiteSpace(parentInvokeId));
 
             inputs["_parentInvokeId"] = parentInvokeId;
 
-            _childInstances.Add(invokeId);
+            var invokeId = $"{GetAncestorUniqueId()}.{childMachine.UniqueId}.{await GenerateGuid():N}";
 
-            await StartChildOrchestrationAsync(metadata.UniqueId, invokeId, inputs);
+            Debug.Assert(!string.IsNullOrWhiteSpace(invokeId));
+
+            inputs["_invokeId"] = invokeId;
+
+            if (! _childInstances.TryGetValue(parentUniqueId, out List<string> instances))
+            {
+                _childInstances[parentUniqueId] = instances = new List<string>();
+            }
+
+            instances.Add(invokeId);
+
+            await StartChildOrchestrationAsync($"{GetAncestorUniqueId()}.{childMachine.UniqueId}", invokeId, inputs);
+        }
+
+        private string GetAncestorUniqueId()
+        {
+            var parentInvokeId = _orchestrationContext.OrchestrationInstance.InstanceId;
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(parentInvokeId));
+
+            var idx = parentInvokeId.LastIndexOf('.');
+
+            return parentInvokeId.Substring(0, idx);
         }
 
         protected override bool IsChildStateChart => _data.ContainsKey("_parentInvokeId");
@@ -96,14 +117,22 @@ namespace StateChartsDotNet.Durable
 
             if (message.IsDone)
             {
-                if (_childInstances.Remove(message.CorrelationId))
+                foreach (var pair in _childInstances.ToArray())
                 {
-                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+                    if (pair.Value.Remove(message.CorrelationId))
+                    {
+                        if (pair.Value.Count == 0)
+                        {
+                            _childInstances.Remove(pair.Key);
+                        }
+
+                        await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+                        
+                        return;
+                    }
                 }
-                else
-                {
-                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
-                }
+
+                Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
             }
         }
 
@@ -125,7 +154,14 @@ namespace StateChartsDotNet.Durable
         {
             parentUniqueId.CheckArgNull(nameof(parentUniqueId));
 
-            return _childInstances.Where(invokeId => invokeId.StartsWith($"{parentUniqueId}.")).ToArray();
+            if (_childInstances.TryGetValue(parentUniqueId, out List<string> instances))
+            {
+                return instances;
+            }
+            else
+            {
+                return Enumerable.Empty<string>();
+            }
         }
 
         protected override Task SendMessageToParentStateChart(string _,
@@ -213,7 +249,9 @@ namespace StateChartsDotNet.Durable
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            return _orchestrationContext.ScheduleTask<object>("script", metadata.UniqueId, _data);
+            var uniqueId = $"{GetAncestorUniqueId()}.{metadata.UniqueId}";
+
+            return _orchestrationContext.ScheduleTask<object>("script", uniqueId, _data);
         }
 
         protected override async Task<ExternalMessage> GetNextExternalMessageAsync()
@@ -223,9 +261,14 @@ namespace StateChartsDotNet.Durable
                 await _externalMessageAvailable.Task;
             }
 
-            await GenerateGuid();   // forcing a replay here ensures we never block on the queue
+            var msg = _externalMessages.Dequeue();
 
-            return await _externalMessages.DequeueAsync(this.CancelToken).ConfigureAwait(false);
+            if (_externalMessages.Count == 0)
+            {
+                _externalMessageAvailable = new TaskCompletionSource<bool>();
+            }
+
+            return msg;
         }
 
         internal void EnqueueExternalMessage(ExternalMessage message)

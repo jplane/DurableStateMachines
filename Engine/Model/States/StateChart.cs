@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class StartChart : CompoundState
+    internal class StateChart : CompoundState
     {
         private readonly Lazy<Script> _script;
         private readonly Lazy<Transition> _initialTransition;
         
-        public StartChart(IStateChartMetadata metadata)
+        public StateChart(IStateChartMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));

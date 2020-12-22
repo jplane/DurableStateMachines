@@ -341,3 +341,5 @@ healthchecksdb
 
 # You make your own .vscode
 .vscode/
+
+appsettings.Development.json

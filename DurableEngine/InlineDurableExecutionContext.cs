@@ -6,6 +6,7 @@ using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,10 +41,20 @@ namespace StateChartsDotNet.Durable
 
             if (message.IsDone)
             {
-                if (! _childInstances.Remove(message.CorrelationId))
+                foreach (var pair in _childInstances.ToArray())
                 {
-                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
+                    if (pair.Value.Remove(message.CorrelationId))
+                    {
+                        if (pair.Value.Count == 0)
+                        {
+                            _childInstances.Remove(pair.Key);
+                        }
+
+                        return Task.CompletedTask;
+                    }
                 }
+
+                Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
             }
 
             return Task.CompletedTask;

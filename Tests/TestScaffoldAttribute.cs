@@ -43,7 +43,9 @@ namespace StateChartsDotNet.Tests
 
                     var emulator = new LocalOrchestrationService();
 
-                    var context = new Durable.ExecutionContext(machine, emulator, cts.Token, ExecutionTimeout, logger);
+                    var storage = new Durable.InMemoryOrchestrationStorage();
+
+                    var context = new Durable.ExecutionContext(machine, emulator, storage, cts.Token, ExecutionTimeout, logger);
 
                     return (context, cts);
                 }),

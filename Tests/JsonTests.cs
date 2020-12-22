@@ -15,6 +15,7 @@ namespace StateChartsDotNet.Tests
         public async Task Foreach(ScaffoldFactoryDelegate factory, string _)
         {
             var json = @"{
+                             'name': 'test',
                              'initial': 'loop',
                              'datamodel': [
                                  { 'id': 'items', 'expr': 'new [] { 1, 2, 3, 4, 5 }' },
@@ -70,6 +71,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.EchoAsync("http://localhost:4444/"));
 
             var json = @"{
+                             'name': 'test',
                              'states': [
                                  {
                                      'id': 'state1',
@@ -119,6 +121,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.JsonResultAsync(uri, new { value = 43 }));
 
             var json = @"{
+                             'name': 'test',
                              'states': [
                                  {
                                      'id': 'state1',
@@ -166,6 +169,7 @@ namespace StateChartsDotNet.Tests
         public async Task Microwave(ScaffoldFactoryDelegate factory, string _)
         {
             var json = @"{
+                             'name': 'test',
                              'initial': 'off',
                              'datamodel': [
                                  { 'id': 'cook_time', 'expr': '5' },
@@ -308,7 +312,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = new StateChart(JObject.Parse(json));
 
-            var tuple = factory(machine, Logger);
+            var tuple = factory(machine, null);
 
             var context = tuple.Item1;
 

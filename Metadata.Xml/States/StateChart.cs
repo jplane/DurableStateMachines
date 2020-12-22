@@ -1,10 +1,15 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Xml.Execution;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 
@@ -17,10 +22,36 @@ namespace StateChartsDotNet.Metadata.Xml.States
         public StateChart(XDocument document)
             : base(document.Root)
         {
-            _name = _element.Attribute("name")?.Value;
+            _name = _element.Attribute("name").Value;
         }
 
-        public override string Id => _name ?? this.UniqueId;
+        public async Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var writer = new StreamWriter(stream, leaveOpen: true);
+
+            await writer.WriteAsync(_element.ToString());
+
+            return this.GetType().AssemblyQualifiedName;
+        }
+
+        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var sr = new StreamReader(stream);
+
+            var xml = await sr.ReadToEndAsync();
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(xml));
+
+            return new StateChart(XDocument.Parse(xml));
+        }
+
+        public override string Id => _name;
+
+        public override string UniqueId => _name;
 
         public bool FailFast
         {

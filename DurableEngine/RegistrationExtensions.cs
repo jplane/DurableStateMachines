@@ -10,62 +10,73 @@ namespace StateChartsDotNet.Durable
 {
     internal static class RegistrationExtensions
     {
-        public static void RegisterStateChartInvokes(this IStateChartMetadata metadata, Action<string, IStateChartMetadata, bool> register)
+        public static void RegisterStateChartInvokes(this IStateChartMetadata metadata, Action<string, IStateChartMetadata, bool> register,
+                                                     string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterStateChartInvokes(register);
+                state.RegisterStateChartInvokes(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IStateChartMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IStateChartMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             var script = metadata.GetScript();
 
             if (script != null)
             {
-                register(metadata.GetScript());
+                register($"{parentId}.{metadata.UniqueId}", metadata.GetScript());
             }
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterScripts(register);
+                state.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterStateChartInvokes(this IStateMetadata metadata, Action<string, IStateChartMetadata, bool> register)
+        public static void RegisterStateChartInvokes(this IStateMetadata metadata,
+                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var invoke in metadata.GetStateChartInvokes())
             {
                 var root = invoke.GetRoot();
 
-                register(invoke.UniqueId, root, invoke.Autoforward);
+                var uniqueId = $"{parentId}.{root.UniqueId}";
 
-                root.RegisterStateChartInvokes(register);
+                register(uniqueId, root, invoke.Autoforward);
+
+                root.RegisterStateChartInvokes(register, uniqueId);
             }
         }
 
-        public static void RegisterScripts(this IStateMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IStateMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var invoke in metadata.GetStateChartInvokes())
             {
-                invoke.GetRoot().RegisterScripts(register);
+                var root = invoke.GetRoot();
+                
+                root.RegisterScripts(register, $"{parentId}.{root.UniqueId}");
 
                 foreach (var content in invoke.GetFinalizeExecutableContent())
                 {
-                    content.RegisterScripts(register);
+                    content.RegisterScripts(register, parentId);
                 }
             }
 
@@ -73,7 +84,7 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var content in transition.GetExecutableContent())
                 {
-                    content.RegisterScripts(register);
+                    content.RegisterScripts(register, parentId);
                 }
             }
 
@@ -83,7 +94,7 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var content in onEntry.GetExecutableContent())
                 {
-                    content.RegisterScripts(register);
+                    content.RegisterScripts(register, parentId);
                 }
             }
 
@@ -93,114 +104,126 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var content in onExit.GetExecutableContent())
                 {
-                    content.RegisterScripts(register);
+                    content.RegisterScripts(register, parentId);
                 }
             }
         }
 
-        public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata, Action<string, IStateChartMetadata, bool> register)
+        public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata,
+                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
-            RegisterStateChartInvokes((IStateMetadata) metadata, register);
+            RegisterStateChartInvokes((IStateMetadata) metadata, register, parentId);
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterStateChartInvokes(register);
+                state.RegisterStateChartInvokes(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this ISequentialStateMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this ISequentialStateMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
-            RegisterScripts((IStateMetadata) metadata, register);
+            RegisterScripts((IStateMetadata) metadata, register, parentId);
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterScripts(register);
+                state.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata, Action<string, IStateChartMetadata, bool> register)
+        public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata,
+                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
-            RegisterStateChartInvokes((IStateMetadata) metadata, register);
+            RegisterStateChartInvokes((IStateMetadata) metadata, register, parentId);
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterStateChartInvokes(register);
+                state.RegisterStateChartInvokes(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IParallelStateMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IParallelStateMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
-            RegisterScripts((IStateMetadata) metadata, register);
+            RegisterScripts((IStateMetadata) metadata, register, parentId);
 
             foreach (var state in metadata.GetStates())
             {
-                state.RegisterScripts(register);
+                state.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IQueryMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IQueryMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var content in metadata.GetExecutableContent())
             {
-                content.RegisterScripts(register);
+                content.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IIfMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IIfMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var content in metadata.GetExecutableContent())
             {
-                content.RegisterScripts(register);
+                content.RegisterScripts(register, parentId);
             }
 
             foreach (var content in metadata.GetElseIfExecutableContent().SelectMany(ienum => ienum))
             {
-                content.RegisterScripts(register);
+                content.RegisterScripts(register, parentId);
             }
 
             foreach (var content in metadata.GetElseExecutableContent())
             {
-                content.RegisterScripts(register);
+                content.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IForeachMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IForeachMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             foreach (var content in metadata.GetExecutableContent())
             {
-                content.RegisterScripts(register);
+                content.RegisterScripts(register, parentId);
             }
         }
 
-        public static void RegisterScripts(this IExecutableContentMetadata metadata, Action<IScriptMetadata> register)
+        public static void RegisterScripts(this IExecutableContentMetadata metadata, Action<string, IScriptMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
+            parentId.CheckArgNull(nameof(parentId));
 
             if (metadata is IScriptMetadata script)
             {
-                register(script);
+                register($"{parentId}.{script.UniqueId}", script);
             }
         }
     }

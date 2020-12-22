@@ -13,13 +13,16 @@ namespace StateChartsDotNet.Model.States
     internal class InvokeStateChart
     {
         private readonly IInvokeStateChartMetadata _metadata;
+        private readonly string _parentUniqueId;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
-        public InvokeStateChart(IInvokeStateChartMetadata metadata)
+        public InvokeStateChart(IInvokeStateChartMetadata metadata, string parentUniqueId)
         {
             metadata.CheckArgNull(nameof(metadata));
+            parentUniqueId.CheckArgNull(nameof(parentUniqueId));
 
             _metadata = metadata;
+            _parentUniqueId = parentUniqueId;
 
             _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
@@ -35,7 +38,7 @@ namespace StateChartsDotNet.Model.States
 
             try
             {
-                await context.InvokeChildStateChart(_metadata);
+                await context.InvokeChildStateChart(_metadata, _parentUniqueId);
             }
             catch (Exception ex)
             {

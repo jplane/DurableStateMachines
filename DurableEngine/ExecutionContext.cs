@@ -17,11 +17,13 @@ namespace StateChartsDotNet.Durable
         private readonly AsyncLock _lock;
         private readonly IStateChartMetadata _metadata;
         private readonly IOrchestrationManager _orchestrationManager;
+        private readonly CancellationToken _cancelToken;
 
         private Dictionary<string, object> _data;
 
         public ExecutionContext(IStateChartMetadata metadata,
                                 IOrchestrationService service,
+                                IOrchestrationStorage storage,
                                 CancellationToken cancelToken,
                                 TimeSpan timeout,
                                 ILogger logger = null)
@@ -30,7 +32,8 @@ namespace StateChartsDotNet.Durable
             service.CheckArgNull(nameof(service));
 
             _metadata = metadata;
-            _orchestrationManager = new DurableOrchestrationManager(metadata, service, timeout, cancelToken, logger);
+            _orchestrationManager = new DurableOrchestrationManager(service, storage, timeout, cancelToken, logger);
+            _cancelToken = cancelToken;
 
             _lock = new AsyncLock();
             _data = new Dictionary<string, object>();
@@ -77,7 +80,9 @@ namespace StateChartsDotNet.Durable
 
             _data["_invokeId"] = instanceId;
 
-            await _orchestrationManager.StartOrchestrationAsync(_metadata.UniqueId, instanceId, _data);
+            await _orchestrationManager.RegisterAsync(_metadata);
+
+            await _orchestrationManager.StartInstanceAsync(_metadata.UniqueId, instanceId, _data);
         }
 
         private async Task _WaitForCompletionAsync()
@@ -93,7 +98,7 @@ namespace StateChartsDotNet.Durable
 
                 var instanceId = (string) _data["_invokeId"];
 
-                var output = await _orchestrationManager.WaitForCompletionAsync(instanceId);
+                var output = await _orchestrationManager.WaitForInstanceAsync(instanceId);
 
                 Debug.Assert(output != null);
 
@@ -101,7 +106,13 @@ namespace StateChartsDotNet.Durable
             }
             catch (TimeoutException)
             {
-                // cancellation token fired, we want to eat this one here
+                // for some reason DTFx throws this even if we cancel via token
+                //  if we actually canceled via token, then we silently swallow the exception
+
+                if (! _cancelToken.IsCancellationRequested)
+                {
+                    throw;
+                }
             }
             finally
             {
@@ -110,7 +121,6 @@ namespace StateChartsDotNet.Durable
                 await _orchestrationManager.StopAsync();
             }
         }
-
 
         public IDictionary<string, object> Data => new ExternalDictionary(_data);
 

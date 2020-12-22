@@ -99,7 +99,7 @@ namespace StateChartsDotNet.Model.States
             return _source.IsDescendent(transition._source);
         }
 
-        public IEnumerable<State> GetTargetStates(StartChart root)
+        public IEnumerable<State> GetTargetStates(StateChart root)
         {
             root.CheckArgNull(nameof(root));
 

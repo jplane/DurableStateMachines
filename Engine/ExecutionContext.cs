@@ -17,6 +17,7 @@ namespace StateChartsDotNet
 {
     public class ExecutionContext : ExecutionContextBase, IExecutionContext
     {
+        private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly AsyncLock _lock;
         private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
@@ -32,6 +33,7 @@ namespace StateChartsDotNet
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _childInstances = new Dictionary<string, ExecutionContext>();
+            _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
@@ -81,6 +83,15 @@ namespace StateChartsDotNet
 
                 await _executeTask;
             }
+        }
+
+        protected override Task SendAsync(ExternalMessage message)
+        {
+            message.CheckArgNull(nameof(message));
+
+            _externalMessages.Enqueue(message);
+
+            return Task.CompletedTask;
         }
 
         protected override Task SendMessageToParentStateChart(string _,
@@ -169,7 +180,7 @@ namespace StateChartsDotNet
 
         protected override bool IsChildStateChart => _parentContext != null;
 
-        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata)
+        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -248,6 +259,11 @@ namespace StateChartsDotNet
             {
                 Debug.Fail("Expected to find child state machine instance: " + id);
             }
+        }
+
+        protected override Task<ExternalMessage> GetNextExternalMessageAsync()
+        {
+            return _externalMessages.DequeueAsync(this.CancelToken);
         }
 
         protected override Task<Guid> GenerateGuid()

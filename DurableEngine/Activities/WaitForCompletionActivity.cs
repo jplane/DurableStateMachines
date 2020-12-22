@@ -22,7 +22,7 @@ namespace StateChartsDotNet.Durable.Activities
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            await _orchestrationManager.WaitForCompletionAsync(instanceId);
+            await _orchestrationManager.WaitForInstanceAsync(instanceId);
 
             return string.Empty;
         }

@@ -1,11 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Json.Execution;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Metadata.Json.States
 {
@@ -21,9 +26,33 @@ namespace StateChartsDotNet.Metadata.Json.States
             document.InitDocumentPosition();
         }
 
-        public override string Id => _name ?? this.UniqueId;
+        public async Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        {
+            stream.CheckArgNull(nameof(stream));
 
-        public override string UniqueId => "scxml[0]";
+            using var writer = new StreamWriter(stream, leaveOpen: true);
+
+            await writer.WriteAsync(_element.ToString());
+
+            return this.GetType().AssemblyQualifiedName;
+        }
+
+        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var sr = new StreamReader(stream);
+
+            var json = await sr.ReadToEndAsync();
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(json));
+
+            return new StateChart(JObject.Parse(json));
+        }
+
+        public override string Id => _name;
+
+        public override string UniqueId => _name;
 
         public bool FailFast
         {

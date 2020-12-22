@@ -124,9 +124,13 @@ await context.StartAndWaitForCompletionAsync();
 ```csharp
 var machine = GetStateChart();
 
-var emulator = new LocalOrchestrationService();     // any durable task orchestration service implementation
+var emulator = new LocalOrchestrationService();             // any durable task orchestration service implementation
 
-var context = new Durable.ExecutionContext(machine, emulator, TimeSpan.FromMinutes(1));
+var storage = new Durable.InMemoryOrchestrationStorage();   // metadata storage for in-flight statechart instances
+
+var executionTimeout = TimeSpan.FromMinutes(1);
+
+var context = new Durable.ExecutionContext(machine, emulator, storage, cancelToken, executionTimeout);
 
 await context.StartAndWaitForCompletionAsync();
 ```

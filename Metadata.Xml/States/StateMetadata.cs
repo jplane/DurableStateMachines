@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public virtual string Id => _id ?? _uniqueId.Value;
 
-        public string UniqueId => _uniqueId.Value;
+        public virtual string UniqueId => _uniqueId.Value;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

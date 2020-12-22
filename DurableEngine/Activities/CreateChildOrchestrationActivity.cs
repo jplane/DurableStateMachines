@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Durable.Activities
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
             Debug.Assert(data != null);
 
-            await _orchestrationManager.StartOrchestrationAsync(_uniqueId, instanceId, data);
+            await _orchestrationManager.StartInstanceAsync(_uniqueId, instanceId, data);
 
             return string.Empty;
         }

@@ -21,13 +21,12 @@ namespace StateChartsDotNet
     public abstract class ExecutionContextBase
     {
         protected readonly ILogger _logger;
-        protected readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
 
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
-        private readonly StartChart _root;
+        private readonly StateChart _root;
 
         protected IDictionary<string, object> _data;
 
@@ -41,10 +40,9 @@ namespace StateChartsDotNet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _root = new StartChart(metadata);
+            _root = new StateChart(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
-            _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
 
             _data = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
@@ -74,7 +72,7 @@ namespace StateChartsDotNet
 
         internal abstract Task ExecuteScriptAsync(IScriptMetadata metadata);
 
-        internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata);
+        internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentUniqueId);
 
         internal abstract Task LogDebugAsync(string message);
 
@@ -90,6 +88,8 @@ namespace StateChartsDotNet
                                                               CancellationToken ___);
 
         protected abstract bool IsChildStateChart { get; }
+
+        protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
 
         internal void InternalCancel()
         {
@@ -119,12 +119,8 @@ namespace StateChartsDotNet
             return SendAsync(msg);
         }
 
-        public Task SendAsync(ExternalMessage message)
+        protected virtual Task SendAsync(ExternalMessage message)
         {
-            message.CheckArgNull(nameof(message));
-
-            _externalMessages.Enqueue(message);
-
             return Task.CompletedTask;
         }
 
@@ -263,14 +259,9 @@ namespace StateChartsDotNet
             await this.Root.ExecuteScript(this);
         }
 
-        internal StartChart Root => _root;
+        internal StateChart Root => _root;
 
         internal CancellationToken CancelToken => _cancelToken;
-
-        protected virtual Task<ExternalMessage> GetNextExternalMessageAsync()
-        {
-            return _externalMessages.DequeueAsync(_cancelToken);
-        }
 
         internal async Task<ExternalMessage> DequeueExternalAsync()
         {
