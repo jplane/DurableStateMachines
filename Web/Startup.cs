@@ -56,9 +56,11 @@ namespace StateChartsDotNet.Web
                        context.Request.Path.StartsWithSegments(path);
             }
 
-            app.MapWhen(context => IsJsonPost(context, "/api/start"), ab => ab.Run(StartInstanceAsync));
+            app.MapWhen(context => IsJsonPost(context, "/api/register"), ab => ab.Run(ctxt => RegisterInstanceAsync(ctxt)));
+            app.MapWhen(context => IsJsonPost(context, "/api/registerandstart"), ab => ab.Run(RegisterAndStartInstanceAsync));
+            app.MapWhen(context => IsJsonPost(context, "/api/start"), ab => ab.Run(ctxt => StartInstanceAsync(ctxt)));
             app.MapWhen(context => IsJsonPut(context, "/api/stop"), ab => ab.Run(StopInstanceAsync));
-            app.MapWhen(context => IsJsonPost(context, "/api/sendmessage"), ab => ab.Run(SendMessageToInstanceAsync));
+            app.MapWhen(context => IsJsonPut(context, "/api/sendmessage"), ab => ab.Run(SendMessageToInstanceAsync));
             app.MapWhen(context => IsGet(context, "/api/status"), ab => ab.Run(GetInstanceStatusAsync));
         }
 
@@ -98,7 +100,61 @@ namespace StateChartsDotNet.Web
             _manager.StartAsync().Wait();
         }
 
+        private async Task RegisterInstanceAsync(HttpContext context)
+        {
+            Debug.Assert(_manager != null);
+
+            var json = await ReadJsonAsync(context.Request);
+
+            Debug.Assert(json != null);
+
+            var statechart = json["statechart"]?.Value<JObject>();
+
+            if (statechart == null)
+            {
+                throw new InvalidOperationException("HTTP payload does not contain statechart definition.");
+            }
+
+            var metadata = new StateChart(statechart);
+
+            await _manager.RegisterAsync(metadata);
+
+            context.Response.ContentType = "application/json";
+
+            context.Response.StatusCode = 201;
+
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new { metadataId = metadata.MetadataId }), _cancelToken);
+        }
+
         private async Task StartInstanceAsync(HttpContext context)
+        {
+            Debug.Assert(_manager != null);
+
+            var metadataId = context.Request.Query["metadataId"].ToString();
+
+            if (string.IsNullOrWhiteSpace(metadataId))
+            {
+                throw new InvalidOperationException("HTTP payload does not contain statechart metadataId.");
+            }
+
+            var json = await ReadJsonAsync(context.Request);
+
+            Debug.Assert(json != null);
+
+            var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+
+            var instanceId = $"{metadataId}.{Guid.NewGuid():N}";
+
+            await _manager.StartInstanceAsync(metadataId, instanceId, input);
+
+            context.Response.ContentType = "application/json";
+
+            context.Response.StatusCode = 201;
+
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(new { instanceId }), _cancelToken);
+        }
+
+        private async Task RegisterAndStartInstanceAsync(HttpContext context)
         {
             Debug.Assert(_manager != null);
 
