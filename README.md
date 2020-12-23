@@ -175,7 +175,7 @@ await context.StartAndWaitForCompletionAsync();
 
 ### [ASP.NET Core host](./Web)
 
-#### /api/start request example payload
+#### /api/registerandstart request example payload
 ```json
 {
     "inputs": {
