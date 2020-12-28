@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Durable
 {
     internal class DurableExecutionContext : ExecutionContextBase
     {
-        protected readonly Dictionary<string, List<string>> _childInstances;
+        protected readonly Dictionary<string, List<(string, string)>> _childInstances;
         protected readonly OrchestrationContext _orchestrationContext;
 
         private readonly Queue<ExternalMessage> _externalMessages;
@@ -41,7 +41,7 @@ namespace StateChartsDotNet.Durable
                 _data[pair.Key] = pair.Value;
             }
 
-            _childInstances = new Dictionary<string, List<string>>();
+            _childInstances = new Dictionary<string, List<(string, string)>>();
             _externalMessageAvailable = new TaskCompletionSource<bool>();
             _externalMessages = new Queue<ExternalMessage>();
         }
@@ -70,20 +70,31 @@ namespace StateChartsDotNet.Durable
 
             inputs["_parentInstanceId"] = parentInstanceId;
 
-            var instanceId = $"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}.{await GenerateGuid():N}";
+            var metadataId = $"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}";
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
+
+            var instanceId = $"{metadataId}.{await GenerateGuid():N}";
 
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
             inputs["_instanceId"] = instanceId;
 
-            if (! _childInstances.TryGetValue(parentStateMetadataId, out List<string> instances))
+            if (!_childInstances.TryGetValue(parentStateMetadataId, out List<(string, string)> instances))
             {
-                _childInstances[parentStateMetadataId] = instances = new List<string>();
+                _childInstances[parentStateMetadataId] = instances = new List<(string, string)>();
             }
 
-            instances.Add(instanceId);
+            instances.Add((instanceId, metadata.ExecutionMode == ChildStateChartExecutionMode.Remote ? metadata.RemoteUri : null)); ;
 
-            await StartChildOrchestrationAsync($"{GetParentStatechartMetadataId()}.{childMachine.MetadataId}", instanceId, inputs);
+            if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
+            {
+                await _orchestrationContext.CreateSubOrchestrationInstance<(Dictionary<string, object>, Exception)>("statechart", metadataId, instanceId, inputs);
+            }
+            else
+            {
+                await _orchestrationContext.ScheduleTask<string>("startchildorchestration", string.Empty, (metadataId, instanceId, inputs));
+            }
         }
 
         private string GetParentStatechartMetadataId()
@@ -99,17 +110,6 @@ namespace StateChartsDotNet.Durable
 
         protected override bool IsChildStateChart => _data.ContainsKey("_parentInstanceId");
 
-        protected virtual Task StartChildOrchestrationAsync(string metadataId, string instanceId, Dictionary<string, object> data)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
-            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
-            Debug.Assert(data != null);
-
-            Debug.Assert(_orchestrationContext != null);
-
-            return _orchestrationContext.ScheduleTask<string>("startchildorchestration", metadataId, (instanceId, data));
-        }
-
         internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
         {
             message.CheckArgNull(nameof(message));
@@ -118,17 +118,16 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var pair in _childInstances.ToArray())
                 {
-                    if (pair.Value.Remove(message.CorrelationId))
-                    {
-                        if (pair.Value.Count == 0)
-                        {
-                            _childInstances.Remove(pair.Key);
-                        }
+                    pair.Value.RemoveAll(tuple => tuple.Item1 == message.CorrelationId);
 
-                        await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
-                        
-                        return;
+                    if (pair.Value.Count == 0)
+                    {
+                        _childInstances.Remove(pair.Key);
                     }
+
+                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
+
+                    return;
                 }
 
                 Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
@@ -153,9 +152,9 @@ namespace StateChartsDotNet.Durable
         {
             parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
-            if (_childInstances.TryGetValue(parentMetadataId, out List<string> instances))
+            if (_childInstances.TryGetValue(parentMetadataId, out List<(string, string)> instances))
             {
-                return instances;
+                return instances.Select(tuple => tuple.Item1);
             }
             else
             {
@@ -190,7 +189,18 @@ namespace StateChartsDotNet.Durable
                 Parameters = parameters
             };
 
-            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInstanceId, msg));
+            if (_data.TryGetValue("_parentRemoteUri", out object remoteUri))
+            {
+                var queryString = new Dictionary<string, object> { { "?instanceId", parentInstanceId } };
+
+                return _orchestrationContext.ScheduleTask<string>("sendmessage",
+                                                                  string.Empty,
+                                                                  ("http-post", (string) remoteUri, (string) null, msg, correlationId, queryString));
+            }
+            else
+            {
+                return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInstanceId, msg));
+            }
         }
 
         internal override Task SendToChildStateChart(string childInstanceId, ExternalMessage message)
@@ -198,7 +208,24 @@ namespace StateChartsDotNet.Durable
             childInstanceId.CheckArgNull(nameof(childInstanceId));
             message.CheckArgNull(nameof(message));
 
-            return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInstanceId, message));
+            var remoteUri = _childInstances.SelectMany(pair => pair.Value).Where(tuple => tuple.Item1 == childInstanceId).Select(tuple => tuple.Item2).SingleOrDefault();
+
+            if (string.IsNullOrWhiteSpace(remoteUri))
+            {
+                return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, (childInstanceId, message));
+            }
+            else
+            {
+                var correlationId = _orchestrationContext.OrchestrationInstance.InstanceId;
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(correlationId));
+
+                var queryString = new Dictionary<string, object> { { "?instanceId", childInstanceId } };
+
+                return _orchestrationContext.ScheduleTask<string>("sendmessage",
+                                                                  string.Empty,
+                                                                  ("http-post", remoteUri, (string) null, message, correlationId, queryString));
+            }
         }
 
         internal override Task DelayAsync(TimeSpan timespan)

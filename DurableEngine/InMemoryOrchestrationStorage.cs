@@ -1,4 +1,5 @@
-﻿using Nito.AsyncEx;
+﻿using Newtonsoft.Json.Linq;
+using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,8 @@ namespace StateChartsDotNet.Durable
     public class InMemoryOrchestrationStorage : IOrchestrationStorage
     {
         private readonly AsyncLock _lock;
-        private readonly Dictionary<string, (string, byte[])> _instances =
-            new Dictionary<string, (string, byte[])>();
+        private readonly Dictionary<string, (string, JObject)> _instances =
+            new Dictionary<string, (string, JObject)>();
 
         public InMemoryOrchestrationStorage()
         {
@@ -27,7 +28,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task DeserializeAsync(Func<string, string, Stream, Task> deserializeInstanceFunc)
+        public async Task DeserializeAsync(Func<string, JObject, string, Task> deserializeInstanceFunc)
         {
             deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
 
@@ -35,9 +36,7 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var pair in _instances)
                 {
-                    using var stream = new MemoryStream(pair.Value.Item2);
-
-                    await deserializeInstanceFunc(pair.Key, pair.Value.Item1, stream);
+                    await deserializeInstanceFunc(pair.Key, pair.Value.Item2, pair.Value.Item1);
                 }
             } 
         }
@@ -55,19 +54,15 @@ namespace StateChartsDotNet.Durable
             } 
         }
 
-        public async Task SerializeAsync(string metadataId, string deserializationType, Stream stream)
+        public async Task SerializeAsync(string metadataId, JObject json, string deserializationType)
         {
             metadataId.CheckArgNull(nameof(metadataId));
+            json.CheckArgNull(nameof(json));
             deserializationType.CheckArgNull(nameof(deserializationType));
-            stream.CheckArgNull(nameof(stream));
 
             using (await _lock.LockAsync())
             {
-                using var ms = new MemoryStream();
-
-                await stream.CopyToAsync(ms);
-
-                _instances.Add(metadataId, (deserializationType, ms.ToArray()));
+                _instances.Add(metadataId, (deserializationType, json));
             }
         }
     }

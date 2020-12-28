@@ -6,6 +6,7 @@ using StateChartsDotNet.Metadata.Fluent.Services.HttpPost;
 using System.Threading.Tasks;
 using System;
 using System.Threading;
+using StateChartsDotNet.Common.Model.States;
 
 namespace StateChartsDotNet.Tests
 {
@@ -14,7 +15,7 @@ namespace StateChartsDotNet.Tests
     {
         [TestMethod]
         [TestScaffold]
-        public async Task AutoforwardFalse(ScaffoldFactoryDelegate factory, string _)
+        public async Task IsolatedExecution(ScaffoldFactoryDelegate factory, string _)
         {
             var x = 1;
 
@@ -36,7 +37,7 @@ namespace StateChartsDotNet.Tests
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
                                         .InvokeStateChart()
-                                            .Autoforward(false)
+                                            .ExecutionMode(ChildStateChartExecutionMode.Isolated)
                                             .Definition(innerMachine)
                                             .Attach()
                                         .Transition()
@@ -58,7 +59,7 @@ namespace StateChartsDotNet.Tests
 
         [TestMethod]
         [TestScaffold]
-        public async Task AutoforwardTrue(ScaffoldFactoryDelegate factory, string _)
+        public async Task InlineExecution(ScaffoldFactoryDelegate factory, string _)
         {
             var x = 1;
 
@@ -80,7 +81,7 @@ namespace StateChartsDotNet.Tests
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
                                         .InvokeStateChart()
-                                            .Autoforward(true)
+                                            .ExecutionMode(ChildStateChartExecutionMode.Inline)
                                             .Definition(innerMachine)
                                             .Attach()
                                         .Transition()

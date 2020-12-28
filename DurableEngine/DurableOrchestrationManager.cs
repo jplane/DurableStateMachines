@@ -2,6 +2,7 @@
 using DurableTask.Core.Serializing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
@@ -27,7 +28,7 @@ namespace StateChartsDotNet.Durable
 
         Task StopAsync(bool forced = false);
 
-        Task RegisterAsync(IStateChartMetadata metadata);
+        Task RegisterAsync(string metadataId, IStateChartMetadata metadata);
 
         Task StartInstanceAsync(string metadataId, string instanceId, IDictionary<string, object> data);
 
@@ -41,6 +42,7 @@ namespace StateChartsDotNet.Durable
     internal class DurableOrchestrationManager : IOrchestrationManager
     {
         private readonly List<string> _statecharts;
+        private readonly Dictionary<string, IInvokeStateChartMetadata> _childInvokes;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
@@ -52,6 +54,7 @@ namespace StateChartsDotNet.Durable
         private readonly TaskHubWorker _worker;
         private readonly IOrchestrationStorage _storage;
         private readonly TaskHubClient _client;
+        private readonly string _callbackUri;
 
         private bool _started;
 
@@ -59,6 +62,7 @@ namespace StateChartsDotNet.Durable
                                            IOrchestrationStorage storage,
                                            TimeSpan timeout,
                                            CancellationToken cancelToken,
+                                           string callbackUri = null,
                                            ILogger logger = null)
         {
             service.CheckArgNull(nameof(service));
@@ -72,12 +76,14 @@ namespace StateChartsDotNet.Durable
             _storage = storage;
             _timeout = timeout;
             _cancelToken = cancelToken;
+            _callbackUri = callbackUri;
             _logger = logger;
 
             _started = false;
 
             _lock = new AsyncLock();
             _statecharts = new List<string>();
+            _childInvokes = new Dictionary<string, IInvokeStateChartMetadata>();
 
             _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
             _activityResolver = new NameVersionObjectManager<TaskActivity>();
@@ -103,32 +109,30 @@ namespace StateChartsDotNet.Durable
 
                 AddTaskActivities();
 
-                await _storage.DeserializeAsync(async (metadataId, deserializationType, stream) =>
+                await _storage.DeserializeAsync(async (metadataId, json, deserializationType) =>
                 {
                     Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
+                    Debug.Assert(json != null);
                     Debug.Assert(!string.IsNullOrWhiteSpace(deserializationType));
-                    Debug.Assert(stream != null);
 
                     var type = Type.GetType(deserializationType);
 
                     Debug.Assert(type != null);
 
-                    var method = type.GetMethod("DeserializeAsync", BindingFlags.Public | BindingFlags.Static);
+                    var method = type.GetMethod("FromJson", BindingFlags.Public | BindingFlags.Static);
 
                     Debug.Assert(method != null);
 
                     var deserializer =
-                            (Func<Stream, Task<IStateChartMetadata>>) Delegate.CreateDelegate(typeof(Func<Stream, Task<IStateChartMetadata>>), method);
+                            (Func<JObject, Task<IStateChartMetadata>>) Delegate.CreateDelegate(typeof(Func<JObject, Task<IStateChartMetadata>>), method);
 
                     Debug.Assert(deserializer != null);
 
-                    var metadata = await deserializer(stream);
+                    var metadata = await deserializer(json);
 
                     Debug.Assert(metadata != null);
 
-                    Debug.Assert(metadata.MetadataId == metadataId);
-
-                    Register(metadata);
+                    Register(metadataId, metadata);
                 });
 
                 await _worker.StartAsync();
@@ -156,29 +160,26 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task RegisterAsync(IStateChartMetadata metadata)
+        public async Task RegisterAsync(string metadataId, IStateChartMetadata metadata)
         {
+            metadataId.CheckArgNull(nameof(metadataId));
             metadata.CheckArgNull(nameof(metadata));
 
             using (await _lock.LockAsync())
             {
-                if (_statecharts.Contains(metadata.MetadataId))
+                if (_statecharts.Contains(metadataId))
                 {
                     return;
                 }
 
-                using (var stream = new MemoryStream())
-                {
-                    var deserializationType = await metadata.SerializeAsync(stream, _cancelToken);
+                var tuple = metadata.ToJson();
 
-                    Debug.Assert(!string.IsNullOrWhiteSpace(deserializationType));
+                Debug.Assert(tuple.Item1 != null);
+                Debug.Assert(!string.IsNullOrWhiteSpace(tuple.Item2));
 
-                    stream.Position = 0;
+                await _storage.SerializeAsync(metadataId, tuple.Item1, tuple.Item2);
 
-                    await _storage.SerializeAsync(metadata.MetadataId, deserializationType, stream);
-                }
-
-                Register(metadata);
+                Register(metadataId, metadata);
             }
         }
 
@@ -195,7 +196,20 @@ namespace StateChartsDotNet.Durable
                 throw new InvalidOperationException("Service not started.");
             }
 
-            await _client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
+            if (_childInvokes.TryGetValue(metadataId, out IInvokeStateChartMetadata invokeMetadata) &&
+                invokeMetadata.ExecutionMode == ChildStateChartExecutionMode.Remote)
+            {
+                if (string.IsNullOrWhiteSpace(_callbackUri))
+                {
+                    throw new InvalidOperationException("Host is not configured for remote child statechart invocation.");
+                }
+
+                await HttpService.StartRemoteChildStatechartAsync(_callbackUri, invokeMetadata, metadataId, instanceId, data, _cancelToken);
+            }
+            else
+            {
+                await _client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
+            }
         }
 
         public async Task<IReadOnlyDictionary<string, object>> WaitForInstanceAsync(string instanceId)
@@ -262,18 +276,19 @@ namespace StateChartsDotNet.Durable
             await _client.RaiseEventAsync(instance, message.Name, message);
         }
 
-        private void Register(IStateChartMetadata metadata)
+        private void Register(string metadataId, IStateChartMetadata metadata)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
             Debug.Assert(metadata != null);
 
-            RegisterStateChart(metadata.MetadataId, metadata);
+            RegisterStateChart(metadataId, metadata);
 
-            metadata.RegisterStateChartInvokes((id, root, inline) => RegisterStateChart(id, root, inline), metadata.MetadataId);
+            metadata.RegisterStateChartInvokes(RegisterStateChartInvoke, metadataId);
 
-            metadata.RegisterScripts((id, metadata) => RegisterScript(id, metadata), metadata.MetadataId);
+            metadata.RegisterScripts(RegisterScript, metadataId);
         }
 
-        private void RegisterStateChart(string metadataId, IStateChartMetadata metadata, bool executeInline = false)
+        private void RegisterStateChart(string metadataId, IStateChartMetadata metadata)
         {
             metadataId.CheckArgNull(nameof(metadataId));
             metadata.CheckArgNull(nameof(metadata));
@@ -282,21 +297,27 @@ namespace StateChartsDotNet.Durable
 
             _statecharts.Add(metadataId);
 
-            // this is the durable activity for starting a child statechart from within its parent
-
-            var createActivity = new CreateChildOrchestrationActivity(metadataId, this);
-
-            var activityCreator = new NameValueObjectCreator<TaskActivity>("startchildorchestration", metadataId, createActivity);
-
-            _activityResolver.Add(activityCreator);
-
-            // this is the orchestration that runs a statechart instance (parent or child)
-
-            var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, executeInline, _logger);
+            var orchestrator = new InterpreterOrchestration(metadata, _cancelToken, _logger);
 
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", metadataId, orchestrator);
 
             _orchestrationResolver.Add(orchestrationCreator);
+        }
+
+        private void RegisterStateChartInvoke(string metadataId, IInvokeStateChartMetadata metadata)
+        {
+            metadataId.CheckArgNull(nameof(metadataId));
+            metadata.CheckArgNull(nameof(metadata));
+
+            Debug.Assert(! _childInvokes.ContainsKey(metadataId));
+
+            _childInvokes.Add(metadataId, metadata);
+
+            var stateChartMetadata = metadata.GetRoot();
+
+            Debug.Assert(stateChartMetadata != null);
+
+            RegisterStateChart(metadataId, stateChartMetadata);
         }
 
         private void RegisterScript(string metadataId, IScriptMetadata metadata)
@@ -322,6 +343,10 @@ namespace StateChartsDotNet.Durable
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("waitforcompletion",
                                                                                string.Empty,
                                                                                new WaitForCompletionActivity(this)));
+
+            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("startchildorchestration",
+                                                                               string.Empty,
+                                                                               new CreateChildOrchestrationActivity(this)));
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("logger", string.Empty, new LoggerActivity(_logger)));
 

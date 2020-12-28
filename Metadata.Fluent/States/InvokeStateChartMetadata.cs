@@ -16,13 +16,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private readonly List<ExecutableContentMetadata> _finalizeExecutableContent;
         private readonly List<ParamMetadata<InvokeStateChartMetadata<TParent>>> _params;
 
-        private bool _autoForward;
+        private ChildStateChartExecutionMode _mode;
+        private string _remoteUri;
         private string _id;
         private string _idLocation;
         private IStateChartMetadata _root;
 
         internal InvokeStateChartMetadata()
         {
+            _mode = ChildStateChartExecutionMode.Inline;
             _finalizeExecutableContent = new List<ExecutableContentMetadata>();
             _params = new List<ParamMetadata<InvokeStateChartMetadata<TParent>>>();
         }
@@ -36,9 +38,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this.Parent;
         }
 
-        public InvokeStateChartMetadata<TParent> Autoforward(bool autoforward)
+        public InvokeStateChartMetadata<TParent> ExecutionMode(ChildStateChartExecutionMode mode)
         {
-            _autoForward = autoforward;
+            _mode = mode;
+            return this;
+        }
+
+        public InvokeStateChartMetadata<TParent> RemoteUri(string uri)
+        {
+            _remoteUri = uri;
             return this;
         }
 
@@ -213,7 +221,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return ec;
         }
 
-        bool IInvokeStateChartMetadata.Autoforward => _autoForward;
+        ChildStateChartExecutionMode IInvokeStateChartMetadata.ExecutionMode => _mode;
+
+        string IInvokeStateChartMetadata.RemoteUri => _remoteUri;
 
         string IInvokeStateChartMetadata.Id => _id;
 

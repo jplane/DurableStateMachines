@@ -23,20 +23,17 @@ namespace StateChartsDotNet.Durable
         private readonly IStateChartMetadata _metadata;
         private readonly CancellationToken _cancelToken;
         private readonly ILogger _logger;
-        private readonly bool _executeInline;
         
         private DurableExecutionContext _executionContext;
 
         public InterpreterOrchestration(IStateChartMetadata metadata,
                                         CancellationToken cancelToken,
-                                        bool executeInline,
                                         ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
             _metadata = metadata;
             _cancelToken = cancelToken;
-            _executeInline = executeInline;
             _logger = logger;
 
             this.DataConverter = new JsonDataConverter(new JsonSerializerSettings
@@ -45,28 +42,13 @@ namespace StateChartsDotNet.Durable
             });
         }
 
-        private void InitExecutionContext(OrchestrationContext context, Dictionary<string, object> data)
-        {
-            Debug.Assert(context != null);
-            Debug.Assert(data != null);
-
-            if (_executeInline)
-            {
-                _executionContext = new InlineDurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
-            }
-            else
-            {
-                _executionContext = new DurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
-            }
-        }
-
         public override async Task<(Dictionary<string, object>, Exception)> RunTask(OrchestrationContext context, Dictionary<string, object> data)
         {
             data.CheckArgNull(nameof(data));
 
             Debug.Assert(context != null);
 
-            InitExecutionContext(context, data);
+            _executionContext = new DurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
 
             Debug.Assert(_executionContext != null);
 

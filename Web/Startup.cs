@@ -79,11 +79,13 @@ namespace StateChartsDotNet.Web
                 StorageConnectionString = connectionString
             };
 
+            var callbackUri = config["callbackUri"];
+
             var service = new AzureStorageOrchestrationService(settings);
 
             var storage = new DurableOrchestrationStorage(connectionString, _cancelToken);
 
-            _manager = new DurableOrchestrationManager(service, storage, timeout, _cancelToken);
+            _manager = new DurableOrchestrationManager(service, storage, timeout, _cancelToken, callbackUri);
         }
 
         private void OnAppStopped()
@@ -117,7 +119,7 @@ namespace StateChartsDotNet.Web
 
             var metadata = new StateChart(statechart);
 
-            await _manager.RegisterAsync(metadata);
+            await _manager.RegisterAsync(metadata.MetadataId, metadata);
 
             context.Response.ContentType = "application/json";
 
@@ -171,13 +173,15 @@ namespace StateChartsDotNet.Web
 
             var metadata = new StateChart(statechart);
 
-            await _manager.RegisterAsync(metadata);
+            var metadataId = json["metadataId"]?.Value<string>() ?? metadata.MetadataId;
+
+            await _manager.RegisterAsync(metadataId, metadata);
 
             var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
 
-            var instanceId = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
+            var instanceId = json["instanceId"]?.Value<string>() ?? $"{metadataId}.{Guid.NewGuid():N}";
 
-            await _manager.StartInstanceAsync(metadata.MetadataId, instanceId, input);
+            await _manager.StartInstanceAsync(metadataId, instanceId, input);
 
             context.Response.ContentType = "application/json";
 

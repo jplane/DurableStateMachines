@@ -3,6 +3,7 @@ using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -10,8 +11,7 @@ namespace StateChartsDotNet.Durable
 {
     internal static class RegistrationExtensions
     {
-        public static void RegisterStateChartInvokes(this IStateChartMetadata metadata, Action<string, IStateChartMetadata, bool> register,
-                                                     string parentId)
+        public static void RegisterStateChartInvokes(this IStateChartMetadata metadata, Action<string, IInvokeStateChartMetadata> register, string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
             register.CheckArgNull(nameof(register));
@@ -33,7 +33,7 @@ namespace StateChartsDotNet.Durable
 
             if (script != null)
             {
-                register($"{parentId}.{metadata.MetadataId}", metadata.GetScript());
+                register($"{parentId}.{metadata.MetadataId}", script);
             }
 
             foreach (var state in metadata.GetStates())
@@ -43,7 +43,7 @@ namespace StateChartsDotNet.Durable
         }
 
         public static void RegisterStateChartInvokes(this IStateMetadata metadata,
-                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     Action<string, IInvokeStateChartMetadata> register,
                                                      string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -54,9 +54,11 @@ namespace StateChartsDotNet.Durable
             {
                 var root = invoke.GetRoot();
 
+                Debug.Assert(root != null);
+
                 var metadataId = $"{parentId}.{root.MetadataId}";
 
-                register(metadataId, root, invoke.Autoforward);
+                register(metadataId, invoke);
 
                 root.RegisterStateChartInvokes(register, metadataId);
             }
@@ -110,7 +112,7 @@ namespace StateChartsDotNet.Durable
         }
 
         public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata,
-                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     Action<string, IInvokeStateChartMetadata> register,
                                                      string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -140,7 +142,7 @@ namespace StateChartsDotNet.Durable
         }
 
         public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata,
-                                                     Action<string, IStateChartMetadata, bool> register,
+                                                     Action<string, IInvokeStateChartMetadata> register,
                                                      string parentId)
         {
             metadata.CheckArgNull(nameof(metadata));

@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common;
+﻿using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
@@ -25,28 +26,9 @@ namespace StateChartsDotNet.Metadata.Xml.States
             _name = _element.Attribute("name").Value;
         }
 
-        public async Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        public (JObject, string) ToJson()
         {
-            stream.CheckArgNull(nameof(stream));
-
-            using var writer = new StreamWriter(stream, leaveOpen: true);
-
-            await writer.WriteAsync(_element.ToString());
-
-            return this.GetType().AssemblyQualifiedName;
-        }
-
-        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream)
-        {
-            stream.CheckArgNull(nameof(stream));
-
-            using var sr = new StreamReader(stream);
-
-            var xml = await sr.ReadToEndAsync();
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(xml));
-
-            return new StateChart(XDocument.Parse(xml));
+            throw new NotSupportedException();
         }
 
         public override string Id => _name;

@@ -6,12 +6,20 @@ namespace StateChartsDotNet.Common.Model.States
 {
     public interface IInvokeStateChartMetadata : IModelMetadata
     {
-        bool Autoforward { get; }
         string Id { get; }
         string IdLocation { get; }
+        ChildStateChartExecutionMode ExecutionMode { get; }
+        string RemoteUri { get; }
 
         IStateChartMetadata GetRoot();
         IReadOnlyDictionary<string, object> GetParams(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
-     }
+    }
+
+    public enum ChildStateChartExecutionMode
+    {
+        Inline = 1,
+        Isolated,
+        Remote
+    }
 }

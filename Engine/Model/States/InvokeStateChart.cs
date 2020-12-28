@@ -72,7 +72,7 @@ namespace StateChartsDotNet.Model.States
             }
 
             if (context.IsRunning &&
-                _metadata.Autoforward &&
+                _metadata.ExecutionMode == ChildStateChartExecutionMode.Inline &&
                 !(externalMessage is ChildStateChartResponseMessage))
             {
                 await context.SendToChildStateChart(instanceId, externalMessage);

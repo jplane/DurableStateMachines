@@ -1,9 +1,12 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -32,7 +35,7 @@ namespace StateChartsDotNet.Durable
             return _client.DeleteAsync(null, _token);
         }
 
-        public async Task DeserializeAsync(Func<string, string, Stream, Task> deserializeInstanceFunc)
+        public async Task DeserializeAsync(Func<string, JObject, string, Task> deserializeInstanceFunc)
         {
             deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
 
@@ -45,8 +48,13 @@ namespace StateChartsDotNet.Durable
                 var blobClient = _client.GetBlockBlobClient(blob.Name);
 
                 using var stream = await blobClient.OpenReadAsync(cancellationToken: _token);
+                using var reader = new StreamReader(stream);
 
-                await deserializeInstanceFunc(blob.Name, blob.Metadata["deserializationtype"], stream);
+                var json = JObject.Parse(await reader.ReadToEndAsync());
+
+                Debug.Assert(json != null);
+
+                await deserializeInstanceFunc(blob.Name, json, blob.Metadata["deserializationtype"]);
             }
         }
 
@@ -60,17 +68,18 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task SerializeAsync(string metadataId, string deserializationType, Stream stream)
+        public async Task SerializeAsync(string metadataId, JObject json, string deserializationType)
         {
             metadataId.CheckArgNull(nameof(metadataId));
+            json.CheckArgNull(nameof(json));
             deserializationType.CheckArgNull(nameof(deserializationType));
-            stream.CheckArgNull(nameof(stream));
 
             var blobClient = _client.GetBlockBlobClient(metadataId);
 
             using (var blobStream = await blobClient.OpenWriteAsync(true, cancellationToken: _token))
+            using (var writer = new StreamWriter(blobStream))
             {
-                await stream.CopyToAsync(blobStream);
+                await writer.WriteAsync(json.ToString());
             }
 
             await blobClient.SetMetadataAsync(new Dictionary<string, string>

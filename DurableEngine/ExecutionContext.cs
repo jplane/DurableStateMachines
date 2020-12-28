@@ -32,8 +32,14 @@ namespace StateChartsDotNet.Durable
             service.CheckArgNull(nameof(service));
 
             _metadata = metadata;
-            _orchestrationManager = new DurableOrchestrationManager(service, storage, timeout, cancelToken, logger);
             _cancelToken = cancelToken;
+
+            _orchestrationManager = new DurableOrchestrationManager(service,
+                                                                    storage,
+                                                                    timeout,
+                                                                    cancelToken,
+                                                                    null,
+                                                                    logger);
 
             _lock = new AsyncLock();
             _data = new Dictionary<string, object>();
@@ -80,7 +86,7 @@ namespace StateChartsDotNet.Durable
 
             _data["_instanceId"] = instanceId;
 
-            await _orchestrationManager.RegisterAsync(_metadata);
+            await _orchestrationManager.RegisterAsync(_metadata.MetadataId, _metadata);
 
             await _orchestrationManager.StartInstanceAsync(_metadata.MetadataId, instanceId, _data);
         }

@@ -1,8 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -62,6 +66,41 @@ namespace StateChartsDotNet.Services
             Debug.Assert(response != null);
 
             response.EnsureSuccessStatusCode();
+        }
+
+        public static async Task StartRemoteChildStatechartAsync(string remoteUri,
+                                                                 IInvokeStateChartMetadata invokeMetadata,
+                                                                 string metadataId,
+                                                                 string instanceId,
+                                                                 IDictionary<string, object> inputs,
+                                                                 CancellationToken cancelToken)
+        {
+            remoteUri.CheckArgNull(nameof(remoteUri));
+            invokeMetadata.CheckArgNull(nameof(invokeMetadata));
+            metadataId.CheckArgNull(nameof(metadataId));
+            instanceId.CheckArgNull(nameof(instanceId));
+            inputs.CheckArgNull(nameof(inputs));
+
+            inputs["_parentRemoteUri"] = $"{remoteUri}/api/sendmessage";
+
+            var statechartMetadata = invokeMetadata.GetRoot();
+
+            Debug.Assert(statechartMetadata != null);
+
+            var content = new
+            {
+                statechart = statechartMetadata.ToJson(),
+                metadataId = metadataId,
+                instanceId = instanceId,
+                inputs = inputs
+            };
+
+            await PostAsync($"{invokeMetadata.RemoteUri}/api/registerandstart",
+                            null,
+                            content,
+                            null,
+                            new Dictionary<string, object>(),
+                            cancelToken);
         }
 
         private static void AddCorrelationHeader(string correlationId)

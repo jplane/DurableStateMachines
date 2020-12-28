@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
@@ -40,30 +41,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IStateMetadata _Parent => null;
 
-        public Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        public (JObject, string) ToJson()
         {
-            stream.CheckArgNull(nameof(stream));
-
-            var serializer = new JsonSerializer();
-
-            using var sw = new StreamWriter(stream, leaveOpen: true);
-            using var writer = new JsonTextWriter(sw);
-
-            serializer.Serialize(writer, this);
-
-            return Task.FromResult(this.GetType().AssemblyQualifiedName);
-        }
-
-        public static Task<IStateChartMetadata> DeserializeAsync(string metadataId, Stream stream)
-        {
-            stream.CheckArgNull(nameof(stream));
-
-            var serializer = new JsonSerializer();
-
-            using var sr = new StreamReader(stream);
-            using var reader = new JsonTextReader(sr);
-
-            return Task.FromResult((IStateChartMetadata) serializer.Deserialize<StateChart>(reader));
+            throw new NotSupportedException();
         }
 
         public override string MetadataId 

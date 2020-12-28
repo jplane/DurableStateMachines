@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -12,8 +13,8 @@ namespace StateChartsDotNet.Durable
 
         Task RemoveAsync(params string[] metadataIds);
 
-        Task SerializeAsync(string metadataId, string deserializationType, Stream stream);
+        Task SerializeAsync(string metadataId, JObject json, string deserializationType);
 
-        Task DeserializeAsync(Func<string, string, Stream, Task> deserializeInstanceFunc);
+        Task DeserializeAsync(Func<string, JObject, string, Task> deserializeInstanceFunc);
     }
 }

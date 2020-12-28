@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model.Execution;
+﻿using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common.Model.Execution;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -15,6 +16,6 @@ namespace StateChartsDotNet.Common.Model.States
         ITransitionMetadata GetInitialTransition();
         IScriptMetadata GetScript();
 
-        Task<string> SerializeAsync(Stream stream, CancellationToken token = default);
+        (JObject, string) ToJson();
     }
 }

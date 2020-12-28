@@ -26,24 +26,26 @@ namespace StateChartsDotNet.Metadata.Json.States
             _metadataId = element.GetUniqueElementPath();
         }
 
-        public bool Autoforward
+        public string MetadataId => _metadataId;
+
+        public ChildStateChartExecutionMode ExecutionMode
         {
             get
             {
-                var afattr = _element.Property("autoforward");
+                var attr = _element.Property("mode");
 
-                if (afattr != null && bool.TryParse(afattr.Value.Value<string>(), out bool result))
+                if (attr != null && Enum.TryParse(attr.Value.Value<string>(), out ChildStateChartExecutionMode result))
                 {
                     return result;
                 }
                 else
                 {
-                    return false;
+                    return ChildStateChartExecutionMode.Inline;
                 }
             }
         }
 
-        public string MetadataId => _metadataId;
+        public string RemoteUri => _element.Property("remoteuri")?.Value.Value<string>() ?? string.Empty;
 
         public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
         {

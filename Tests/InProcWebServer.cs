@@ -70,13 +70,5 @@ namespace StateChartsDotNet.Tests
                 }
             }
         }
-
-        private static string TrimResult(this string s)
-        {
-            var start = s.IndexOf('{');
-            var end = s.LastIndexOf('}');
-
-            return s.Substring(start, end - start + 1);
-        }
     }
 }

@@ -26,28 +26,16 @@ namespace StateChartsDotNet.Metadata.Json.States
             document.InitDocumentPosition();
         }
 
-        public async Task<string> SerializeAsync(Stream stream, CancellationToken token = default)
+        public (JObject, string) ToJson()
         {
-            stream.CheckArgNull(nameof(stream));
-
-            using var writer = new StreamWriter(stream, leaveOpen: true);
-
-            await writer.WriteAsync(_element.ToString());
-
-            return this.GetType().AssemblyQualifiedName;
+            return (_element, this.GetType().AssemblyQualifiedName);
         }
 
-        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream)
+        public static Task<IStateChartMetadata> FromJson(JObject json)
         {
-            stream.CheckArgNull(nameof(stream));
+            json.CheckArgNull(nameof(json));
 
-            using var sr = new StreamReader(stream);
-
-            var json = await sr.ReadToEndAsync();
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(json));
-
-            return new StateChart(JObject.Parse(json));
+            return Task.FromResult((IStateChartMetadata) new StateChart(json));
         }
 
         public override string Id => _name;
