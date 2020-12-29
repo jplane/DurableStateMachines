@@ -6,14 +6,16 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Durable;
-using StateChartsDotNet.Metadata.Json.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace StateChartsDotNet.Web
 {
@@ -58,7 +60,7 @@ namespace StateChartsDotNet.Web
 
             app.MapWhen(context => IsJsonPost(context, "/api/register"), ab => ab.Run(ctxt => RegisterInstanceAsync(ctxt)));
             app.MapWhen(context => IsJsonPost(context, "/api/registerandstart"), ab => ab.Run(RegisterAndStartInstanceAsync));
-            app.MapWhen(context => IsJsonPost(context, "/api/start"), ab => ab.Run(ctxt => StartInstanceAsync(ctxt)));
+            app.MapWhen(context => IsJsonPut(context, "/api/start"), ab => ab.Run(ctxt => StartInstanceAsync(ctxt)));
             app.MapWhen(context => IsJsonPut(context, "/api/stop"), ab => ab.Run(StopInstanceAsync));
             app.MapWhen(context => IsJsonPut(context, "/api/sendmessage"), ab => ab.Run(SendMessageToInstanceAsync));
             app.MapWhen(context => IsGet(context, "/api/status"), ab => ab.Run(GetInstanceStatusAsync));
@@ -106,20 +108,11 @@ namespace StateChartsDotNet.Web
         {
             Debug.Assert(_manager != null);
 
-            var json = await ReadJsonAsync(context.Request);
+            var content = await GetRequestBody(context);
 
-            Debug.Assert(json != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(content));
 
-            var statechart = json["statechart"]?.Value<JObject>();
-
-            if (statechart == null)
-            {
-                throw new InvalidOperationException("HTTP payload does not contain statechart definition.");
-            }
-
-            var metadata = new StateChart(statechart);
-
-            await _manager.RegisterAsync(metadata.MetadataId, metadata);
+            var metadata = await _RegisterAsync(content, context.Request.ContentType);
 
             context.Response.ContentType = "application/json";
 
@@ -128,73 +121,130 @@ namespace StateChartsDotNet.Web
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new { metadataId = metadata.MetadataId }), _cancelToken);
         }
 
+        private async Task<IStateChartMetadata> _RegisterAsync(string content,
+                                                               string contentType,
+                                                               string metadataId = null)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(content));
+            Debug.Assert(!string.IsNullOrWhiteSpace(contentType));
+
+            Debug.Assert(_manager != null);
+
+            Func<string, CancellationToken, Task<IStateChartMetadata>> factory = null;
+
+            switch (contentType)
+            {
+                case "application/json":
+                    factory = Metadata.Json.States.StateChart.FromStringAsync;
+                    break;
+
+                case "application/xml":
+                    factory = Metadata.Xml.States.StateChart.FromStringAsync;
+                    break;
+
+                case "text/plain":
+                    factory = Metadata.Fluent.States.StateChart.FromStringAsync;
+                    break;
+            }
+
+            Debug.Assert(factory != null);
+
+            var metadata = await factory(content, _cancelToken);
+
+            Debug.Assert(metadata != null);
+
+            await _manager.RegisterAsync(metadataId ?? metadata.MetadataId, metadata);
+
+            return metadata;
+        }
+
         private async Task StartInstanceAsync(HttpContext context)
         {
             Debug.Assert(_manager != null);
 
-            var metadataId = context.Request.Query["metadataId"].ToString();
+            var metadataId = context.Request.Headers["X-SCDN-METADATA-ID"].ToString();
 
             if (string.IsNullOrWhiteSpace(metadataId))
             {
                 throw new InvalidOperationException("HTTP payload does not contain statechart metadataId.");
             }
 
-            var json = await ReadJsonAsync(context.Request);
-
-            Debug.Assert(json != null);
-
-            var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-
-            var instanceId = $"{metadataId}.{Guid.NewGuid():N}";
-
-            await _manager.StartInstanceAsync(metadataId, instanceId, input);
+            var instanceId = await _StartAsync(context, metadataId);
 
             context.Response.ContentType = "application/json";
 
             context.Response.StatusCode = 201;
 
             await context.Response.WriteAsync(JsonConvert.SerializeObject(new { instanceId }), _cancelToken);
+        }
+
+        private async Task<string> _StartAsync(HttpContext context, string metadataId)
+        {
+            Debug.Assert(context != null);
+            Debug.Assert(!string.IsNullOrEmpty(metadataId));
+
+            Debug.Assert(_manager != null);
+
+            var instanceId = context.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
+
+            if (string.IsNullOrWhiteSpace(instanceId))
+            {
+                instanceId = $"{metadataId}.{Guid.NewGuid():N}";
+            }
+
+            var input = new Dictionary<string, object>();
+
+            var paramsJson = context.Request.Headers["X-SCDN-PARAMS"].ToString();
+
+            if (!string.IsNullOrWhiteSpace(paramsJson))
+            {
+                input = JsonConvert.DeserializeObject<Dictionary<string, object>>(paramsJson);
+            }
+
+            await _manager.StartInstanceAsync(metadataId, instanceId, input);
+
+            return instanceId;
         }
 
         private async Task RegisterAndStartInstanceAsync(HttpContext context)
         {
             Debug.Assert(_manager != null);
 
-            var json = await ReadJsonAsync(context.Request);
+            var content = await GetRequestBody(context);
 
-            Debug.Assert(json != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(content));
 
-            var statechart = json["statechart"]?.Value<JObject>();
+            var metadataId = context.Request.Headers["X-SCDN-METADATA-ID"].ToString();
 
-            if (statechart == null)
+            if (metadataId == string.Empty)
             {
-                throw new InvalidOperationException("HTTP payload does not contain statechart definition.");
+                metadataId = null;
             }
 
-            var metadata = new StateChart(statechart);
+            var metadata = await _RegisterAsync(content, context.Request.ContentType, metadataId);
 
-            var metadataId = json["metadataId"]?.Value<string>() ?? metadata.MetadataId;
+            metadataId ??= metadata.MetadataId;
 
-            await _manager.RegisterAsync(metadataId, metadata);
-
-            var input = json["inputs"]?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-
-            var instanceId = json["instanceId"]?.Value<string>() ?? $"{metadataId}.{Guid.NewGuid():N}";
-
-            await _manager.StartInstanceAsync(metadataId, instanceId, input);
+            var instanceId = await _StartAsync(context, metadataId);
 
             context.Response.ContentType = "application/json";
 
             context.Response.StatusCode = 201;
 
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new { instanceId }), _cancelToken);
+            var response = JsonConvert.SerializeObject(new 
+            {
+                metadataId,
+                instanceId
+            });
+
+            await context.Response.WriteAsync(response, _cancelToken);
         }
 
         private async Task StopInstanceAsync(HttpContext context)
         {
             Debug.Assert(_manager != null);
 
-            var instanceId = context.Request.Query["instanceId"].ToString();
+            var instanceId = context.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
 
             if (string.IsNullOrWhiteSpace(instanceId))
             {
@@ -214,11 +264,11 @@ namespace StateChartsDotNet.Web
         {
             Debug.Assert(_manager != null);
 
-            var json = await ReadJsonAsync(context.Request);
+            var json = await GetRequestBody(context);
 
             Debug.Assert(json != null);
 
-            var instanceId = context.Request.Query["instanceId"].ToString();
+            var instanceId = context.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
 
             if (string.IsNullOrWhiteSpace(instanceId))
             {
@@ -226,7 +276,7 @@ namespace StateChartsDotNet.Web
             }
             else
             {
-                var message = json.ToObject<ExternalMessage>();
+                var message = JsonConvert.DeserializeObject<ExternalMessage>(json);
 
                 Debug.Assert(message != null);
 
@@ -240,7 +290,7 @@ namespace StateChartsDotNet.Web
         {
             Debug.Assert(_manager != null);
 
-            var instanceId = context.Request.Query["instanceId"].ToString();
+            var instanceId = context.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
 
             if (string.IsNullOrWhiteSpace(instanceId))
             {
@@ -300,18 +350,20 @@ namespace StateChartsDotNet.Web
             }
         }
 
-        private async Task<JObject> ReadJsonAsync(HttpRequest request)
+        private async Task<string> GetRequestBody(HttpContext context)
         {
-            using var reader = new StreamReader(request.Body);
+            Debug.Assert(context != null);
 
-            var json = await reader.ReadToEndAsync();
+            using var reader = new StreamReader(context.Request.Body);
 
-            if (string.IsNullOrWhiteSpace(json))
+            var content = await reader.ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(content))
             {
                 throw new InvalidOperationException("Unexpected empty HTTP request payload.");
             }
 
-            return JObject.Parse(json);
+            return content;
         }
     }
 }

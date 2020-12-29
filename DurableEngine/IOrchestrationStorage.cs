@@ -13,8 +13,8 @@ namespace StateChartsDotNet.Durable
 
         Task RemoveAsync(params string[] metadataIds);
 
-        Task SerializeAsync(string metadataId, JObject json, string deserializationType);
+        Task SerializeAsync(string metadataId, Stream stream, string deserializationType);
 
-        Task DeserializeAsync(Func<string, JObject, string, Task> deserializeInstanceFunc);
+        Task DeserializeAsync(Func<string, Stream, string, Task> deserializeInstanceFunc);
     }
 }

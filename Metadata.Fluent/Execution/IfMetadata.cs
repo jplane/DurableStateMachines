@@ -1,7 +1,9 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
@@ -18,6 +20,37 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             _executableContent = new List<ExecutableContentMetadata>();
             _elseIfs = new List<ElseIfMetadata<IfMetadata<TParent>>>();
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_eval);
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+            writer.WriteMany(_elseIfs, (o, w) => o.Serialize(w));
+            writer.Write(_else, (o, w) => o.Serialize(w));
+        }
+
+        internal static IfMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new IfMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._eval = reader.Read<Func<dynamic, bool>>();
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            metadata._elseIfs.AddRange(reader.ReadMany(ElseIfMetadata<IfMetadata<TParent>>.Deserialize,
+                                                       o => o.Parent = metadata));
+
+            metadata._else = reader.Read(ElseMetadata<IfMetadata<TParent>>.Deserialize,
+                                         o => o.Parent = metadata);
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -113,7 +146,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             var ec = new LogMetadata<IfMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 

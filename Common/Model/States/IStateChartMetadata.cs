@@ -16,6 +16,7 @@ namespace StateChartsDotNet.Common.Model.States
         ITransitionMetadata GetInitialTransition();
         IScriptMetadata GetScript();
 
-        (JObject, string) ToJson();
+        Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default);
+        Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default);
     }
 }

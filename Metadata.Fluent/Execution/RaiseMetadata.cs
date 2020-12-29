@@ -1,5 +1,7 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
+using System.IO;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
 {
@@ -9,6 +11,28 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal RaiseMetadata()
         {
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_messageName);
+        }
+
+        internal static RaiseMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new RaiseMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._messageName = reader.ReadString();
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }

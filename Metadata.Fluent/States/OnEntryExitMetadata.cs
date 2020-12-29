@@ -1,9 +1,11 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Fluent.Execution;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
@@ -16,6 +18,31 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             _isEntry = isEntry;
             _executableContent = new List<ExecutableContentMetadata>();
+        }
+
+        internal void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            writer.Write(_isEntry);
+            writer.Write(this.MetadataId);
+
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+        }
+
+        internal static OnEntryExitMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var isEntry = reader.ReadBoolean();
+
+            var metadata = new OnEntryExitMetadata<TParent>(isEntry);
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -83,7 +110,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             var ec = new LogMetadata<OnEntryExitMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 

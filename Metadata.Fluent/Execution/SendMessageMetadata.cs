@@ -1,10 +1,13 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using Newtonsoft.Json;
+using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Fluent.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
@@ -14,17 +17,70 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         private readonly List<ParamMetadata<SendMessageMetadata<TParent>>> _params;
         private string _id;
         private string _idLocation;
+        private TimeSpan _delay;
         private Func<dynamic, TimeSpan> _delayGetter;
+        private string _messageName;
         private Func<dynamic, string> _messageNameGetter;
+        private string _target;
         private Func<dynamic, string> _targetGetter;
+        private string _type;
         private Func<dynamic, string> _typeGetter;
+        private object _content;
         private Func<dynamic, object> _contentGetter;
 
         internal SendMessageMetadata()
         {
             _params = new List<ParamMetadata<SendMessageMetadata<TParent>>>();
+            _delay = TimeSpan.Zero;
+        }
 
-            _delayGetter = new Func<dynamic, TimeSpan>(_ => TimeSpan.Zero);
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_id);
+            writer.Write(_idLocation);
+            writer.Write(_delay.ToString());
+            writer.Write(_delayGetter);
+            writer.Write(_messageName);
+            writer.Write(_messageNameGetter);
+            writer.Write(_target);
+            writer.Write(_targetGetter);
+            writer.Write(_type);
+            writer.Write(_typeGetter);
+            writer.WriteObject(_content);            
+            writer.Write(_contentGetter);
+
+            writer.WriteMany(_params, (o, w) => o.Serialize(w));
+        }
+
+        internal static SendMessageMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new SendMessageMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            
+            metadata._id = reader.ReadString();
+            metadata._idLocation = reader.ReadString();
+            metadata._delay = TimeSpan.Parse(reader.ReadString());
+            metadata._delayGetter = reader.Read<Func<dynamic, TimeSpan>>();
+            metadata._messageName = reader.ReadString();
+            metadata._messageNameGetter = reader.Read<Func<dynamic, string>>();
+            metadata._target = reader.ReadString();
+            metadata._targetGetter = reader.Read<Func<dynamic, string>>();
+            metadata._target = reader.ReadString();
+            metadata._typeGetter = reader.Read<Func<dynamic, string>>();
+            metadata._content = reader.ReadObject();
+            metadata._contentGetter = reader.Read<Func<dynamic, string>>();
+
+            metadata._params.AddRange(reader.ReadMany(ParamMetadata<SendMessageMetadata<TParent>>.Deserialize,
+                                                       o => o.Parent = metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -48,61 +104,71 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         public SendMessageMetadata<TParent> Delay(TimeSpan timespan)
         {
-            _delayGetter = _ => timespan;
+            _delay = timespan;
+            _delayGetter = null;
             return this;
         }
 
         public SendMessageMetadata<TParent> Delay(Func<dynamic, TimeSpan> getter)
         {
             _delayGetter = getter;
+            _delay = TimeSpan.Zero;
             return this;
         }
 
         internal SendMessageMetadata<TParent> MessageName(string messageName)
         {
-            _messageNameGetter = _ => messageName;
+            _messageName = messageName;
+            _messageNameGetter = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> MessageName(Func<dynamic, string> getter)
         {
             _messageNameGetter = getter;
+            _messageName = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Target(string target)
         {
-            _targetGetter = _ => target;
+            _target = target;
+            _targetGetter = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Target(Func<dynamic, string> getter)
         {
             _targetGetter = getter;
+            _target = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Type(string type)
         {
-            _typeGetter = _ => type;
+            _type = type;
+            _typeGetter = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Type(Func<dynamic, string> getter)
         {
             _typeGetter = getter;
+            _type = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Content(object content)
         {
-            _contentGetter = _ => content;
+            _content = content;
+            _contentGetter = null;
             return this;
         }
 
         internal SendMessageMetadata<TParent> Content(Func<dynamic, object> getter)
         {
             _contentGetter = getter;
+            _content = null;
             return this;
         }
 
@@ -123,17 +189,22 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         string ISendMessageMetadata.IdLocation => _idLocation;
 
-        TimeSpan ISendMessageMetadata.GetDelay(dynamic data) => _delayGetter.Invoke(data);
+        TimeSpan ISendMessageMetadata.GetDelay(dynamic data) =>
+            _delayGetter == null ? _delay : _delayGetter.Invoke(data);
 
-        string ISendMessageMetadata.GetMessageName(dynamic data) => _messageNameGetter?.Invoke(data);
+        string ISendMessageMetadata.GetMessageName(dynamic data) =>
+            _messageNameGetter == null ? _messageName : _messageNameGetter.Invoke(data);
 
-        object ISendMessageMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
+        object ISendMessageMetadata.GetContent(dynamic data) =>
+            _contentGetter == null ? _content : _contentGetter.Invoke(data);
 
         IReadOnlyDictionary<string, object> ISendMessageMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
 
-        string ISendMessageMetadata.GetTarget(dynamic data) => _targetGetter?.Invoke(data);
+        string ISendMessageMetadata.GetTarget(dynamic data) =>
+            _targetGetter == null ? _target : _targetGetter.Invoke(data);
 
-        string ISendMessageMetadata.GetType(dynamic data) => _typeGetter?.Invoke(data);
+        string ISendMessageMetadata.GetType(dynamic data) =>
+            _typeGetter == null ? _type : _typeGetter.Invoke(data);
     }
 }

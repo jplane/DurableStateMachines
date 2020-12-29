@@ -109,26 +109,42 @@ namespace StateChartsDotNet.Durable
 
                 AddTaskActivities();
 
-                await _storage.DeserializeAsync(async (metadataId, json, deserializationType) =>
+                await _storage.DeserializeAsync(async (metadataId, stream, metadataType) =>
                 {
                     Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
-                    Debug.Assert(json != null);
-                    Debug.Assert(!string.IsNullOrWhiteSpace(deserializationType));
+                    Debug.Assert(stream != null);
+                    Debug.Assert(!string.IsNullOrWhiteSpace(metadataType));
 
-                    var type = Type.GetType(deserializationType);
+                    Type targetType = null;
 
-                    Debug.Assert(type != null);
+                    switch (metadataType)
+                    {
+                        case "fluent":
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Fluent.StateChart");
+                            break;
 
-                    var method = type.GetMethod("FromJson", BindingFlags.Public | BindingFlags.Static);
+                        case "json":
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Json.StateChart");
+                            break;
+
+                        case "xml":
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Xml.StateChart");
+                            break;
+                    }
+
+                    Debug.Assert(targetType != null);
+
+                    var method = targetType.GetMethod("DeserializeAsync",
+                                                      BindingFlags.Public | BindingFlags.Static);
 
                     Debug.Assert(method != null);
 
                     var deserializer =
-                            (Func<JObject, Task<IStateChartMetadata>>) Delegate.CreateDelegate(typeof(Func<JObject, Task<IStateChartMetadata>>), method);
+                            (Func<Stream, CancellationToken, Task<IStateChartMetadata>>) Delegate.CreateDelegate(typeof(Func<Stream, CancellationToken, Task<IStateChartMetadata>>), method);
 
                     Debug.Assert(deserializer != null);
 
-                    var metadata = await deserializer(json);
+                    var metadata = await deserializer(stream, _cancelToken);
 
                     Debug.Assert(metadata != null);
 
@@ -172,12 +188,15 @@ namespace StateChartsDotNet.Durable
                     return;
                 }
 
-                var tuple = metadata.ToJson();
+                using var stream = new MemoryStream();
 
-                Debug.Assert(tuple.Item1 != null);
-                Debug.Assert(!string.IsNullOrWhiteSpace(tuple.Item2));
+                var metadataType = await metadata.SerializeAsync(stream, _cancelToken);
 
-                await _storage.SerializeAsync(metadataId, tuple.Item1, tuple.Item2);
+                Debug.Assert(!string.IsNullOrWhiteSpace(metadataType));
+
+                stream.Position = 0;
+
+                await _storage.SerializeAsync(metadataId, stream, metadataType);
 
                 Register(metadataId, metadata);
             }

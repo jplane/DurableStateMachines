@@ -1,10 +1,12 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Metadata.Fluent.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
@@ -14,13 +16,53 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         private readonly List<ExecutableContentMetadata> _executableContent;
         private readonly List<ParamMetadata<QueryMetadata<TParent>>> _params;
         private string _resultLocation;
+        private string _target;
         private Func<dynamic, string> _targetGetter;
+        private string _type;
         private Func<dynamic, string> _typeGetter;
 
         internal QueryMetadata()
         {
             _executableContent = new List<ExecutableContentMetadata>();
             _params = new List<ParamMetadata<QueryMetadata<TParent>>>();
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_resultLocation);
+
+            writer.Write(_target);
+            writer.Write(_targetGetter);
+            writer.Write(_type);
+            writer.Write(_typeGetter);
+
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+            writer.WriteMany(_params, (o, w) => o.Serialize(w));
+        }
+
+        internal static QueryMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new QueryMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._resultLocation = reader.ReadString();
+            metadata._target = reader.ReadString();
+            metadata._targetGetter = reader.Read<Func<dynamic, string>>();
+            metadata._type = reader.ReadString();
+            metadata._typeGetter = reader.Read<Func<dynamic, string>>();
+
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            metadata._params.AddRange(reader.ReadMany(ParamMetadata<QueryMetadata<TParent>>.Deserialize,
+                                                       o => o.Parent = metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -38,25 +80,29 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal QueryMetadata<TParent> Target(string target)
         {
-            _targetGetter = _ => target;
+            _target = target;
+            _targetGetter = null;
             return this;
         }
 
         internal QueryMetadata<TParent> Target(Func<dynamic, string> getter)
         {
             _targetGetter = getter;
+            _target = null;
             return this;
         }
 
         internal QueryMetadata<TParent> Type(string type)
         {
-            _typeGetter = _ => type;
+            _type = type;
+            _typeGetter = null;
             return this;
         }
 
         internal QueryMetadata<TParent> Type(Func<dynamic, string> getter)
         {
             _typeGetter = getter;
+            _type = null;
             return this;
         }
 
@@ -129,7 +175,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             var ec = new LogMetadata<QueryMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 
@@ -216,9 +262,11 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         IReadOnlyDictionary<string, object> IQueryMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
 
-        string IQueryMetadata.GetTarget(dynamic data) => _targetGetter?.Invoke(data);
+        string IQueryMetadata.GetTarget(dynamic data) =>
+            _targetGetter == null ? _target : _targetGetter.Invoke(data);
 
-        string IQueryMetadata.GetType(dynamic data) => _typeGetter?.Invoke(data);
+        string IQueryMetadata.GetType(dynamic data) =>
+            _typeGetter == null ? _type : _typeGetter.Invoke(data);
 
         IEnumerable<IExecutableContentMetadata> IQueryMetadata.GetExecutableContent() => _executableContent;
     }

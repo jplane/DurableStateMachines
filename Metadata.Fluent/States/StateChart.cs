@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,9 +42,106 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IStateMetadata _Parent => null;
 
-        public (JObject, string) ToJson()
+        public async Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default)
         {
-            throw new NotSupportedException();
+            using var stream = new MemoryStream();
+
+            var metadataType = await this.SerializeAsync(stream, cancelToken);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(metadataType));
+
+            stream.Position = 0;
+
+            var bytes = Convert.ToBase64String(stream.ToArray());
+
+            return (metadataType, bytes);
+        }
+
+        public static Task<IStateChartMetadata> FromStringAsync(string content,
+                                                                CancellationToken cancelToken = default)
+        {
+            content.CheckArgNull(nameof(content));
+
+            var bytes = Convert.FromBase64String(content);
+
+            using var stream = new MemoryStream(bytes);
+
+            return DeserializeAsync(stream, cancelToken);
+        }
+
+        public Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
+
+            Serialize(writer);
+
+            return Task.FromResult("fluent");
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write((int)_databinding);
+            writer.Write(_failFast);
+
+            writer.Write(_datamodel, (o, w) => o.Serialize(w));
+            writer.Write(_initialTransition, (o, w) => o.Serialize(w));
+            writer.Write(_script, (o, w) => o.Serialize(w));
+
+            writer.WriteMany(_states, (o, w) => o.Serialize(w));
+            writer.WriteMany(_transitions, (o, w) => o.Serialize(w));
+            writer.WriteMany(_stateChartInvokes, (o, w) => o.Serialize(w));
+        }
+
+        public static Task<IStateChartMetadata> DeserializeAsync(Stream stream,
+                                                                 CancellationToken cancelToken = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var reader = new BinaryReader(stream, Encoding.UTF8, true);
+
+            var statechart = Deserialize(reader);
+
+            return Task.FromResult((IStateChartMetadata) statechart);
+        }
+
+        internal static StateChart Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            reader.ReadString();    // aqtn, can safely ignore
+
+            var name = reader.ReadString();
+
+            var statechart = new StateChart(name);
+
+            statechart.MetadataId = reader.ReadString();
+            statechart._databinding = (Databinding)reader.ReadInt32();
+            statechart._failFast = reader.ReadBoolean();
+
+            statechart._datamodel = reader.Read(DatamodelMetadata<StateChart>.Deserialize,
+                                                o => o.Parent = statechart);
+
+            statechart._initialTransition = reader.Read(TransitionMetadata<StateChart>.Deserialize,
+                                                        o => o.Parent = statechart);
+
+            statechart._script = reader.Read(ScriptMetadata<StateChart>.Deserialize,
+                                             o => o.Parent = statechart);
+
+            statechart._states.AddRange(StateMetadata.DeserializeMany(reader, statechart));
+
+            statechart._transitions.AddRange(reader.ReadMany(TransitionMetadata<StateChart>.Deserialize,
+                                                             o => o.Parent = statechart));
+
+            statechart._stateChartInvokes.AddRange(reader.ReadMany(InvokeStateChartMetadata<StateChart>.Deserialize,
+                                                                   o => o.Parent = statechart));
+
+            return statechart;
         }
 
         public override string MetadataId 

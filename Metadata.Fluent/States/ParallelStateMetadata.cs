@@ -1,9 +1,11 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Fluent.Data;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -23,6 +25,47 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             _states = new List<StateMetadata>();
             _transitions = new List<TransitionMetadata<ParallelStateMetadata<TParent>>>();
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_datamodel, (o, w) => o.Serialize(w));
+            writer.Write(_onEntry, (o, w) => o.Serialize(w));
+            writer.Write(_onExit, (o, w) => o.Serialize(w));
+
+            writer.WriteMany(_states, (o, w) => o.Serialize(w));
+            writer.WriteMany(_transitions, (o, w) => o.Serialize(w));
+        }
+
+        internal static ParallelStateMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var id = reader.ReadString();
+
+            var metadata = new ParallelStateMetadata<TParent>(id);
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._datamodel = reader.Read(DatamodelMetadata<ParallelStateMetadata<TParent>>.Deserialize,
+                                              o => o.Parent = metadata);
+
+            metadata._onEntry = reader.Read(OnEntryExitMetadata<ParallelStateMetadata<TParent>>.Deserialize,
+                                            o => o.Parent = metadata);
+
+            metadata._onExit = reader.Read(OnEntryExitMetadata<ParallelStateMetadata<TParent>>.Deserialize,
+                                           o => o.Parent = metadata);
+
+            metadata._states.AddRange(StateMetadata.DeserializeMany(reader, metadata));
+
+            metadata._transitions.AddRange(reader.ReadMany(TransitionMetadata<ParallelStateMetadata<TParent>>.Deserialize,
+                                                             o => o.Parent = metadata));
+
+            return metadata;
         }
 
         protected override IStateMetadata _Parent => this.Parent;

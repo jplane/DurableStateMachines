@@ -1,4 +1,5 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
@@ -7,6 +8,7 @@ using StateChartsDotNet.Metadata.Fluent.Execution;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
@@ -20,13 +22,51 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private string _remoteUri;
         private string _id;
         private string _idLocation;
-        private IStateChartMetadata _root;
+        private StateChart _root;
 
         internal InvokeStateChartMetadata()
         {
             _mode = ChildStateChartExecutionMode.Inline;
             _finalizeExecutableContent = new List<ExecutableContentMetadata>();
             _params = new List<ParamMetadata<InvokeStateChartMetadata<TParent>>>();
+        }
+
+        internal void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            writer.Write(this.MetadataId);
+            writer.Write((int)_mode);
+            writer.Write(_remoteUri);
+            writer.Write(_id);
+            writer.Write(_idLocation);
+
+            writer.WriteMany(_finalizeExecutableContent, (o, w) => o.Serialize(w));
+            writer.WriteMany(_params, (o, w) => o.Serialize(w));
+
+            _root.Serialize(writer);
+        }
+
+        internal static InvokeStateChartMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new InvokeStateChartMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._mode = (ChildStateChartExecutionMode)reader.ReadInt32();
+            metadata._remoteUri = reader.ReadString();
+            metadata._id = reader.ReadString();
+            metadata._idLocation = reader.ReadString();
+
+            metadata._finalizeExecutableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            metadata._params.AddRange(reader.ReadMany(ParamMetadata<InvokeStateChartMetadata<TParent>>.Deserialize,
+                                                       o => o.Parent = metadata));
+
+            metadata._root = StateChart.Deserialize(reader);
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -139,7 +179,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             var ec = new LogMetadata<InvokeStateChartMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _finalizeExecutableContent.Add(ec);
 

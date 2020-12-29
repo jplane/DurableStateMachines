@@ -144,7 +144,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
 
             var parm = metadata.Param($"?{name}");
 
-            parm.Value(_ => value);
+            parm.Value(value);
 
             return metadata;
         }
@@ -172,7 +172,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
 
             var parm = metadata.Param(name);
 
-            parm.Value(_ => value);
+            parm.Value(value);
 
             return metadata;
         }

@@ -1,6 +1,8 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
+using System.IO;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
 {
@@ -10,6 +12,28 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal ScriptMetadata()
         {
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_action);
+        }
+
+        internal static ScriptMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new ScriptMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._action = reader.Read<Action<dynamic>>();
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }

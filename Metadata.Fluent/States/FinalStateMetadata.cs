@@ -1,16 +1,19 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Fluent.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
     public sealed class FinalStateMetadata<TParent> : StateMetadata, IFinalStateMetadata where TParent : IStateMetadata
     {
+        private object _content;
         private Func<dynamic, object> _contentGetter;
         private OnEntryExitMetadata<FinalStateMetadata<TParent>> _onEntry;
         private OnEntryExitMetadata<FinalStateMetadata<TParent>> _onExit;
@@ -21,6 +24,47 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         internal FinalStateMetadata(string id)
             : base(id)
         {
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.WriteObject(_content);
+            writer.Write(_contentGetter);
+
+            writer.Write(_onEntry, (o, w) => o.Serialize(w));
+            writer.Write(_onExit, (o, w) => o.Serialize(w));
+
+            writer.WriteMany(_params, (o, w) => o.Serialize(w));
+        }
+
+        internal static FinalStateMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var id = reader.ReadString();
+
+            var metadata = new FinalStateMetadata<TParent>(id);
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._content = reader.ReadObject();
+
+            metadata._contentGetter = reader.Read<Func<dynamic, object>>();
+
+            metadata._onEntry = reader.Read(OnEntryExitMetadata<FinalStateMetadata<TParent>>.Deserialize,
+                                o => o.Parent = metadata);
+
+            metadata._onExit = reader.Read(OnEntryExitMetadata<FinalStateMetadata<TParent>>.Deserialize,
+                                           o => o.Parent = metadata);
+
+            metadata._params.AddRange(reader.ReadMany(ParamMetadata<FinalStateMetadata<TParent>>.Deserialize,
+                                                       o => o.Parent = metadata));
+
+            return metadata;
         }
 
         protected override IStateMetadata _Parent => this.Parent;
@@ -58,9 +102,17 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return _onExit;
         }
 
+        public FinalStateMetadata<TParent> Content(object content)
+        {
+            _content = content;
+            _contentGetter = null;
+            return this;
+        }
+
         public FinalStateMetadata<TParent> Content(Func<dynamic, object> getter)
         {
             _contentGetter = getter;
+            _content = null;
             return this;
         }
 
@@ -77,7 +129,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return param;
         }
 
-        object IFinalStateMetadata.GetContent(dynamic data) => _contentGetter?.Invoke(data);
+        object IFinalStateMetadata.GetContent(dynamic data) =>
+            _contentGetter == null ? _content : _contentGetter.Invoke(data);
 
         IReadOnlyDictionary<string, object> IFinalStateMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));

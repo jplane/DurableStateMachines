@@ -1,8 +1,10 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
@@ -12,11 +14,42 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         private readonly List<ExecutableContentMetadata> _executableContent;
         private string _itemLocation;
         private string _indexLocation;
+        private IEnumerable _items;
         private Func<dynamic, IEnumerable> _getItems;
 
         internal ForeachMetadata()
         {
             _executableContent = new List<ExecutableContentMetadata>();
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_itemLocation);
+            writer.Write(_indexLocation);
+            writer.WriteObject(_items);
+            writer.Write(_getItems);
+
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+        }
+
+        internal static ForeachMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new ForeachMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._itemLocation = reader.ReadString();
+            metadata._indexLocation = reader.ReadString();
+            metadata._items = (IEnumerable) reader.ReadObject();
+            metadata._getItems = reader.Read<Func<dynamic, IEnumerable>>();
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -38,9 +71,17 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
+        public ForeachMetadata<TParent> Items(IEnumerable items)
+        {
+            _items = items;
+            _getItems = null;
+            return this;
+        }
+
         public ForeachMetadata<TParent> Items(Func<dynamic, IEnumerable> getter)
         {
             _getItems = getter;
+            _items = null;
             return this;
         }
 
@@ -100,7 +141,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             var ec = new LogMetadata<ForeachMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 
@@ -186,7 +227,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         string IForeachMetadata.Index => _indexLocation;
 
-        IEnumerable IForeachMetadata.GetArray(dynamic data) => _getItems?.Invoke(data) ?? Enumerable.Empty<object>();
+        IEnumerable IForeachMetadata.GetArray(dynamic data) =>
+            (_getItems == null ? _items : _getItems.Invoke(data)) ?? Enumerable.Empty<object>();
 
         IEnumerable<IExecutableContentMetadata> IForeachMetadata.GetExecutableContent() => _executableContent;
     }

@@ -1,6 +1,8 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
+using System.IO;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
@@ -13,6 +15,33 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             : base(id)
         {
             _type = HistoryType.Deep;
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write((int) _type);
+
+            writer.Write(_transition, (o, w) => o.Serialize(w));
+        }
+
+        internal static HistoryStateMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var id = reader.ReadString();
+
+            var metadata = new HistoryStateMetadata<TParent>(id);
+
+            metadata.MetadataId = reader.ReadString();
+
+            metadata._transition = reader.Read(TransitionMetadata<HistoryStateMetadata<TParent>>.Deserialize,
+                                                        o => o.Parent = metadata);
+
+            return metadata;
         }
 
         protected override IStateMetadata _Parent => this.Parent;

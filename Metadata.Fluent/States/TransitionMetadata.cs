@@ -1,9 +1,13 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Fluent.Execution;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
@@ -23,6 +27,38 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             _targets = new List<string>();
             _messages = new List<string>();
             _executableContent = new List<ExecutableContentMetadata>();
+        }
+
+        internal void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            writer.Write(this.MetadataId);
+            writer.Write((int) _type);
+            writer.Write(_evalCondition);
+
+            writer.Write(string.Join('|', _targets));
+            writer.Write(string.Join('|', _messages));
+
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+        }
+
+        internal static TransitionMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new TransitionMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._type = (TransitionType)reader.ReadInt32();
+            metadata._evalCondition = reader.Read<Func<dynamic, bool>>();
+
+            metadata._targets.AddRange(reader.ReadString().Split('|'));
+            metadata._messages.AddRange(reader.ReadString().Split('|'));
+
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -114,7 +150,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             var ec = new LogMetadata<TransitionMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 

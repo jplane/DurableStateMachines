@@ -1,6 +1,8 @@
-﻿using StateChartsDotNet.Common.Model;
+﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace StateChartsDotNet.Metadata.Fluent.Execution
 {
@@ -12,6 +14,30 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         internal ElseIfMetadata()
         {
             _executableContent = new List<ExecutableContentMetadata>();
+        }
+
+        internal override void Serialize(BinaryWriter writer)
+        {
+            writer.CheckArgNull(nameof(writer));
+
+            base.Serialize(writer);
+
+            writer.Write(_eval);
+
+            writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
+        }
+
+        internal static ElseIfMetadata<TParent> Deserialize(BinaryReader reader)
+        {
+            reader.CheckArgNull(nameof(reader));
+
+            var metadata = new ElseIfMetadata<TParent>();
+
+            metadata.MetadataId = reader.ReadString();
+            metadata._eval = reader.Read<Func<dynamic, bool>>();
+            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            return metadata;
         }
 
         internal TParent Parent { get; set; }
@@ -87,7 +113,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             var ec = new LogMetadata<ElseIfMetadata<TParent>>();
 
-            ec.Message(_ => message);
+            ec.Message(message);
 
             _executableContent.Add(ec);
 

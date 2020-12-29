@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,15 +28,7 @@ namespace StateChartsDotNet.Services
             url.CheckArgNull(nameof(url));
             parameters.CheckArgNull(nameof(parameters));
 
-            _client.DefaultRequestHeaders.Clear();
-
-            var queryString = ResolveParameters(parameters);
-
-            var uri = GetUri(url, queryString);
-
-            Debug.Assert(uri != null);
-
-            var response = await Invoke("GET", null, uri, token);
+            var response = await Invoke("GET", null, url, null, parameters, token);
 
             Debug.Assert(response != null);
 
@@ -51,17 +45,7 @@ namespace StateChartsDotNet.Services
             url.CheckArgNull(nameof(url));
             parameters.CheckArgNull(nameof(parameters));
 
-            _client.DefaultRequestHeaders.Clear();
-
-            var queryString = ResolveParameters(parameters);
-
-            AddCorrelationHeader(correlationId);
-
-            var uri = GetUri(url, queryString);
-
-            Debug.Assert(uri != null);
-
-            var response = await Invoke("POST", content, uri, token);
+            var response = await Invoke("POST", content, url, correlationId, parameters, token);
 
             Debug.Assert(response != null);
 
@@ -87,28 +71,35 @@ namespace StateChartsDotNet.Services
 
             Debug.Assert(statechartMetadata != null);
 
-            var content = new
+            var tuple = await statechartMetadata.ToStringAsync(cancelToken);
+
+            var parameters = new Dictionary<string, object>();
+
+            switch (tuple.Item1)
             {
-                statechart = statechartMetadata.ToJson(),
-                metadataId = metadataId,
-                instanceId = instanceId,
-                inputs = inputs
-            };
+                case "fluent":
+                    parameters.Add("Content-Type", "text/plain");
+                    break;
+
+                case "json":
+                    parameters.Add("Content-Type", "application/json");
+                    break;
+
+                case "xml":
+                    parameters.Add("Content-Type", "application/xml");
+                    break;
+            }
+
+            parameters.Add("X-SCDN-PARAMS", JsonConvert.SerializeObject(inputs));
+            parameters.Add("X-SCDN-METADATA-ID", metadataId);
+            parameters.Add("X-SCDN-INSTANCE-ID", instanceId);
 
             await PostAsync($"{invokeMetadata.RemoteUri}/api/registerandstart",
                             null,
-                            content,
+                            tuple.Item2,
                             null,
-                            new Dictionary<string, object>(),
+                            parameters,
                             cancelToken);
-        }
-
-        private static void AddCorrelationHeader(string correlationId)
-        {
-            if (!string.IsNullOrWhiteSpace(correlationId))
-            {
-                _client.DefaultRequestHeaders.Add("X-SCDN-CORRELATION", correlationId);
-            }
         }
 
         private static Uri GetUri(string url, string queryString)
@@ -125,34 +116,77 @@ namespace StateChartsDotNet.Services
 
         private static async Task<HttpResponseMessage> Invoke(string verb,
                                                               object content,
-                                                              Uri uri,
+                                                              string url,
+                                                              string correlationId,
+                                                              IReadOnlyDictionary<string, object> parameters,
                                                               CancellationToken token)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(verb));
-            Debug.Assert(uri != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(url));
+            Debug.Assert(parameters != null);
+
+            var msg = new HttpRequestMessage();
+
+            var queryString = ResolveParameters(parameters, msg.Headers);
+
+            var uri = GetUri(url, queryString);
+
+            if (!string.IsNullOrWhiteSpace(correlationId))
+            {
+                msg.Headers.Add("X-SCDN-CORRELATION", correlationId);
+            }
+
+            msg.RequestUri = uri;
 
             switch (verb.ToUpperInvariant())
             {
                 case "GET":
-                    return await _client.GetAsync(uri, token);
+                    msg.Method = HttpMethod.Get;
+                    break;
 
                 case "POST":
-
                     content.CheckArgNull(nameof(content));
+                    msg.Method = HttpMethod.Post;
+                    msg.Content = Serialize(content);
+                    break;
 
-                    var httpContent = new StringContent(JsonConvert.SerializeObject(content),
-                                                        Encoding.UTF8,
-                                                        "application/json");
+                case "PUT":
+                    msg.Method = HttpMethod.Put;
 
-                    return await _client.PostAsync(uri, httpContent, token);
+                    if (content != null)
+                    {
+                        msg.Content = Serialize(content);
+                    }
+
+                    break;
 
                 default:
                     throw new InvalidOperationException("HTTP verb not supported: " + verb);
             }
+
+            return await _client.SendAsync(msg, token);
         }
 
-        private static string ResolveParameters(IReadOnlyDictionary<string, object> parameters)
+        private static StringContent Serialize(object content)
         {
+            if (content is string s)
+            {
+                return new StringContent(s);
+            }
+            else
+            {
+                return new StringContent(JsonConvert.SerializeObject(content),
+                                         Encoding.UTF8,
+                                         "application/json");
+            }
+        }
+
+        private static string ResolveParameters(IReadOnlyDictionary<string, object> parameters,
+                                                HttpRequestHeaders headers)
+        {
+            Debug.Assert(parameters != null);
+            Debug.Assert(headers != null);
+
             var builder = new StringBuilder();
 
             foreach (var param in parameters)
@@ -167,7 +201,7 @@ namespace StateChartsDotNet.Services
                 }
                 else
                 {
-                    _client.DefaultRequestHeaders.Add(param.Key, value);
+                    headers.Add(param.Key, value);
                 }
             }
 

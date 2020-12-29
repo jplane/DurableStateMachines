@@ -12,8 +12,8 @@ namespace StateChartsDotNet.Durable
     public class InMemoryOrchestrationStorage : IOrchestrationStorage
     {
         private readonly AsyncLock _lock;
-        private readonly Dictionary<string, (string, JObject)> _instances =
-            new Dictionary<string, (string, JObject)>();
+        private readonly Dictionary<string, (string, byte[])> _instances =
+            new Dictionary<string, (string, byte[])>();
 
         public InMemoryOrchestrationStorage()
         {
@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task DeserializeAsync(Func<string, JObject, string, Task> deserializeInstanceFunc)
+        public async Task DeserializeAsync(Func<string, Stream, string, Task> deserializeInstanceFunc)
         {
             deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
 
@@ -36,7 +36,9 @@ namespace StateChartsDotNet.Durable
             {
                 foreach (var pair in _instances)
                 {
-                    await deserializeInstanceFunc(pair.Key, pair.Value.Item2, pair.Value.Item1);
+                    using var stream = new MemoryStream(pair.Value.Item2);
+
+                    await deserializeInstanceFunc(pair.Key, stream, pair.Value.Item1);
                 }
             } 
         }
@@ -54,15 +56,21 @@ namespace StateChartsDotNet.Durable
             } 
         }
 
-        public async Task SerializeAsync(string metadataId, JObject json, string deserializationType)
+        public async Task SerializeAsync(string metadataId, Stream stream, string deserializationType)
         {
             metadataId.CheckArgNull(nameof(metadataId));
-            json.CheckArgNull(nameof(json));
+            stream.CheckArgNull(nameof(stream));
             deserializationType.CheckArgNull(nameof(deserializationType));
 
             using (await _lock.LockAsync())
             {
-                _instances.Add(metadataId, (deserializationType, json));
+                using var copy = new MemoryStream();
+
+                await stream.CopyToAsync(copy);
+
+                copy.Position = 0;
+
+                _instances.Add(metadataId, (deserializationType, copy.ToArray()));
             }
         }
     }

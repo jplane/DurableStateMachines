@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -26,9 +27,46 @@ namespace StateChartsDotNet.Metadata.Xml.States
             _name = _element.Attribute("name").Value;
         }
 
-        public (JObject, string) ToJson()
+        public Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default)
         {
-            throw new NotSupportedException();
+            return Task.FromResult(("xml", _element.ToString()));
+        }
+
+        public static Task<IStateChartMetadata> FromStringAsync(string content,
+                                                                CancellationToken cancelToken = default)
+        {
+            content.CheckArgNull(nameof(content));
+
+            var xml = XDocument.Parse(content);
+
+            var statechart = new StateChart(xml);
+
+            return Task.FromResult((IStateChartMetadata) statechart);
+        }
+
+        public async Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var writer = new StreamWriter(stream, Encoding.UTF8, -1, true);
+
+            await writer.WriteAsync(_element.ToString());
+
+            return "xml";
+        }
+
+        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream,
+                                                                       CancellationToken cancelToken = default)
+        {
+            stream.CheckArgNull(nameof(stream));
+
+            using var reader = new StreamReader(stream, Encoding.UTF8, true, -1, true);
+
+            var doc = XDocument.Parse(await reader.ReadToEndAsync());
+
+            var statechart = new StateChart(doc);
+
+            return statechart;
         }
 
         public override string Id => _name;
