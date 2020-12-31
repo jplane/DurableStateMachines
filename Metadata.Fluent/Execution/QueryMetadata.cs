@@ -33,11 +33,11 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_resultLocation);
+            writer.WriteNullableString(_resultLocation);
 
-            writer.Write(_target);
+            writer.WriteNullableString(_target);
             writer.Write(_targetGetter);
-            writer.Write(_type);
+            writer.WriteNullableString(_type);
             writer.Write(_typeGetter);
 
             writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
@@ -50,11 +50,11 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new QueryMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
-            metadata._resultLocation = reader.ReadString();
-            metadata._target = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
+            metadata._resultLocation = reader.ReadNullableString();
+            metadata._target = reader.ReadNullableString();
             metadata._targetGetter = reader.Read<Func<dynamic, string>>();
-            metadata._type = reader.ReadString();
+            metadata._type = reader.ReadNullableString();
             metadata._typeGetter = reader.Read<Func<dynamic, string>>();
 
             metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));

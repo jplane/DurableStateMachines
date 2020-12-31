@@ -40,15 +40,15 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_id);
-            writer.Write(_idLocation);
-            writer.Write(_delay.ToString());
+            writer.WriteNullableString(_id);
+            writer.WriteNullableString(_idLocation);
+            writer.WriteNullableString(_delay.ToString());
             writer.Write(_delayGetter);
-            writer.Write(_messageName);
+            writer.WriteNullableString(_messageName);
             writer.Write(_messageNameGetter);
-            writer.Write(_target);
+            writer.WriteNullableString(_target);
             writer.Write(_targetGetter);
-            writer.Write(_type);
+            writer.WriteNullableString(_type);
             writer.Write(_typeGetter);
             writer.WriteObject(_content);            
             writer.Write(_contentGetter);
@@ -62,17 +62,17 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new SendMessageMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
             
-            metadata._id = reader.ReadString();
-            metadata._idLocation = reader.ReadString();
-            metadata._delay = TimeSpan.Parse(reader.ReadString());
+            metadata._id = reader.ReadNullableString();
+            metadata._idLocation = reader.ReadNullableString();
+            metadata._delay = TimeSpan.Parse(reader.ReadNullableString());
             metadata._delayGetter = reader.Read<Func<dynamic, TimeSpan>>();
-            metadata._messageName = reader.ReadString();
+            metadata._messageName = reader.ReadNullableString();
             metadata._messageNameGetter = reader.Read<Func<dynamic, string>>();
-            metadata._target = reader.ReadString();
+            metadata._target = reader.ReadNullableString();
             metadata._targetGetter = reader.Read<Func<dynamic, string>>();
-            metadata._target = reader.ReadString();
+            metadata._target = reader.ReadNullableString();
             metadata._typeGetter = reader.Read<Func<dynamic, string>>();
             metadata._content = reader.ReadObject();
             metadata._contentGetter = reader.Read<Func<dynamic, string>>();

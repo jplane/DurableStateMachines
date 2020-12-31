@@ -42,11 +42,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             reader.CheckArgNull(nameof(reader));
 
-            var id = reader.ReadString();
+            var id = reader.ReadNullableString();
 
             var metadata = new AtomicStateMetadata<TParent>(id);
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._datamodel = reader.Read(DatamodelMetadata<AtomicStateMetadata<TParent>>.Deserialize,
                                               o => o.Parent = metadata);

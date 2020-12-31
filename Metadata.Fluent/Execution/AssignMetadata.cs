@@ -22,7 +22,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_location);
+            writer.WriteNullableString(_location);
             writer.WriteObject(_value);
             writer.Write(_getValue);
         }
@@ -33,8 +33,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new AssignMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
-            metadata._location = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
+            metadata._location = reader.ReadNullableString();
             metadata._value = reader.ReadObject();
             metadata._getValue = reader.Read<Func<dynamic, object>>();
 

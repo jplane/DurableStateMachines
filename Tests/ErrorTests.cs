@@ -17,10 +17,12 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task ErrorMessateNotHandled(ScaffoldFactoryDelegate factory, string _)
         {
+            static void action(dynamic data) => throw new Exception("boo!");
+
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
                                         .OnEntry()
-                                            .Execute(_ => throw new Exception("boo!"))
+                                            .Execute(action)
                                             .Attach()
                                         .Transition()
                                             .Target("alldone")
@@ -42,10 +44,14 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task ErrorMessageHandled(ScaffoldFactoryDelegate factory, string _)
         {
+            static void action(dynamic data) => throw new Exception("boo!");
+
+            static object getContent(dynamic data) => data._event.Content;
+
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
                                         .OnEntry()
-                                            .Execute(_ => throw new Exception("boo!"))
+                                            .Execute(action)
                                             .Attach()
                                         .Transition()
                                             .Message("error.*")
@@ -56,7 +62,7 @@ namespace StateChartsDotNet.Tests
                                         .OnEntry()
                                             .Assign()
                                                 .Location("err")
-                                                .Value(data => data._event.Content)
+                                                .Value(getContent)
                                                 .Attach()
                                             .Attach()
                                         .Transition()
@@ -83,11 +89,13 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task FailFast(ScaffoldFactoryDelegate factory, string _)
         {
+            static void action(dynamic data) => throw new Exception("boo!");
+
             var machine = StateChart.Define("test")
                                     .FailFast(true)
                                     .AtomicState("state1")
                                         .OnEntry()
-                                            .Execute(_ => throw new Exception("boo!"))
+                                            .Execute(action)
                                             .Attach()
                                         .Transition()
                                             .Target("alldone")

@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.MetadataId);
 
             writer.WriteMany(_dataInits, (o, w) => o.Serialize(w));
         }
@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
             var metadata = new DatamodelMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._dataInits.AddRange(reader.ReadMany(DataInitMetadata<DatamodelMetadata<TParent>>.Deserialize,
                                            o => o.Parent = metadata));

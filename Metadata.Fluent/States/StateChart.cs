@@ -114,13 +114,13 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             reader.CheckArgNull(nameof(reader));
 
-            reader.ReadString();    // aqtn, can safely ignore
+            reader.ReadNullableString();    // aqtn, can safely ignore
 
-            var name = reader.ReadString();
+            var name = reader.ReadNullableString();
 
             var statechart = new StateChart(name);
 
-            statechart.MetadataId = reader.ReadString();
+            statechart.MetadataId = reader.ReadNullableString();
             statechart._databinding = (Databinding)reader.ReadInt32();
             statechart._failFast = reader.ReadBoolean();
 

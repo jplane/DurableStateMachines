@@ -13,26 +13,41 @@ namespace StateChartsDotNet.Metadata.Fluent
 {
     internal static class SerializationExtensions
     {
+        const string NullValue = "__nil";
+
         public static void WriteObject(this BinaryWriter writer, object obj)
         {
             if (obj == null)
-                writer.Write("___null__");
+                writer.Write(NullValue);
             else
                 writer.Write(JsonConvert.SerializeObject(obj));
         }
 
+        public static void WriteNullableString(this BinaryWriter writer, string s)
+        {
+            if (s == null)
+                writer.Write(NullValue);
+            else
+                writer.Write(s);
+        }
+
         public static void Write(this BinaryWriter writer, Delegate del)
         {
-            del.CheckArgNull(nameof(del));
-
-            if (!del.Method.IsStatic)
+            if (del == null)
             {
-                throw new SerializationException("Cannot serialize instance method references.");
+                writer.Write(NullValue);
             }
+            else
+            {
+                if (!del.Method.IsStatic)
+                {
+                    throw new SerializationException("Cannot serialize instance method references.");
+                }
 
-            writer.Write(del.Method.DeclaringType.AssemblyQualifiedName);
-            writer.Write(del.Method.Name);
-            writer.Write(del.Method.IsPublic);
+                writer.Write(del.Method.DeclaringType.AssemblyQualifiedName);
+                writer.Write(del.Method.Name);
+                writer.Write(del.Method.IsPublic);
+            }
         }
 
         public static void Write<T>(this BinaryWriter writer,
@@ -41,7 +56,7 @@ namespace StateChartsDotNet.Metadata.Fluent
         {
             if (metadata == null)
             {
-                writer.Write(false);
+                writer.Write(NullValue);
             }
             else
             {
@@ -66,14 +81,26 @@ namespace StateChartsDotNet.Metadata.Fluent
         {
             var obj = reader.ReadString();
 
-            if (obj != "___null__")
+            if (obj != NullValue)
                 return JsonConvert.DeserializeObject(obj);
             else
                 return null;
         }
 
+        public static string ReadNullableString(this BinaryReader reader)
+        {
+            var s = reader.ReadString();
+
+            return s != NullValue ? s : null;
+        }
+
         public static TFunc Read<TFunc>(this BinaryReader reader) where TFunc : Delegate
         {
+            var null_indidcator = reader.ReadString();
+
+            if (null_indidcator == NullValue)
+                return null;
+
             var aqtn = reader.ReadString();
             var methodName = reader.ReadString();
             var isPublic = reader.ReadBoolean();
@@ -105,9 +132,9 @@ namespace StateChartsDotNet.Metadata.Fluent
                                                 Func<BinaryReader, TMetadata> readItem,
                                                 Action<TMetadata> initializer)
         {
-            var hasValue = reader.ReadBoolean();
+            var null_indidcator = reader.ReadString();
 
-            if (hasValue)
+            if (null_indidcator != NullValue)
             {
                 var metadata = readItem(reader);
 

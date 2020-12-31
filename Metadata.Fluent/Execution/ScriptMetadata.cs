@@ -29,7 +29,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new ScriptMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._action = reader.Read<Action<dynamic>>();
 

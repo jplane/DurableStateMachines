@@ -17,28 +17,39 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task IsolatedExecution(ScaffoldFactoryDelegate factory, string _)
         {
-            var x = 1;
+            static object getValue(dynamic data) => data.x + 1;
 
             var innerMachine = StateChart.Define("inner")
                                          .AtomicState("innerState1")
+                                             .Datamodel()
+                                                 .DataInit()
+                                                     .Id("x").Value(1).Attach()
+                                                 .Attach()
                                              .OnEntry()
-                                                 .Execute(_ => x += 1)
+                                                 .Assign()
+                                                    .Location("x").Value(getValue).Attach()
                                                  .Attach()
                                              .OnExit()
-                                                 .Execute(_ => x += 1)
+                                                 .Assign()
+                                                    .Location("x").Value(getValue).Attach()
                                                  .Attach()
                                              .Transition()
                                                  .Target("alldone")
                                                  .Attach()
                                              .Attach()
                                          .FinalState("alldone")
+                                             .Param("x").Location("x").Attach()
                                              .Attach();
+
+            static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
                                         .InvokeStateChart()
                                             .ExecutionMode(ChildStateChartExecutionMode.Isolated)
                                             .Definition(innerMachine)
+                                            .Assign()
+                                                .Location("x").Value(getEventValue).Attach()
                                             .Attach()
                                         .Transition()
                                             .Message("done.invoke.*")
@@ -54,35 +65,48 @@ namespace StateChartsDotNet.Tests
 
             await context.StartAndWaitForCompletionAsync();
 
-            Assert.AreEqual(3, x);
+            var result = Convert.ToInt32(context.Data["x"]);
+
+            Assert.AreEqual(3, result);
         }
 
         [TestMethod]
         [TestScaffold]
         public async Task InlineExecution(ScaffoldFactoryDelegate factory, string _)
         {
-            var x = 1;
+            static object getValue(dynamic data) => data.x + 1;
 
             var innerMachine = StateChart.Define("inner")
                                          .AtomicState("innerState1")
+                                             .Datamodel()
+                                                 .DataInit()
+                                                     .Id("x").Value(1).Attach()
+                                                 .Attach()
                                              .OnEntry()
-                                                 .Execute(_ => x += 1)
+                                                 .Assign()
+                                                    .Location("x").Value(getValue).Attach()
                                                  .Attach()
                                              .OnExit()
-                                                 .Execute(_ => x += 1)
+                                                 .Assign()
+                                                    .Location("x").Value(getValue).Attach()
                                                  .Attach()
                                              .Transition()
                                                  .Target("alldone")
                                                  .Attach()
                                              .Attach()
                                          .FinalState("alldone")
+                                             .Param("x").Location("x").Attach()
                                              .Attach();
+
+            static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
                                         .InvokeStateChart()
                                             .ExecutionMode(ChildStateChartExecutionMode.Inline)
                                             .Definition(innerMachine)
+                                            .Assign()
+                                                .Location("x").Value(getEventValue).Attach()
                                             .Attach()
                                         .Transition()
                                             .Message("done.invoke.*")
@@ -98,7 +122,9 @@ namespace StateChartsDotNet.Tests
 
             await context.StartAndWaitForCompletionAsync();
 
-            Assert.AreEqual(3, x);
+            var result = Convert.ToInt32(context.Data["x"]);
+
+            Assert.AreEqual(3, result);
         }
     }
 }

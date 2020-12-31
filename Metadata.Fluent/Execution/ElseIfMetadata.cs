@@ -33,7 +33,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new ElseIfMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
             metadata._eval = reader.Read<Func<dynamic, bool>>();
             metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
 

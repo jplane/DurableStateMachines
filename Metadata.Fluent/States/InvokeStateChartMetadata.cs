@@ -35,11 +35,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.MetadataId);
             writer.Write((int)_mode);
-            writer.Write(_remoteUri);
-            writer.Write(_id);
-            writer.Write(_idLocation);
+            writer.WriteNullableString(_remoteUri);
+            writer.WriteNullableString(_id);
+            writer.WriteNullableString(_idLocation);
 
             writer.WriteMany(_finalizeExecutableContent, (o, w) => o.Serialize(w));
             writer.WriteMany(_params, (o, w) => o.Serialize(w));
@@ -53,11 +53,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             var metadata = new InvokeStateChartMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
             metadata._mode = (ChildStateChartExecutionMode)reader.ReadInt32();
-            metadata._remoteUri = reader.ReadString();
-            metadata._id = reader.ReadString();
-            metadata._idLocation = reader.ReadString();
+            metadata._remoteUri = reader.ReadNullableString();
+            metadata._id = reader.ReadNullableString();
+            metadata._idLocation = reader.ReadNullableString();
 
             metadata._finalizeExecutableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
 

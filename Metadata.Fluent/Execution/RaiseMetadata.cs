@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_messageName);
+            writer.WriteNullableString(_messageName);
         }
 
         internal static RaiseMetadata<TParent> Deserialize(BinaryReader reader)
@@ -28,9 +28,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new RaiseMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
-            metadata._messageName = reader.ReadString();
+            metadata._messageName = reader.ReadNullableString();
 
             return metadata;
         }

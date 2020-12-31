@@ -20,8 +20,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_sendId);
-            writer.Write(_sendIdExpr);
+            writer.WriteNullableString(_sendId);
+            writer.WriteNullableString(_sendIdExpr);
         }
 
         internal static CancelMetadata<TParent> Deserialize(BinaryReader reader)
@@ -30,9 +30,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new CancelMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
-            metadata._sendId = reader.ReadString();
-            metadata._sendIdExpr = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
+            metadata._sendId = reader.ReadNullableString();
+            metadata._sendIdExpr = reader.ReadNullableString();
 
             return metadata;
         }

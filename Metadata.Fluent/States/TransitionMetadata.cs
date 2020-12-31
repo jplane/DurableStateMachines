@@ -33,12 +33,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.MetadataId);
             writer.Write((int) _type);
             writer.Write(_evalCondition);
 
-            writer.Write(string.Join('|', _targets));
-            writer.Write(string.Join('|', _messages));
+            writer.WriteNullableString(string.Join('|', _targets));
+            writer.WriteNullableString(string.Join('|', _messages));
 
             writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
         }
@@ -49,12 +49,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             var metadata = new TransitionMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
             metadata._type = (TransitionType)reader.ReadInt32();
             metadata._evalCondition = reader.Read<Func<dynamic, bool>>();
 
-            metadata._targets.AddRange(reader.ReadString().Split('|'));
-            metadata._messages.AddRange(reader.ReadString().Split('|'));
+            metadata._targets.AddRange(reader.ReadNullableString().Split('|'));
+            metadata._messages.AddRange(reader.ReadNullableString().Split('|'));
 
             metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
 

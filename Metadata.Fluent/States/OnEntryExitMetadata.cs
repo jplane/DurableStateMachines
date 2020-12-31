@@ -25,7 +25,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             writer.CheckArgNull(nameof(writer));
 
             writer.Write(_isEntry);
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.MetadataId);
 
             writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
         }
@@ -38,7 +38,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             var metadata = new OnEntryExitMetadata<TParent>(isEntry);
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
 

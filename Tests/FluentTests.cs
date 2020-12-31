@@ -16,15 +16,21 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task SimpleTransition(ScaffoldFactoryDelegate factory, string _)
         {
-            var x = 1;
+            static object getValue(dynamic data) => data.x + 1;
 
             var machine = StateChart.Define("test")
+                                    .Datamodel()
+                                        .DataInit()
+                                            .Id("x").Value(1).Attach()
+                                        .Attach()
                                     .AtomicState("state1")
                                         .OnEntry()
-                                            .Execute(_ => x += 1)
+                                            .Assign()
+                                                .Location("x").Value(getValue).Attach()
                                             .Attach()
                                         .OnExit()
-                                            .Execute(_ => x += 1)
+                                            .Assign()
+                                                .Location("x").Value(getValue).Attach()
                                             .Attach()
                                         .Transition()
                                             .Target("alldone")
@@ -39,7 +45,9 @@ namespace StateChartsDotNet.Tests
 
             await context.StartAndWaitForCompletionAsync();
 
-            Assert.AreEqual(3, x);
+            var result = Convert.ToInt32(context.Data["x"]);
+
+            Assert.AreEqual(3, result);
         }
 
         [TestMethod]
@@ -50,14 +58,12 @@ namespace StateChartsDotNet.Tests
 
             var listenerTask = Task.Run(() => InProcWebServer.EchoAsync(uri));
 
-            var x = 5;
-
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = x })
+                                                .Body(new { value = 5 })
                                                 .Attach()
                                             .Attach()
                                         .Transition()
@@ -90,13 +96,15 @@ namespace StateChartsDotNet.Tests
 
             var now = DateTimeOffset.UtcNow;
 
+            static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
+
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(5))
-                                                .Body(_ => new { value = DateTimeOffset.UtcNow })
+                                                .Body(getValue)
                                                 .Attach()
                                             .Attach()
                                         .Transition()

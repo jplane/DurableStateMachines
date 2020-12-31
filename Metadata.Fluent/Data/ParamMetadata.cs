@@ -10,6 +10,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
     public sealed class ParamMetadata<TParent> where TParent : IModelMetadata
     {
         private readonly string _name;
+
+        private string _location;
         private object _value;
         private Func<dynamic, object> _valueGetter;
 
@@ -22,8 +24,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(_name);
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(_name);
+            writer.WriteNullableString(this.MetadataId);
+            writer.WriteNullableString(_location);
             writer.WriteObject(_value);
             writer.Write(_valueGetter);
         }
@@ -32,11 +35,12 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
         {
             reader.CheckArgNull(nameof(reader));
 
-            var name = reader.ReadString();
+            var name = reader.ReadNullableString();
 
             var metadata = new ParamMetadata<TParent>(name);
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
+            metadata._location = reader.ReadNullableString();
             metadata._value = reader.ReadObject();
             metadata._valueGetter = reader.Read<Func<dynamic, object>>();
 
@@ -47,10 +51,19 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         internal string MetadataId { private get; set; }
 
+        public ParamMetadata<TParent> Location(string location)
+        {
+            _location = location;
+            _value = null;
+            _valueGetter = null;
+            return this;
+        }
+
         public ParamMetadata<TParent> Value(object value)
         {
             _value = value;
             _valueGetter = null;
+            _location = null;
             return this;
         }
 
@@ -58,6 +71,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
         {
             _valueGetter = getter;
             _value = null;
+            _location = null;
             return this;
         }
 
@@ -73,7 +87,20 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         internal string Name => _name;
 
-        internal object GetValue(dynamic data) =>
-            _valueGetter == null ? _value : _valueGetter.Invoke(data);
+        internal object GetValue(dynamic data)
+        {
+            if (!string.IsNullOrWhiteSpace(_location))
+            {
+                return data[_location];
+            }
+            else if (_valueGetter == null)
+            {
+                return _value;
+            }
+            else
+            {
+                return _valueGetter.Invoke(data);
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_message);
+            writer.WriteNullableString(_message);
             writer.Write(_getMessage);
         }
 
@@ -31,9 +31,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new LogMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
-            metadata._message = reader.ReadString();
+            metadata._message = reader.ReadNullableString();
             metadata._getMessage = reader.Read<Func<dynamic, string>>();
 
             return metadata;

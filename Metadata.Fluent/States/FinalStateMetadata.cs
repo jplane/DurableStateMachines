@@ -45,11 +45,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             reader.CheckArgNull(nameof(reader));
 
-            var id = reader.ReadString();
+            var id = reader.ReadNullableString();
 
             var metadata = new FinalStateMetadata<TParent>(id);
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._content = reader.ReadObject();
 

@@ -24,16 +24,16 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(this.GetType().AssemblyQualifiedName);
-            writer.Write(this.Id);
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.GetType().AssemblyQualifiedName);
+            writer.WriteNullableString(this.Id);
+            writer.WriteNullableString(this.MetadataId);
         }
 
         internal static StateMetadata Deserialize(BinaryReader reader, dynamic parent)
         {
             reader.CheckArgNull(nameof(reader));
 
-            var aqtn = reader.ReadString();
+            var aqtn = reader.ReadNullableString();
 
             Debug.Assert(!string.IsNullOrWhiteSpace(aqtn));
 

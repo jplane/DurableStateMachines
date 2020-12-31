@@ -21,8 +21,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(_id);
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(_id);
+            writer.WriteNullableString(this.MetadataId);
             writer.WriteObject(_value);
             writer.Write(_valueGetter);
         }
@@ -33,8 +33,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
             var metadata = new DataInitMetadata<TParent>();
 
-            metadata._id = reader.ReadString();
-            metadata.MetadataId = reader.ReadString();
+            metadata._id = reader.ReadNullableString();
+            metadata.MetadataId = reader.ReadNullableString();
             metadata._value = reader.ReadObject();
             metadata._valueGetter = reader.Read<Func<dynamic, object>>();
 

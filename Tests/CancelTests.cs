@@ -69,14 +69,12 @@ namespace StateChartsDotNet.Tests
 
             var listenerTask = Task.Run(() => InProcWebServer.DelayEchoAsync(uri, TimeSpan.FromSeconds(10)));
 
-            var x = 5;
-
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = x })
+                                                .Body(new { value = 5 })
                                                 .Attach()
                                             .Attach()
                                         .Transition()
@@ -109,14 +107,12 @@ namespace StateChartsDotNet.Tests
 
             var listenerTask = Task.Run(() => InProcWebServer.DelayEchoAsync(uri, TimeSpan.FromSeconds(10)));
 
-            var x = 5;
-
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = x })
+                                                .Body(new { value = 5 })
                                                 .Attach()
                                             .Attach()
                                         .Transition()
@@ -157,13 +153,15 @@ namespace StateChartsDotNet.Tests
 
             var now = DateTimeOffset.UtcNow;
 
+            static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
+
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(10))
-                                                .Body(_ => new { value = DateTimeOffset.UtcNow })
+                                                .Body(getValue)
                                                 .Attach()
                                             .Attach()
                                         .Transition()
@@ -196,13 +194,15 @@ namespace StateChartsDotNet.Tests
 
             var now = DateTimeOffset.UtcNow;
 
+            static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
+
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
                                         .OnEntry()
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(10))
-                                                .Body(_ => new { value = DateTimeOffset.UtcNow })
+                                                .Body(getValue)
                                                 .Attach()
                                             .Attach()
                                         .Transition()

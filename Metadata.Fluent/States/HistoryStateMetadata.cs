@@ -32,11 +32,11 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         {
             reader.CheckArgNull(nameof(reader));
 
-            var id = reader.ReadString();
+            var id = reader.ReadNullableString();
 
             var metadata = new HistoryStateMetadata<TParent>(id);
 
-            metadata.MetadataId = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
 
             metadata._transition = reader.Read(TransitionMetadata<HistoryStateMetadata<TParent>>.Deserialize,
                                                         o => o.Parent = metadata);

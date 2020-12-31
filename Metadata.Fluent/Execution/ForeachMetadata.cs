@@ -28,8 +28,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             base.Serialize(writer);
 
-            writer.Write(_itemLocation);
-            writer.Write(_indexLocation);
+            writer.WriteNullableString(_itemLocation);
+            writer.WriteNullableString(_indexLocation);
             writer.WriteObject(_items);
             writer.Write(_getItems);
 
@@ -42,9 +42,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             var metadata = new ForeachMetadata<TParent>();
 
-            metadata.MetadataId = reader.ReadString();
-            metadata._itemLocation = reader.ReadString();
-            metadata._indexLocation = reader.ReadString();
+            metadata.MetadataId = reader.ReadNullableString();
+            metadata._itemLocation = reader.ReadNullableString();
+            metadata._indexLocation = reader.ReadNullableString();
             metadata._items = (IEnumerable) reader.ReadObject();
             metadata._getItems = reader.Read<Func<dynamic, IEnumerable>>();
             metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));

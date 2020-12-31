@@ -208,7 +208,10 @@ namespace StateChartsDotNet.Durable
             childInstanceId.CheckArgNull(nameof(childInstanceId));
             message.CheckArgNull(nameof(message));
 
-            var remoteUri = _childInstances.SelectMany(pair => pair.Value).Where(tuple => tuple.Item1 == childInstanceId).Select(tuple => tuple.Item2).SingleOrDefault();
+            var remoteUri = _childInstances.SelectMany(pair => pair.Value)
+                                           .Where(tuple => tuple.Item1 == childInstanceId)
+                                           .Select(tuple => tuple.Item2)
+                                           .SingleOrDefault();
 
             if (string.IsNullOrWhiteSpace(remoteUri))
             {

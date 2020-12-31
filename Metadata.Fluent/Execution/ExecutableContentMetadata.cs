@@ -23,8 +23,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.Write(this.GetType().AssemblyQualifiedName);
-            writer.Write(this.MetadataId);
+            writer.WriteNullableString(this.GetType().AssemblyQualifiedName);
+            writer.WriteNullableString(this.MetadataId);
         }
 
         internal static IEnumerable<ExecutableContentMetadata> DeserializeMany(BinaryReader reader, dynamic parent)
@@ -35,7 +35,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             for (var i = 0; i < count; i++)
             {
-                var aqtn = reader.ReadString();
+                var aqtn = reader.ReadNullableString();
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(aqtn));
 
