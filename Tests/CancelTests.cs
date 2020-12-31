@@ -257,6 +257,8 @@ namespace StateChartsDotNet.Tests
 
             await context.SendStopMessageAsync();
 
+            await context.SendStopMessageAsync();
+
             await context.WaitForCompletionAsync();
 
             Assert.IsTrue(true);

@@ -21,6 +21,7 @@ namespace StateChartsDotNet.Durable
                                                                 string>
     {
         private readonly IStateChartMetadata _metadata;
+        private readonly ExternalMessageQueue _queue;
         private readonly CancellationToken _cancelToken;
         private readonly ILogger _logger;
         
@@ -40,6 +41,8 @@ namespace StateChartsDotNet.Durable
             {
                 TypeNameHandling = TypeNameHandling.All                
             });
+
+            _queue = new ExternalMessageQueue();
         }
 
         public override async Task<(Dictionary<string, object>, Exception)> RunTask(OrchestrationContext context, Dictionary<string, object> data)
@@ -48,7 +51,7 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(context != null);
 
-            _executionContext = new DurableExecutionContext(_metadata, context, data, _cancelToken, _logger);
+            _executionContext = new DurableExecutionContext(_metadata, context, _queue, data, _cancelToken, _logger);
 
             Debug.Assert(_executionContext != null);
 
@@ -74,9 +77,9 @@ namespace StateChartsDotNet.Durable
 
         public override void OnEvent(OrchestrationContext context, string name, ExternalMessage input)
         {
-            Debug.Assert(_executionContext != null);
+            Debug.Assert(_queue != null);
 
-            _executionContext.EnqueueExternalMessage(input);
+            _queue.Enqueue(input);
         }
     }
 }

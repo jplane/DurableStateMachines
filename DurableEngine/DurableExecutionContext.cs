@@ -20,30 +20,29 @@ namespace StateChartsDotNet.Durable
         protected readonly Dictionary<string, List<(string, string)>> _childInstances;
         protected readonly OrchestrationContext _orchestrationContext;
 
-        private readonly Queue<ExternalMessage> _externalMessages;
-
-        private TaskCompletionSource<bool> _externalMessageAvailable;
+        private readonly ExternalMessageQueue _queue;
 
         public DurableExecutionContext(IStateChartMetadata metadata,
                                        OrchestrationContext orchestrationContext,
+                                       ExternalMessageQueue queue,
                                        IDictionary<string, object> data,
                                        CancellationToken cancelToken,
                                        ILogger logger = null)
             : base(metadata, cancelToken, logger)
         {
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
+            queue.CheckArgNull(nameof(queue));
             data.CheckArgNull(nameof(data));
 
             _orchestrationContext = orchestrationContext;
-            
+            _queue = queue;
+
             foreach (var pair in data)
             {
                 _data[pair.Key] = pair.Value;
             }
 
             _childInstances = new Dictionary<string, List<(string, string)>>();
-            _externalMessageAvailable = new TaskCompletionSource<bool>();
-            _externalMessages = new Queue<ExternalMessage>();
         }
 
         public Dictionary<string, object> ResultData => new Dictionary<string, object>(_data.Where(pair => !pair.Key.StartsWith("_")));
@@ -274,30 +273,9 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<string>("sendmessage", string.Empty, (type, target, messageName, content, correlationId, parameters));
         }
 
-        protected override async Task<ExternalMessage> GetNextExternalMessageAsync()
+        protected override Task<ExternalMessage> GetNextExternalMessageAsync()
         {
-            using (this.CancelToken.Register(() => _externalMessageAvailable.SetCanceled()))
-            {
-                await _externalMessageAvailable.Task;
-            }
-
-            var msg = _externalMessages.Dequeue();
-
-            if (_externalMessages.Count == 0)
-            {
-                _externalMessageAvailable = new TaskCompletionSource<bool>();
-            }
-
-            return msg;
-        }
-
-        internal void EnqueueExternalMessage(ExternalMessage message)
-        {
-            message.CheckArgNull(nameof(message));
-
-            _externalMessages.Enqueue(message);
-
-            _externalMessageAvailable.TrySetResult(true);
+            return _queue.DequeueAsync(this.CancelToken);
         }
 
         internal override Task LogDebugAsync(string message)

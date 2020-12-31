@@ -45,18 +45,16 @@ namespace StateChartsDotNet.Durable
         private readonly Dictionary<string, IInvokeStateChartMetadata> _childInvokes;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
-        private readonly NameVersionObjectManager<TaskOrchestration> _orchestrationResolver;
-        private readonly NameVersionObjectManager<TaskActivity> _activityResolver;
         private readonly ILogger _logger;
         private readonly CancellationToken _cancelToken;
         private readonly TimeSpan _timeout;
         private readonly AsyncLock _lock;
-        private readonly TaskHubWorker _worker;
         private readonly IOrchestrationStorage _storage;
-        private readonly TaskHubClient _client;
+        private readonly IOrchestrationService _service;
         private readonly string _callbackUri;
 
-        private bool _started;
+        private TaskHubWorker _worker;
+        private TaskHubClient _client;
 
         public DurableOrchestrationManager(IOrchestrationService service,
                                            IOrchestrationStorage storage,
@@ -73,39 +71,37 @@ namespace StateChartsDotNet.Durable
                 throw new ArgumentException("Expecting orchestration service to implement both client and service interfaces.");
             }
 
+            _service = service;
             _storage = storage;
             _timeout = timeout;
             _cancelToken = cancelToken;
             _callbackUri = callbackUri;
             _logger = logger;
 
-            _started = false;
-
             _lock = new AsyncLock();
             _statecharts = new List<string>();
             _childInvokes = new Dictionary<string, IInvokeStateChartMetadata>();
-
-            _orchestrationResolver = new NameVersionObjectManager<TaskOrchestration>();
-            _activityResolver = new NameVersionObjectManager<TaskActivity>();
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
-
-            _worker = new TaskHubWorker(service, _orchestrationResolver, _activityResolver);
-            _client = new TaskHubClient((IOrchestrationServiceClient) service);
         }
+
+        private bool Started => _worker != null;
 
         public async Task StartAsync()
         {
             using (await _lock.LockAsync())
             {
-                if (_started)
+                if (Started)
                 {
                     return;
                 }
+
+                _worker = new TaskHubWorker(_service);
+                _client = new TaskHubClient((IOrchestrationServiceClient) _service);
 
                 AddTaskActivities();
 
@@ -152,8 +148,6 @@ namespace StateChartsDotNet.Durable
                 });
 
                 await _worker.StartAsync();
-
-                _started = true;
             }
         }
 
@@ -161,18 +155,18 @@ namespace StateChartsDotNet.Durable
         {
             using (await _lock.LockAsync())
             {
-                if (!_started)
+                if (! Started)
                 {
                     return;
                 }
 
                 await _worker.StopAsync(forced);
 
-                _orchestrationResolver.Clear();
-                _activityResolver.Clear();
+                _childInvokes.Clear();
                 _statecharts.Clear();
 
-                _started = false;
+                _client = null;
+                _worker = null;
             }
         }
 
@@ -183,6 +177,11 @@ namespace StateChartsDotNet.Durable
 
             using (await _lock.LockAsync())
             {
+                if (! Started)
+                {
+                    throw new InvalidOperationException("Service not started.");
+                }
+
                 if (_statecharts.Contains(metadataId))
                 {
                     return;
@@ -210,7 +209,7 @@ namespace StateChartsDotNet.Durable
             instanceId.CheckArgNull(nameof(instanceId));
             data.CheckArgNull(nameof(data));
 
-            if (!_started)
+            if (! Started)
             {
                 throw new InvalidOperationException("Service not started.");
             }
@@ -235,7 +234,7 @@ namespace StateChartsDotNet.Durable
         {
             instanceId.CheckArgNull(nameof(instanceId));
 
-            if (!_started)
+            if (! Started)
             {
                 throw new InvalidOperationException("Service not started.");
             }
@@ -269,7 +268,7 @@ namespace StateChartsDotNet.Durable
         {
             instanceId.CheckArgNull(nameof(instanceId));
 
-            if (!_started)
+            if (! Started)
             {
                 throw new InvalidOperationException("Service not started.");
             }
@@ -282,7 +281,7 @@ namespace StateChartsDotNet.Durable
             instanceId.CheckArgNull(nameof(instanceId));
             message.CheckArgNull(nameof(message));
 
-            if (!_started)
+            if (! Started)
             {
                 throw new InvalidOperationException("Service not started.");
             }
@@ -303,8 +302,6 @@ namespace StateChartsDotNet.Durable
             RegisterStateChart(metadataId, metadata);
 
             metadata.RegisterStateChartInvokes(RegisterStateChartInvoke, metadataId);
-
-            metadata.RegisterScripts(RegisterScript, metadataId);
         }
 
         private void RegisterStateChart(string metadataId, IStateChartMetadata metadata)
@@ -312,6 +309,7 @@ namespace StateChartsDotNet.Durable
             metadataId.CheckArgNull(nameof(metadataId));
             metadata.CheckArgNull(nameof(metadata));
 
+            Debug.Assert(_worker != null);
             Debug.Assert(! _statecharts.Contains(metadataId));
 
             _statecharts.Add(metadataId);
@@ -320,7 +318,7 @@ namespace StateChartsDotNet.Durable
 
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", metadataId, orchestrator);
 
-            _orchestrationResolver.Add(orchestrationCreator);
+            _worker.AddTaskOrchestrations(orchestrationCreator);
         }
 
         private void RegisterStateChartInvoke(string metadataId, IInvokeStateChartMetadata metadata)
@@ -339,20 +337,10 @@ namespace StateChartsDotNet.Durable
             RegisterStateChart(metadataId, stateChartMetadata);
         }
 
-        private void RegisterScript(string metadataId, IScriptMetadata metadata)
-        {
-            metadataId.CheckArgNull(nameof(metadataId));
-            metadata.CheckArgNull(nameof(metadata));
-
-            var scriptActivity = new ExecuteScriptActivity(metadata);
-
-            var activityCreator = new NameValueObjectCreator<TaskActivity>("script", metadataId, scriptActivity);
-
-            _activityResolver.Add(activityCreator);
-        }
-
         private void AddTaskActivities()
         {
+            Debug.Assert(_worker != null);
+
             _worker.AddTaskActivities(typeof(GenerateGuidActivity));
 
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("sendparentchildmessage",
