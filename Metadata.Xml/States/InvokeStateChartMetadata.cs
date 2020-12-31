@@ -27,6 +27,8 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public string MetadataId => _metadataId;
 
+        public bool Autoforward => bool.Parse(_element.Attribute("autoforward")?.Value ?? "false");
+
         public ChildStateChartExecutionMode ExecutionMode
         {
             get

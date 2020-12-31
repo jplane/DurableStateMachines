@@ -18,6 +18,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         private readonly List<ExecutableContentMetadata> _finalizeExecutableContent;
         private readonly List<ParamMetadata<InvokeStateChartMetadata<TParent>>> _params;
 
+        private bool _autoforward;
         private ChildStateChartExecutionMode _mode;
         private string _remoteUri;
         private string _id;
@@ -26,6 +27,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         internal InvokeStateChartMetadata()
         {
+            _autoforward = false;
             _mode = ChildStateChartExecutionMode.Inline;
             _finalizeExecutableContent = new List<ExecutableContentMetadata>();
             _params = new List<ParamMetadata<InvokeStateChartMetadata<TParent>>>();
@@ -36,6 +38,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             writer.CheckArgNull(nameof(writer));
 
             writer.WriteNullableString(this.MetadataId);
+            writer.Write(_autoforward);
             writer.Write((int)_mode);
             writer.WriteNullableString(_remoteUri);
             writer.WriteNullableString(_id);
@@ -54,6 +57,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             var metadata = new InvokeStateChartMetadata<TParent>();
 
             metadata.MetadataId = reader.ReadNullableString();
+            metadata._autoforward = reader.ReadBoolean();
             metadata._mode = (ChildStateChartExecutionMode)reader.ReadInt32();
             metadata._remoteUri = reader.ReadNullableString();
             metadata._id = reader.ReadNullableString();
@@ -76,6 +80,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         public TParent Attach()
         {
             return this.Parent;
+        }
+
+        public InvokeStateChartMetadata<TParent> Autoforward(bool value)
+        {
+            _autoforward = value;
+            return this;
         }
 
         public InvokeStateChartMetadata<TParent> ExecutionMode(ChildStateChartExecutionMode mode)
@@ -260,6 +270,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             return ec;
         }
+
+        bool IInvokeStateChartMetadata.Autoforward => _autoforward;
 
         ChildStateChartExecutionMode IInvokeStateChartMetadata.ExecutionMode => _mode;
 

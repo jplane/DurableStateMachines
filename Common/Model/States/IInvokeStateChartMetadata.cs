@@ -9,6 +9,7 @@ namespace StateChartsDotNet.Common.Model.States
         string Id { get; }
         string IdLocation { get; }
         ChildStateChartExecutionMode ExecutionMode { get; }
+        bool Autoforward { get; }
         string RemoteUri { get; }
 
         IStateChartMetadata GetRoot();

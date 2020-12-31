@@ -72,9 +72,11 @@ namespace StateChartsDotNet.Model.States
             }
 
             if (context.IsRunning &&
-                _metadata.ExecutionMode == ChildStateChartExecutionMode.Inline &&
+                _metadata.Autoforward &&
                 !(externalMessage is ChildStateChartResponseMessage))
             {
+                Debug.Assert(_metadata.ExecutionMode != ChildStateChartExecutionMode.Inline);
+
                 await context.SendToChildStateChart(instanceId, externalMessage);
             }
         }

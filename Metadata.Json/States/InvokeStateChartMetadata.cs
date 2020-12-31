@@ -28,6 +28,8 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string MetadataId => _metadataId;
 
+        public bool Autoforward => _element.Property("autoforward")?.Value.Value<bool>() ?? false;
+
         public ChildStateChartExecutionMode ExecutionMode
         {
             get
