@@ -33,15 +33,19 @@ Some specific design and implementation choices:
 ### Fluent API
 
 ```csharp
-var x = 1;
+static void action(dynamic data) => data.x += 1;
 
 var machine = StateChart.Define("test")
+                        .Datamodel()
+                            .DataInit()
+                                .Id("x").Value(1).Attach()
+                            .Attach()
                         .AtomicState("state1")
                             .OnEntry()
-                                .Execute(_ => x += 1)
+                                .Execute(action)
                                 .Attach()
                             .OnExit()
-                                .Execute(_ => x += 1)
+                                .Execute(action)
                                 .Attach()
                             .Transition()
                                 .Target("alldone")
@@ -138,15 +142,21 @@ await context.StartAndWaitForCompletionAsync();
 ### Parent-child statecharts
 
 ```csharp
-var x = 1;
+static object getValue(dynamic data) => data.x + 1;
 
 var innerMachine = StateChart.Define("inner")
+                    .Datamodel()
+                        .DataInit()
+                            .Id("x").Value(1).Attach()
+                        .Attach()
                     .AtomicState("innerState1")
                         .OnEntry()
-                            .Execute(_ => x += 1)
+                            .Assign()
+                                .Location("x").Value(getValue).Attach()
                             .Attach()
                         .OnExit()
-                            .Execute(_ => x += 1)
+                            .Assign()
+                                .Location("x").Value(getValue).Attach()
                             .Attach()
                         .Transition()
                             .Target("alldone")
