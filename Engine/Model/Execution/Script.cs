@@ -18,7 +18,9 @@ namespace StateChartsDotNet.Model.Execution
 
             var metadata = (IScriptMetadata) _metadata;
 
-            return context.ExecuteScriptAsync(metadata);
+            metadata.Execute(context.ScriptData);
+
+            return Task.CompletedTask;
         }
     }
 }

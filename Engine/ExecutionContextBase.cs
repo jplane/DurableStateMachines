@@ -70,8 +70,6 @@ namespace StateChartsDotNet
                                                 string correlationId,
                                                 IReadOnlyDictionary<string, object> parameters);
 
-        internal abstract Task ExecuteScriptAsync(IScriptMetadata metadata);
-
         internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 
         internal abstract Task LogDebugAsync(string message);

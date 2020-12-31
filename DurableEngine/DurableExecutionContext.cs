@@ -274,15 +274,6 @@ namespace StateChartsDotNet.Durable
             return _orchestrationContext.ScheduleTask<string>("sendmessage", string.Empty, (type, target, messageName, content, correlationId, parameters));
         }
 
-        internal override Task ExecuteScriptAsync(IScriptMetadata metadata)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-
-            var metadataId = $"{GetParentStatechartMetadataId()}.{metadata.MetadataId}";
-
-            return _orchestrationContext.ScheduleTask<object>("script", metadataId, _data);
-        }
-
         protected override async Task<ExternalMessage> GetNextExternalMessageAsync()
         {
             using (this.CancelToken.Register(() => _externalMessageAvailable.SetCanceled()))

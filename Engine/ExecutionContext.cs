@@ -169,15 +169,6 @@ namespace StateChartsDotNet
             throw new InvalidOperationException("Unable to resolve external service type: " + type);
         }
 
-        internal override Task ExecuteScriptAsync(IScriptMetadata metadata)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-
-            metadata.Execute(this.ScriptData);
-
-            return Task.CompletedTask;
-        }
-
         protected override bool IsChildStateChart => _parentContext != null;
 
         internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)

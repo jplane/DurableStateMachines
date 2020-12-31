@@ -52,6 +52,42 @@ namespace StateChartsDotNet.Tests
 
         [TestMethod]
         [TestScaffold]
+        public async Task SimpleTransitionWithScript(ScaffoldFactoryDelegate factory, string _)
+        {
+            static void action(dynamic data) => data.x += 1;
+
+            var machine = StateChart.Define("test")
+                                    .Datamodel()
+                                        .DataInit()
+                                            .Id("x").Value(1).Attach()
+                                        .Attach()
+                                    .AtomicState("state1")
+                                        .OnEntry()
+                                            .Execute(action)
+                                            .Attach()
+                                        .OnExit()
+                                            .Execute(action)
+                                            .Attach()
+                                        .Transition()
+                                            .Target("alldone")
+                                            .Attach()
+                                        .Attach()
+                                    .FinalState("alldone")
+                                        .Attach();
+
+            var tuple = factory(machine, null);
+
+            var context = tuple.Item1;
+
+            await context.StartAndWaitForCompletionAsync();
+
+            var result = Convert.ToInt32(context.Data["x"]);
+
+            Assert.AreEqual(3, result);
+        }
+
+        [TestMethod]
+        [TestScaffold]
         public async Task HttpPost(ScaffoldFactoryDelegate factory, string _)
         {
             var uri = "http://localhost:4444/";
