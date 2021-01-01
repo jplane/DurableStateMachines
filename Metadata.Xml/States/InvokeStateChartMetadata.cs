@@ -41,7 +41,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 }
                 else
                 {
-                    return ChildStateChartExecutionMode.Inline;
+                    return ChildStateChartExecutionMode.Isolated;
                 }
             }
         }

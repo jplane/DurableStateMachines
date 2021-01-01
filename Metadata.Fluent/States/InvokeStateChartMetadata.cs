@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         internal InvokeStateChartMetadata()
         {
             _autoforward = false;
-            _mode = ChildStateChartExecutionMode.Inline;
+            _mode = ChildStateChartExecutionMode.Isolated;
             _finalizeExecutableContent = new List<ExecutableContentMetadata>();
             _params = new List<ParamMetadata<InvokeStateChartMetadata<TParent>>>();
         }

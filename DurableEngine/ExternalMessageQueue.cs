@@ -2,6 +2,7 @@
 using StateChartsDotNet.Common.Messages;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +36,8 @@ namespace StateChartsDotNet.Durable
             {
                 await _messageAvailable.Task;
             }
+
+            Debug.Assert(_queue.Count > 0);
 
             var msg = _queue.Dequeue();
 

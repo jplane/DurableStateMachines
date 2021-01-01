@@ -15,6 +15,38 @@ namespace StateChartsDotNet.Tests
     {
         [TestMethod]
         [TestScaffold]
+        public async Task CancelByMessage(ScaffoldFactoryDelegate factory, string _)
+        {
+            var innerMachine = StateChart.Define("inner")
+                                         .AtomicState("innerState1").Attach();
+
+            var machine = StateChart.Define("outer")
+                                    .AtomicState("outerState1")
+                                        .InvokeStateChart()
+                                            .ExecutionMode(ChildStateChartExecutionMode.Inline)
+                                            .Definition(innerMachine)
+                                            .Attach()
+                                        .Attach();
+
+            var tuple = factory(machine, null);
+
+            var context = tuple.Item1;
+
+            await context.StartAsync();
+
+            await Task.Delay(2000);
+
+            await context.SendStopMessageAsync();
+
+            await context.SendStopMessageAsync();
+
+            await context.WaitForCompletionAsync();
+
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        [TestScaffold]
         public async Task IsolatedExecution(ScaffoldFactoryDelegate factory, string _)
         {
             static object getValue(dynamic data) => data.x + 1;

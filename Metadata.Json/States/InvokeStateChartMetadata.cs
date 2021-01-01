@@ -42,7 +42,7 @@ namespace StateChartsDotNet.Metadata.Json.States
                 }
                 else
                 {
-                    return ChildStateChartExecutionMode.Inline;
+                    return ChildStateChartExecutionMode.Isolated;
                 }
             }
         }
