@@ -61,10 +61,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
             return this;
         }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         internal TParent Parent { get; set; }
 

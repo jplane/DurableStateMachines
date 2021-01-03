@@ -36,23 +36,15 @@ Some specific design and implementation choices:
 static void action(dynamic data) => data.x += 1;
 
 var machine = StateChart.Define("test")
-                        .Datamodel()
-                            .DataInit()
-                                .Id("x").Value(1).Attach()
-                            .Attach()
+                        .DataInit("x", 1)
                         .AtomicState("state1")
-                            .OnEntry()
-                                .Execute(action)
-                                .Attach()
+                            .OnEntry
+                                .Execute(action)._
                             .OnExit()
-                                .Execute(action)
-                                .Attach()
-                            .Transition()
-                                .Target("alldone")
-                                .Attach()
-                            .Attach()
-                        .FinalState("alldone")
-                            .Attach();
+                                .Execute(action)._
+                            .Transition
+                                .Target("alldone")._._
+                        .FinalState("alldone")._;
 
 var context = new ExecutionContext(machine);
 
@@ -145,38 +137,24 @@ await context.StartAndWaitForCompletionAsync();
 static object getValue(dynamic data) => data.x + 1;
 
 var innerMachine = StateChart.Define("inner")
-                    .Datamodel()
-                        .DataInit()
-                            .Id("x").Value(1).Attach()
-                        .Attach()
-                    .AtomicState("innerState1")
-                        .OnEntry()
-                            .Assign()
-                                .Location("x").Value(getValue).Attach()
-                            .Attach()
-                        .OnExit()
-                            .Assign()
-                                .Location("x").Value(getValue).Attach()
-                            .Attach()
-                        .Transition()
-                            .Target("alldone")
-                            .Attach()
-                        .Attach()
-                    .FinalState("alldone")
-                        .Attach();
+                             .DataInit("x", 1)
+                             .AtomicState("innerState1")
+                                 .OnEntry
+                                     .Assign("x", getValue)._
+                                 .OnExit
+                                     .Assign("x", getValue)._
+                                 .Transition
+                                     .Target("alldone")._._
+                             .FinalState("alldone")._;
 
 var machine = StateChart.Define("outer")
                         .AtomicState("outerState1")
-                            .InvokeStateChart()
-                                .Definition(innerMachine)
-                                .Attach()
-                            .Transition()
+                            .InvokeStateChart
+                                .Definition(innerMachine)._
+                            .Transition
                                 .Message("done.invoke.*")
-                                .Target("alldone")
-                                .Attach()
-                            .Attach()
-                        .FinalState("alldone")
-                            .Attach();
+                                .Target("alldone")._._
+                        .FinalState("alldone")._;
 
 var context = new ExecutionContext(machine);
 

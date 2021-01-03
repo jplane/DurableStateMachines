@@ -50,20 +50,20 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => new[] { _transition };
 
-        public TParent Attach()
+        public TParent _ => this.Parent;
+
+        public TransitionMetadata<HistoryStateMetadata<TParent>> Transition
         {
-            return this.Parent;
-        }
+            get
+            {
+                _transition = new TransitionMetadata<HistoryStateMetadata<TParent>>();
 
-        public TransitionMetadata<HistoryStateMetadata<TParent>> Transition()
-        {
-            _transition = new TransitionMetadata<HistoryStateMetadata<TParent>>();
+                _transition.Parent = this;
 
-            _transition.Parent = this;
+                _transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transition";
 
-            _transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transition";
-
-            return _transition;
+                return _transition;
+            }
         }
 
         public HistoryStateMetadata<TParent> Type(HistoryType type)

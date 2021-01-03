@@ -19,25 +19,15 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => data.x + 1;
 
             var machine = StateChart.Define("test")
-                                    .Datamodel()
-                                        .DataInit()
-                                            .Id("x").Value(1).Attach()
-                                        .Attach()
+                                    .DataInit("x", 1)
                                     .AtomicState("state1")
-                                        .OnEntry()
-                                            .Assign()
-                                                .Location("x").Value(getValue).Attach()
-                                            .Attach()
-                                        .OnExit()
-                                            .Assign()
-                                                .Location("x").Value(getValue).Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                        .OnEntry
+                                            .Assign("x", getValue)._
+                                        .OnExit
+                                            .Assign("x", getValue)._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -57,23 +47,15 @@ namespace StateChartsDotNet.Tests
             static void action(dynamic data) => data.x += 1;
 
             var machine = StateChart.Define("test")
-                                    .Datamodel()
-                                        .DataInit()
-                                            .Id("x").Value(1).Attach()
-                                        .Attach()
+                                    .DataInit("x", 1)
                                     .AtomicState("state1")
-                                        .OnEntry()
-                                            .Execute(action)
-                                            .Attach()
-                                        .OnExit()
-                                            .Execute(action)
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                        .OnEntry
+                                            .Execute(action)._
+                                        .OnExit
+                                            .Execute(action)._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -96,18 +78,13 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = 5 })
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(new { value = 5 })._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -136,19 +113,14 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(5))
-                                                .Body(getValue)
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(getValue)._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -173,18 +145,13 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpGet()
                                                 .Url(uri)
-                                                .ResultLocation("x")
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .ResultLocation("x")._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 

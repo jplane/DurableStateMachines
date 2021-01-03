@@ -77,10 +77,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         internal string MetadataId { private get; set; }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         public InvokeStateChartMetadata<TParent> Autoforward(bool value)
         {
@@ -133,7 +130,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return param;
         }
 
-        public AssignMetadata<InvokeStateChartMetadata<TParent>> Assign()
+        public InvokeStateChartMetadata<TParent> Assign(string location, object value)
         {
             var ec = new AssignMetadata<InvokeStateChartMetadata<TParent>>();
 
@@ -143,12 +140,14 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(value);
+
+            return this;
         }
 
-        public CancelMetadata<InvokeStateChartMetadata<TParent>> Cancel()
+        public InvokeStateChartMetadata<TParent> Assign(string location, Func<dynamic, object> getter)
         {
-            var ec = new CancelMetadata<InvokeStateChartMetadata<TParent>>();
+            var ec = new AssignMetadata<InvokeStateChartMetadata<TParent>>();
 
             _finalizeExecutableContent.Add(ec);
 
@@ -156,33 +155,57 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(getter);
+
+            return this;
         }
 
-        public ForeachMetadata<InvokeStateChartMetadata<TParent>> Foreach()
+        public CancelMetadata<InvokeStateChartMetadata<TParent>> Cancel
         {
-            var ec = new ForeachMetadata<InvokeStateChartMetadata<TParent>>();
+            get
+            {
+                var ec = new CancelMetadata<InvokeStateChartMetadata<TParent>>();
 
-            _finalizeExecutableContent.Add(ec);
+                _finalizeExecutableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        public IfMetadata<InvokeStateChartMetadata<TParent>> If()
+        public ForeachMetadata<InvokeStateChartMetadata<TParent>> Foreach
         {
-            var ec = new IfMetadata<InvokeStateChartMetadata<TParent>>();
+            get
+            {
+                var ec = new ForeachMetadata<InvokeStateChartMetadata<TParent>>();
 
-            _finalizeExecutableContent.Add(ec);
+                _finalizeExecutableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
+        }
+
+        public IfMetadata<InvokeStateChartMetadata<TParent>> If
+        {
+            get
+            {
+                var ec = new IfMetadata<InvokeStateChartMetadata<TParent>>();
+
+                _finalizeExecutableContent.Add(ec);
+
+                ec.Parent = this;
+
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.FinalizeExecutableContent[{_finalizeExecutableContent.Count}]";
+
+                return ec;
+            }
         }
 
         public InvokeStateChartMetadata<TParent> Log(string message)
@@ -245,30 +268,36 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        internal SendMessageMetadata<InvokeStateChartMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<InvokeStateChartMetadata<TParent>> SendMessage
         {
-            var ec = new SendMessageMetadata<InvokeStateChartMetadata<TParent>>();
+            get
+            {
+                var ec = new SendMessageMetadata<InvokeStateChartMetadata<TParent>>();
 
-            _finalizeExecutableContent.Add(ec);
+                _finalizeExecutableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_finalizeExecutableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        internal QueryMetadata<InvokeStateChartMetadata<TParent>> Query()
+        internal QueryMetadata<InvokeStateChartMetadata<TParent>> Query
         {
-            var ec = new QueryMetadata<InvokeStateChartMetadata<TParent>>();
+            get
+            {
+                var ec = new QueryMetadata<InvokeStateChartMetadata<TParent>>();
 
-            _finalizeExecutableContent.Add(ec);
+                _finalizeExecutableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_finalizeExecutableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_finalizeExecutableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
         bool IInvokeStateChartMetadata.Autoforward => _autoforward;

@@ -65,10 +65,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         internal string MetadataId { private get; set; }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         public TransitionMetadata<TParent> Type(TransitionType type)
         {
@@ -94,7 +91,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public AssignMetadata<TransitionMetadata<TParent>> Assign()
+        public TransitionMetadata<TParent> Assign(string location, object value)
         {
             var ec = new AssignMetadata<TransitionMetadata<TParent>>();
 
@@ -104,12 +101,14 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(value);
+
+            return this;
         }
 
-        public CancelMetadata<TransitionMetadata<TParent>> Cancel()
+        public TransitionMetadata<TParent> Assign(string location, Func<dynamic, object> getter)
         {
-            var ec = new CancelMetadata<TransitionMetadata<TParent>>();
+            var ec = new AssignMetadata<TransitionMetadata<TParent>>();
 
             _executableContent.Add(ec);
 
@@ -117,33 +116,57 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(getter);
+
+            return this;
         }
 
-        public ForeachMetadata<TransitionMetadata<TParent>> Foreach()
+        public CancelMetadata<TransitionMetadata<TParent>> Cancel
         {
-            var ec = new ForeachMetadata<TransitionMetadata<TParent>>();
+            get
+            {
+                var ec = new CancelMetadata<TransitionMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        public IfMetadata<TransitionMetadata<TParent>> If()
+        public ForeachMetadata<TransitionMetadata<TParent>> Foreach
         {
-            var ec = new IfMetadata<TransitionMetadata<TParent>>();
+            get
+            {
+                var ec = new ForeachMetadata<TransitionMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
+        }
+
+        public IfMetadata<TransitionMetadata<TParent>> If
+        {
+            get
+            {
+                var ec = new IfMetadata<TransitionMetadata<TParent>>();
+
+                _executableContent.Add(ec);
+
+                ec.Parent = this;
+
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+
+                return ec;
+            }
         }
 
         public TransitionMetadata<TParent> Log(string message)
@@ -206,30 +229,36 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        internal SendMessageMetadata<TransitionMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<TransitionMetadata<TParent>> SendMessage
         {
-            var ec = new SendMessageMetadata<TransitionMetadata<TParent>>();
+            get
+            {
+                var ec = new SendMessageMetadata<TransitionMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        internal QueryMetadata<TransitionMetadata<TParent>> Query()
+        internal QueryMetadata<TransitionMetadata<TParent>> Query
         {
-            var ec = new QueryMetadata<TransitionMetadata<TParent>>();
+            get
+            {
+                var ec = new QueryMetadata<TransitionMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
         IEnumerable<string> ITransitionMetadata.Targets => _targets;

@@ -21,15 +21,11 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
-                                        .OnEntry()
-                                            .Execute(action)
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                        .OnEntry
+                                            .Execute(action)._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -50,27 +46,17 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("test")
                                     .AtomicState("state1")
-                                        .OnEntry()
-                                            .Execute(action)
-                                            .Attach()
-                                        .Transition()
+                                        .OnEntry
+                                            .Execute(action)._
+                                        .Transition
                                             .Message("error.*")
-                                            .Target("errorState")
-                                            .Attach()
-                                        .Attach()
+                                            .Target("errorState")._._
                                     .AtomicState("errorState")
-                                        .OnEntry()
-                                            .Assign()
-                                                .Location("err")
-                                                .Value(getContent)
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                        .OnEntry
+                                            .Assign("err", getContent)._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -94,15 +80,11 @@ namespace StateChartsDotNet.Tests
             var machine = StateChart.Define("test")
                                     .FailFast(true)
                                     .AtomicState("state1")
-                                        .OnEntry()
-                                            .Execute(action)
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                        .OnEntry
+                                            .Execute(action)._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 

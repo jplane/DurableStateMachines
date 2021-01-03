@@ -16,7 +16,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -40,7 +40,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -76,7 +76,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 
@@ -88,7 +88,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.HttpPost
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("http-post");
 

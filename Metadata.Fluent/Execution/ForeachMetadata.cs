@@ -54,10 +54,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal TParent Parent { get; set; }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         public ForeachMetadata<TParent> ItemLocation(string itemLocation)
         {
@@ -85,7 +82,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        public AssignMetadata<ForeachMetadata<TParent>> Assign()
+        public ForeachMetadata<TParent> Assign(string location, object value)
         {
             var ec = new AssignMetadata<ForeachMetadata<TParent>>();
 
@@ -95,12 +92,14 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(value);
+
+            return this;
         }
 
-        public CancelMetadata<ForeachMetadata<TParent>> Cancel()
+        public ForeachMetadata<TParent> Assign(string location, Func<dynamic, object> getter)
         {
-            var ec = new CancelMetadata<ForeachMetadata<TParent>>();
+            var ec = new AssignMetadata<ForeachMetadata<TParent>>();
 
             _executableContent.Add(ec);
 
@@ -108,33 +107,57 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(getter);
+
+            return this;
         }
 
-        public ForeachMetadata<ForeachMetadata<TParent>> Foreach()
+        public CancelMetadata<ForeachMetadata<TParent>> Cancel
         {
-            var ec = new ForeachMetadata<ForeachMetadata<TParent>>();
+            get
+            {
+                var ec = new CancelMetadata<ForeachMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        public IfMetadata<ForeachMetadata<TParent>> If()
+        public ForeachMetadata<ForeachMetadata<TParent>> Foreach
         {
-            var ec = new IfMetadata<ForeachMetadata<TParent>>();
+            get
+            {
+                var ec = new ForeachMetadata<ForeachMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
+        }
+
+        public IfMetadata<ForeachMetadata<TParent>> If
+        {
+            get
+            {
+                var ec = new IfMetadata<ForeachMetadata<TParent>>();
+
+                _executableContent.Add(ec);
+
+                ec.Parent = this;
+
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+
+                return ec;
+            }
         }
 
         public ForeachMetadata<TParent> Log(string message)
@@ -197,30 +220,36 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        internal SendMessageMetadata<ForeachMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<ForeachMetadata<TParent>> SendMessage
         {
-            var ec = new SendMessageMetadata<ForeachMetadata<TParent>>();
+            get
+            {
+                var ec = new SendMessageMetadata<ForeachMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        internal QueryMetadata<ForeachMetadata<TParent>> Query()
+        internal QueryMetadata<ForeachMetadata<TParent>> Query
         {
-            var ec = new QueryMetadata<ForeachMetadata<TParent>>();
+            get
+            {
+                var ec = new QueryMetadata<ForeachMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
         string IForeachMetadata.Item => _itemLocation;

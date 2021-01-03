@@ -77,63 +77,84 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             get => new[] { ((IStateMetadata)this).Id }.Concat(_states.SelectMany(s => s.StateNames));
         }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<ParallelStateMetadata<TParent>> Datamodel()
+        public ParallelStateMetadata<TParent> DataInit(string location, object value)
         {
-            _datamodel = new DatamodelMetadata<ParallelStateMetadata<TParent>>();
+            if (_datamodel == null)
+            {
+                _datamodel = this.Datamodel;
+            }
 
-            _datamodel.Parent = this;
+            _datamodel.DataInit().Id(location).Value(value);
 
-            _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+            return this;
+        }
 
-            return _datamodel;
+        public DatamodelMetadata<ParallelStateMetadata<TParent>> Datamodel
+        {
+            get
+            {
+                _datamodel = new DatamodelMetadata<ParallelStateMetadata<TParent>>();
+
+                _datamodel.Parent = this;
+
+                _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+
+                return _datamodel;
+            }
         }
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnEntry()
+        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnEntry
         {
-            _onEntry = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(true);
+            get
+            {
+                _onEntry = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(true);
 
-            _onEntry.Parent = this;
+                _onEntry.Parent = this;
 
-            _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
+                _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
 
-            return _onEntry;
+                return _onEntry;
+            }
         }
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnExit()
+        public OnEntryExitMetadata<ParallelStateMetadata<TParent>> OnExit
         {
-            _onExit = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(false);
+            get
+            {
+                _onExit = new OnEntryExitMetadata<ParallelStateMetadata<TParent>>(false);
 
-            _onExit.Parent = this;
+                _onExit.Parent = this;
 
-            _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
+                _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
 
-            return _onExit;
+                return _onExit;
+            }
         }
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
 
-        public TransitionMetadata<ParallelStateMetadata<TParent>> Transition()
+        public TransitionMetadata<ParallelStateMetadata<TParent>> Transition
         {
-            var transition = new TransitionMetadata<ParallelStateMetadata<TParent>>();
+            get
+            {
+                var transition = new TransitionMetadata<ParallelStateMetadata<TParent>>();
 
-            transition.Parent = this;
+                transition.Parent = this;
 
-            _transitions.Add(transition);
+                _transitions.Add(transition);
 
-            transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
+                transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
 
-            return transition;
+                return transition;
+            }
         }
 
         public AtomicStateMetadata<ParallelStateMetadata<TParent>> AtomicState(string id)

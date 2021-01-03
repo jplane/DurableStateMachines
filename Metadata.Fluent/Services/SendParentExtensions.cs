@@ -3,9 +3,6 @@ using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Metadata.Fluent.Execution;
 using StateChartsDotNet.Metadata.Fluent.States;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
 {
@@ -16,7 +13,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -28,7 +25,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -40,7 +37,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -52,7 +49,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -64,7 +61,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -76,7 +73,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 
@@ -88,7 +85,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendParent
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-parent");
 

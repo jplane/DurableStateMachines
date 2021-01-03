@@ -55,10 +55,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
             return datainit;
         }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         string IModelMetadata.MetadataId => this.MetadataId;
 

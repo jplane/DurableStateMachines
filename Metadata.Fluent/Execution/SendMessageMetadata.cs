@@ -85,10 +85,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal TParent Parent { get; set; }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         public SendMessageMetadata<TParent> Id(string id)
         {

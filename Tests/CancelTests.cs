@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Tests
         public async Task ExternalByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1").Attach();
+                                    .AtomicState("state1")._;
 
             var tuple = factory(machine, null);
 
@@ -42,7 +42,7 @@ namespace StateChartsDotNet.Tests
         public async Task ExternalByToken(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1").Attach();
+                                    .AtomicState("state1")._;
 
             var tuple = factory(machine, null);
 
@@ -71,18 +71,13 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = 5 })
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(new { value = 5 })._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -109,18 +104,13 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
-                                                .Body(new { value = 5 })
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(new { value = 5 })._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var start = DateTimeOffset.UtcNow;
 
@@ -157,19 +147,14 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(10))
-                                                .Body(getValue)
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(getValue)._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -198,19 +183,14 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("httptest")
                                     .AtomicState("state1")
-                                        .OnEntry()
+                                        .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
                                                 .Delay(TimeSpan.FromSeconds(10))
-                                                .Body(getValue)
-                                                .Attach()
-                                            .Attach()
-                                        .Transition()
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                                .Body(getValue)._._
+                                        .Transition
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var start = DateTimeOffset.UtcNow;
 
@@ -238,14 +218,12 @@ namespace StateChartsDotNet.Tests
         public async Task SimpleParentChildByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1").Attach();
+                                         .AtomicState("innerState1")._;
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
-                                        .InvokeStateChart()
-                                            .Definition(innerMachine)
-                                            .Attach()
-                                        .Attach();
+                                        .InvokeStateChart
+                                            .Definition(innerMachine)._._;
 
             var tuple = factory(machine, null);
 
@@ -269,14 +247,12 @@ namespace StateChartsDotNet.Tests
         public async Task SimpleParentChildByToken(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1").Attach();
+                                         .AtomicState("innerState1")._;
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
-                                        .InvokeStateChart()
-                                            .Definition(innerMachine)
-                                            .Attach()
-                                        .Attach();
+                                        .InvokeStateChart
+                                            .Definition(innerMachine)._._;
 
             var tuple = factory(machine, null);
 

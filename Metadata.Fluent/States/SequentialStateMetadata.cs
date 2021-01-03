@@ -89,89 +89,116 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             get => new[] { ((IStateMetadata)this).Id }.Concat(_states.SelectMany(s => s.StateNames));
         }
 
-        public TParent Attach()
+        public TParent _ => this.Parent;
+
+        public TransitionMetadata<SequentialStateMetadata<TParent>> InitialTransition
         {
-            return this.Parent;
-        }
+            get
+            {
+                _initialTransition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
 
-        public TransitionMetadata<SequentialStateMetadata<TParent>> InitialTransition()
-        {
-            _initialTransition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
+                _initialTransition.Parent = this;
 
-            _initialTransition.Parent = this;
+                _initialTransition.MetadataId = $"{((IModelMetadata)this).MetadataId}.InitialTransition";
 
-            _initialTransition.MetadataId = $"{((IModelMetadata)this).MetadataId}.InitialTransition";
-
-            return _initialTransition;
+                return _initialTransition;
+            }
         }
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<SequentialStateMetadata<TParent>> Datamodel()
+        public SequentialStateMetadata<TParent> DataInit(string location, object value)
         {
-            _datamodel = new DatamodelMetadata<SequentialStateMetadata<TParent>>();
+            if (_datamodel == null)
+            {
+                _datamodel = this.Datamodel;
+            }
 
-            _datamodel.Parent = this;
+            _datamodel.DataInit().Id(location).Value(value);
 
-            _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+            return this;
+        }
 
-            return _datamodel;
+        public DatamodelMetadata<SequentialStateMetadata<TParent>> Datamodel
+        {
+            get
+            {
+                _datamodel = new DatamodelMetadata<SequentialStateMetadata<TParent>>();
+
+                _datamodel.Parent = this;
+
+                _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+
+                return _datamodel;
+            }
         }
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnEntry()
+        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnEntry
         {
-            _onEntry = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(true);
+            get
+            {
+                _onEntry = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(true);
 
-            _onEntry.Parent = this;
+                _onEntry.Parent = this;
 
-            _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
+                _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
 
-            return _onEntry;
+                return _onEntry;
+            }
         }
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnExit()
+        public OnEntryExitMetadata<SequentialStateMetadata<TParent>> OnExit
         {
-            _onExit = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(false);
+            get
+            {
+                _onExit = new OnEntryExitMetadata<SequentialStateMetadata<TParent>>(false);
 
-            _onExit.Parent = this;
+                _onExit.Parent = this;
 
-            _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
+                _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
 
-            return _onExit;
+                return _onExit;
+            }
         }
 
         protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> InvokeStateChart()
+        public InvokeStateChartMetadata<SequentialStateMetadata<TParent>> InvokeStateChart
         {
-            var invoke = new InvokeStateChartMetadata<SequentialStateMetadata<TParent>>();
+            get
+            {
+                var invoke = new InvokeStateChartMetadata<SequentialStateMetadata<TParent>>();
 
-            invoke.Parent = this;
+                invoke.Parent = this;
 
-            _stateChartInvokes.Add(invoke);
+                _stateChartInvokes.Add(invoke);
 
-            invoke.MetadataId = $"{((IModelMetadata)this).MetadataId}.StateChartInvokes[{_stateChartInvokes.Count}]";
+                invoke.MetadataId = $"{((IModelMetadata)this).MetadataId}.StateChartInvokes[{_stateChartInvokes.Count}]";
 
-            return invoke;
+                return invoke;
+            }
         }
 
         protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
 
-        public TransitionMetadata<SequentialStateMetadata<TParent>> Transition()
+        public TransitionMetadata<SequentialStateMetadata<TParent>> Transition
         {
-            var transition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
+            get
+            {
+                var transition = new TransitionMetadata<SequentialStateMetadata<TParent>>();
 
-            transition.Parent = this;
+                transition.Parent = this;
 
-            _transitions.Add(transition);
+                _transitions.Add(transition);
 
-            transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
+                transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
 
-            return transition;
+                return transition;
+            }
         }
 
         public AtomicStateMetadata<SequentialStateMetadata<TParent>> AtomicState(string id)

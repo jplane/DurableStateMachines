@@ -16,7 +16,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -40,7 +40,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -76,7 +76,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 
@@ -88,7 +88,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Queries.HttpGet
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var query = metadata.Query();
+            var query = metadata.Query;
 
             query.Type("http-get");
 

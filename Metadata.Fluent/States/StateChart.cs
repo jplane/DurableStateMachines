@@ -182,7 +182,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        public ScriptMetadata<StateChart> Execute()
+        public StateChart Execute(Action<dynamic> action)
         {
             _script = new ScriptMetadata<StateChart>();
 
@@ -190,20 +190,37 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             _script.MetadataId = $"{((IModelMetadata)this).MetadataId}.Script";
 
-            return _script;
+            _script.Action(action);
+
+            return this;
         }
 
         protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        public DatamodelMetadata<StateChart> Datamodel()
+        public StateChart DataInit(string location, object value)
         {
-            _datamodel = new DatamodelMetadata<StateChart>();
+            if (_datamodel == null)
+            {
+                _datamodel = this.Datamodel;
+            }
 
-            _datamodel.Parent = this;
+            _datamodel.DataInit().Id(location).Value(value);
 
-            _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+            return this;
+        }
 
-            return _datamodel;
+        public DatamodelMetadata<StateChart> Datamodel
+        {
+            get
+            {
+                _datamodel = new DatamodelMetadata<StateChart>();
+
+                _datamodel.Parent = this;
+
+                _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+
+                return _datamodel;
+            }
         }
 
         public AtomicStateMetadata<StateChart> AtomicState(string id)

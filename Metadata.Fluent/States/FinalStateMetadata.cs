@@ -73,33 +73,36 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-        public TParent Attach()
+        public TParent _ => this.Parent;
+
+        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnEntry
         {
-            return this.Parent;
-        }
+            get
+            {
+                _onEntry = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(true);
 
-        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnEntry()
-        {
-            _onEntry = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(true);
+                _onEntry.Parent = this;
 
-            _onEntry.Parent = this;
+                _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
 
-            _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
-
-            return _onEntry;
+                return _onEntry;
+            }
         }
 
         protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnExit()
+        public OnEntryExitMetadata<FinalStateMetadata<TParent>> OnExit
         {
-            _onExit = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(false);
+            get
+            {
+                _onExit = new OnEntryExitMetadata<FinalStateMetadata<TParent>>(false);
 
-            _onExit.Parent = this;
+                _onExit.Parent = this;
 
-            _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
+                _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
 
-            return _onExit;
+                return _onExit;
+            }
         }
 
         public FinalStateMetadata<TParent> Content(object content)

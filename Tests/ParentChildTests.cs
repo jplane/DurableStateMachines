@@ -18,15 +18,13 @@ namespace StateChartsDotNet.Tests
         public async Task CancelByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1").Attach();
+                                         .AtomicState("innerState1")._;
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
-                                        .InvokeStateChart()
+                                        .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Inline)
-                                            .Definition(innerMachine)
-                                            .Attach()
-                                        .Attach();
+                                            .Definition(innerMachine)._._;
 
             var tuple = factory(machine, null);
 
@@ -53,43 +51,28 @@ namespace StateChartsDotNet.Tests
 
             var innerMachine = StateChart.Define("inner")
                                          .AtomicState("innerState1")
-                                             .Datamodel()
-                                                 .DataInit()
-                                                     .Id("x").Value(1).Attach()
-                                                 .Attach()
-                                             .OnEntry()
-                                                 .Assign()
-                                                    .Location("x").Value(getValue).Attach()
-                                                 .Attach()
-                                             .OnExit()
-                                                 .Assign()
-                                                    .Location("x").Value(getValue).Attach()
-                                                 .Attach()
-                                             .Transition()
-                                                 .Target("alldone")
-                                                 .Attach()
-                                             .Attach()
+                                             .DataInit("x", 1)
+                                             .OnEntry
+                                                 .Assign("x", getValue)._
+                                             .OnExit
+                                                 .Assign("x", getValue)._
+                                             .Transition
+                                                 .Target("alldone")._._
                                          .FinalState("alldone")
-                                             .Param("x").Location("x").Attach()
-                                             .Attach();
+                                             .Param("x").Location("x")._._;
 
             static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
-                                        .InvokeStateChart()
+                                        .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Isolated)
                                             .Definition(innerMachine)
-                                            .Assign()
-                                                .Location("x").Value(getEventValue).Attach()
-                                            .Attach()
-                                        .Transition()
+                                            .Assign("x", getEventValue)._
+                                        .Transition
                                             .Message("done.invoke.*")
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 
@@ -110,43 +93,28 @@ namespace StateChartsDotNet.Tests
 
             var innerMachine = StateChart.Define("inner")
                                          .AtomicState("innerState1")
-                                             .Datamodel()
-                                                 .DataInit()
-                                                     .Id("x").Value(1).Attach()
-                                                 .Attach()
-                                             .OnEntry()
-                                                 .Assign()
-                                                    .Location("x").Value(getValue).Attach()
-                                                 .Attach()
-                                             .OnExit()
-                                                 .Assign()
-                                                    .Location("x").Value(getValue).Attach()
-                                                 .Attach()
-                                             .Transition()
-                                                 .Target("alldone")
-                                                 .Attach()
-                                             .Attach()
+                                             .DataInit("x", 1)
+                                             .OnEntry
+                                                 .Assign("x", getValue)._
+                                             .OnExit
+                                                 .Assign("x", getValue)._
+                                             .Transition
+                                                 .Target("alldone")._._
                                          .FinalState("alldone")
-                                             .Param("x").Location("x").Attach()
-                                             .Attach();
+                                             .Param("x").Location("x")._._;
 
             static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
                                     .AtomicState("outerState1")
-                                        .InvokeStateChart()
+                                        .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Inline)
                                             .Definition(innerMachine)
-                                            .Assign()
-                                                .Location("x").Value(getEventValue).Attach()
-                                            .Attach()
-                                        .Transition()
+                                            .Assign("x", getEventValue)._
+                                        .Transition
                                             .Message("done.invoke.*")
-                                            .Target("alldone")
-                                            .Attach()
-                                        .Attach()
-                                    .FinalState("alldone")
-                                        .Attach();
+                                            .Target("alldone")._._
+                                    .FinalState("alldone")._;
 
             var tuple = factory(machine, null);
 

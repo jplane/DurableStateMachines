@@ -46,10 +46,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
         internal Func<dynamic, bool> GetEvalCondition() => _eval;
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
         public ElseIfMetadata<TParent> Condition(Func<dynamic, bool> condition)
         {
@@ -57,7 +54,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        public AssignMetadata<ElseIfMetadata<TParent>> Assign()
+        public ElseIfMetadata<TParent> Assign(string location, object value)
         {
             var ec = new AssignMetadata<ElseIfMetadata<TParent>>();
 
@@ -67,12 +64,14 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(value);
+
+            return this;
         }
 
-        public CancelMetadata<ElseIfMetadata<TParent>> Cancel()
+        public ElseIfMetadata<TParent> Assign(string location, Func<dynamic, object> getter)
         {
-            var ec = new CancelMetadata<ElseIfMetadata<TParent>>();
+            var ec = new AssignMetadata<ElseIfMetadata<TParent>>();
 
             _executableContent.Add(ec);
 
@@ -80,33 +79,57 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(getter);
+
+            return this;
         }
 
-        public ForeachMetadata<ElseIfMetadata<TParent>> Foreach()
+        public CancelMetadata<ElseIfMetadata<TParent>> Cancel
         {
-            var ec = new ForeachMetadata<ElseIfMetadata<TParent>>();
+            get
+            {
+                var ec = new CancelMetadata<ElseIfMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        public IfMetadata<ElseIfMetadata<TParent>> If()
+        public ForeachMetadata<ElseIfMetadata<TParent>> Foreach
         {
-            var ec = new IfMetadata<ElseIfMetadata<TParent>>();
+            get
+            {
+                var ec = new ForeachMetadata<ElseIfMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
+        }
+
+        public IfMetadata<ElseIfMetadata<TParent>> If
+        {
+            get
+            {
+                var ec = new IfMetadata<ElseIfMetadata<TParent>>();
+
+                _executableContent.Add(ec);
+
+                ec.Parent = this;
+
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+
+                return ec;
+            }
         }
 
         public ElseIfMetadata<TParent> Log(string message)
@@ -169,30 +192,36 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             return this;
         }
 
-        internal SendMessageMetadata<ElseIfMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<ElseIfMetadata<TParent>> SendMessage
         {
-            var ec = new SendMessageMetadata<ElseIfMetadata<TParent>>();
+            get
+            {
+                var ec = new SendMessageMetadata<ElseIfMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        internal QueryMetadata<ElseIfMetadata<TParent>> Query()
+        internal QueryMetadata<ElseIfMetadata<TParent>> Query
         {
-            var ec = new QueryMetadata<ElseIfMetadata<TParent>>();
+            get
+            {
+                var ec = new QueryMetadata<ElseIfMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
     }
 }

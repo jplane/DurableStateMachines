@@ -16,7 +16,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -40,7 +40,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -52,7 +52,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -76,7 +76,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 
@@ -88,7 +88,7 @@ namespace StateChartsDotNet.Metadata.Fluent.Services.SendChild
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            var sendMessage = metadata.SendMessage();
+            var sendMessage = metadata.SendMessage;
 
             sendMessage.Type("send-child");
 

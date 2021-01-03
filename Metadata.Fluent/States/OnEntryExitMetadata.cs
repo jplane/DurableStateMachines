@@ -49,12 +49,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         internal string MetadataId { private get; set; }
 
-        public TParent Attach()
-        {
-            return this.Parent;
-        }
+        public TParent _ => this.Parent;
 
-        public AssignMetadata<OnEntryExitMetadata<TParent>> Assign()
+        public OnEntryExitMetadata<TParent> Assign(string location, object value)
         {
             var ec = new AssignMetadata<OnEntryExitMetadata<TParent>>();
 
@@ -64,12 +61,14 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(value);
+
+            return this;
         }
 
-        public CancelMetadata<OnEntryExitMetadata<TParent>> Cancel()
+        public OnEntryExitMetadata<TParent> Assign(string location, Func<dynamic, object> getter)
         {
-            var ec = new CancelMetadata<OnEntryExitMetadata<TParent>>();
+            var ec = new AssignMetadata<OnEntryExitMetadata<TParent>>();
 
             _executableContent.Add(ec);
 
@@ -77,33 +76,57 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+            ec.Location(location).Value(getter);
+
+            return this;
         }
 
-        public ForeachMetadata<OnEntryExitMetadata<TParent>> Foreach()
+        public CancelMetadata<OnEntryExitMetadata<TParent>> Cancel
         {
-            var ec = new ForeachMetadata<OnEntryExitMetadata<TParent>>();
+            get
+            {
+                var ec = new CancelMetadata<OnEntryExitMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        public IfMetadata<OnEntryExitMetadata<TParent>> If()
+        public ForeachMetadata<OnEntryExitMetadata<TParent>> Foreach
         {
-            var ec = new IfMetadata<OnEntryExitMetadata<TParent>>();
+            get
+            {
+                var ec = new ForeachMetadata<OnEntryExitMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
+        }
+
+        public IfMetadata<OnEntryExitMetadata<TParent>> If
+        {
+            get
+            {
+                var ec = new IfMetadata<OnEntryExitMetadata<TParent>>();
+
+                _executableContent.Add(ec);
+
+                ec.Parent = this;
+
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+
+                return ec;
+            }
         }
 
         public OnEntryExitMetadata<TParent> Log(string message)
@@ -166,30 +189,36 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return this;
         }
 
-        internal SendMessageMetadata<OnEntryExitMetadata<TParent>> SendMessage()
+        internal SendMessageMetadata<OnEntryExitMetadata<TParent>> SendMessage
         {
-            var ec = new SendMessageMetadata<OnEntryExitMetadata<TParent>>();
+            get
+            {
+                var ec = new SendMessageMetadata<OnEntryExitMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
-        internal QueryMetadata<OnEntryExitMetadata<TParent>> Query()
+        internal QueryMetadata<OnEntryExitMetadata<TParent>> Query
         {
-            var ec = new QueryMetadata<OnEntryExitMetadata<TParent>>();
+            get
+            {
+                var ec = new QueryMetadata<OnEntryExitMetadata<TParent>>();
 
-            _executableContent.Add(ec);
+                _executableContent.Add(ec);
 
-            ec.Parent = this;
+                ec.Parent = this;
 
-            ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
+                ec.MetadataId = $"{((IModelMetadata)this).MetadataId}.ExecutableContent[{_executableContent.Count}]";
 
-            return ec;
+                return ec;
+            }
         }
 
         bool IOnEntryExitMetadata.IsEntry => _isEntry;
