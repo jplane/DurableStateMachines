@@ -186,25 +186,25 @@ await context.StartAndWaitForCompletionAsync();
 ### [ASP.NET Core host](./Web)
 
 Add a new statechart definition for subsequent execution:
-POST /api/register
+>POST /api/register
 
 Lookup an existing registered statechart definition:
-GET /api/metadata/{metadataId}
+>GET /api/metadata/{metadataId}
 
 Start a new statechart execution:
-POST /api/start/{metadataId}
+>POST /api/start/{metadataId}
 
 Register and start a statechart at once:
-POST /api/registerandstart
+>POST /api/registerandstart
 
 Stop an existing statechart execution:
-PUT /api/stop/{instanceId}
+>PUT /api/stop/{instanceId}
 
 Send a message to an existing statechart execution:
-PUT /api/sendmessage/{instanceId}
+>PUT /api/sendmessage/{instanceId}
 
 Get the status of an existing statechart execution:
-GET /api/{instanceId}
+>GET /api/{instanceId}
 
 (Postman examples [here](./Web/statecharts.postman_collection.json))
 
