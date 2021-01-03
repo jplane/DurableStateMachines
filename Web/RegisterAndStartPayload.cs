@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using StateChartsDotNet.Common.Model.States;
 using System;
@@ -22,6 +23,12 @@ namespace StateChartsDotNet.Web
     {
         public RegisterAndStartPayloadInputFormatter()
         {
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+
+            SupportedEncodings.Add(Encoding.UTF8);
+            SupportedEncodings.Add(Encoding.Unicode);
         }
 
         protected override bool CanReadType(Type type)
@@ -44,7 +51,7 @@ namespace StateChartsDotNet.Web
                 headers.InstanceId = context.HttpContext.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
 
                 var parameters = context.HttpContext.Request.Headers.Where(h => h.Key.StartsWith("X-SCDN-PARAM-"))
-                                                                    .ToDictionary(h => h.Key[14..],
+                                                                    .ToDictionary(h => h.Key[13..],
                                                                                   h => JsonConvert.DeserializeObject(h.Value.ToString()));
 
                 headers.Parameters = parameters;

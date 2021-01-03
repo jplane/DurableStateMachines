@@ -41,6 +41,7 @@ namespace StateChartsDotNet.Web
                 options.InputFormatters.Insert(0, new StateChartInputFormatter());
                 options.InputFormatters.Insert(1, new ExternalMessageInputFormatter());
                 options.InputFormatters.Insert(2, new DictionaryInputFormatter());
+                options.InputFormatters.Insert(3, new RegisterAndStartPayloadInputFormatter());
             });
         }
     }
