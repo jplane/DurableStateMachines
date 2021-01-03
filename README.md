@@ -185,80 +185,28 @@ await context.StartAndWaitForCompletionAsync();
 
 ### [ASP.NET Core host](./Web)
 
-#### /api/registerandstart request example payload
-```json
-{
-    "inputs": {
-        "x": 5
-    },
-    "statechart": {
-        "name": "outer",
-        "states": [
-            {
-                "id": "outerState1",
-                "invokes": [
-                    {
-                        "params": [
-                            { "name": "x", "location": "x" }
-                        ],
-                        "content": {
-                            "name": "inner",
-                            "states": [
-                                {
-                                    "id": "innerState1",
-                                    "onentry": {
-                                        "content": [
-                                            { "type": "assign", "location": "x", "expr": "x * 2" }
-                                        ]
-                                    },
-                                    "transitions": [
-                                        { "target": "alldone" }
-                                    ]
-                                },
-                                {
-                                    "id": "alldone",
-                                    "type": "final",
-                                    "donedata": {
-                                        "params": [
-                                            { "name": "innerX", "location": "x" }
-                                        ]
-                                    }
-                                }
-                            ]
-                        },
-                        "finalize": [
-                            { "type": "assign", "location": "innerX", "expr": "_event.Parameters[\"innerX\"]" }
-                        ]
-                    }
-                ],
-                "transitions": [
-                    { "event": "done.invoke.*", "target": "alldone" }
-                ]
-            },
-            { "id": "alldone", "type": "final" }
-        ]
-    }
-}
-```
+Add a new statechart definition for subsequent execution:
+POST /api/register
 
-#### /api/status response example payload
-```json
-{
-    "startTime": "2020-12-18T18:15:12.3280769Z",
-    "endTime": "2020-12-18T18:15:24.4911782Z",
-    "lastUpdateTime": "2020-12-18T18:15:24.4914133Z",
-    "status": "Completed",
-    "instanceId": "030c677c251a463485dbb409f146fecf",
-    "input": {
-        "x": 5
-    },
-    "output": {
-        "x": 5,
-        "innerX": 10
-    },
-    "error": null
-}
-```
+Lookup an existing registered statechart definition:
+GET /api/metadata/{metadataId}
+
+Start a new statechart execution:
+POST /api/start/{metadataId}
+
+Register and start a statechart at once:
+POST /api/registerandstart
+
+Stop an existing statechart execution:
+PUT /api/stop/{instanceId}
+
+Send a message to an existing statechart execution:
+PUT /api/sendmessage/{instanceId}
+
+Get the status of an existing statechart execution:
+GET /api/{instanceId}
+
+(Postman examples [here](./Web/statecharts.postman_collection.json))
 
 ## Background and Resources
 

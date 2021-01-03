@@ -1,16 +1,12 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,7 +61,7 @@ namespace StateChartsDotNet.Services
             instanceId.CheckArgNull(nameof(instanceId));
             inputs.CheckArgNull(nameof(inputs));
 
-            inputs["_parentRemoteUri"] = $"{remoteUri}/api/sendmessage";
+            inputs["_parentRemoteUri"] = $"{remoteUri}/api/sendmessage/";
 
             var statechartMetadata = invokeMetadata.GetRoot();
 
@@ -90,7 +86,11 @@ namespace StateChartsDotNet.Services
                     break;
             }
 
-            parameters.Add("X-SCDN-PARAMS", JsonConvert.SerializeObject(inputs));
+            foreach (var input in inputs)
+            {
+                parameters.Add($"X-SCDN-PARAM-{input.Key}", JsonConvert.SerializeObject(input.Value));
+            }
+
             parameters.Add("X-SCDN-METADATA-ID", metadataId);
             parameters.Add("X-SCDN-INSTANCE-ID", instanceId);
 

@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Durable
 {
-    internal interface IOrchestrationManager
+    public interface IOrchestrationManager
     {
         Task StartAsync();
 
@@ -116,15 +116,15 @@ namespace StateChartsDotNet.Durable
                     switch (metadataType)
                     {
                         case "fluent":
-                            targetType = Type.GetType("StateChartsDotNet.Metadata.Fluent.StateChart");
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Fluent.States.StateChart, StateChartsDotNet.Metadata.Fluent");
                             break;
 
                         case "json":
-                            targetType = Type.GetType("StateChartsDotNet.Metadata.Json.StateChart");
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Json.States.StateChart, StateChartsDotNet.Metadata.Json");
                             break;
 
                         case "xml":
-                            targetType = Type.GetType("StateChartsDotNet.Metadata.Xml.StateChart");
+                            targetType = Type.GetType("StateChartsDotNet.Metadata.Xml.States.StateChart, StateChartsDotNet.Metadata.Xml");
                             break;
                     }
 

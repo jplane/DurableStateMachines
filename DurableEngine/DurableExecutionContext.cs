@@ -137,7 +137,7 @@ namespace StateChartsDotNet.Durable
         {
             parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
-            var message = new ExternalMessage("cancel");
+            var message = new ExternalMessage { Name = "cancel" };
 
             var childrenForParent = GetInstanceIdsForParent(parentMetadataId);
 
@@ -181,20 +181,21 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(!string.IsNullOrWhiteSpace(correlationId));
 
-            ExternalMessage msg = new ChildStateChartResponseMessage(messageName)
+            ExternalMessage msg = new ChildStateChartResponseMessage
             {
+                Name = messageName,
                 CorrelationId = correlationId,
                 Content = content,
                 Parameters = parameters
             };
 
-            if (_data.TryGetValue("_parentRemoteUri", out object remoteUri))
+            if (_data.TryGetValue("_parentRemoteUri", out object parentUri))
             {
-                var queryString = new Dictionary<string, object> { { "?instanceId", parentInstanceId } };
+                var remoteUri = (string) parentUri + (string) parentInstanceId;
 
-                return _orchestrationContext.ScheduleTask<string>("sendmessage",
-                                                                  string.Empty,
-                                                                  ("http-post", (string) remoteUri, (string) null, msg, correlationId, queryString));
+                var parms = ("http-post", remoteUri, (string) null, msg, correlationId, (string) null);
+
+                return _orchestrationContext.ScheduleTask<string>("sendmessage", string.Empty, parms);
             }
             else
             {

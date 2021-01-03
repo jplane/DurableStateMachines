@@ -4,8 +4,7 @@ namespace StateChartsDotNet.Common.Messages
 {
     public class ChildStateChartResponseMessage : ExternalMessage
     {
-        public ChildStateChartResponseMessage(string name)
-            : base(name)
+        public ChildStateChartResponseMessage()
         {
         }
 

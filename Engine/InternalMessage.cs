@@ -6,8 +6,7 @@ namespace StateChartsDotNet
 {
     public class InternalMessage : Message
     {
-        internal InternalMessage(string name)
-            : base(name)
+        internal InternalMessage()
         {
         }
 

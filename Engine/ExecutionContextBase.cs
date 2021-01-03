@@ -108,8 +108,9 @@ namespace StateChartsDotNet
         {
             message.CheckArgNull(nameof(message));
 
-            var msg = new ExternalMessage(message)
+            var msg = new ExternalMessage
             {
+                Name = message,
                 Content = content,
                 Parameters = parameters
             };
@@ -160,8 +161,9 @@ namespace StateChartsDotNet
             Debug.Assert(!string.IsNullOrWhiteSpace(childId));
             Debug.Assert(!string.IsNullOrWhiteSpace(messageName));
 
-            var msg = new ExternalMessage(messageName)
+            var msg = new ExternalMessage
             {
+                Name = messageName,
                 Content = content,
                 Parameters = parameters
             };
@@ -271,7 +273,7 @@ namespace StateChartsDotNet
             }
             catch (TaskCanceledException)
             {
-                msg = new ExternalMessage("cancel");
+                msg = new ExternalMessage { Name = "cancel" };
             }
 
             _data["_event"] = msg;
@@ -302,7 +304,7 @@ namespace StateChartsDotNet
         {
             message.CheckArgNull(nameof(message));
 
-            var evt = new InternalMessage(message);
+            var evt = new InternalMessage { Name = message };
 
             _internalMessages.Enqueue(evt);
         }
@@ -316,8 +318,9 @@ namespace StateChartsDotNet
                 ex = new CommunicationException("A communication error occurred during statechart processing.", ex);
             }
 
-            var evt = new InternalMessage("error.communication")
+            var evt = new InternalMessage
             {
+                Name = "error.communication",
                 Content = ex
             };
 
@@ -337,8 +340,9 @@ namespace StateChartsDotNet
                 ex = new ExecutionException("An error occurred during statechart processing.", ex);
             }
 
-            var evt = new InternalMessage("error.execution")
+            var evt = new InternalMessage
             {
+                Name = "error.execution",
                 Content = ex
             };
 

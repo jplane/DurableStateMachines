@@ -4,15 +4,13 @@ namespace StateChartsDotNet.Common.Messages
 {
     public abstract class Message
     {
-        internal Message(string name)
+        internal Message()
         {
-            name.CheckArgNull(nameof(name));
-            this.Name = name;
         }
 
         public bool IsCancel => this.Name == "cancel";
 
-        public string Name { get; }
+        public string Name { get; set; }
 
         public abstract MessageType Type { get; }
     }

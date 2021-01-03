@@ -108,8 +108,9 @@ namespace StateChartsDotNet
                 throw new ExecutionException("Statechart has no parent.");
             }
 
-            var msg = new ChildStateChartResponseMessage(messageName)
+            var msg = new ChildStateChartResponseMessage
             {
+                Name = messageName,
                 CorrelationId = (string) _data["_instanceId"],
                 Content = content,
                 Parameters = parameters

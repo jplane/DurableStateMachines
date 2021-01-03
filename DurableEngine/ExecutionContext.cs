@@ -149,8 +149,9 @@ namespace StateChartsDotNet.Durable
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-                var msg = new ExternalMessage(message)
+                var msg = new ExternalMessage
                 {
+                    Name = message,
                     Content = content,
                     Parameters = parameters
                 };
