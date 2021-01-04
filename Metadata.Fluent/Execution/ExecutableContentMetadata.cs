@@ -54,10 +54,5 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
                 yield return metadata;
             }
         }
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

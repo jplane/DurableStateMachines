@@ -63,11 +63,11 @@ namespace StateChartsDotNet.Metadata.Json.Execution
         {
             if (this.Type == null && this.TypeExpression == null)
             {
-                throw new MetadataValidationException("Service type or typeExpression must be specified.");
+                throw new InvalidOperationException("Service type or typeExpression must be specified.");
             }
             else if (this.Type != null && this.TypeExpression != null)
             {
-                throw new MetadataValidationException("Only one of service type and typeExpression can be specified.");
+                throw new InvalidOperationException("Only one of service type and typeExpression can be specified.");
             }
             else if (this.Type != null)
             {
@@ -83,11 +83,11 @@ namespace StateChartsDotNet.Metadata.Json.Execution
         {
             if (this.Target == null && this.TargetExpression == null)
             {
-                throw new MetadataValidationException("Service target or targetExpression must be specified.");
+                throw new InvalidOperationException("Service target or targetExpression must be specified.");
             }
             else if (this.Target != null && this.TargetExpression != null)
             {
-                throw new MetadataValidationException("Only one of service target and targetExpression can be specified.");
+                throw new InvalidOperationException("Only one of service target and targetExpression can be specified.");
             }
             else if (this.Target != null)
             {
@@ -105,7 +105,7 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
             if (this.Namelist.Any() && nodes.Any())
             {
-                throw new MetadataValidationException("Only one of service namelist and <params> can be specified.");
+                throw new InvalidOperationException("Only one of service namelist and <params> can be specified.");
             }
 
             IEnumerable<ParamMetadata> parms;

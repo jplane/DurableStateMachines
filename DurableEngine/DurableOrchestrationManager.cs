@@ -187,6 +187,8 @@ namespace StateChartsDotNet.Durable
                     return;
                 }
 
+                metadata.Validate();
+
                 using var stream = new MemoryStream();
 
                 var metadataType = await metadata.SerializeAsync(stream, _cancelToken);

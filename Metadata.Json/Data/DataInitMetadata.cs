@@ -36,11 +36,6 @@ namespace StateChartsDotNet.Metadata.Json.Data
 
         public string MetadataId => _metadataId;
 
-        public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public string Id => _element.Property("id").Value.Value<string>();
 
         public object GetValue(dynamic data)

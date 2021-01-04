@@ -272,10 +272,5 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         bool ITransitionMetadata.EvalCondition(dynamic data) => _evalCondition?.Invoke(data) ?? true;
 
         IEnumerable<IExecutableContentMetadata> ITransitionMetadata.GetExecutableContent() => _executableContent;
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

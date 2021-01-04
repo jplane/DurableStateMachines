@@ -30,6 +30,8 @@ namespace StateChartsDotNet
         public ExecutionContext(IStateChartMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
             : base(metadata, cancelToken, logger)
         {
+            metadata.Validate();
+
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _childInstances = new Dictionary<string, ExecutionContext>();
@@ -189,6 +191,11 @@ namespace StateChartsDotNet
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
             context._data["_instanceId"] = instanceId;
+
+            if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+            {
+                _data[metadata.IdLocation] = instanceId;
+            }
 
             foreach (var param in metadata.GetParams(this.ScriptData))
             {

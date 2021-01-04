@@ -22,11 +22,6 @@ namespace StateChartsDotNet.Metadata.Json.Data
 
         public string MetadataId => _metadataId;
 
-        public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public IEnumerable<IDataInitMetadata> GetData()
         {
             var data = new List<IDataInitMetadata>();

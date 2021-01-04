@@ -28,11 +28,6 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
         public virtual string MetadataId => _metadataId;
 
-        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public bool IsDescendentOf(IStateMetadata metadata)
         {
             return ((StateMetadata) metadata)._element.Descendants().Contains(this._element);

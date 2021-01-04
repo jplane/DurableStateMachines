@@ -273,14 +273,13 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             {
                 return _initialTransition;
             }
-            else if (_states.Count > 0)
-            {
-                return new TransitionMetadata<StateChart>()
-                                    .Target(((IStateMetadata)_states[0]).Id);
-            }
             else
             {
-                return null;
+                this.InitialState(((IStateMetadata)_states[0]).Id);
+
+                Debug.Assert(_initialTransition != null);
+
+                return _initialTransition;
             }
         }
 

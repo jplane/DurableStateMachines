@@ -79,6 +79,11 @@ namespace StateChartsDotNet.Durable
 
             inputs["_instanceId"] = instanceId;
 
+            if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
+            {
+                _data[metadata.IdLocation] = instanceId;
+            }
+
             if (!_childInstances.TryGetValue(parentStateMetadataId, out List<(string, string)> instances))
             {
                 _childInstances[parentStateMetadataId] = instances = new List<(string, string)>();

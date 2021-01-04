@@ -20,11 +20,6 @@ namespace StateChartsDotNet.Metadata.Xml.Data
 
         public string MetadataId => _metadataId;
 
-        public bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public IEnumerable<IDataInitMetadata> GetData()
         {
             var nodes = _element.ScxmlElements("data");

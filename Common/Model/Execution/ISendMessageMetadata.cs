@@ -15,4 +15,18 @@ namespace StateChartsDotNet.Common.Model.Execution
         object GetContent(dynamic data);
         IReadOnlyDictionary<string, object> GetParams(dynamic data);
     }
+
+    public static class SendMessageMetadataExtensions
+    {
+        public static void Validate(this ISendMessageMetadata metadata, Dictionary<IModelMetadata, List<string>> errors)
+        {
+            ((IModelMetadata) metadata).Validate(errors);
+
+            if ((string.IsNullOrWhiteSpace(metadata.Id) && string.IsNullOrWhiteSpace(metadata.IdLocation)) ||
+                (!string.IsNullOrWhiteSpace(metadata.Id) && !string.IsNullOrWhiteSpace(metadata.IdLocation)))
+            {
+                errors.Add(metadata, new List<string> { "Send Message action requires one of Id or Id location." });
+            }
+        }
+    }
 }

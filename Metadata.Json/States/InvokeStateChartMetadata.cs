@@ -49,13 +49,6 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string RemoteUri => _element.Property("remoteuri")?.Value.Value<string>() ?? string.Empty;
 
-        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
-        public string Id => _element.Property("id")?.Value.Value<string>() ?? string.Empty;
-
         public string IdLocation => _element.Property("idlocation")?.Value.Value<string>() ?? string.Empty;
 
         private IEnumerable<string> Namelist
@@ -114,7 +107,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
             if (this.Namelist.Any() && parmProp != null)
             {
-                throw new MetadataValidationException("Only one of service namelist and params can be specified.");
+                throw new InvalidOperationException("Only one of service namelist and params can be specified.");
             }
 
             IEnumerable<ParamMetadata> parms;

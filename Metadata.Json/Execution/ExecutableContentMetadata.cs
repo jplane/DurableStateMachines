@@ -26,11 +26,6 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
         public string MetadataId => _metadataId;
 
-        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public static IExecutableContentMetadata Create(JObject element)
         {
             element.CheckArgNull(nameof(element));
@@ -57,7 +52,7 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
             if (content == null)
             {
-                throw new MetadataValidationException("Unable to resolve executable content type: " + type);
+                throw new InvalidOperationException("Unable to resolve executable content type: " + type);
             }
 
             return content;

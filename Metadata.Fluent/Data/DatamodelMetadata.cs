@@ -59,11 +59,6 @@ namespace StateChartsDotNet.Metadata.Fluent.Data
 
         string IModelMetadata.MetadataId => this.MetadataId;
 
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new System.NotImplementedException();
-        }
-
         IEnumerable<IDataInitMetadata> IDatamodelMetadata.GetData() => _dataInits;
     }
 }

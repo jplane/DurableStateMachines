@@ -226,10 +226,5 @@ namespace StateChartsDotNet.Metadata.Fluent.States
         string IModelMetadata.MetadataId => this.MetadataId;
 
         IEnumerable<IExecutableContentMetadata> IOnEntryExitMetadata.GetExecutableContent() => _executableContent;
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

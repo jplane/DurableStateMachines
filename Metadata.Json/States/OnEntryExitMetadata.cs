@@ -22,11 +22,6 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string MetadataId => _metadataId;
 
-        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
-
         public bool IsEntry
         {
             get

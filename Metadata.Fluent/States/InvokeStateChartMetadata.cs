@@ -306,8 +306,6 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         string IInvokeStateChartMetadata.RemoteUri => _remoteUri;
 
-        string IInvokeStateChartMetadata.Id => _id;
-
         string IInvokeStateChartMetadata.IdLocation => _idLocation;
 
         string IModelMetadata.MetadataId => this.MetadataId;
@@ -318,10 +316,5 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         IReadOnlyDictionary<string, object> IInvokeStateChartMetadata.GetParams(dynamic data) =>
             new ReadOnlyDictionary<string, object>(_params.ToDictionary(p => p.Name, p => p.GetValue(data)));
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

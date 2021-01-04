@@ -18,7 +18,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
 
             if (attr != null)
             {
-                return new TransitionMetadata(attr);
+                return new TransitionMetadata(attr, this.MetadataId);
             }
             else
             {
@@ -37,7 +37,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                                                                       sm is IParallelStateMetadata ||
                                                                       sm is IFinalStateMetadata);
 
-                    return firstChild == null ? null : new TransitionMetadata(firstChild.Id);
+                    return firstChild == null ? null : new TransitionMetadata(firstChild.Id, this.MetadataId);
                 }
             }
         }

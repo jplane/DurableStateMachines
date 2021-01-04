@@ -1,23 +1,21 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace StateChartsDotNet.Common.Exceptions
 {
     public sealed class MetadataValidationException : StateChartException
     {
-        public MetadataValidationException()
+        private readonly Dictionary<string, string[]> _errors;
+
+        public MetadataValidationException(Dictionary<string, string[]> errors)
         {
+            _errors = errors;
         }
 
-        public MetadataValidationException(string message)
-            : base(message)
-        {
-        }
+        public IEnumerable<string> Keys => _errors.Keys;
 
-        public MetadataValidationException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+        public string[] this[string key] => _errors[key];
     }
 }

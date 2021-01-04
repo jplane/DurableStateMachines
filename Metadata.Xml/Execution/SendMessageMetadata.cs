@@ -106,11 +106,11 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Type == null && this.TypeExpression == null)
             {
-                throw new MetadataValidationException("Service type or typeExpression must be specified.");
+                throw new InvalidOperationException("Service type or typeExpression must be specified.");
             }
             else if (this.Type != null && this.TypeExpression != null)
             {
-                throw new MetadataValidationException("Only one of service type and typeExpression can be specified.");
+                throw new InvalidOperationException("Only one of service type and typeExpression can be specified.");
             }
             else if (this.Type != null)
             {
@@ -126,7 +126,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Message != null && this.MessageExpression != null)
             {
-                throw new MetadataValidationException("Only one of service event and eventExpression can be specified.");
+                throw new InvalidOperationException("Only one of service event and eventExpression can be specified.");
             }
             else if (this.Message != null)
             {
@@ -146,7 +146,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Target != null && this.TargetExpression != null)
             {
-                throw new MetadataValidationException("Only one of service target and targetExpression can be specified.");
+                throw new InvalidOperationException("Only one of service target and targetExpression can be specified.");
             }
             else if (this.Target != null)
             {
@@ -162,7 +162,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
         {
             if (this.Delay != null && this.DelayExpression != null)
             {
-                throw new MetadataValidationException("Only one of service delay and delayExpression can be specified.");
+                throw new InvalidOperationException("Only one of service delay and delayExpression can be specified.");
             }
             else if (!string.IsNullOrWhiteSpace(this.Delay))
             {
@@ -189,7 +189,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
 
             if (this.Namelist.Any() && nodes.Any())
             {
-                throw new MetadataValidationException("Only one of service namelist and <params> can be specified.");
+                throw new InvalidOperationException("Only one of service namelist and <params> can be specified.");
             }
 
             IEnumerable<ParamMetadata> parms;

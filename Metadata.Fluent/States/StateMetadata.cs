@@ -174,10 +174,5 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             return false;
         }
-
-        bool IModelMetadata.Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -38,7 +38,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             _metadataId = element.GetUniqueElementPath();
         }
 
-        public TransitionMetadata(JProperty prop)
+        public TransitionMetadata(JProperty prop, string parentMetadataId)
         {
             _prop = prop;
 
@@ -53,21 +53,20 @@ namespace StateChartsDotNet.Metadata.Json.States
                     return ExpressionCompiler.Compile<bool>(this.ConditionExpr);
                 }
             });
+
+            _metadataId = $"{parentMetadataId}.initialTransition";
         }
 
-        public TransitionMetadata(string target)
+        public TransitionMetadata(string target, string parentMetadataId)
         {
             _target = target;
 
             _condition = new Lazy<Func<dynamic, bool>>(() => EvalTrue);
+
+            _metadataId = $"{parentMetadataId}.initialTransition";
         }
 
         public string MetadataId => _metadataId;
-
-        public virtual bool Validate(Dictionary<IModelMetadata, List<string>> errors)
-        {
-            return true;
-        }
 
         public IEnumerable<string> Targets
         {

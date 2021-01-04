@@ -41,7 +41,7 @@ namespace StateChartsDotNet.Model.Execution
 
             await context.LogDebugAsync($"Foreach: Array length {items.Length}");
 
-            Debug.Assert(foreachMetadata.Item != null);
+            Debug.Assert(! string.IsNullOrWhiteSpace(foreachMetadata.Item));
 
             for (var idx = 0; idx < items.Length; idx++)
             {

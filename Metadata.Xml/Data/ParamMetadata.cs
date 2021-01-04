@@ -43,11 +43,11 @@ namespace StateChartsDotNet.Metadata.Xml.Data
         {
             if (_location == null && _expression == null)
             {
-                throw new MetadataValidationException("Param location or expression must be specified.");
+                throw new InvalidOperationException("Param location or expression must be specified.");
             }
             else if (_location != null && _expression != null)
             {
-                throw new MetadataValidationException("Only one of param location and expression can be specified.");
+                throw new InvalidOperationException("Only one of param location and expression can be specified.");
             }
             else if (_location != null)
             {

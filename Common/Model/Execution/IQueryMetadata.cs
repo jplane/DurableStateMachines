@@ -12,4 +12,22 @@ namespace StateChartsDotNet.Common.Model.Execution
         IReadOnlyDictionary<string, object> GetParams(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetExecutableContent();
     }
+
+    public static class QueryMetadataExtensions
+    {
+        public static void Validate(this IQueryMetadata metadata, Dictionary<IModelMetadata, List<string>> errors)
+        {
+            ((IModelMetadata) metadata).Validate(errors);
+
+            if (string.IsNullOrWhiteSpace(metadata.ResultLocation))
+            {
+                errors.Add(metadata, new List<string> { "Query action requires result location." });
+            }
+
+            foreach (var executableContent in metadata.GetExecutableContent())
+            {
+                executableContent.Validate(errors);
+            }
+        }
+    }
 }
