@@ -28,7 +28,23 @@ namespace StateChartsDotNet.Durable
             }
         }
 
-        public async Task DeserializeAsync(Func<string, Stream, string, Task> deserializeInstanceFunc)
+        public async Task DeserializeAsync(string metadataId, Func<string, Stream, string, Task> deserializeInstanceFunc)
+        {
+            metadataId.CheckArgNull(nameof(metadataId));
+            deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
+
+            using (await _lock.LockAsync())
+            {
+                if (_instances.TryGetValue(metadataId, out (string, byte[]) tuple))
+                {
+                    using var stream = new MemoryStream(tuple.Item2);
+
+                    await deserializeInstanceFunc(metadataId, stream, tuple.Item1);
+                }
+            }
+        }
+
+        public async Task DeserializeAllAsync(Func<string, Stream, string, Task> deserializeInstanceFunc)
         {
             deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
 

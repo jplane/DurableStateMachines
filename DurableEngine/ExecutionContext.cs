@@ -86,7 +86,7 @@ namespace StateChartsDotNet.Durable
 
             _data["_instanceId"] = instanceId;
 
-            await _orchestrationManager.RegisterAsync(_metadata.MetadataId, _metadata);
+            await _orchestrationManager.RegisterMetadataAsync(_metadata.MetadataId, _metadata);
 
             await _orchestrationManager.StartInstanceAsync(_metadata.MetadataId, instanceId, _data);
         }

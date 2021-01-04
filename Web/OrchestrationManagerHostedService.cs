@@ -20,6 +20,7 @@ namespace StateChartsDotNet.Web
         private readonly IHostApplicationLifetime _lifetime;
 
         private IOrchestrationManager _manager;
+        private IOrchestrationStorage _storage;
 
         public OrchestrationManagerHostedService(IConfiguration config,
                                                  IHostApplicationLifetime lifetime)
@@ -47,10 +48,10 @@ namespace StateChartsDotNet.Web
 
             var service = new AzureStorageOrchestrationService(settings);
 
-            var storage = new DurableOrchestrationStorage(connectionString, _lifetime.ApplicationStopping);
+            _storage = new DurableOrchestrationStorage(connectionString, _lifetime.ApplicationStopping);
 
             _manager = new DurableOrchestrationManager(service,
-                                                       storage,
+                                                       _storage,
                                                        timeout,
                                                        _lifetime.ApplicationStopping,
                                                        callbackUri);

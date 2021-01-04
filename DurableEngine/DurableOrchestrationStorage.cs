@@ -4,6 +4,7 @@ using Azure.Storage.Blobs.Specialized;
 using StateChartsDotNet.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,30 @@ namespace StateChartsDotNet.Durable
             return _client.DeleteAsync(null, _token);
         }
 
-        public async Task DeserializeAsync(Func<string, Stream, string, Task> deserializeInstanceFunc)
+        public async Task DeserializeAsync(string metadataId, Func<string, Stream, string, Task> deserializeInstanceFunc)
+        {
+            metadataId.CheckArgNull(nameof(metadataId));
+            deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
+
+            await _client.CreateIfNotExistsAsync();
+
+            var blobClient = _client.GetBlobClient(metadataId);
+
+            if (! await blobClient.ExistsAsync())
+            {
+                return;
+            }
+
+            var metadataResponse = await blobClient.GetPropertiesAsync();
+
+            Debug.Assert(metadataResponse != null);
+
+            using var stream = await blobClient.OpenReadAsync(cancellationToken: _token);
+
+            await deserializeInstanceFunc(metadataId, stream, metadataResponse.Value.Metadata["metadatatype"]);
+        }
+
+        public async Task DeserializeAllAsync(Func<string, Stream, string, Task> deserializeInstanceFunc)
         {
             deserializeInstanceFunc.CheckArgNull(nameof(deserializeInstanceFunc));
 

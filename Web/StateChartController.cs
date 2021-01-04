@@ -25,9 +25,41 @@ namespace StateChartsDotNet.Web
         [HttpGet]
         [Route("metadata/{metadataId}")]
         [ActionName("GetMetadataAsync")]
-        public Task<ActionResult> GetMetadataAsync(string metadataId)
+        public async Task<ActionResult> GetMetadataAsync(string metadataId)
         {
-            return Task.FromResult((ActionResult)new OkResult());
+            metadataId.CheckArgNull(nameof(metadataId));
+
+            Debug.Assert(_manager != null);
+
+            var statechart = await _manager.GetMetadataAsync(metadataId);
+
+            if (statechart == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                var tuple = await statechart.ToStringAsync();
+
+                string contentType = null;
+
+                switch (tuple.Item1)
+                {
+                    case "json":
+                        contentType = "application/json";
+                        break;
+
+                    case "xml":
+                        contentType = "application/xml";
+                        break;
+
+                    case "fluent":
+                        contentType = "text/plain";
+                        break;
+                }
+
+                return Content(tuple.Item2, contentType);
+            }
         }
 
         [HttpPost]
@@ -39,7 +71,7 @@ namespace StateChartsDotNet.Web
 
             Debug.Assert(_manager != null);
 
-            await _manager.RegisterAsync(metadata.MetadataId, metadata);
+            await _manager.RegisterMetadataAsync(metadata.MetadataId, metadata);
 
             var result = new { metadataId = metadata.MetadataId };
 
@@ -75,7 +107,7 @@ namespace StateChartsDotNet.Web
                 payload.MetadataId = payload.Metadata.MetadataId;
             }
 
-            await _manager.RegisterAsync(payload.MetadataId, payload.Metadata);
+            await _manager.RegisterMetadataAsync(payload.MetadataId, payload.Metadata);
 
             var instanceId = await StartAsync(payload.MetadataId, payload.InstanceId, payload.Parameters);
 

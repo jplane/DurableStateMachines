@@ -15,6 +15,8 @@ namespace StateChartsDotNet.Durable
 
         Task SerializeAsync(string metadataId, Stream stream, string deserializationType);
 
-        Task DeserializeAsync(Func<string, Stream, string, Task> deserializeInstanceFunc);
+        Task DeserializeAsync(string metadataId, Func<string, Stream, string, Task> deserializeInstanceFunc);
+
+        Task DeserializeAllAsync(Func<string, Stream, string, Task> deserializeInstanceFunc);
     }
 }
