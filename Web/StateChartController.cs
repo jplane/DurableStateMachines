@@ -58,6 +58,8 @@ namespace StateChartsDotNet.Web
                         break;
                 }
 
+                Debug.Assert(!string.IsNullOrWhiteSpace(contentType));
+
                 return Content(tuple.Item2, contentType);
             }
         }
