@@ -223,7 +223,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        public AtomicStateMetadata<StateChart> AtomicState(string id)
+        public AtomicStateMetadata<StateChart> State(string id)
         {
             return WithState<AtomicStateMetadata<StateChart>>(id);
         }

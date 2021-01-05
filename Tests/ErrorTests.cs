@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Tests
             static void action(dynamic data) => throw new Exception("boo!");
 
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .Execute(action)._
                                         .Transition
@@ -45,13 +45,13 @@ namespace StateChartsDotNet.Tests
             static object getContent(dynamic data) => data._event.Content;
 
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .Execute(action)._
                                         .Transition
                                             .Message("error.*")
                                             .Target("errorState")._._
-                                    .AtomicState("errorState")
+                                    .State("errorState")
                                         .OnEntry
                                             .Assign("err", getContent)._
                                         .Transition
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("test")
                                     .FailFast(true)
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .Execute(action)._
                                         .Transition

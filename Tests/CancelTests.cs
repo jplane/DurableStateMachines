@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Tests
         public async Task ExternalByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1")._;
+                                    .State("state1")._;
 
             var tuple = factory(machine, null);
 
@@ -42,7 +42,7 @@ namespace StateChartsDotNet.Tests
         public async Task ExternalByToken(ScaffoldFactoryDelegate factory, string _)
         {
             var machine = StateChart.Define("test")
-                                    .AtomicState("state1")._;
+                                    .State("state1")._;
 
             var tuple = factory(machine, null);
 
@@ -70,7 +70,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.DelayEchoAsync(uri, TimeSpan.FromSeconds(10)));
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -103,7 +103,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.DelayEchoAsync(uri, TimeSpan.FromSeconds(10)));
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -146,7 +146,7 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -182,7 +182,7 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -218,10 +218,10 @@ namespace StateChartsDotNet.Tests
         public async Task SimpleParentChildByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1")._;
+                                         .State("innerState1")._;
 
             var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
+                                    .State("outerState1")
                                         .InvokeStateChart
                                             .Definition(innerMachine)._._;
 
@@ -247,10 +247,10 @@ namespace StateChartsDotNet.Tests
         public async Task SimpleParentChildByToken(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1")._;
+                                         .State("innerState1")._;
 
             var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
+                                    .State("outerState1")
                                         .InvokeStateChart
                                             .Definition(innerMachine)._._;
 

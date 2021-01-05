@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("test")
                                     .DataInit("x", 1)
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .Assign("x", getValue)._
                                         .OnExit
@@ -48,7 +48,7 @@ namespace StateChartsDotNet.Tests
 
             var machine = StateChart.Define("test")
                                     .DataInit("x", 1)
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .Execute(action)._
                                         .OnExit
@@ -77,7 +77,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.EchoAsync(uri));
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -112,7 +112,7 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => new { value = DateTimeOffset.UtcNow };
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpPost()
                                                 .Url(uri)
@@ -144,7 +144,7 @@ namespace StateChartsDotNet.Tests
             var listenerTask = Task.Run(() => InProcWebServer.JsonResultAsync(uri, new { value = 43 }));
 
             var machine = StateChart.Define("httptest")
-                                    .AtomicState("state1")
+                                    .State("state1")
                                         .OnEntry
                                             .HttpGet()
                                                 .Url(uri)

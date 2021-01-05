@@ -37,7 +37,7 @@ static void action(dynamic data) => data.x += 1;
 
 var machine = StateChart.Define("test")
                         .DataInit("x", 1)
-                        .AtomicState("state1")
+                        .State("state1")
                             .OnEntry
                                 .Execute(action)._
                             .OnExit()
@@ -138,7 +138,7 @@ static object getValue(dynamic data) => data.x + 1;
 
 var innerMachine = StateChart.Define("inner")
                              .DataInit("x", 1)
-                             .AtomicState("innerState1")
+                             .State("innerState1")
                                  .OnEntry
                                      .Assign("x", getValue)._
                                  .OnExit
@@ -148,7 +148,7 @@ var innerMachine = StateChart.Define("inner")
                              .FinalState("alldone")._;
 
 var machine = StateChart.Define("outer")
-                        .AtomicState("outerState1")
+                        .State("outerState1")
                             .InvokeStateChart
                                 .Definition(innerMachine)._
                             .Transition

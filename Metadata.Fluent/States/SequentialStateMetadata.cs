@@ -201,7 +201,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        public AtomicStateMetadata<SequentialStateMetadata<TParent>> AtomicState(string id)
+        public AtomicStateMetadata<SequentialStateMetadata<TParent>> State(string id)
         {
             return WithState<AtomicStateMetadata<SequentialStateMetadata<TParent>>>(id);
         }

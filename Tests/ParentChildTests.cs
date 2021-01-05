@@ -18,10 +18,10 @@ namespace StateChartsDotNet.Tests
         public async Task CancelByMessage(ScaffoldFactoryDelegate factory, string _)
         {
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1")._;
+                                         .State("innerState1")._;
 
             var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
+                                    .State("outerState1")
                                         .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Inline)
                                             .Definition(innerMachine)._._;
@@ -50,7 +50,7 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => data.x + 1;
 
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1")
+                                         .State("innerState1")
                                              .DataInit("x", 1)
                                              .OnEntry
                                                  .Assign("x", getValue)._
@@ -64,7 +64,7 @@ namespace StateChartsDotNet.Tests
             static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
+                                    .State("outerState1")
                                         .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Isolated)
                                             .Definition(innerMachine)
@@ -92,7 +92,7 @@ namespace StateChartsDotNet.Tests
             static object getValue(dynamic data) => data.x + 1;
 
             var innerMachine = StateChart.Define("inner")
-                                         .AtomicState("innerState1")
+                                         .State("innerState1")
                                              .DataInit("x", 1)
                                              .OnEntry
                                                  .Assign("x", getValue)._
@@ -106,7 +106,7 @@ namespace StateChartsDotNet.Tests
             static object getEventValue(dynamic data) => data._event.Parameters["x"];
 
             var machine = StateChart.Define("outer")
-                                    .AtomicState("outerState1")
+                                    .State("outerState1")
                                         .InvokeStateChart
                                             .ExecutionMode(ChildStateChartExecutionMode.Inline)
                                             .Definition(innerMachine)
