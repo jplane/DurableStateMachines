@@ -234,9 +234,11 @@ namespace StateChartsDotNet
 
             if (message.IsDone)
             {
-                if (_childInstances.Remove(message.CorrelationId, out ExecutionContext context))
+                if (_childInstances.TryGetValue(message.CorrelationId, out ExecutionContext context))
                 {
                     await context.WaitForCompletionAsync();
+
+                    _childInstances.Remove(message.CorrelationId);
                 }
                 else
                 {

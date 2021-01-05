@@ -357,12 +357,20 @@ namespace StateChartsDotNet
 
         internal InternalMessage DequeueInternal()
         {
-            if (_internalMessages.TryDequeue(out InternalMessage evt))
+            InternalMessage msg = null;
+
+            try
             {
-                _data["_event"] = evt;
+                msg = _internalMessages.Dequeue();
+            }
+            catch (InvalidOperationException)
+            {
+                // if queue is empty, return null
             }
 
-            return evt;
+            _data["_event"] = msg;
+
+            return msg;
         }
 
         internal Set<State> Configuration => _configuration;

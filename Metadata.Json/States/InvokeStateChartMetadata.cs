@@ -63,7 +63,7 @@ namespace StateChartsDotNet.Metadata.Json.States
                 }
                 else
                 {
-                    return names.Split(" ");
+                    return names.Split(' ');
                 }
             }
         }

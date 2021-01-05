@@ -7,6 +7,7 @@ using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,7 +109,7 @@ namespace StateChartsDotNet.Durable
 
                 Debug.Assert(output != null);
 
-                _data = new Dictionary<string, object>(output);
+                _data = new Dictionary<string, object>(output.ToDictionary(p => p.Key, p => p.Value));
             }
             catch (TimeoutException)
             {

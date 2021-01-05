@@ -93,7 +93,7 @@ namespace StateChartsDotNet.Durable
 
             using (var blobStream = await blobClient.OpenWriteAsync(true, cancellationToken: _token))
             {
-                await stream.CopyToAsync(blobStream, _token);
+                await stream.CopyToAsync(blobStream, 81920 /* documented default */, _token);
             }
 
             await blobClient.SetMetadataAsync(new Dictionary<string, string>

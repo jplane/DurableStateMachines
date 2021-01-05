@@ -37,8 +37,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             writer.Write((int) _type);
             writer.Write(_evalCondition);
 
-            writer.WriteNullableString(string.Join('|', _targets));
-            writer.WriteNullableString(string.Join('|', _messages));
+            writer.WriteNullableString(string.Join("|", _targets));
+            writer.WriteNullableString(string.Join("|", _messages));
 
             writer.WriteMany(_executableContent, (o, w) => o.Serialize(w));
         }

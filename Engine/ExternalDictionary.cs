@@ -118,7 +118,7 @@ namespace StateChartsDotNet
             return _inner.Remove(item.Key);
         }
 
-        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        public bool TryGetValue(string key, out object value)
         {
             if (key.StartsWith("_"))
             {

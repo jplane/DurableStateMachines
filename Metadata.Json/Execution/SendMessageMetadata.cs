@@ -93,7 +93,7 @@ namespace StateChartsDotNet.Metadata.Json.Execution
                 
                 if (namelist != null)
                 {
-                    return namelist.Split(" ");
+                    return namelist.Split(' ');
                 }
                 else
                 {

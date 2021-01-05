@@ -49,7 +49,7 @@ namespace StateChartsDotNet.Metadata.Xml.Execution
                 
                 if (namelist != null)
                 {
-                    return namelist.Split(" ");
+                    return namelist.Split(' ');
                 }
                 else
                 {

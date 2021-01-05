@@ -87,7 +87,7 @@ namespace StateChartsDotNet.Metadata.Json.States
                 }
                 else
                 {
-                    return value.Split(" ");
+                    return value.Split(' ');
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace StateChartsDotNet.Metadata.Json.States
                 }
                 else
                 {
-                    return events.Split(" ");
+                    return events.Split(' ');
                 }
             }
         }

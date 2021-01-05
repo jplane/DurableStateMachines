@@ -45,7 +45,8 @@ namespace StateChartsDotNet.Durable
             _childInstances = new Dictionary<string, List<(string, string)>>();
         }
 
-        public Dictionary<string, object> ResultData => new Dictionary<string, object>(_data.Where(pair => !pair.Key.StartsWith("_")));
+        public Dictionary<string, object> ResultData => _data.Where(pair => !pair.Key.StartsWith("_"))
+                                                             .ToDictionary(p => p.Key, p => p.Value);
 
         protected override Task<Guid> GenerateGuid()
         {
@@ -61,7 +62,8 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(childMachine != null);
 
-            var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData));
+            var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData)
+                                                                .ToDictionary(p => p.Key, p => p.Value));
 
             var parentInstanceId = _orchestrationContext.OrchestrationInstance.InstanceId;
 
