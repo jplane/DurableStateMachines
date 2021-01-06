@@ -1,11 +1,14 @@
 ﻿using StateChartsDotNet.Common.Model.Data;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace StateChartsDotNet.Common.Model.States
 {
     public interface IStateMetadata : IModelMetadata
     {
         string Id { get; }
+
+        StateType Type { get; }
 
         bool IsDescendentOf(IStateMetadata state);
 
@@ -20,6 +23,10 @@ namespace StateChartsDotNet.Common.Model.States
         IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes();
 
         IDatamodelMetadata GetDatamodel();
+
+        ITransitionMetadata GetInitialTransition();
+
+        IEnumerable<IStateMetadata> GetStates();
     }
 
     public static class StateMetadataExtensions
@@ -33,15 +40,34 @@ namespace StateChartsDotNet.Common.Model.States
                 errors.Add(metadata, new List<string> { "Id is invalid." });
             }
 
+            var initialTransition = metadata.GetInitialTransition();
+
+            var states = metadata.GetStates().ToArray();
+
+            if ((initialTransition == null && states.Length > 0) ||
+                (initialTransition != null && states.Length == 0))
+            {
+                errors.Add(metadata, new List<string> { "Compound state requires an initial transition and at least one child state." });
+            }
+            else
+            {
+                initialTransition?.Validate(errors);
+            }
+
+            foreach (var state in states)
+            {
+                state.Validate(errors);
+            }
+
             metadata.GetOnEntry()?.Validate(errors);
 
             metadata.GetOnExit()?.Validate(errors);
 
             metadata.GetDatamodel()?.Validate(errors);
 
-            foreach (var transition in metadata.GetTransitions())
+            foreach (var outboundTransition in metadata.GetTransitions())
             {
-                transition.Validate(errors);
+                outboundTransition.Validate(errors);
             }
 
             foreach (var invoke in metadata.GetStateChartInvokes())

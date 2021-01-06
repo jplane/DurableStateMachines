@@ -2,6 +2,6 @@
 {
     public interface IHistoryStateMetadata : IStateMetadata
     {
-        HistoryType Type { get; }
+        bool IsDeep { get; }
     }
 }

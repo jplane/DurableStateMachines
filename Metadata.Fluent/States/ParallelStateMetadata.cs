@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
-    public sealed class ParallelStateMetadata<TParent> : StateMetadata, IParallelStateMetadata where TParent : IStateMetadata
+    public sealed class ParallelStateMetadata<TParent> : StateMetadata where TParent : IStateMetadata
     {
         private readonly List<StateMetadata> _states;
         private readonly List<TransitionMetadata<ParallelStateMetadata<TParent>>> _transitions;
@@ -67,6 +67,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             return metadata;
         }
+
+        public override StateType Type => StateType.Parallel;
 
         protected override IStateMetadata _Parent => this.Parent;
 
@@ -157,14 +159,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        public AtomicStateMetadata<ParallelStateMetadata<TParent>> State(string id)
+        public StateMetadata<ParallelStateMetadata<TParent>> State(string id)
         {
-            return WithState<AtomicStateMetadata<ParallelStateMetadata<TParent>>>(id);
-        }
-
-        public SequentialStateMetadata<ParallelStateMetadata<TParent>> SequentialState(string id)
-        {
-            return WithState<SequentialStateMetadata<ParallelStateMetadata<TParent>>>(id);
+            return WithState<StateMetadata<ParallelStateMetadata<TParent>>>(id);
         }
 
         public ParallelStateMetadata<ParallelStateMetadata<TParent>> ParallelState(string id)
@@ -192,6 +189,6 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return state;
         }
 
-        IEnumerable<IStateMetadata> IParallelStateMetadata.GetStates() => _states;
+        protected override IEnumerable<IStateMetadata> GetStates() => _states;
     }
 }

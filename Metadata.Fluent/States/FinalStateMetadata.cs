@@ -67,6 +67,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return metadata;
         }
 
+        public override StateType Type => StateType.Final;
+
         protected override IStateMetadata _Parent => this.Parent;
 
         internal TParent Parent { get; set; }

@@ -2,177 +2,264 @@
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.States;
-using System;
+using StateChartsDotNet.Metadata.Fluent.Data;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Metadata.Fluent.States
 {
-    public abstract class StateMetadata : IStateMetadata
+    public sealed class StateMetadata<TParent> : StateMetadata where TParent : IStateMetadata
     {
-        private readonly string _id;
+        private readonly List<StateMetadata> _states;
+        private readonly List<InvokeStateChartMetadata<StateMetadata<TParent>>> _stateChartInvokes;
+        private readonly List<TransitionMetadata<StateMetadata<TParent>>> _transitions;
+
+        private TransitionMetadata<StateMetadata<TParent>> _initialTransition;
+        private DatamodelMetadata<StateMetadata<TParent>> _datamodel;
+        private OnEntryExitMetadata<StateMetadata<TParent>> _onEntry;
+        private OnEntryExitMetadata<StateMetadata<TParent>> _onExit;
 
         internal StateMetadata(string id)
+            : base(id)
         {
-            _id = id;
+            _states = new List<StateMetadata>();
+            _stateChartInvokes = new List<InvokeStateChartMetadata<StateMetadata<TParent>>>();
+            _transitions = new List<TransitionMetadata<StateMetadata<TParent>>>();
         }
 
-        internal virtual void Serialize(BinaryWriter writer)
+        internal override void Serialize(BinaryWriter writer)
         {
             writer.CheckArgNull(nameof(writer));
 
-            writer.WriteNullableString(this.GetType().AssemblyQualifiedName);
-            writer.WriteNullableString(this.Id);
-            writer.WriteNullableString(this.MetadataId);
+            base.Serialize(writer);
+
+            writer.Write(_datamodel, (o, w) => o.Serialize(w));
+            writer.Write(_initialTransition, (o, w) => o.Serialize(w));
+            writer.Write(_onEntry, (o, w) => o.Serialize(w));
+            writer.Write(_onExit, (o, w) => o.Serialize(w));
+
+            writer.WriteMany(_states, (o, w) => o.Serialize(w));
+            writer.WriteMany(_transitions, (o, w) => o.Serialize(w));
+            writer.WriteMany(_stateChartInvokes, (o, w) => o.Serialize(w));
         }
 
-        internal static StateMetadata Deserialize(BinaryReader reader, dynamic parent)
+        internal static StateMetadata<TParent> Deserialize(BinaryReader reader)
         {
             reader.CheckArgNull(nameof(reader));
 
-            var aqtn = reader.ReadNullableString();
+            var id = reader.ReadNullableString();
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(aqtn));
+            var metadata = new StateMetadata<TParent>(id);
 
-            var type = Type.GetType(aqtn);
+            metadata.MetadataId = reader.ReadNullableString();
 
-            Debug.Assert(type != null);
+            metadata._datamodel = reader.Read(DatamodelMetadata<StateMetadata<TParent>>.Deserialize,
+                                              o => o.Parent = metadata);
 
-            var deserializeMethod = type.GetMethod("Deserialize", BindingFlags.NonPublic | BindingFlags.Static);
+            metadata._initialTransition = reader.Read(TransitionMetadata<StateMetadata<TParent>>.Deserialize,
+                                                      o => o.Parent = metadata);
 
-            Debug.Assert(deserializeMethod != null);
+            metadata._onEntry = reader.Read(OnEntryExitMetadata<StateMetadata<TParent>>.Deserialize,
+                                            o => o.Parent = metadata);
 
-            dynamic metadata = (StateMetadata) deserializeMethod.Invoke(null, new[] { reader });
+            metadata._onExit = reader.Read(OnEntryExitMetadata<StateMetadata<TParent>>.Deserialize,
+                                           o => o.Parent = metadata);
 
-            metadata.Parent = parent;
+            metadata._states.AddRange(StateMetadata.DeserializeMany(reader, metadata));
+
+            metadata._transitions.AddRange(reader.ReadMany(TransitionMetadata<StateMetadata<TParent>>.Deserialize,
+                                                             o => o.Parent = metadata));
+
+            metadata._stateChartInvokes.AddRange(reader.ReadMany(InvokeStateChartMetadata<StateMetadata<TParent>>.Deserialize,
+                                                                   o => o.Parent = metadata));
 
             return metadata;
         }
 
-        internal static IEnumerable<StateMetadata> DeserializeMany(BinaryReader reader, dynamic parent)
+        public override StateType Type => _states.Any() ? StateType.Compound : StateType.Atomic;
+
+        protected override IStateMetadata _Parent => this.Parent;
+
+        internal TParent Parent { get; set; }
+
+        internal override IEnumerable<string> StateNames
         {
-            reader.CheckArgNull(nameof(reader));
+            get => new[] { ((IStateMetadata)this).Id }.Concat(_states.SelectMany(s => s.StateNames));
+        }
 
-            var count = reader.ReadInt32();
+        public TParent _ => this.Parent;
 
-            for (var i = 0; i < count; i++)
+        public TransitionMetadata<StateMetadata<TParent>> InitialTransition
+        {
+            get
             {
-                yield return Deserialize(reader, parent);
+                _initialTransition = new TransitionMetadata<StateMetadata<TParent>>();
+
+                _initialTransition.Parent = this;
+
+                _initialTransition.MetadataId = $"{((IModelMetadata)this).MetadataId}.InitialTransition";
+
+                return _initialTransition;
             }
         }
 
+        protected override IDatamodelMetadata GetDatamodel() => _datamodel;
 
-        protected abstract IStateMetadata _Parent { get; }
-
-        internal virtual IEnumerable<string> StateNames
+        public StateMetadata<TParent> DataInit(string location, object value)
         {
-            get => new[] { _id };
-        }
-
-        public string Id => _id;
-
-        public virtual string MetadataId { get; set; }
-
-        int IStateMetadata.DepthFirstCompare(IStateMetadata metadata)
-        {
-            int Compare(string x, string y)
+            if (_datamodel == null)
             {
-                return string.Compare(x, y, StringComparison.InvariantCultureIgnoreCase);
+                _datamodel = this.Datamodel;
             }
 
-            if (Compare(((IStateMetadata) this).Id, metadata.Id) == 0)
+            _datamodel.DataInit().Id(location).Value(value);
+
+            return this;
+        }
+
+        public DatamodelMetadata<StateMetadata<TParent>> Datamodel
+        {
+            get
             {
-                return 0;
+                _datamodel = new DatamodelMetadata<StateMetadata<TParent>>();
+
+                _datamodel.Parent = this;
+
+                _datamodel.MetadataId = $"{((IModelMetadata)this).MetadataId}.Datamodel";
+
+                return _datamodel;
             }
+        }
 
-            var current = this;
-            var parent = this._Parent;
+        protected override IOnEntryExitMetadata GetOnEntry() => _onEntry;
 
-            while (parent != null)
+        public OnEntryExitMetadata<StateMetadata<TParent>> OnEntry
+        {
+            get
             {
-                Debug.Assert(parent is StateMetadata);
+                _onEntry = new OnEntryExitMetadata<StateMetadata<TParent>>(true);
 
-                current = (StateMetadata) parent;
+                _onEntry.Parent = this;
 
-                parent = current._Parent;
+                _onEntry.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnEntry";
+
+                return _onEntry;
             }
+        }
 
-            Debug.Assert(current is StateChart);
+        protected override IOnEntryExitMetadata GetOnExit() => _onExit;
 
-            var stateNames = ((StateChart)current).StateNames.ToArray();
-
-            foreach (var name in stateNames)
+        public OnEntryExitMetadata<StateMetadata<TParent>> OnExit
+        {
+            get
             {
-                if (Compare(((IStateMetadata)this).Id, name) == 0)
-                {
-                    return 1;
-                }
-                else if (Compare(metadata.Id, name) == 0)
-                {
-                    return -1;
-                }
+                _onExit = new OnEntryExitMetadata<StateMetadata<TParent>>(false);
+
+                _onExit.Parent = this;
+
+                _onExit.MetadataId = $"{((IModelMetadata)this).MetadataId}.OnExit";
+
+                return _onExit;
             }
-
-            Debug.Fail("Unexpected result.");
-
-            return 0;
         }
 
-        protected virtual IDatamodelMetadata GetDatamodel() => null;
+        protected override IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => _stateChartInvokes;
 
-        IDatamodelMetadata IStateMetadata.GetDatamodel()
+        public InvokeStateChartMetadata<StateMetadata<TParent>> InvokeStateChart
         {
-            return GetDatamodel();
-        }
-
-        protected virtual IOnEntryExitMetadata GetOnEntry() => null;
-
-        IOnEntryExitMetadata IStateMetadata.GetOnEntry()
-        {
-            return GetOnEntry();
-        }
-
-        protected virtual IOnEntryExitMetadata GetOnExit() => null;
-
-        IOnEntryExitMetadata IStateMetadata.GetOnExit()
-        {
-            return GetOnExit();
-        }
-
-        protected virtual IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes() => Enumerable.Empty<IInvokeStateChartMetadata>();
-
-        IEnumerable<IInvokeStateChartMetadata> IStateMetadata.GetStateChartInvokes()
-        {
-            return GetStateChartInvokes();
-        }
-
-        protected virtual IEnumerable<ITransitionMetadata> GetTransitions() => Enumerable.Empty<ITransitionMetadata>();
-
-        IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions()
-        {
-            return GetTransitions();
-        }
-
-        bool IStateMetadata.IsDescendentOf(IStateMetadata state)
-        {
-            var parent = this._Parent;
-
-            while (parent != null)
+            get
             {
-                Debug.Assert(parent is StateMetadata);
+                var invoke = new InvokeStateChartMetadata<StateMetadata<TParent>>();
 
-                if (parent == state)
-                {
-                    return true;
-                }
+                invoke.Parent = this;
 
-                parent = ((StateMetadata) parent)._Parent;
+                _stateChartInvokes.Add(invoke);
+
+                invoke.MetadataId = $"{((IModelMetadata)this).MetadataId}.StateChartInvokes[{_stateChartInvokes.Count}]";
+
+                return invoke;
             }
-
-            return false;
         }
+
+        protected override IEnumerable<ITransitionMetadata> GetTransitions() => _transitions;
+
+        public TransitionMetadata<StateMetadata<TParent>> Transition
+        {
+            get
+            {
+                var transition = new TransitionMetadata<StateMetadata<TParent>>();
+
+                transition.Parent = this;
+
+                _transitions.Add(transition);
+
+                transition.MetadataId = $"{((IModelMetadata)this).MetadataId}.Transitions[{_transitions.Count}]";
+
+                return transition;
+            }
+        }
+
+        public StateMetadata<StateMetadata<TParent>> State(string id)
+        {
+            return WithState<StateMetadata<StateMetadata<TParent>>>(id);
+        }
+
+        public ParallelStateMetadata<StateMetadata<TParent>> ParallelState(string id)
+        {
+            return WithState<ParallelStateMetadata<StateMetadata<TParent>>>(id);
+        }
+
+        public FinalStateMetadata<StateMetadata<TParent>> FinalState(string id)
+        {
+            return WithState<FinalStateMetadata<StateMetadata<TParent>>>(id);
+        }
+
+        public HistoryStateMetadata<StateMetadata<TParent>> HistoryState(string id)
+        {
+            return WithState<HistoryStateMetadata<StateMetadata<TParent>>>(id);
+        }
+
+        private TStateMetadata WithState<TStateMetadata>(string id) where TStateMetadata : StateMetadata
+        {
+            var method = typeof(TStateMetadata).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
+                                                               null,
+                                                               new[] { typeof(string) },
+                                                               null);
+
+            Debug.Assert(method != null);
+
+            var state = (dynamic) method.Invoke(new[] { id });
+
+            state.Parent = this;
+
+            _states.Add(state);
+
+            state.MetadataId = $"{this.MetadataId}.States[{_states.Count}]";
+
+            return state;
+        }
+
+        protected override ITransitionMetadata GetInitialTransition()
+        {
+            if (_initialTransition != null)
+            {
+                return _initialTransition;
+            }
+            else if (_states.Count > 0)
+            {
+                return new TransitionMetadata<StateMetadata<TParent>>()
+                                        .Target(((IStateMetadata)_states[0]).Id);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        protected override IEnumerable<IStateMetadata> GetStates() => _states;
     }
 }

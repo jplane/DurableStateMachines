@@ -40,6 +40,8 @@ namespace StateChartsDotNet.Metadata.Xml.States
             });
         }
 
+        public override StateType Type => StateType.Final;
+
         public object GetContent(dynamic data)
         {
             return _getContentValue.Value(data);

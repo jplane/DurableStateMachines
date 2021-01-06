@@ -15,9 +15,7 @@ namespace StateChartsDotNet.Model.States
         {
         }
 
-        public override bool IsHistoryState => true;
-
-        public override bool IsDeepHistoryState => ((IHistoryStateMetadata) _metadata).Type == HistoryType.Deep;
+        public bool IsDeep => ((IHistoryStateMetadata) _metadata).IsDeep;
 
         public override Task InvokeAsync(ExecutionContextBase context)
         {
@@ -27,6 +25,21 @@ namespace StateChartsDotNet.Model.States
         public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
             return Task.CompletedTask;
+        }
+
+        public override IEnumerable<State> GetChildStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Transition GetInitialStateTransition()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void RecordHistory(ExecutionContextBase context)
+        {
+            throw new NotImplementedException();
         }
 
         public void VisitTransition(List<State> targetStates,

@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.States
 {
-    public abstract class StateMetadata : IStateMetadata
+    public class StateMetadata : IStateMetadata
     {
         protected readonly XElement _element;
 
@@ -27,6 +27,9 @@ namespace StateChartsDotNet.Metadata.Xml.States
         public virtual string Id => _id ?? _metadataId;
 
         public virtual string MetadataId => _metadataId;
+
+        public virtual StateType Type =>
+            this.GetStates().Any() ? StateType.Compound : StateType.Atomic;
 
         public bool IsDescendentOf(IStateMetadata metadata)
         {
@@ -71,6 +74,60 @@ namespace StateChartsDotNet.Metadata.Xml.States
             var node = _element.ScxmlElement("datamodel");
 
             return node == null ? null : (IDatamodelMetadata) new DatamodelMetadata(node);
+        }
+
+        public virtual ITransitionMetadata GetInitialTransition()
+        {
+            var attr = _element.Attribute("initial");
+
+            if (attr != null)
+            {
+                return new TransitionMetadata(attr, this.MetadataId);
+            }
+            else
+            {
+                var initialElement = _element.Element("initial");
+
+                if (initialElement != null)
+                {
+                    var transitionElement = initialElement.ScxmlElement("transition");
+
+                    return new TransitionMetadata(transitionElement);
+                }
+                else
+                {
+                    var firstChild = this.GetStates().FirstOrDefault(sm => ! (sm is IHistoryStateMetadata));
+
+                    return firstChild == null ? null : new TransitionMetadata(firstChild.Id, this.MetadataId);
+                }
+            }
+        }
+
+        public virtual IEnumerable<IStateMetadata> GetStates()
+        {
+            var states = new List<IStateMetadata>();
+
+            foreach (var el in _element.Elements())
+            {
+                if (el.ScxmlNameEquals("parallel"))
+                {
+                    states.Add(new ParallelStateMetadata(el));
+                }
+                else if (el.ScxmlNameEquals("history"))
+                {
+                    states.Add(new HistoryStateMetadata(el));
+                }
+                else if (el.ScxmlNameEquals("state"))
+                {
+                    states.Add(new StateMetadata(el));
+                }
+                else if (el.ScxmlNameEquals("final"))
+                {
+                    states.Add(new FinalStateMetadata(el));
+                }
+            }
+
+            return states.AsEnumerable();
         }
     }
 }

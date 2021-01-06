@@ -121,7 +121,9 @@ namespace StateChartsDotNet.Model.States
 
             foreach (var state in GetTargetStates(context.Root))
             {
-                if (state.IsHistoryState)
+                Debug.Assert(state != null);
+
+                if (state.Type == StateType.History)
                 {
                     if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> value))
                     {
@@ -150,7 +152,7 @@ namespace StateChartsDotNet.Model.States
                 return null;
             }
             else if (_metadata.Type == TransitionType.Internal &&
-                     _source.IsSequentialState &&
+                     _source.Type == StateType.Compound &&
                      targetStates.All(s => s.IsDescendent(_source)))
             {
                 return _source;
@@ -158,7 +160,7 @@ namespace StateChartsDotNet.Model.States
             else
             {
                 var ancestors = _source.GetProperAncestors()
-                                       .Where(s => s.IsSequentialState || s.IsScxmlRoot);
+                                       .Where(s => s.Type == StateType.Compound || s.Type == StateType.Root);
 
                 foreach (var ancestor in ancestors)
                 {
@@ -168,7 +170,7 @@ namespace StateChartsDotNet.Model.States
                     }
                 }
 
-                Debug.Assert(_source.IsScxmlRoot);
+                Debug.Assert(_source.Type == StateType.Root);
 
                 return context.Root;
             }

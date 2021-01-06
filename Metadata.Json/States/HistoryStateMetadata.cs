@@ -12,11 +12,8 @@ namespace StateChartsDotNet.Metadata.Json.States
         {
         }
 
-        public HistoryType Type
-        {
-            get => (HistoryType) Enum.Parse(typeof(HistoryType),
-                                            _element.Property("type")?.Value.Value<string>() ?? "shallow",
-                                            true);
-        }
+        public override StateType Type => StateType.History;
+
+        public bool IsDeep => bool.Parse(_element.Property("deep")?.Value.Value<string>() ?? "false");
     }
 }

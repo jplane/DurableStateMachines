@@ -81,6 +81,8 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public override string MetadataId => _name;
 
+        public override StateType Type => StateType.Root;
+
         public bool FailFast
         {
             get => bool.Parse(_element.Value<string>("failfast") ?? "false");
@@ -93,7 +95,14 @@ namespace StateChartsDotNet.Metadata.Json.States
                                             true);
         }
 
-        public ITransitionMetadata GetInitialTransition()
+        public IScriptMetadata GetScript()
+        {
+            var node = _element.Property("script")?.Value.Value<JObject>();
+
+            return node == null ? null : (IScriptMetadata)new ScriptMetadata(node);
+        }
+
+        public override ITransitionMetadata GetInitialTransition()
         {
             var attr = _element.Value<string>("initial");
 
@@ -103,23 +112,13 @@ namespace StateChartsDotNet.Metadata.Json.States
             }
             else
             {
-                var firstChild = GetStates().FirstOrDefault(sm => sm is IAtomicStateMetadata ||
-                                                                  sm is ISequentialStateMetadata ||
-                                                                  sm is IParallelStateMetadata ||
-                                                                  sm is IFinalStateMetadata);
+                var firstChild = this.GetStates().FirstOrDefault();
 
                 return firstChild == null ? null : new TransitionMetadata(firstChild.Id, this.MetadataId);
             }
         }
 
-        public IScriptMetadata GetScript()
-        {
-            var node = _element.Property("script")?.Value.Value<JObject>();
-
-            return node == null ? null : (IScriptMetadata) new ScriptMetadata(node);
-        }
-
-        public IEnumerable<IStateMetadata> GetStates()
+        public override IEnumerable<IStateMetadata> GetStates()
         {
             var node = _element.Property("states");
 
@@ -131,11 +130,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
                 if (type == null)
                 {
-                    states.Add(new AtomicStateMetadata(el));
-                }
-                else if (type == "sequential")
-                {
-                    states.Add(new SequentialStateMetadata(el));
+                    states.Add(new StateMetadata(el));
                 }
                 else if (type == "parallel")
                 {

@@ -7,20 +7,6 @@ namespace StateChartsDotNet.Durable
 {
     internal static class RegistrationExtensions
     {
-        public static void RegisterStateChartInvokes(this IStateChartMetadata metadata,
-                                                     Action<string, IInvokeStateChartMetadata> register,
-                                                     string parentId)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-            register.CheckArgNull(nameof(register));
-            parentId.CheckArgNull(nameof(parentId));
-
-            foreach (var state in metadata.GetStates())
-            {
-                state.RegisterStateChartInvokes(register, parentId);
-            }
-        }
-
         public static void RegisterStateChartInvokes(this IStateMetadata metadata,
                                                      Action<string, IInvokeStateChartMetadata> register,
                                                      string parentId)
@@ -41,33 +27,6 @@ namespace StateChartsDotNet.Durable
 
                 root.RegisterStateChartInvokes(register, metadataId);
             }
-        }
-
-        public static void RegisterStateChartInvokes(this ISequentialStateMetadata metadata,
-                                                     Action<string, IInvokeStateChartMetadata> register,
-                                                     string parentId)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-            register.CheckArgNull(nameof(register));
-            parentId.CheckArgNull(nameof(parentId));
-
-            RegisterStateChartInvokes((IStateMetadata) metadata, register, parentId);
-
-            foreach (var state in metadata.GetStates())
-            {
-                state.RegisterStateChartInvokes(register, parentId);
-            }
-        }
-
-        public static void RegisterStateChartInvokes(this IParallelStateMetadata metadata,
-                                                     Action<string, IInvokeStateChartMetadata> register,
-                                                     string parentId)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-            register.CheckArgNull(nameof(register));
-            parentId.CheckArgNull(nameof(parentId));
-
-            RegisterStateChartInvokes((IStateMetadata) metadata, register, parentId);
 
             foreach (var state in metadata.GetStates())
             {

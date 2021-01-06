@@ -70,11 +70,11 @@ namespace StateChartsDotNet
             {
                 await state.ExitAsync(context);
 
-                if (state.IsFinalState)
+                if (state.Type == StateType.Final)
                 {
                     Debug.Assert(state.Parent != null);
 
-                    if (state.Parent.IsScxmlRoot)
+                    if (state.Parent.Type == StateType.Root)
                     {
                         await ((FinalState) state).SendDoneMessage(context);
                     }
@@ -240,7 +240,7 @@ namespace StateChartsDotNet
 
             var enabledTransitions = new Set<Transition>();
 
-            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.IsAtomic);
+            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.Type == StateType.Atomic);
 
             foreach (var state in atomicStates)
             {
@@ -412,7 +412,7 @@ namespace StateChartsDotNet
 
                 statesToEnter.Add(anc);
 
-                if (anc.IsParallelState)
+                if (anc.Type == StateType.Parallel)
                 {
                     var childStates = anc.GetChildStates();
 
@@ -442,7 +442,7 @@ namespace StateChartsDotNet
             Debug.Assert(statesToEnter != null);
             Debug.Assert(statesForDefaultEntry != null);
 
-            if (state.IsHistoryState)
+            if (state.Type == StateType.History)
             {
                 if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> resolvedStates))
                 {
@@ -485,7 +485,7 @@ namespace StateChartsDotNet
             {
                 statesToEnter.Add(state);
 
-                if (state.IsSequentialState)
+                if (state.Type == StateType.Compound)
                 {
                     statesForDefaultEntry.Add(state);
 
@@ -511,7 +511,7 @@ namespace StateChartsDotNet
                         await AddAncestorStatesToEnterAsync(context, target, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
                     }
                 }
-                else if (state.IsParallelState)
+                else if (state.Type == StateType.Parallel)
                 {
                     var childStates = state.GetChildStates();
 

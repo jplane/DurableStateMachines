@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Json.States
 {
-    public abstract class StateMetadata : IStateMetadata
+    public class StateMetadata : IStateMetadata
     {
         protected readonly JObject _element;
 
@@ -27,6 +27,9 @@ namespace StateChartsDotNet.Metadata.Json.States
         public virtual string Id => _id ?? _metadataId;
 
         public virtual string MetadataId => _metadataId;
+
+        public virtual StateType Type =>
+            this.GetStates().Any() ? StateType.Compound : StateType.Atomic;
 
         public bool IsDescendentOf(IStateMetadata metadata)
         {
@@ -85,6 +88,53 @@ namespace StateChartsDotNet.Metadata.Json.States
             var node = _element.Property("datamodel");
 
             return node == null ? null : (IDatamodelMetadata) new DatamodelMetadata(node);
+        }
+
+        public virtual ITransitionMetadata GetInitialTransition()
+        {
+            var attr = _element.Property("initial");
+
+            if (attr != null)
+            {
+                return new TransitionMetadata(attr, this.MetadataId);
+            }
+            else
+            {
+                var firstChild = this.GetStates().FirstOrDefault(sm => ! (sm is IHistoryStateMetadata));
+
+                return firstChild == null ? null : new TransitionMetadata(firstChild.Id, this.MetadataId);
+            }
+        }
+
+        public virtual IEnumerable<IStateMetadata> GetStates()
+        {
+            var elements = _element.Property("states")?.Value?.Values<JObject>() ?? Enumerable.Empty<JObject>();
+
+            var states = new List<IStateMetadata>();
+
+            foreach (var el in elements)
+            {
+                var type = el.Property("type")?.Value.Value<string>();
+
+                if (type == null)
+                {
+                    states.Add(new StateMetadata(el));
+                }
+                else if (type == "parallel")
+                {
+                    states.Add(new ParallelStateMetadata(el));
+                }
+                else if (type == "final")
+                {
+                    states.Add(new FinalStateMetadata(el));
+                }
+                else if (type == "history")
+                {
+                    states.Add(new HistoryStateMetadata(el));
+                }
+            }
+
+            return states.AsEnumerable();
         }
     }
 }

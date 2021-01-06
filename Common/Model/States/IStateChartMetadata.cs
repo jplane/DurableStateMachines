@@ -14,8 +14,6 @@ namespace StateChartsDotNet.Common.Model.States
         bool FailFast { get; }
         Databinding Databinding { get; }
 
-        IEnumerable<IStateMetadata> GetStates();
-        ITransitionMetadata GetInitialTransition();
         IScriptMetadata GetScript();
 
         Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default);
@@ -30,23 +28,7 @@ namespace StateChartsDotNet.Common.Model.States
 
             ((IStateMetadata) metadata).Validate(errors);
 
-            var transition = metadata.GetInitialTransition();
-
-            if (transition == null)
-            {
-                errors.Add(metadata, new List<string> { "StateChart requires an initial transition." });
-            }
-            else
-            {
-                transition.Validate(errors);
-            }
-
             metadata.GetScript()?.Validate(errors);
-
-            foreach (var state in metadata.GetStates())
-            {
-                state.Validate(errors);
-            }
 
             if (errors.Any())
             {

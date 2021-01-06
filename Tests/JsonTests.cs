@@ -185,7 +185,6 @@ namespace StateChartsDotNet.Tests
                                  },
                                  {
                                      'id': 'on',
-                                     'type': 'sequential',
                                      'initial': 'idle',
                                      'transitions': [
                                          { 'event': 'turn.off', 'target': 'off' },

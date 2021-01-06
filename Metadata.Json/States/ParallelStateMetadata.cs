@@ -1,18 +1,21 @@
 ﻿using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Json.States
 {
-    public class ParallelStateMetadata : StateMetadata, IParallelStateMetadata
+    public class ParallelStateMetadata : StateMetadata
     {
         internal ParallelStateMetadata(JObject element)
             : base(element)
         {
         }
 
-        public IEnumerable<IStateMetadata> GetStates()
+        public override StateType Type => StateType.Parallel;
+
+        public override IEnumerable<IStateMetadata> GetStates()
         {
             var node = _element.Property("states");
 
@@ -24,11 +27,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
                 if (type == null)
                 {
-                    states.Add(new AtomicStateMetadata(el));
-                }
-                else if (type == "sequential")
-                {
-                    states.Add(new SequentialStateMetadata(el));
+                    states.Add(new StateMetadata(el));
                 }
                 else if (type == "parallel")
                 {

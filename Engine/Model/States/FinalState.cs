@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using StateChartsDotNet.Common;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -15,8 +16,6 @@ namespace StateChartsDotNet.Model.States
         {
         }
 
-        public override bool IsFinalState => true;
-
         public override Task InvokeAsync(ExecutionContextBase context)
         {
             throw new NotImplementedException();
@@ -25,6 +24,21 @@ namespace StateChartsDotNet.Model.States
         public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
         {
             return Task.CompletedTask;
+        }
+
+        public override IEnumerable<State> GetChildStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void RecordHistory(ExecutionContextBase context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Transition GetInitialStateTransition()
+        {
+            throw new NotImplementedException();
         }
 
         public Task SendDoneMessage(ExecutionContextBase context)

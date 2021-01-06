@@ -1,34 +1,27 @@
-﻿using StateChartsDotNet.Common.Model.States;
+﻿using StateChartsDotNet.Common.Model;
+using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
 namespace StateChartsDotNet.Metadata.Xml.States
 {
-    public class ParallelStateMetadata : StateMetadata, IParallelStateMetadata
+    public class ParallelStateMetadata : StateMetadata
     {
         internal ParallelStateMetadata(XElement element)
             : base(element)
         {
         }
 
-        public IEnumerable<IStateMetadata> GetStates()
+        public override StateType Type => StateType.Parallel;
+
+        public override IEnumerable<IStateMetadata> GetStates()
         {
             var states = new List<IStateMetadata>();
 
-            bool IsCompoundState(XElement el)
-            {
-                return el.ScxmlNameEquals("state") &&
-                       el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
-            }
-
             foreach (var el in _element.Elements())
             {
-                if (IsCompoundState(el))
-                {
-                    states.Add(new SequentialStateMetadata(el));
-                }
-                else if (el.ScxmlNameEquals("parallel"))
+                if (el.ScxmlNameEquals("parallel"))
                 {
                     states.Add(new ParallelStateMetadata(el));
                 }
@@ -38,7 +31,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 }
                 else if (el.ScxmlNameEquals("state"))
                 {
-                    states.Add(new AtomicStateMetadata(el));
+                    states.Add(new StateMetadata(el));
                 }
             }
 

@@ -69,6 +69,8 @@ namespace StateChartsDotNet.Metadata.Xml.States
             return statechart;
         }
 
+        public override StateType Type => StateType.Root;
+
         public override string Id => _name;
 
         public override string MetadataId => _name;
@@ -85,7 +87,14 @@ namespace StateChartsDotNet.Metadata.Xml.States
                                             true);
         }
 
-        public ITransitionMetadata GetInitialTransition()
+        public IScriptMetadata GetScript()
+        {
+            var node = _element.ScxmlElement("script");
+
+            return node == null ? null : (IScriptMetadata)new ScriptMetadata(node);
+        }
+
+        public override ITransitionMetadata GetInitialTransition()
         {
             var attr = _element.Attribute("initial");
 
@@ -95,39 +104,19 @@ namespace StateChartsDotNet.Metadata.Xml.States
             }
             else
             {
-                var firstChild = GetStates().FirstOrDefault(sm => sm is IAtomicStateMetadata ||
-                                                                  sm is ISequentialStateMetadata ||
-                                                                  sm is IParallelStateMetadata ||
-                                                                  sm is IFinalStateMetadata);
+                var firstChild = this.GetStates().FirstOrDefault();
 
                 return firstChild == null ? null : new TransitionMetadata(firstChild.Id, this.MetadataId);
             }
         }
 
-        public IScriptMetadata GetScript()
-        {
-            var node = _element.ScxmlElement("script");
-
-            return node == null ? null : (IScriptMetadata) new ScriptMetadata(node);
-        }
-
-        public IEnumerable<IStateMetadata> GetStates()
+        public override IEnumerable<IStateMetadata> GetStates()
         {
             var states = new List<IStateMetadata>();
 
-            bool IsCompoundState(XElement el)
-            {
-                return el.ScxmlNameEquals("state") &&
-                       el.Elements().Any(ce => ce.ScxmlNameIn("state", "parallel", "final"));
-            }
-
             foreach (var el in _element.Elements())
             {
-                if (IsCompoundState(el))
-                {
-                    states.Add(new SequentialStateMetadata(el));
-                }
-                else if (el.ScxmlNameEquals("parallel"))
+                if (el.ScxmlNameEquals("parallel"))
                 {
                     states.Add(new ParallelStateMetadata(el));
                 }
@@ -137,7 +126,7 @@ namespace StateChartsDotNet.Metadata.Xml.States
                 }
                 else if (el.ScxmlNameEquals("state"))
                 {
-                    states.Add(new AtomicStateMetadata(el));
+                    states.Add(new StateMetadata(el));
                 }
             }
 

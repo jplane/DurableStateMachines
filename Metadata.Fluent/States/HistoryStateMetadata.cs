@@ -9,12 +9,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
     public sealed class HistoryStateMetadata<TParent> : StateMetadata, IHistoryStateMetadata where TParent : IStateMetadata
     {
         private TransitionMetadata<HistoryStateMetadata<TParent>> _transition;
-        private HistoryType _type;
+        private bool _isDeep;
 
         internal HistoryStateMetadata(string id)
             : base(id)
         {
-            _type = HistoryType.Deep;
+            _isDeep = false;
         }
 
         internal override void Serialize(BinaryWriter writer)
@@ -23,7 +23,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             base.Serialize(writer);
 
-            writer.Write((int) _type);
+            writer.Write(_isDeep);
 
             writer.Write(_transition, (o, w) => o.Serialize(w));
         }
@@ -38,11 +38,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             metadata.MetadataId = reader.ReadNullableString();
 
+            metadata._isDeep = reader.ReadBoolean();
+
             metadata._transition = reader.Read(TransitionMetadata<HistoryStateMetadata<TParent>>.Deserialize,
                                                         o => o.Parent = metadata);
 
             return metadata;
         }
+
+        public override StateType Type => StateType.History;
 
         protected override IStateMetadata _Parent => this.Parent;
 
@@ -66,13 +70,12 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        public HistoryStateMetadata<TParent> Type(HistoryType type)
+        public HistoryStateMetadata<TParent> IsDeep(bool deep)
         {
-            _type = type;
-
+            _isDeep = deep;
             return this;
         }
 
-        HistoryType IHistoryStateMetadata.Type => _type;
+        bool IHistoryStateMetadata.IsDeep => _isDeep;
     }
 }

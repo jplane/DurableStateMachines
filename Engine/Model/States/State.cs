@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal abstract class State
+    internal class State
     {
         protected readonly IStateMetadata _metadata;
         protected readonly State _parent;
@@ -21,10 +21,12 @@ namespace StateChartsDotNet.Model.States
         protected readonly Lazy<Transition[]> _transitions;
         protected readonly Lazy<InvokeStateChart[]> _invokes;
         protected readonly Lazy<Datamodel> _datamodel;
+        protected readonly Lazy<State[]> _states;
+        protected readonly Lazy<Transition> _initialTransition;
 
         private bool _firstEntry;
 
-        protected State(IStateMetadata metadata, State parent)
+        public State(IStateMetadata metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -71,25 +73,50 @@ namespace StateChartsDotNet.Model.States
                 else
                     return null;
             });
+
+            _initialTransition = new Lazy<Transition>(() =>
+            {
+                var meta = metadata.GetInitialTransition();
+
+                if (meta != null)
+                    return new Transition(meta, this);
+                else
+                    return null;
+            });
+
+            _states = new Lazy<State[]>(() =>
+            {
+                var states = new List<State>();
+
+                foreach (var stateMetadata in metadata.GetStates())
+                {
+                    switch (stateMetadata.Type)
+                    {
+                        case StateType.Atomic:
+                        case StateType.Compound:
+                        case StateType.Parallel:
+                            states.Add(new State(stateMetadata, this));
+                            break;
+
+                        case StateType.History:
+                            states.Add(new HistoryState((IHistoryStateMetadata) stateMetadata, this));
+                            break;
+
+                        case StateType.Final:
+                            states.Add(new FinalState((IFinalStateMetadata) stateMetadata, this));
+                            break;
+                    }
+                }
+
+                return states.ToArray();
+            });
         }
 
         public virtual string Id => _metadata.Id;
 
         public State Parent => _parent;
 
-        public virtual bool IsScxmlRoot => false;
-
-        public virtual bool IsFinalState => false;
-
-        public virtual bool IsHistoryState => false;
-
-        public virtual bool IsDeepHistoryState => false;
-
-        public virtual bool IsSequentialState => false;
-
-        public virtual bool IsParallelState => false;
-
-        public virtual bool IsAtomic => false;
+        public StateType Type => _metadata.Type;
 
         public IEnumerable<Transition> GetTransitions()
         {
@@ -98,7 +125,7 @@ namespace StateChartsDotNet.Model.States
 
         public virtual Transition GetInitialStateTransition()
         {
-            throw new NotImplementedException();
+            return _initialTransition.Value;
         }
 
         public virtual async Task InitDatamodel(ExecutionContextBase context, bool recursive)
@@ -106,6 +133,14 @@ namespace StateChartsDotNet.Model.States
             if (_datamodel.Value != null)
             {
                 await _datamodel.Value.Init(context);
+            }
+
+            if (recursive)
+            {
+                foreach (var child in GetChildStates())
+                {
+                    await child.InitDatamodel(context, recursive);
+                }
             }
         }
 
@@ -119,19 +154,61 @@ namespace StateChartsDotNet.Model.States
 
         public virtual void RecordHistory(ExecutionContextBase context)
         {
+            context.CheckArgNull(nameof(context));
+
+            foreach (var history in _states.Value.OfType<HistoryState>())
+            {
+                Func<State, bool> predicate;
+
+                if (history.IsDeep)
+                {
+                    predicate = s => s.Type == StateType.Atomic && s.IsDescendent(this);
+                }
+                else
+                {
+                    predicate = s => string.Compare(_parent.Id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0;
+                }
+
+                context.StoreHistoryValue(history.Id, predicate);
+            }
         }
 
         public virtual IEnumerable<State> GetChildStates()
         {
-            return Enumerable.Empty<State>();
+            Debug.Assert(_states != null);
+
+            return _states.Value.Where(s => ! (s is HistoryState));
         }
 
-        public virtual bool IsInFinalState(ExecutionContextBase context)
+        public bool IsInFinalState(ExecutionContextBase context)
         {
-            return false;
+            if (_metadata.Type == StateType.Parallel)
+            {
+                foreach (var child in GetChildStates())
+                {
+                    if (!child.IsInFinalState(context))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                foreach (var child in GetChildStates())
+                {
+                    if (child.IsInFinalState(context) && context.Configuration.Contains(child))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
-        public virtual State GetState(string id)
+        public State GetState(string id)
         {
             if (string.Compare(id, this.Id, StringComparison.InvariantCultureIgnoreCase) == 0)
             {
@@ -139,6 +216,16 @@ namespace StateChartsDotNet.Model.States
             }
             else
             {
+                foreach (var state in GetChildStates())
+                {
+                    var result = state.GetState(id);
+
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+
                 return null;
             }
         }
@@ -219,9 +306,9 @@ namespace StateChartsDotNet.Model.States
                 }
             }
 
-            if (this.IsFinalState)
+            if (this.Type == StateType.Final)
             {
-                if (_parent.IsScxmlRoot)
+                if (_parent.Type == StateType.Root)
                 {
                     context.EnterFinalRootState();
                 }
@@ -231,7 +318,7 @@ namespace StateChartsDotNet.Model.States
 
                     var grandparent = _parent?.Parent;
 
-                    if (grandparent != null && grandparent.IsParallelState)
+                    if (grandparent != null && grandparent.Type == StateType.Parallel)
                     {
                         var parallelChildren = grandparent.GetChildStates();
 

@@ -144,6 +144,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             return statechart;
         }
 
+        public override StateType Type => StateType.Root;
+
         public override string MetadataId 
         {
             get => this.Id; set => throw new NotSupportedException(); 
@@ -223,14 +225,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        public AtomicStateMetadata<StateChart> State(string id)
+        public StateMetadata<StateChart> State(string id)
         {
-            return WithState<AtomicStateMetadata<StateChart>>(id);
-        }
-
-        public SequentialStateMetadata<StateChart> SequentialState(string id)
-        {
-            return WithState<SequentialStateMetadata<StateChart>>(id);
+            return WithState<StateMetadata<StateChart>>(id);
         }
 
         public ParallelStateMetadata<StateChart> ParallelState(string id)
@@ -267,7 +264,9 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         Databinding IStateChartMetadata.Databinding => _databinding;
 
-        ITransitionMetadata IStateChartMetadata.GetInitialTransition()
+        IScriptMetadata IStateChartMetadata.GetScript() => _script;
+
+        protected override ITransitionMetadata GetInitialTransition()
         {
             if (_initialTransition != null)
             {
@@ -283,8 +282,6 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             }
         }
 
-        IScriptMetadata IStateChartMetadata.GetScript() => _script;
-
-        IEnumerable<IStateMetadata> IStateChartMetadata.GetStates() => _states;
+        protected override IEnumerable<IStateMetadata> GetStates() => _states;
     }
 }

@@ -20,9 +20,9 @@ namespace StateChartsDotNet.Common.Model.States
         {
             ((IModelMetadata) metadata).Validate(errors);
 
-            if (! metadata.Targets.Any())
+            if (! metadata.Targets.Any() && ! metadata.Messages.Any())
             {
-                errors.Add(metadata, new List<string> { "Transition requires at least one target state." });
+                errors.Add(metadata, new List<string> { "Transition requires at least one target state or one target message." });
             }
 
             foreach (var executableContent in metadata.GetExecutableContent())
