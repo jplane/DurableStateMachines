@@ -169,5 +169,41 @@ namespace StateChartsDotNet.Tests
 
             Assert.AreEqual(43, content.value);
         }
+
+        [TestMethod]
+        [TestScaffold]
+        public async Task SimpleParallel(ScaffoldFactoryDelegate factory, string _)
+        {
+            static object getValue(dynamic data) => data.x + 1;
+
+            var machine = StateChart.Define("test")
+                                    .DataInit("x", 1)
+                                    .ParallelState("parallel")
+                                        .State("state1")
+                                            .OnEntry
+                                                .Assign("x", getValue)._
+                                            .OnExit
+                                                .Assign("x", getValue)._
+                                            .Transition
+                                                .Target("alldone")._._
+                                        .State("state2")
+                                            .OnEntry
+                                                .Assign("x", getValue)._
+                                            .OnExit
+                                                .Assign("x", getValue)._
+                                            .Transition
+                                                .Target("alldone")._._._
+                                    .FinalState("alldone")._;
+
+            var tuple = factory(machine, null);
+
+            var context = tuple.Item1;
+
+            await context.StartAndWaitForCompletionAsync();
+
+            var result = Convert.ToInt32(context.Data["x"]);
+
+            Assert.AreEqual(5, result);
+        }
     }
 }

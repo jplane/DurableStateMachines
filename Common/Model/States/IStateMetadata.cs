@@ -44,10 +44,14 @@ namespace StateChartsDotNet.Common.Model.States
 
             var states = metadata.GetStates().ToArray();
 
-            if ((initialTransition == null && states.Length > 0) ||
-                (initialTransition != null && states.Length == 0))
+            if (metadata.Type == StateType.Compound &&
+                (initialTransition == null || states.Length == 0))
             {
                 errors.Add(metadata, new List<string> { "Compound state requires an initial transition and at least one child state." });
+            }
+            else if (metadata.Type == StateType.Parallel && states.Length == 0)
+            {
+                errors.Add(metadata, new List<string> { "Parallel state requires at least one child state." });
             }
             else
             {
