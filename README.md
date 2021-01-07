@@ -161,7 +161,7 @@ var context = new ExecutionContext(machine);
 await context.StartAndWaitForCompletionAsync();
 ```
 
-### [ASP.NET Core host](./Web)
+### [ASP.NET Core host](./WebHost)
 
 Add a new statechart definition for subsequent execution:
 >POST /api/register
@@ -184,7 +184,7 @@ Send a message to an existing statechart execution:
 Get the status of an existing statechart execution:
 >GET /api/{instanceId}
 
-(Postman examples [here](./Web/statecharts.postman_collection.json))
+(Postman examples [here](./WebHost/statecharts.postman_collection.json))
 
 ## Background and Resources
 

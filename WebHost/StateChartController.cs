@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Web
+namespace StateChartsDotNet.WebHost
 {
     [ApiController]
     [Route("api")]

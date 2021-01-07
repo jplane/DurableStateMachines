@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Web
+namespace StateChartsDotNet.WebHost
 {
     public class RegisterAndStartPayload
     {

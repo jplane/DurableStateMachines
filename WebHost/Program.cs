@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 
-namespace StateChartsDotNet.Web
+namespace StateChartsDotNet.WebHost
 {
     public class Program
     {

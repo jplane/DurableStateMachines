@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Web
+namespace StateChartsDotNet.WebHost
 {
     public interface IOrchestrationManagerHostedService
     {

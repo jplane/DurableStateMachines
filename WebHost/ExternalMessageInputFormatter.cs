@@ -4,19 +4,17 @@ using Newtonsoft.Json;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Web
+namespace StateChartsDotNet.WebHost
 {
-    public class DictionaryInputFormatter : TextInputFormatter
+    public class ExternalMessageInputFormatter : TextInputFormatter
     {
-        public DictionaryInputFormatter()
+        public ExternalMessageInputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
 
@@ -26,7 +24,7 @@ namespace StateChartsDotNet.Web
 
         protected override bool CanReadType(Type type)
         {
-            return typeof(IDictionary<string, object>).IsAssignableFrom(type);
+            return typeof(ExternalMessage).IsAssignableFrom(type);
         }
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context,
@@ -39,11 +37,11 @@ namespace StateChartsDotNet.Web
 
             try
             {
-                var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(await reader.ReadToEndAsync());
+                var message = JsonConvert.DeserializeObject<ExternalMessage>(await reader.ReadToEndAsync());
 
-                Debug.Assert(dictionary != null);
+                Debug.Assert(message != null);
 
-                return await InputFormatterResult.SuccessAsync(dictionary);
+                return await InputFormatterResult.SuccessAsync(message);
             }
             catch (Exception ex)
             {
