@@ -343,3 +343,4 @@ healthchecksdb
 .vscode/
 
 appsettings.Development.json
+/FunctionHost/src

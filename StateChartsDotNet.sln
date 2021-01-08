@@ -27,6 +27,49 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata.Json", "Metadata.J
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebHost", "WebHost\WebHost.csproj", "{AC87BF5A-92AC-4180-BFBF-1D12CA3C6F28}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionHost", "FunctionHost", "{E76E1785-65EB-405C-8F90-B88679B25DE2}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\build.ps1 = FunctionHost\build.ps1
+		FunctionHost\Dockerfile = FunctionHost\Dockerfile
+		FunctionHost\host.json = FunctionHost\host.json
+		FunctionHost\run-local.ps1 = FunctionHost\run-local.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "metadata", "metadata", "{CC593454-2C50-4796-ACCE-5E6335044519}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\metadata\function.json = FunctionHost\metadata\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "register", "register", "{32F56952-7050-4F7B-B680-BC9770DDB66F}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\register\function.json = FunctionHost\register\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "start", "start", "{1E6E40C7-4736-4366-96A1-675B1ED4A827}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\start\function.json = FunctionHost\start\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "registerandstart", "registerandstart", "{9F42C7D2-71C1-44A7-A4DA-88D5A8C185A4}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\registerandstart\function.json = FunctionHost\registerandstart\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stop", "stop", "{5111EEA8-539F-4244-941B-A96D13D60C9D}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\stop\function.json = FunctionHost\stop\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sendmessage", "sendmessage", "{AC5EFE34-7CCC-44B1-8983-117CEB006FF3}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\sendmessage\function.json = FunctionHost\sendmessage\function.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "status", "status", "{BB66B39A-905A-4D69-9AFD-C551E9866DD2}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\status\function.json = FunctionHost\status\function.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +111,15 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CC593454-2C50-4796-ACCE-5E6335044519} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{32F56952-7050-4F7B-B680-BC9770DDB66F} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{1E6E40C7-4736-4366-96A1-675B1ED4A827} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{9F42C7D2-71C1-44A7-A4DA-88D5A8C185A4} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{5111EEA8-539F-4244-941B-A96D13D60C9D} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{AC5EFE34-7CCC-44B1-8983-117CEB006FF3} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{BB66B39A-905A-4D69-9AFD-C551E9866DD2} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D727EE81-C8D8-4FF0-9870-18755E5634DD}

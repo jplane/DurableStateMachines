@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "customHandler": {
+    "description": {
+      "defaultExecutablePath": "app/StateChartsDotNet.WebHost",
+      "arguments": [
+        "--urls",
+        "http://*:%FUNCTIONS_CUSTOMHANDLER_PORT%",
+        "--storageConnectionString",
+        "%storageConnectionString%",
+        "--hubName",
+        "%hubName%",
+        "--callbackUri",
+        "%callbackUri%"
+      ]
+    },
+    "enableForwardingHttpRequest": true
+  }
+}
