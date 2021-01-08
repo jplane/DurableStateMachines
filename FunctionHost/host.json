@@ -6,12 +6,12 @@
       "arguments": [
         "--urls",
         "http://*:%FUNCTIONS_CUSTOMHANDLER_PORT%",
-        "--storageConnectionString",
-        "%storageConnectionString%",
-        "--hubName",
-        "%hubName%",
-        "--callbackUri",
-        "%callbackUri%"
+        "--SCDN_STORAGE_CONNECTION_STRING",
+        "%SCDN_STORAGE_CONNECTION_STRING%",
+        "--SCDN_HUB_NAME",
+        "%SCDN_HUB_NAME%",
+        "--SCDN_CALLBACK_URI",
+        "%SCDN_CALLBACK_URI%"
       ]
     },
     "enableForwardingHttpRequest": true

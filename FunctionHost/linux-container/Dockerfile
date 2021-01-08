@@ -50,15 +50,14 @@ COPY --from=build /azure-functions-host /azure-functions-host
 COPY --from=build /FuncExtensionBundles /FuncExtensionBundles
 COPY --from=build /WebHost /home/site/wwwroot/app
 
-COPY ./host.json /home/site/wwwroot/host.json
-COPY ./metadata/function.json /home/site/wwwroot/metadata/function.json
-COPY ./register/function.json /home/site/wwwroot/register/function.json
-COPY ./registerandstart/function.json /home/site/wwwroot/registerandstart/function.json
-COPY ./start/function.json /home/site/wwwroot/start/function.json
-COPY ./status/function.json /home/site/wwwroot/status/function.json
-COPY ./sendmessage/function.json /home/site/wwwroot/sendmessage/function.json
-COPY ./stop/function.json /home/site/wwwroot/stop/function.json
+COPY --from=build /src/app/host.json /home/site/wwwroot/host.json
 
-#RUN cd /home/site/wwwroot
+COPY --from=build /src/app/function-defs/metadata/function.json /home/site/wwwroot/metadata/function.json
+COPY --from=build /src/app/function-defs/register/function.json /home/site/wwwroot/register/function.json
+COPY --from=build /src/app/function-defs/registerandstart/function.json /home/site/wwwroot/registerandstart/function.json
+COPY --from=build /src/app/function-defs/start/function.json /home/site/wwwroot/start/function.json
+COPY --from=build /src/app/function-defs/status/function.json /home/site/wwwroot/status/function.json
+COPY --from=build /src/app/function-defs/sendmessage/function.json /home/site/wwwroot/sendmessage/function.json
+COPY --from=build /src/app/function-defs/stop/function.json /home/site/wwwroot/stop/function.json
 
 CMD [ "/azure-functions-host/Microsoft.Azure.WebJobs.Script.WebHost" ]

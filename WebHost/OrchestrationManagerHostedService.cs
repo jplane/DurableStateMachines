@@ -35,16 +35,16 @@ namespace StateChartsDotNet.WebHost
         {
             var timeout = TimeSpan.Parse(_config["timeout"] ?? "00:01:00");
 
-            var connectionString = _config["storageConnectionString"];
+            var connectionString = _config["SCDN_STORAGE_CONNECTION_STRING"];
 
             var settings = new AzureStorageOrchestrationServiceSettings
             {
                 AppName = "StateChartsDotNet",
-                TaskHubName = _config["hubName"] ?? "default",
+                TaskHubName = _config["SCDN_HUB_NAME"] ?? "default",
                 StorageConnectionString = connectionString
             };
 
-            var callbackUri = _config["callbackUri"];
+            var callbackUri = _config["SCDN_CALLBACK_URI"];
 
             var service = new AzureStorageOrchestrationService(settings);
 
