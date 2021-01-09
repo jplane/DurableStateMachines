@@ -344,3 +344,6 @@ healthchecksdb
 
 appsettings.Development.json
 /FunctionHost/**/src
+/FunctionHost/**/.terraform/
+/FunctionHost/**/.terraform.*
+/FunctionHost/**/*tfstate*

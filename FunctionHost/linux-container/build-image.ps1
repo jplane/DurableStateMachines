@@ -1,8 +1,6 @@
 
 Remove-Item -Force -Recurse -ErrorAction Ignore "..\..\WebHost\bin"
-
 Remove-Item -Force -Recurse -ErrorAction Ignore "..\..\WebHost\obj"
-
 Remove-Item -Force -Recurse -ErrorAction Ignore ".\src"
 
 Copy-Item -Force -Recurse "..\metadata\" -Destination "src\function-defs\metadata"

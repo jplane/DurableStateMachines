@@ -69,17 +69,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "status", "status", "{BB66B3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-container", "linux-container", "{2E979333-336E-4692-B4C6-E0F8D8A24FFE}"
 	ProjectSection(SolutionItems) = preProject
-		FunctionHost\linux-container\build.ps1 = FunctionHost\linux-container\build.ps1
+		FunctionHost\linux-container\.dockerignore = FunctionHost\linux-container\.dockerignore
+		FunctionHost\linux-container\build-image.ps1 = FunctionHost\linux-container\build-image.ps1
+		FunctionHost\linux-container\deploy-to-azure.tf = FunctionHost\linux-container\deploy-to-azure.tf
 		FunctionHost\linux-container\Dockerfile = FunctionHost\linux-container\Dockerfile
 		FunctionHost\linux-container\run-local.ps1 = FunctionHost\linux-container\run-local.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-azure", "linux-azure", "{FCCC928B-4523-4250-8043-AA599DF7E9E3}"
-	ProjectSection(SolutionItems) = preProject
-		FunctionHost\linux-azure\build-and-deploy.dockerfile = FunctionHost\linux-azure\build-and-deploy.dockerfile
-		FunctionHost\linux-azure\build-and-deploy.ps1 = FunctionHost\linux-azure\build-and-deploy.ps1
-		FunctionHost\linux-azure\infrastructure.tf = FunctionHost\linux-azure\infrastructure.tf
-		FunctionHost\linux-azure\publish.sh = FunctionHost\linux-azure\publish.sh
 	EndProjectSection
 EndProject
 Global
@@ -133,7 +127,6 @@ Global
 		{AC5EFE34-7CCC-44B1-8983-117CEB006FF3} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 		{BB66B39A-905A-4D69-9AFD-C551E9866DD2} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 		{2E979333-336E-4692-B4C6-E0F8D8A24FFE} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
-		{FCCC928B-4523-4250-8043-AA599DF7E9E3} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D727EE81-C8D8-4FF0-9870-18755E5634DD}
