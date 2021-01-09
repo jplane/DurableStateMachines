@@ -15,7 +15,7 @@ provider "azurerm" {
 
 variable "name" {
   type        = string
-  default     = "scdnjosh"
+  default     = "statecharts"
 }
 
 variable "location" {

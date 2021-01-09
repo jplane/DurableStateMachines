@@ -12,7 +12,7 @@ The utility of traditional state machines goes down as system complexity increas
 
 ## Goals
 
-StateChartsDotNet aims to provide a full-featured statechart implementation for the .NET Core runtime, enabling SCDN to run nicely on Windows, Mac, Linux, and all your favorite clouds. Maybe even your [browser](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)?
+StateChartsDotNet aims to provide a full-featured statechart implementation for the .NET Core runtime, enabling SCDN to run nicely on Windows, Mac, Linux, and all your favorite clouds. Included in the repo are both an ASP.NET Core Web API [host](./WebHost) and an Azure Functions [custom handler](https://docs.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers) [host](./FunctionHost).
 
 Some specific design and implementation choices:
 
@@ -161,7 +161,7 @@ var context = new ExecutionContext(machine);
 await context.StartAndWaitForCompletionAsync();
 ```
 
-### [ASP.NET Core host](./WebHost)
+### [ASP.NET Core Web API host](./WebHost) and [Azure Functions host](./FunctionHost)
 
 Add a new statechart definition for subsequent execution:
 >POST /api/register
