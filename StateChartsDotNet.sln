@@ -76,6 +76,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-container", "linux-co
 		FunctionHost\linux-container\run-local.ps1 = FunctionHost\linux-container\run-local.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-azure", "linux-azure", "{9153306D-19AF-41C1-8659-5C20BF39EBE8}"
+	ProjectSection(SolutionItems) = preProject
+		FunctionHost\linux-azure\deploy.ps1 = FunctionHost\linux-azure\deploy.ps1
+		FunctionHost\linux-azure\Dockerfile = FunctionHost\linux-azure\Dockerfile
+		FunctionHost\linux-azure\proxies.json = FunctionHost\linux-azure\proxies.json
+		FunctionHost\linux-azure\publish.sh = FunctionHost\linux-azure\publish.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +135,7 @@ Global
 		{AC5EFE34-7CCC-44B1-8983-117CEB006FF3} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 		{BB66B39A-905A-4D69-9AFD-C551E9866DD2} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 		{2E979333-336E-4692-B4C6-E0F8D8A24FFE} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
+		{9153306D-19AF-41C1-8659-5C20BF39EBE8} = {E76E1785-65EB-405C-8F90-B88679B25DE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D727EE81-C8D8-4FF0-9870-18755E5634DD}
