@@ -30,6 +30,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionHost", "FunctionHost", "{E76E1785-65EB-405C-8F90-B88679B25DE2}"
 	ProjectSection(SolutionItems) = preProject
 		FunctionHost\host.json = FunctionHost\host.json
+		FunctionHost\README.md = FunctionHost\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "metadata", "metadata", "{CC593454-2C50-4796-ACCE-5E6335044519}"
@@ -73,6 +74,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-container", "linux-co
 		FunctionHost\linux-container\build-image.ps1 = FunctionHost\linux-container\build-image.ps1
 		FunctionHost\linux-container\deploy-to-azure.tf = FunctionHost\linux-container\deploy-to-azure.tf
 		FunctionHost\linux-container\Dockerfile = FunctionHost\linux-container\Dockerfile
+		FunctionHost\linux-container\README.md = FunctionHost\linux-container\README.md
 		FunctionHost\linux-container\run-local.ps1 = FunctionHost\linux-container\run-local.ps1
 	EndProjectSection
 EndProject
@@ -82,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux-azure", "linux-azure"
 		FunctionHost\linux-azure\Dockerfile = FunctionHost\linux-azure\Dockerfile
 		FunctionHost\linux-azure\proxies.json = FunctionHost\linux-azure\proxies.json
 		FunctionHost\linux-azure\publish.sh = FunctionHost\linux-azure\publish.sh
+		FunctionHost\linux-azure\README.md = FunctionHost\linux-azure\README.md
 	EndProjectSection
 EndProject
 Global
