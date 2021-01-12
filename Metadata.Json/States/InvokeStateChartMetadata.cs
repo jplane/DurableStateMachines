@@ -36,7 +36,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             {
                 var attr = _element.Property("mode");
 
-                if (attr != null && Enum.TryParse(attr.Value.Value<string>(), out ChildStateChartExecutionMode result))
+                if (attr != null && Enum.TryParse(attr.Value.Value<string>(), true, out ChildStateChartExecutionMode result))
                 {
                     return result;
                 }

@@ -86,6 +86,7 @@ namespace StateChartsDotNet.Durable
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
+            _externalServices.Add("http-put", HttpService.PutAsync);
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
@@ -153,7 +154,10 @@ namespace StateChartsDotNet.Durable
 
                     Debug.Assert(metadata != null);
 
-                    Register(metadataId, metadata);
+                    if (! _statecharts.Contains(metadataId))
+                    {
+                        Register(metadataId, metadata);     // skip child statecharts already registered with their parents
+                    }
                 });
 
                 await _worker.StartAsync();
@@ -333,8 +337,36 @@ namespace StateChartsDotNet.Durable
             Debug.Assert(metadata != null);
 
             RegisterStateChart(metadataId, metadata);
+        }
 
-            metadata.RegisterStateChartInvokes(RegisterStateChartInvoke, metadataId);
+        private void RegisterStateChartInvokes(string parentId, IStateMetadata metadata)
+        {
+            metadata.CheckArgNull(nameof(metadata));
+            parentId.CheckArgNull(nameof(parentId));
+
+            foreach (var invoke in metadata.GetStateChartInvokes())
+            {
+                var root = invoke.GetRoot();
+
+                Debug.Assert(root != null);
+
+                var metadataId = $"{parentId}.{root.MetadataId}";
+
+                Debug.Assert(!_childInvokes.ContainsKey(metadataId));
+
+                _childInvokes.Add(metadataId, invoke);
+
+                var stateChartMetadata = invoke.GetRoot();
+
+                Debug.Assert(stateChartMetadata != null);
+
+                RegisterStateChart(metadataId, stateChartMetadata);
+            }
+
+            foreach (var state in metadata.GetStates())
+            {
+                RegisterStateChartInvokes(parentId, state);
+            }
         }
 
         private void RegisterStateChart(string metadataId, IStateChartMetadata metadata)
@@ -352,22 +384,8 @@ namespace StateChartsDotNet.Durable
             var orchestrationCreator = new NameValueObjectCreator<TaskOrchestration>("statechart", metadataId, orchestrator);
 
             _worker.AddTaskOrchestrations(orchestrationCreator);
-        }
 
-        private void RegisterStateChartInvoke(string metadataId, IInvokeStateChartMetadata metadata)
-        {
-            metadataId.CheckArgNull(nameof(metadataId));
-            metadata.CheckArgNull(nameof(metadata));
-
-            Debug.Assert(! _childInvokes.ContainsKey(metadataId));
-
-            _childInvokes.Add(metadataId, metadata);
-
-            var stateChartMetadata = metadata.GetRoot();
-
-            Debug.Assert(stateChartMetadata != null);
-
-            RegisterStateChart(metadataId, stateChartMetadata);
+            RegisterStateChartInvokes(metadataId, metadata);
         }
 
         private void AddTaskActivities()

@@ -347,3 +347,4 @@ appsettings.Development.json
 /FunctionHost/**/.terraform/
 /FunctionHost/**/.terraform.*
 /FunctionHost/**/*tfstate*
+/FunctionHost/**/docker-compose.yml

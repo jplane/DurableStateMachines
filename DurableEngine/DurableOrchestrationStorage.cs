@@ -16,7 +16,7 @@ namespace StateChartsDotNet.Durable
         private readonly BlobContainerClient _client;
         private readonly CancellationToken _token;
 
-        public DurableOrchestrationStorage(string connectionString, CancellationToken token)
+        public DurableOrchestrationStorage(string connectionString, string hubName, CancellationToken token)
         {
             connectionString.CheckArgNull(nameof(connectionString));
 
@@ -24,7 +24,7 @@ namespace StateChartsDotNet.Durable
 
             var serviceClient = new BlobServiceClient(connectionString);
 
-            _client = serviceClient.GetBlobContainerClient("statecharts");
+            _client = serviceClient.GetBlobContainerClient($"{hubName}-statecharts");
         }
 
         public Task ClearAsync()

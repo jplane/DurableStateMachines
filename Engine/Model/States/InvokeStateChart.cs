@@ -56,7 +56,7 @@ namespace StateChartsDotNet.Model.States
             context.CheckArgNull(nameof(context));
             externalMessage.CheckArgNull(nameof(externalMessage));
 
-            if (externalMessage is ChildStateChartResponseMessage response && instanceId == response.CorrelationId)
+            if (externalMessage.IsChildStateChartResponse && instanceId == externalMessage.CorrelationId)
             {
                 // skip executing finalize executable content if we received an error and we're failing fast
 
@@ -68,12 +68,10 @@ namespace StateChartsDotNet.Model.States
                     }
                 }
 
-                await context.ProcessChildStateChartDoneAsync(response);
+                await context.ProcessChildStateChartDoneAsync(externalMessage);
             }
 
-            if (context.IsRunning &&
-                _metadata.Autoforward &&
-                !(externalMessage is ChildStateChartResponseMessage))
+            if (context.IsRunning && _metadata.Autoforward && ! externalMessage.IsChildStateChartResponse)
             {
                 Debug.Assert(_metadata.ExecutionMode != ChildStateChartExecutionMode.Inline);
 

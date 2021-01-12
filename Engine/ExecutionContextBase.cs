@@ -55,7 +55,7 @@ namespace StateChartsDotNet
 
         internal abstract IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId);
 
-        internal abstract Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message);
+        internal abstract Task ProcessChildStateChartDoneAsync(ExternalMessage message);
 
         internal abstract Task SendToChildStateChart(string id, ExternalMessage message);
 
@@ -282,7 +282,7 @@ namespace StateChartsDotNet
             {
                 _isRunning = false;
             }
-            else if (msg is ChildStateChartResponseMessage rm && rm.IsInvokeError)
+            else if (msg.IsChildStateChartResponse && msg.IsInvokeError)
             {
                 Debug.Assert(msg.Content != null);
                 Debug.Assert(msg.Content is Exception);

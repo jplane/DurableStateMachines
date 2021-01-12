@@ -48,20 +48,37 @@ namespace StateChartsDotNet.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public static async Task StartRemoteChildStatechartAsync(string remoteUri,
+        public static async Task PutAsync(string url,
+                                          string _,
+                                          object content,
+                                          string correlationId,
+                                          IReadOnlyDictionary<string, object> parameters,
+                                          CancellationToken token)
+        {
+            url.CheckArgNull(nameof(url));
+            parameters.CheckArgNull(nameof(parameters));
+
+            var response = await Invoke("PUT", content, url, correlationId, parameters, token);
+
+            Debug.Assert(response != null);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public static async Task StartRemoteChildStatechartAsync(string callbackUri,
                                                                  IInvokeStateChartMetadata invokeMetadata,
                                                                  string metadataId,
                                                                  string instanceId,
                                                                  IDictionary<string, object> inputs,
                                                                  CancellationToken cancelToken)
         {
-            remoteUri.CheckArgNull(nameof(remoteUri));
+            callbackUri.CheckArgNull(nameof(callbackUri));
             invokeMetadata.CheckArgNull(nameof(invokeMetadata));
             metadataId.CheckArgNull(nameof(metadataId));
             instanceId.CheckArgNull(nameof(instanceId));
             inputs.CheckArgNull(nameof(inputs));
 
-            inputs["_parentRemoteUri"] = $"{remoteUri}/api/sendmessage/";
+            inputs["_parentRemoteUri"] = $"{callbackUri}/api/sendmessage/";
 
             var statechartMetadata = invokeMetadata.GetRoot();
 
@@ -88,7 +105,7 @@ namespace StateChartsDotNet.Services
 
             foreach (var input in inputs)
             {
-                parameters.Add($"X-SCDN-PARAM-{input.Key}", JsonConvert.SerializeObject(input.Value));
+                parameters.Add($"X-SCDN-PARAM-{input.Key}", input.Value);
             }
 
             parameters.Add("X-SCDN-METADATA-ID", metadataId);
@@ -127,9 +144,14 @@ namespace StateChartsDotNet.Services
 
             var msg = new HttpRequestMessage();
 
-            var queryString = ResolveParameters(parameters, msg.Headers);
+            var values = ResolveParameters(parameters);
 
-            var uri = GetUri(url, queryString);
+            var uri = GetUri(url, values.Item1);
+
+            foreach (var item in values.Item2)
+            {
+                msg.Headers.Add(item.Key, item.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(correlationId))
             {
@@ -147,7 +169,7 @@ namespace StateChartsDotNet.Services
                 case "POST":
                     content.CheckArgNull(nameof(content));
                     msg.Method = HttpMethod.Post;
-                    msg.Content = Serialize(content);
+                    msg.Content = Serialize(content, values.Item3);
                     break;
 
                 case "PUT":
@@ -155,7 +177,7 @@ namespace StateChartsDotNet.Services
 
                     if (content != null)
                     {
-                        msg.Content = Serialize(content);
+                        msg.Content = Serialize(content, values.Item3);
                     }
 
                     break;
@@ -167,27 +189,29 @@ namespace StateChartsDotNet.Services
             return await _client.SendAsync(msg, token);
         }
 
-        private static StringContent Serialize(object content)
+        private static StringContent Serialize(object content, string contentType)
         {
             if (content is string s)
             {
-                return new StringContent(s);
+                return new StringContent(s, Encoding.UTF8, contentType ?? "text/plain");
             }
             else
             {
                 return new StringContent(JsonConvert.SerializeObject(content),
                                          Encoding.UTF8,
-                                         "application/json");
+                                         contentType ?? "application/json");
             }
         }
 
-        private static string ResolveParameters(IReadOnlyDictionary<string, object> parameters,
-                                                HttpRequestHeaders headers)
+        private static (string, IReadOnlyDictionary<string, string>, string) ResolveParameters(IReadOnlyDictionary<string, object> parameters)
         {
             Debug.Assert(parameters != null);
-            Debug.Assert(headers != null);
 
             var builder = new StringBuilder();
+
+            var headers = new Dictionary<string, string>();
+
+            string contentType = null;
 
             foreach (var param in parameters)
             {
@@ -199,13 +223,17 @@ namespace StateChartsDotNet.Services
 
                     builder.Append($"{key}={value}&");
                 }
+                else if (string.Compare(param.Key, "content-type", true, System.Globalization.CultureInfo.InvariantCulture) == 0)
+                {
+                    contentType = (string) param.Value;
+                }
                 else
                 {
                     headers.Add(param.Key, value);
                 }
             }
 
-            return builder.ToString().Trim('&');
+            return (builder.ToString().Trim('&'), headers, contentType);
         }
     }
 }

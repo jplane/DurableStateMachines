@@ -46,9 +46,11 @@ namespace StateChartsDotNet.WebHost
             {
                 var headers = new RegisterAndStartPayload();
 
-                headers.MetadataId = context.HttpContext.Request.Headers["X-SCDN-METADATA-ID"].ToString();
+                headers.MetadataId = (string)
+                    JsonConvert.DeserializeObject(context.HttpContext.Request.Headers["X-SCDN-METADATA-ID"].ToString());
 
-                headers.InstanceId = context.HttpContext.Request.Headers["X-SCDN-INSTANCE-ID"].ToString();
+                headers.InstanceId = (string)
+                    JsonConvert.DeserializeObject(context.HttpContext.Request.Headers["X-SCDN-INSTANCE-ID"].ToString());
 
                 var parameters = context.HttpContext.Request.Headers.Where(h => h.Key.StartsWith("X-SCDN-PARAM-"))
                                                                     .ToDictionary(h => h.Key[13..],

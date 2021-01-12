@@ -44,7 +44,6 @@ namespace StateChartsDotNet.Durable.Activities
 
             Debug.Assert(!string.IsNullOrWhiteSpace(serviceType));
             Debug.Assert(!string.IsNullOrWhiteSpace(target));
-            Debug.Assert(parameters != null);
 
             var service = _getDelegate(serviceType);
 

@@ -39,6 +39,7 @@ namespace StateChartsDotNet
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", HttpService.PostAsync);
+            _externalServices.Add("http-put", HttpService.PutAsync);
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", HttpService.GetAsync);
@@ -110,7 +111,7 @@ namespace StateChartsDotNet
                 throw new ExecutionException("Statechart has no parent.");
             }
 
-            var msg = new ChildStateChartResponseMessage
+            var msg = new ExternalMessage
             {
                 Name = messageName,
                 CorrelationId = (string) _data["_instanceId"],
@@ -228,9 +229,11 @@ namespace StateChartsDotNet
                                   .ToArray();
         }
 
-        internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
+        internal override async Task ProcessChildStateChartDoneAsync(ExternalMessage message)
         {
             message.CheckArgNull(nameof(message));
+
+            Debug.Assert(message.IsChildStateChartResponse);
 
             if (message.IsDone)
             {

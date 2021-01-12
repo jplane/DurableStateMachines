@@ -116,9 +116,11 @@ namespace StateChartsDotNet.Durable
 
         protected override bool IsChildStateChart => _data.ContainsKey("_parentInstanceId");
 
-        internal override async Task ProcessChildStateChartDoneAsync(ChildStateChartResponseMessage message)
+        internal override Task ProcessChildStateChartDoneAsync(ExternalMessage message)
         {
             message.CheckArgNull(nameof(message));
+
+            Debug.Assert(message.IsChildStateChartResponse);
 
             if (message.IsDone)
             {
@@ -130,14 +132,10 @@ namespace StateChartsDotNet.Durable
                     {
                         _childInstances.Remove(pair.Key);
                     }
-
-                    await _orchestrationContext.ScheduleTask<string>("waitforcompletion", string.Empty, message.CorrelationId);
-
-                    return;
                 }
-
-                Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
             }
+
+            return Task.CompletedTask;
         }
 
         internal async override Task CancelInvokesAsync(string parentMetadataId)
@@ -188,7 +186,7 @@ namespace StateChartsDotNet.Durable
 
             Debug.Assert(!string.IsNullOrWhiteSpace(correlationId));
 
-            ExternalMessage msg = new ChildStateChartResponseMessage
+            var msg = new ExternalMessage
             {
                 Name = messageName,
                 CorrelationId = correlationId,
@@ -200,13 +198,15 @@ namespace StateChartsDotNet.Durable
             {
                 var remoteUri = (string) parentUri + (string) parentInstanceId;
 
-                var parms = ("http-post", remoteUri, (string) null, msg, correlationId, (string) null);
+                var parms = ("http-put", remoteUri, (string) null, (object) msg, correlationId, (IReadOnlyDictionary<string, object>) new Dictionary<string, object>());
 
-                return _orchestrationContext.ScheduleTask<string>("sendmessage", string.Empty, parms);
+                return _orchestrationContext.ScheduleTask<object>("sendmessage", string.Empty, parms);
             }
             else
             {
-                return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, ((string) parentInstanceId, msg));
+                var parms = ((string) parentInstanceId, msg);
+
+                return _orchestrationContext.ScheduleTask<string>("sendparentchildmessage", string.Empty, parms);
             }
         }
 
@@ -232,9 +232,9 @@ namespace StateChartsDotNet.Durable
 
                 var queryString = new Dictionary<string, object> { { "?instanceId", childInstanceId } };
 
-                return _orchestrationContext.ScheduleTask<string>("sendmessage",
-                                                                  string.Empty,
-                                                                  ("http-post", remoteUri, (string) null, message, correlationId, queryString));
+                var parms = ("http-post", remoteUri, (string) null, (object) message, correlationId, (IReadOnlyDictionary<string, object>) queryString);
+
+                return _orchestrationContext.ScheduleTask<object>("sendmessage", string.Empty, parms);
             }
         }
 
@@ -278,7 +278,9 @@ namespace StateChartsDotNet.Durable
                     return SendMessageToChildStateChart(target, messageName, content, null, parameters, this.CancelToken);
             }
 
-            return _orchestrationContext.ScheduleTask<string>("sendmessage", string.Empty, (type, target, messageName, content, correlationId, parameters));
+            var parms = (type, target, messageName, content, correlationId, parameters);
+
+            return _orchestrationContext.ScheduleTask<object>("sendmessage", string.Empty, parms);
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

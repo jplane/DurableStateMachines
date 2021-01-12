@@ -56,22 +56,23 @@ namespace StateChartsDotNet.WebHost
 
             Func<string, CancellationToken, Task<IStateChartMetadata>> factory = null;
 
-            switch (context.Request.ContentType)
+            if (context.Request.ContentType.Contains("application/json"))
             {
-                case "application/json":
-                    factory = Metadata.Json.States.StateChart.FromStringAsync;
-                    break;
-
-                case "application/xml":
-                    factory = Metadata.Xml.States.StateChart.FromStringAsync;
-                    break;
-
-                case "text/plain":
-                    factory = Metadata.Fluent.States.StateChart.FromStringAsync;
-                    break;
+                factory = Metadata.Json.States.StateChart.FromStringAsync;
+            }
+            else if (context.Request.ContentType.Contains("application/xml"))
+            {
+                factory = Metadata.Xml.States.StateChart.FromStringAsync;
+            }
+            else if (context.Request.ContentType.Contains("text/plain"))
+            {
+                factory = Metadata.Fluent.States.StateChart.FromStringAsync;
             }
 
-            Debug.Assert(factory != null);
+            if (factory == null)
+            {
+                return null;
+            }
 
             return await factory(await reader.ReadToEndAsync(), CancellationToken.None);
         }

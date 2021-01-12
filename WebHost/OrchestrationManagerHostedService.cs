@@ -37,10 +37,12 @@ namespace StateChartsDotNet.WebHost
 
             var connectionString = _config["SCDN_STORAGE_CONNECTION_STRING"];
 
+            var hubName = _config["SCDN_HUB_NAME"] ?? "default";
+
             var settings = new AzureStorageOrchestrationServiceSettings
             {
                 AppName = "StateChartsDotNet",
-                TaskHubName = _config["SCDN_HUB_NAME"] ?? "default",
+                TaskHubName = hubName,
                 StorageConnectionString = connectionString
             };
 
@@ -48,7 +50,7 @@ namespace StateChartsDotNet.WebHost
 
             var service = new AzureStorageOrchestrationService(settings);
 
-            _storage = new DurableOrchestrationStorage(connectionString, _lifetime.ApplicationStopping);
+            _storage = new DurableOrchestrationStorage(connectionString, hubName, _lifetime.ApplicationStopping);
 
             _manager = new DurableOrchestrationManager(service,
                                                        _storage,
