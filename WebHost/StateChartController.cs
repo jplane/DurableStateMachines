@@ -191,10 +191,23 @@ namespace StateChartsDotNet.WebHost
 
             var result = DeserializeOutput(state.Output);
 
+            DateTime? completionTime = null;
+
+            switch (state.OrchestrationStatus)
+            {
+                case DurableTask.Core.OrchestrationStatus.Canceled:
+                case DurableTask.Core.OrchestrationStatus.Completed:
+                case DurableTask.Core.OrchestrationStatus.Failed:
+                case DurableTask.Core.OrchestrationStatus.Terminated:
+                    
+                    completionTime = state.LastUpdatedTime;     // state.CompletedTime seems kaput
+                    break;
+            }
+
             var output = new
             {
                 startTime = state.CreatedTime,
-                endTime = state.CompletedTime,
+                endTime = completionTime,
                 lastUpdateTime = state.LastUpdatedTime,
                 status = state.OrchestrationStatus.ToString(),
                 instanceId = instanceId,
