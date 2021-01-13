@@ -12,7 +12,7 @@ The utility of traditional state machines goes down as system complexity increas
 
 ## Goals
 
-StateChartsDotNet aims to provide a full-featured statechart implementation for the .NET Core runtime, enabling SCDN to run nicely on Windows, Mac, Linux, and all your favorite clouds. Included in the repo are both an ASP.NET Core Web API [host](./WebHost) and an Azure Functions [custom handler](https://docs.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers) [host](./FunctionHost).
+StateChartsDotNet aims to provide a full-featured statechart implementation for the .NET Core runtime, enabling SCDN to run nicely on Windows, Mac, Linux, and all your favorite clouds. Included in the repo are both an ASP.NET Core Web API [host](./WebHost) and an Azure Functions [host](./FunctionHost) implemented as a [custom handler](https://docs.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers).
 
 Some specific design and implementation choices:
 
@@ -40,7 +40,7 @@ var machine = StateChart.Define("test")
                         .State("state1")
                             .OnEntry
                                 .Execute(action)._
-                            .OnExit()
+                            .OnExit
                                 .Execute(action)._
                             .Transition
                                 .Target("alldone")._._
@@ -163,25 +163,25 @@ await context.StartAndWaitForCompletionAsync();
 
 ### [ASP.NET Core Web API host](./WebHost) and [Azure Functions host](./FunctionHost)
 
-Add a new statechart definition for subsequent execution:
+Add a new statechart definition for later execution:
 >POST /api/register
 
-Lookup an existing registered statechart definition:
+Lookup a registered statechart definition:
 >GET /api/metadata/{metadataId}
 
-Start a new statechart execution:
+Create a new statechart instance:
 >POST /api/start/{metadataId}
 
-Register and start a statechart at once:
+Register definition and start an instance in a single request:
 >POST /api/registerandstart
 
-Stop an existing statechart execution:
+Stop an existing statechart instance:
 >PUT /api/stop/{instanceId}
 
-Send a message to an existing statechart execution:
+Send a message to an existing statechart instance:
 >PUT /api/sendmessage/{instanceId}
 
-Get the status of an existing statechart execution:
+Get the status of an existing statechart instance:
 >GET /api/{instanceId}
 
 (Postman examples [here](./WebHost/statecharts.postman_collection.json))
