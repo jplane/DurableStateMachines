@@ -18,17 +18,43 @@ Some specific design and implementation choices:
 
 - An [abstraction](./Common/Model) for describing statecharts that allows for [multiple](./Metadata.Xml) [implementations](./Metadata.Fluent) _(perhaps you've got another one in mind?)_
 
-- Two behaviorally equivalent statechart execution engines:
-
-  - A fast, in-memory [implementation](./Engine)
-
-  - A durable, reliable [implementation](./DurableEngine) based on the [Durable Task framework](https://github.com/Azure/durabletask)
+- Run in-memory for fastest execution, or opt into durable storage of engine execution state for resilience in the face of failures
 
 - Abstractions for both [pull](./Common/Model/Execution/IQueryMetadata.cs)- and [push](./Common/Model/Execution/ISendMessageMetadata.cs)-based communication with external systems; talk to all your favorite native cloud services from within your statechart!
 
 - In addition to parent-child state relationships _within_ a single statechart, there is also support for parent-child relationships _between_ statechart instances (execute statechart A within the context of statechart B, etc.)
 
-## Usage
+## Getting Started
+
+### Where do you want to run statecharts?
+
+1. Hosted in a generic REST API - use the pre-built ASP.NET Core [WebHost](./WebHost) and start with the [example HTTP calls](./WebHost/statecharts.postman_collection.json) for registering and running statecharts
+
+2. Hosted in an Azure Functions app - use the pre-built [FunctionHost](./FunctionHost) and start with the [example HTTP calls](./WebHost/statecharts.postman_collection.json) for registering and running statecharts
+
+3. In your own app - the core statechart engines are built as [netstandard2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) libs which means you can use them virtually anywhere .NET Core runs
+
+### Optimize for performance, or reliability?
+
+SCDN supports two execution engines:
+
+  - A fast, in-memory [implementation](./Engine)
+
+  - A durable, reliable [implementation](./DurableEngine) based on the [Durable Task framework](https://github.com/Azure/durabletask)
+
+The results from executing your statechart will be identical with either engine; you simply choose performance vs. reliability to suit your scenario.
+
+### Define your statechart
+
+Statecharts support standard state machine concepts like [atomic](https://statecharts.github.io/glossary/atomic-state.html) and [parallel](https://statecharts.github.io/glossary/parallel-state.html) states, state [transitions](https://statecharts.github.io/glossary/transition.html), [actions](https://statecharts.github.io/glossary/action.html) within states, etc.
+
+Statecharts also support advanced concepts like [history states](https://statecharts.github.io/glossary/history-state.html), [event-based transitions](https://statecharts.github.io/glossary/event.html), and [nested or compound state hierarchies](https://statecharts.github.io/glossary/compound-state.html). 
+
+In SCDN you define statecharts using declarative metadata in JSON, XML, or C# fluent syntax. See below for examples of each.
+
+For advanced scenarios, you can also define your own metadata syntax and map it to primitives the SCDN engines can interpret and execute directly.
+
+## Examples
 
 ### Fluent API
 
