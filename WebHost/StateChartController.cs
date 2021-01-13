@@ -88,7 +88,16 @@ namespace StateChartsDotNet.WebHost
         {
             metadataId.CheckArgNull(nameof(metadataId));
 
-            var instanceId = await StartAsync(metadataId, null, parameters);
+            string instanceId = null;
+
+            try
+            {
+                instanceId = await StartAsync(metadataId, null, parameters);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
 
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
@@ -111,7 +120,16 @@ namespace StateChartsDotNet.WebHost
 
             await _manager.RegisterMetadataAsync(payload.MetadataId, payload.Metadata);
 
-            var instanceId = await StartAsync(payload.MetadataId, payload.InstanceId, payload.Parameters);
+            string instanceId = null;
+
+            try
+            {
+                await StartAsync(payload.MetadataId, payload.InstanceId, payload.Parameters);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
 
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
@@ -127,9 +145,16 @@ namespace StateChartsDotNet.WebHost
 
             Debug.Assert(_manager != null);
 
-            await _manager.SendMessageAsync(instanceId, new ExternalMessage { Name = "cancel" });
+            try
+            {
+                await _manager.SendMessageAsync(instanceId, new ExternalMessage { Name = "cancel" });
 
-            await _manager.WaitForInstanceAsync(instanceId);
+                await _manager.WaitForInstanceAsync(instanceId);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -144,7 +169,14 @@ namespace StateChartsDotNet.WebHost
 
             Debug.Assert(_manager != null);
 
-            await _manager.SendMessageAsync(instanceId, message);
+            try
+            {
+                await _manager.SendMessageAsync(instanceId, message);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -188,6 +220,11 @@ namespace StateChartsDotNet.WebHost
             }
 
             var state = await _manager.GetInstanceAsync(instanceId);
+
+            if (state == null)
+            {
+                return NotFound();
+            }
 
             var result = DeserializeOutput(state.Output);
 

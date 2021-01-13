@@ -261,9 +261,13 @@ namespace StateChartsDotNet.Durable
 
                 await HttpService.StartRemoteChildStatechartAsync(_callbackUri, invokeMetadata, metadataId, instanceId, data, _cancelToken);
             }
-            else
+            else if (_statecharts.Contains(metadataId))
             {
                 await _client.CreateOrchestrationInstanceAsync("statechart", metadataId, instanceId, data);
+            }
+            else
+            {
+                throw new InvalidOperationException($"StateChart '{metadataId}' not registered.");
             }
         }
 
@@ -275,6 +279,8 @@ namespace StateChartsDotNet.Durable
             {
                 throw new InvalidOperationException("Service not started.");
             }
+
+            await CheckIfExistsAsync(instanceId);
 
             var instance = new OrchestrationInstance
             {
@@ -301,6 +307,14 @@ namespace StateChartsDotNet.Durable
             }
         }
 
+        private async Task CheckIfExistsAsync(string instanceId)
+        {
+            if ((await GetInstanceAsync(instanceId)) == null)
+            {
+                throw new InvalidOperationException($"StateChart instance '{instanceId}' does not exist.");
+            }
+        }
+
         public async Task<OrchestrationState> GetInstanceAsync(string instanceId)
         {
             instanceId.CheckArgNull(nameof(instanceId));
@@ -322,6 +336,8 @@ namespace StateChartsDotNet.Durable
             {
                 throw new InvalidOperationException("Service not started.");
             }
+
+            await CheckIfExistsAsync(instanceId);
 
             var instance = new OrchestrationInstance
             {
