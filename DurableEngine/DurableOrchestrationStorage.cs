@@ -63,6 +63,8 @@ namespace StateChartsDotNet.Durable
 
             var blobs = _client.GetBlobsAsync(traits: BlobTraits.Metadata, cancellationToken: _token);
 
+            Debug.Assert(blobs != null);
+
             await foreach (var blob in blobs)
             {
                 var blobClient = _client.GetBlockBlobClient(blob.Name);

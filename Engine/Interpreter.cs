@@ -126,6 +126,8 @@ namespace StateChartsDotNet
             {
                 var enabledTransitions = SelectMessagelessTransitions(context);
 
+                Debug.Assert(enabledTransitions != null);
+
                 if (enabledTransitions.IsEmpty())
                 {
                     var internalMessage = context.DequeueInternal();

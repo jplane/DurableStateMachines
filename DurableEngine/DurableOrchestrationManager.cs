@@ -414,10 +414,6 @@ namespace StateChartsDotNet.Durable
                                                                                string.Empty,
                                                                                new SendParentChildMessageActivity(this)));
 
-            _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("waitforcompletion",
-                                                                               string.Empty,
-                                                                               new WaitForCompletionActivity(this)));
-
             _worker.AddTaskActivities(new NameValueObjectCreator<TaskActivity>("startchildorchestration",
                                                                                string.Empty,
                                                                                new CreateChildOrchestrationActivity(this)));
