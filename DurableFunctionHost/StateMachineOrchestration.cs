@@ -5,9 +5,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using StateChartsDotNet;
-using StateChartsDotNet.Metadata.Json.States;
 
 namespace DurableFunctionHost
 {
@@ -32,15 +30,11 @@ namespace DurableFunctionHost
 
             var logger = context.CreateReplaySafeLogger(_logger);
 
-            var input = context.GetInput<(Dictionary<string, object>, JObject)>();
+            var payload = StateMachineRequestPayload.Deserialize(context);
 
-            var data = input.Item1;
+            Debug.Assert(payload != null);
 
-            Debug.Assert(data != null);
-
-            var metadata = new StateChart(input.Item2);
-
-            var executionContext = new StateMachineContext(metadata, client, context, data, logger);
+            var executionContext = new StateMachineContext(payload.StateMachineDefinition, client, context, payload.Arguments, logger);
 
             logger.LogInformation("Begin state machine execution");
 

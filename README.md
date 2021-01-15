@@ -12,13 +12,11 @@ The utility of traditional state machines goes down as system complexity increas
 
 ## Goals
 
-StateChartsDotNet aims to provide a full-featured statechart implementation for the .NET Core runtime, enabling SCDN to run nicely on Windows, Mac, Linux, and all your favorite clouds. Included in the repo are both an ASP.NET Core Web API [host](./WebHost) and an Azure Functions [host](./FunctionHost) implemented as a [custom handler](https://docs.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers).
+StateChartsDotNet aims to provide a full-featured statechart implementation for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/).
 
 Some specific design and implementation choices:
 
-- An [abstraction](./Common/Model) for describing statecharts that allows for [multiple](./Metadata.Xml) [implementations](./Metadata.Fluent) _(perhaps you've got another one in mind?)_
-
-- Run in-memory for fastest execution, or opt into durable storage of engine execution state for resilience in the face of failures
+- An [abstraction](./Common/Model) for describing statechart definitions and an initial [JSON](./Metadata.Json) implementation
 
 - Abstractions for both [pull](./Common/Model/Execution/IQueryMetadata.cs)- and [push](./Common/Model/Execution/ISendMessageMetadata.cs)-based communication with external systems; talk to all your favorite native cloud services from within your statechart!
 
@@ -26,191 +24,54 @@ Some specific design and implementation choices:
 
 ## Getting Started
 
-### Where do you want to run statecharts?
-
-1. Hosted in a generic REST API - use the pre-built ASP.NET Core [WebHost](./WebHost) and start with the [example HTTP calls](./WebHost/statecharts.postman_collection.json) for registering and running statecharts
-
-2. Hosted in an Azure Functions app - use the pre-built [FunctionHost](./FunctionHost) and start with the [example HTTP calls](./WebHost/statecharts.postman_collection.json) for registering and running statecharts
-
-3. In your own app - the core statechart engines are built as [netstandard2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) libs which means you can use them virtually anywhere .NET Core runs
-
-### Optimize for performance, or reliability?
-
-SCDN supports two execution engines:
-
-  - A fast, in-memory [implementation](./Engine)
-
-  - A durable, reliable [implementation](./DurableEngine) based on the [Durable Task framework](https://github.com/Azure/durabletask)
-
-The results from executing your statechart will be identical with either engine; you simply choose performance vs. reliability to suit your scenario.
-
-### Define your statechart
-
 Statecharts support standard state machine concepts like [atomic](https://statecharts.github.io/glossary/atomic-state.html) and [parallel](https://statecharts.github.io/glossary/parallel-state.html) states, state [transitions](https://statecharts.github.io/glossary/transition.html), [actions](https://statecharts.github.io/glossary/action.html) within states, etc.
 
 Statecharts also support advanced concepts like [history states](https://statecharts.github.io/glossary/history-state.html), [event-based transitions](https://statecharts.github.io/glossary/event.html), and [nested or compound state hierarchies](https://statecharts.github.io/glossary/compound-state.html). 
 
-In SCDN you define statecharts using declarative metadata in JSON, XML, or C# fluent syntax. See below for examples of each.
+In SCDN you define statecharts using declarative metadata in JSON. See below for examples.
 
 For advanced scenarios, you can also define your own metadata syntax and map it to primitives the SCDN engines can interpret and execute directly.
 
-## Examples
+## [Azure Functions host](./DurableFunctionHost)
 
-### Fluent API
+Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [HTTP API](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-http-api).
 
-```csharp
-static void action(dynamic data) => data.x += 1;
-
-var machine = StateChart.Define("test")
-                        .DataInit("x", 1)
-                        .State("state1")
-                            .OnEntry
-                                .Execute(action)._
-                            .OnExit
-                                .Execute(action)._
-                            .Transition
-                                .Target("alldone")._._
-                        .FinalState("alldone")._;
-
-var context = new ExecutionContext(machine);
-
-await context.StartAndWaitForCompletionAsync();
 ```
+POST /runtime/webhooks/durabletask/orchestrators/statemachine-orchestration
 
-### [SCXML-compliant](https://www.w3.org/TR/scxml/) API
+{
+    "args": {
+        "x": 56
+    },
+    "statemachine": {
+        "name": "sm1",
+        "states": [
+            {
+                "id": "s1",
+                "onentry": {
+                    "content": [
+                        {
+                            "type": "assign",
+                            "location": "y",
+                            "expr": "x * 2"
+                        }
+                    ]
+                },
+                "transitions": [
+                    {
+                        "target": "alldone"
+                    }
+                ]
+            },
+            {
+                "id": "alldone",
+                "type": "final"
+            }
+        ]
+    }
+}
 
-```csharp
-var xmldoc = @"<?xml version='1.0'?>
-                <scxml xmlns='http://www.w3.org/2005/07/scxml'
-                        version='1.0'
-                        datamodel='csharp'>
-                    <state id='state1'>
-                        <onentry>
-                            <http-post>
-                                <url>http://localhost:4444/</url>
-                                <body>
-                                    { value: 5 }
-                                </body>
-                            </http-post>
-                        </onentry>
-                        <transition target='alldone' />
-                    </state>
-                    <final id='alldone' />
-                </scxml>";
-
-var machine = new StateChart(XDocument.Parse(xmldoc));
-
-var context = new ExecutionContext(machine, _logger);
-
-await context.StartAndWaitForCompletionAsync();
 ```
-
-### JSON API
-
-```csharp
-var json = @"{
-                 'states': [
-                     {
-                         'id': 'state1',
-                         'onentry': {
-                             'content': [
-                                 {
-                                     'type': 'http-post',
-                                     'url': 'http://localhost:4444/',
-                                     'body': {
-                                         'value': 5
-                                     }
-                                 }
-                             ]
-                         },
-                         'transitions': [
-                             { 'target': 'alldone' }
-                         ]
-                     },
-                     {
-                         'id': 'alldone',
-                         'type': 'final'
-                     }
-                 ]
-             }";
-
-var machine = new StateChart(JObject.Parse(json));
-
-var context = new ExecutionContext(machine, _logger);
-
-await context.StartAndWaitForCompletionAsync();
-```
-
-### Durable (fault-tolerant) execution
-
-```csharp
-var machine = GetStateChart();
-
-var emulator = new LocalOrchestrationService();             // any durable task orchestration service implementation
-
-var storage = new Durable.InMemoryOrchestrationStorage();   // metadata storage for in-flight statechart instances
-
-var executionTimeout = TimeSpan.FromMinutes(1);
-
-var context = new Durable.ExecutionContext(machine, emulator, storage, cancelToken, executionTimeout);
-
-await context.StartAndWaitForCompletionAsync();
-```
-
-### Parent-child statecharts
-
-```csharp
-static object getValue(dynamic data) => data.x + 1;
-
-var innerMachine = StateChart.Define("inner")
-                             .DataInit("x", 1)
-                             .State("innerState1")
-                                 .OnEntry
-                                     .Assign("x", getValue)._
-                                 .OnExit
-                                     .Assign("x", getValue)._
-                                 .Transition
-                                     .Target("alldone")._._
-                             .FinalState("alldone")._;
-
-var machine = StateChart.Define("outer")
-                        .State("outerState1")
-                            .InvokeStateChart
-                                .Definition(innerMachine)._
-                            .Transition
-                                .Message("done.invoke.*")
-                                .Target("alldone")._._
-                        .FinalState("alldone")._;
-
-var context = new ExecutionContext(machine);
-
-await context.StartAndWaitForCompletionAsync();
-```
-
-### [ASP.NET Core Web API host](./WebHost) and [Azure Functions host](./FunctionHost)
-
-Add a new statechart definition for later execution:
->POST /api/register
-
-Lookup a registered statechart definition:
->GET /api/metadata/{metadataId}
-
-Create a new statechart instance:
->POST /api/start/{metadataId}
-
-Register definition and start an instance in a single request:
->POST /api/registerandstart
-
-Stop an existing statechart instance:
->PUT /api/stop/{instanceId}
-
-Send a message to an existing statechart instance:
->PUT /api/sendmessage/{instanceId}
-
-Get the status of an existing statechart instance:
->GET /api/{instanceId}
-
-(Postman examples [here](./WebHost/statecharts.postman_collection.json))
 
 ## Background and Resources
 

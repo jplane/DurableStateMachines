@@ -24,7 +24,7 @@ namespace DurableFunctionHost
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationClient orchestrationClient,
                                    IDurableOrchestrationContext orchestrationContext,
-                                   IDictionary<string, object> data,
+                                   IReadOnlyDictionary<string, object> data,
                                    ILogger logger)
             : base(metadata, default, logger)
         {
