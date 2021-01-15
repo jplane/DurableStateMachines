@@ -32,7 +32,7 @@ Some specific design and implementation choices:
 
 2. Hosted in an Azure Functions app - use the pre-built [FunctionHost](./FunctionHost) and start with the [example HTTP calls](./WebHost/statecharts.postman_collection.json) for registering and running statecharts
 
-3. In your own app - the core statechart engines are built as [netstandard2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) libs which means you can use them virtually anywhere .NET Core runs
+3. In your own app - the core statechart engines are built as [netstandard2.1](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) libs which means you can use them virtually anywhere .NET Core runs
 
 ### Optimize for performance, or reliability?
 

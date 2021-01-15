@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>StateChartsDotNet.Metadata.Xml</AssemblyName>
     <RootNamespace>StateChartsDotNet.Metadata.Xml</RootNamespace>
     <LangVersion>9.0</LangVersion>
