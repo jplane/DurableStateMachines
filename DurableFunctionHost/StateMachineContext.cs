@@ -19,21 +19,17 @@ namespace DurableFunctionHost
     {
         private readonly Dictionary<string, List<(string, string)>> _childInstances;
         private readonly IDurableOrchestrationContext _orchestrationContext;
-        private readonly IDurableOrchestrationClient _orchestrationClient;
 
         public StateMachineContext(IStateChartMetadata metadata,
-                                   IDurableOrchestrationClient orchestrationClient,
                                    IDurableOrchestrationContext orchestrationContext,
                                    IReadOnlyDictionary<string, object> data,
                                    ILogger logger)
             : base(metadata, default, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
-            orchestrationClient.CheckArgNull(nameof(orchestrationClient));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
             data.CheckArgNull(nameof(data));
 
-            _orchestrationClient = orchestrationClient;
             _orchestrationContext = orchestrationContext;
 
             foreach (var pair in data)
@@ -86,11 +82,17 @@ namespace DurableFunctionHost
 
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                var json = JObject.Parse((await childMachine.ToStringAsync()).Item2);
+                var json = JObject.Parse((await childMachine.ToStringAsync(default)).Item2);
 
                 Debug.Assert(json != null);
 
-                await _orchestrationContext.CallSubOrchestratorAsync("statemachine-orchestration", instanceId, (inputs, json));
+                var payload = new StateMachineRequestPayload
+                {
+                    Arguments = inputs,
+                    StateMachineDefinition = json
+                };
+
+                await _orchestrationContext.CallSubOrchestratorAsync("statemachine-orchestration", instanceId, payload);
             }
             else
             {
@@ -186,7 +188,7 @@ namespace DurableFunctionHost
             }
             else
             {
-                return _orchestrationClient.RaiseEventAsync((string) parentInstanceId, "state-machine-event", msg);
+                return _orchestrationContext.CallActivityAsync("send-message-parent-child", ((string) parentInstanceId, msg));
             }
         }
 
@@ -202,7 +204,7 @@ namespace DurableFunctionHost
 
             if (string.IsNullOrWhiteSpace(remoteUri))
             {
-                return _orchestrationClient.RaiseEventAsync(childInstanceId, "state-machine-event", message);
+                return _orchestrationContext.CallActivityAsync("send-message-parent-child", (childInstanceId, message));
             }
             else
             {

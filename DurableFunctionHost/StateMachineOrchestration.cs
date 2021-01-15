@@ -22,19 +22,17 @@ namespace DurableFunctionHost
 
         [FunctionName("statemachine-orchestration")]
         public async Task<Dictionary<string, object>> RunOrchestrator(
-                [OrchestrationTrigger] IDurableOrchestrationContext context,
-                [DurableClient(TaskHub = "%TASK_HUB_NAME%")] IDurableOrchestrationClient client)
+                [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             Debug.Assert(context != null);
-            Debug.Assert(client != null);
 
             var logger = context.CreateReplaySafeLogger(_logger);
 
-            var payload = StateMachineRequestPayload.Deserialize(context);
+            var payload = context.GetInput<StateMachineRequestPayload>();
 
             Debug.Assert(payload != null);
 
-            var executionContext = new StateMachineContext(payload.StateMachineDefinition, client, context, payload.Arguments, logger);
+            var executionContext = new StateMachineContext(payload.GetMetadata(), context, payload.Arguments, logger);
 
             logger.LogInformation("Begin state machine execution");
 

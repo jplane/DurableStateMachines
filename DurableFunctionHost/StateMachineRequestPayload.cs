@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
@@ -8,40 +9,22 @@ using System.Collections.Generic;
 
 namespace DurableFunctionHost
 {
-    internal class StateMachineRequestPayload
+    public class StateMachineRequestPayload
     {
-        public static StateMachineRequestPayload Deserialize(IDurableOrchestrationContext context)
+        [JsonProperty("args")]
+        public Dictionary<string, object> Arguments { get; internal set; }
+
+        [JsonProperty("statemachine")]
+        public JObject StateMachineDefinition { get; internal set; }
+
+        internal IStateChartMetadata GetMetadata()
         {
-            context.CheckArgNull(nameof(context));
-
-            var json = context.GetInput<JObject>();
-
-            var argumentsJson = json.Property("args")?.Value.Value<JObject>();
-
-            var arguments = argumentsJson == null ?
-                                new Dictionary<string, object>() :
-                                argumentsJson.ToObject<Dictionary<string, object>>();
-
-            var definitionJson = json.Property("statemachine")?.Value.Value<JObject>();
-
-            if (definitionJson == null)
+            if (this.StateMachineDefinition == null)
             {
-                throw new InvalidOperationException("Orchestration input must include state machine definition.");
+                return null;
             }
 
-            var metadata = new StateChart(definitionJson);
-
-            return new StateMachineRequestPayload(arguments, metadata);
+            return new StateChart(this.StateMachineDefinition);
         }
-
-        private StateMachineRequestPayload(Dictionary<string, object> arguments, IStateChartMetadata definition)
-        {
-            this.Arguments = arguments;
-            this.StateMachineDefinition = definition;
-        }
-
-        public IReadOnlyDictionary<string, object> Arguments { get; }
-
-        public IStateChartMetadata StateMachineDefinition { get; }
     }
 }
