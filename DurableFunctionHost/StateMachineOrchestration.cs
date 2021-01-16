@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -5,9 +6,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using StateChartsDotNet;
 
-namespace DurableFunctionHost
+namespace StateChartsDotNet.DurableFunctionHost
 {
     public class StateMachineOrchestration
     {
@@ -32,7 +32,16 @@ namespace DurableFunctionHost
 
             Debug.Assert(payload != null);
 
-            var executionContext = new StateMachineContext(payload.GetMetadata(), context, payload.Arguments, logger);
+            var definition = payload.GetMetadata();
+
+            if (definition == null)
+            {
+                throw new InvalidOperationException("Request must include a state machine definition.");
+            }
+
+            var args = payload.Arguments ?? new Dictionary<string, object>();
+
+            var executionContext = new StateMachineContext(definition, context, args, logger);
 
             logger.LogInformation("Begin state machine execution");
 

@@ -1,19 +1,20 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using DurableFunctionHost;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using System.Threading;
+using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace DurableFunctionHost
+namespace StateChartsDotNet.DurableFunctionHost
 {
     internal class StateMachineContext : ExecutionContextBase
     {
@@ -65,31 +66,44 @@ namespace DurableFunctionHost
 
             inputs["_instanceId"] = instanceId;
 
+            var json = JObject.Parse((await childMachine.ToStringAsync(default)).Item2);
+
+            Debug.Assert(json != null);
+
+            var payload = new StateMachineRequestPayload
+            {
+                Arguments = inputs,
+                StateMachineDefinition = json
+            };
+
+            Dictionary<string, object> childData = null;
+
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                var json = JObject.Parse((await childMachine.ToStringAsync(default)).Item2);
-
-                Debug.Assert(json != null);
-
-                var payload = new StateMachineRequestPayload
-                {
-                    Arguments = inputs,
-                    StateMachineDefinition = json
-                };
-
-                var childData = await _orchestrationContext.CallSubOrchestratorAsync<Dictionary<string, object>>("statemachine-orchestration", instanceId, payload);
-
-                Debug.Assert(childData != null);
-
-                if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
-                {
-                    _data[metadata.ResultLocation] = (IReadOnlyDictionary<string, object>) childData;
-                }
+                childData = await _orchestrationContext.CallSubOrchestratorAsync<Dictionary<string, object>>("statemachine-orchestration", instanceId, payload);
             }
             else
             {
-                //TODO: remote child execution
-                throw new NotImplementedException();
+                Debug.Assert(!string.IsNullOrWhiteSpace(metadata.RemoteUri));
+
+                var uri = new Uri(metadata.RemoteUri);
+
+                var content = JsonConvert.SerializeObject(payload);
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(content));
+
+                var response = await _orchestrationContext.CallHttpAsync(HttpMethod.Post, uri, content);
+
+                Debug.Assert(response != null);
+
+                childData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
+            }
+
+            Debug.Assert(childData != null);
+
+            if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
+            {
+                _data[metadata.ResultLocation] = (IReadOnlyDictionary<string, object>) childData;
             }
         }
 
@@ -110,7 +124,16 @@ namespace DurableFunctionHost
             target.CheckArgNull(nameof(target));
             parameters.CheckArgNull(nameof(parameters));
 
-            return _orchestrationContext.CallActivityAsync<string>(type, (target, parameters));
+            if (string.Compare(type, "http-get", true, CultureInfo.InvariantCulture) == 0)
+            {
+                var http = new HttpService(_orchestrationContext);
+
+                return http.GetAsync(target, parameters);
+            }
+            else
+            {
+                return _orchestrationContext.CallActivityAsync<string>(type, (target, parameters));
+            }
         }
 
         internal override Task SendMessageAsync(string type,
@@ -124,9 +147,24 @@ namespace DurableFunctionHost
             target.CheckArgNull(nameof(target));
             parameters.CheckArgNull(nameof(parameters));
 
-            var parms = (target, messageName, content, correlationId, parameters);
+            if (string.Compare(type, "http-post", true, CultureInfo.InvariantCulture) == 0)
+            {
+                var http = new HttpService(_orchestrationContext);
 
-            return _orchestrationContext.CallActivityAsync(type, parms);
+                return http.PostAsync(target, null, content, correlationId, parameters);
+            }
+            else if (string.Compare(type, "http-put", true, CultureInfo.InvariantCulture) == 0)
+            {
+                var http = new HttpService(_orchestrationContext);
+
+                return http.PutAsync(target, null, content, correlationId, parameters);
+            }
+            else
+            {
+                var parms = (target, messageName, content, correlationId, parameters);
+
+                return _orchestrationContext.CallActivityAsync(type, parms);
+            }
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

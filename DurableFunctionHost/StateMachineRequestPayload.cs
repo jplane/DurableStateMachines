@@ -1,13 +1,10 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Json.States;
-using System;
 using System.Collections.Generic;
 
-namespace DurableFunctionHost
+namespace StateChartsDotNet.DurableFunctionHost
 {
     public class StateMachineRequestPayload
     {

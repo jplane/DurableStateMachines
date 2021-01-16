@@ -22,6 +22,7 @@ namespace StateChartsDotNet
         private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
+        private readonly HttpService _http;
 
         private Task _executeTask;
         private ExecutionContext _parentContext;
@@ -34,13 +35,14 @@ namespace StateChartsDotNet
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
+            _http = new HttpService(cancelToken);
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
-            _externalServices.Add("http-post", HttpService.PostAsync);
-            _externalServices.Add("http-put", HttpService.PutAsync);
+            _externalServices.Add("http-post", _http.PostAsync);
+            _externalServices.Add("http-put", _http.PutAsync);
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
-            _externalQueries.Add("http-get", HttpService.GetAsync);
+            _externalQueries.Add("http-get", _http.GetAsync);
 
             _data["_instanceId"] = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
         }
@@ -110,7 +112,7 @@ namespace StateChartsDotNet
 
             if (_externalQueries.TryGetValue(type, out ExternalQueryDelegate query))
             {
-                return query(target, parameters, this.CancelToken);
+                return query(target, parameters);
             }
 
             throw new InvalidOperationException("Unable to resolve external query type: " + type);
@@ -129,7 +131,7 @@ namespace StateChartsDotNet
 
             if (_externalServices.TryGetValue(type, out ExternalServiceDelegate service))
             {
-                return service(target, messageName, content, correlationId, parameters, this.CancelToken);
+                return service(target, messageName, content, correlationId, parameters);
             }
 
             throw new InvalidOperationException("Unable to resolve external service type: " + type);

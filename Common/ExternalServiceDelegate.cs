@@ -10,6 +10,5 @@ namespace StateChartsDotNet.Common
                                                  string messageName,
                                                  object content,
                                                  string correlationId,
-                                                 IReadOnlyDictionary<string, object> parameters,
-                                                 CancellationToken cancelToken);
+                                                 IReadOnlyDictionary<string, object> parameters);
 }
