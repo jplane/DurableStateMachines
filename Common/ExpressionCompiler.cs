@@ -15,6 +15,11 @@ using StateChartsDotNet.Common.Exceptions;
 
 namespace StateChartsDotNet.Common
 {
+    // this is a naive implementation
+    // at minimum it should:
+    //  - aggregate all compiled expressions into a single assembly
+    //  - the syntax tree rewriter probably also needs to be more sophisticated
+    //  - have All The Tests
     internal static class ExpressionCompiler
     {
         public static Func<dynamic, T> Compile<T>(string expression)
