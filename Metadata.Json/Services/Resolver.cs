@@ -19,8 +19,6 @@ namespace StateChartsDotNet.Metadata.Json.Services
             SendMessageMetadata metadata = type switch
             {
                 "http-post" => new HttpPostMetadata(element),
-                "send-parent" => new SendParentMetadata(element),
-                "send-child" => new SendChildMetadata(element),
                 _ => null
             };
 

@@ -28,8 +28,7 @@ namespace StateChartsDotNet
         private readonly Set<State> _statesToInvoke;
         private readonly StateChart _root;
 
-        protected IDictionary<string, object> _data;
-
+        private IDictionary<string, object> _data;
         private CancellationToken _cancelToken;
         private Exception _error;
         private bool _isRunning = false;
@@ -73,6 +72,11 @@ namespace StateChartsDotNet
         protected abstract bool IsChildStateChart { get; }
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
+
+        public virtual string ResolveConfigValue(string value)
+        {
+            return value;
+        }
 
         internal void InternalCancel()
         {
@@ -232,6 +236,8 @@ namespace StateChartsDotNet
         {
             _data[key] = value;
         }
+
+        internal IEnumerable<KeyValuePair<string, object>> GetDataValues() => _data;
 
         internal void EnqueueInternal(string message)
         {

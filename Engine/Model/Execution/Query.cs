@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Model.Execution
 
             Debug.Assert(!string.IsNullOrWhiteSpace(type));
 
-            var target = metadata.GetTarget(context.ScriptData);
+            var target = context.ResolveConfigValue(metadata.GetTarget(context.ScriptData));
 
             Debug.Assert(!string.IsNullOrWhiteSpace(target));
 

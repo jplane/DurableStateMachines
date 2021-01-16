@@ -44,7 +44,7 @@ namespace StateChartsDotNet.Metadata.Json.Services
 
             var parms = new List<JObject>();
 
-            foreach (var queryStringElement in element.Property("queryString")?.Value.Values<JObject>() ?? Enumerable.Empty<JObject>())
+            foreach (var queryStringElement in element.Property("querystring")?.Value.Values<JObject>() ?? Enumerable.Empty<JObject>())
             {
                 var name = new JProperty("name", $"?{queryStringElement.Property("name").Value}");
 

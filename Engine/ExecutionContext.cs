@@ -44,7 +44,7 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", _http.GetAsync);
 
-            _data["_instanceId"] = $"{metadata.MetadataId}.{Guid.NewGuid():N}";
+            SetDataValue("_instanceId", $"{metadata.MetadataId}.{Guid.NewGuid():N}");
         }
 
         public async Task StartAsync()
@@ -160,18 +160,18 @@ namespace StateChartsDotNet
 
             Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
 
-            context._data["_instanceId"] = instanceId;
+            context.SetDataValue("_instanceId", instanceId);
 
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
-                context._data[param.Key] = param.Value;
+                context.SetDataValue(param.Key, param.Value);
             }
 
             await context.StartAndWaitForCompletionAsync();
 
             if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
             {
-                _data[metadata.ResultLocation] = (IReadOnlyDictionary<string, object>) context.Data;
+                SetDataValue(metadata.ResultLocation, (IReadOnlyDictionary<string, object>) context.Data);
             }
         }
 

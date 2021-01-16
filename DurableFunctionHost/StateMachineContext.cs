@@ -1,5 +1,6 @@
 ﻿using DurableFunctionHost;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,31 +20,40 @@ namespace StateChartsDotNet.DurableFunctionHost
     internal class StateMachineContext : ExecutionContextBase
     {
         private readonly IDurableOrchestrationContext _orchestrationContext;
+        private readonly IConfiguration _config;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
                                    IReadOnlyDictionary<string, object> data,
+                                   IConfiguration config,
                                    ILogger logger)
             : base(metadata, default, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
             data.CheckArgNull(nameof(data));
+            config.CheckArgNull(nameof(config));
 
             _orchestrationContext = orchestrationContext;
+            _config = config;
 
             foreach (var pair in data)
             {
-                _data[pair.Key] = pair.Value;
+                SetDataValue(pair.Key, pair.Value);
             }
         }
 
-        public Dictionary<string, object> ResultData => _data.Where(pair => !pair.Key.StartsWith("_"))
-                                                             .ToDictionary(p => p.Key, p => p.Value);
+        public Dictionary<string, object> ResultData => this.GetDataValues().Where(pair => !pair.Key.StartsWith("_"))
+                                                                            .ToDictionary(p => p.Key, p => p.Value);
 
         protected override Task<Guid> GenerateGuid()
         {
             return Task.FromResult(_orchestrationContext.NewGuid());
+        }
+
+        public override string ResolveConfigValue(string value)
+        {
+            return _config == null ? value : (value.StartsWith("%") && value.EndsWith("%")) ? _config[value[1..^1]] : value;
         }
 
         internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
@@ -103,11 +113,11 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
             {
-                _data[metadata.ResultLocation] = (IReadOnlyDictionary<string, object>) childData;
+                SetDataValue(metadata.ResultLocation, (IReadOnlyDictionary<string, object>) childData);
             }
         }
 
-        protected override bool IsChildStateChart => _data.ContainsKey("_parentInstanceId");
+        protected override bool IsChildStateChart => this.GetDataValues().Any(pair => pair.Key == "_parentInstanceId");
 
         internal override Task DelayAsync(TimeSpan timespan)
         {
