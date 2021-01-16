@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
-using System.Threading;
 
 namespace StateChartsDotNet
 {
@@ -69,16 +68,6 @@ namespace StateChartsDotNet
             foreach (var state in context.Configuration.Sort(State.ReverseCompare))
             {
                 await state.ExitAsync(context);
-
-                if (state.Type == StateType.Final)
-                {
-                    Debug.Assert(state.Parent != null);
-
-                    if (state.Parent.Type == StateType.Root)
-                    {
-                        await ((FinalState) state).SendDoneMessage(context);
-                    }
-                }
             }
         }
 
@@ -99,11 +88,6 @@ namespace StateChartsDotNet
             Debug.Assert(context != null);
 
             var externalMessage = await context.DequeueExternalAsync();
-
-            foreach (var state in context.Configuration)
-            {
-                await state.ProcessExternalMessageAsync(context, externalMessage);
-            }
 
             if (context.IsRunning)
             {

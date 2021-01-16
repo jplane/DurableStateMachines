@@ -26,9 +26,9 @@ namespace StateChartsDotNet.Metadata.Json.States
             _metadataId = element.GetUniqueElementPath();
         }
 
-        public string MetadataId => _metadataId;
+        public string Id => _element.Property("id").Value.Value<string>();
 
-        public bool Autoforward => _element.Property("autoforward")?.Value.Value<bool>() ?? false;
+        public string MetadataId => _metadataId;
 
         public ChildStateChartExecutionMode ExecutionMode
         {
@@ -49,7 +49,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string RemoteUri => _element.Property("remoteuri")?.Value.Value<string>() ?? string.Empty;
 
-        public string IdLocation => _element.Property("idlocation")?.Value.Value<string>() ?? string.Empty;
+        public string ResultLocation => _element.Property("resultlocation")?.Value.Value<string>() ?? string.Empty;
 
         private IEnumerable<string> Namelist
         {

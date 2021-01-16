@@ -40,18 +40,5 @@ namespace StateChartsDotNet.Model.States
         {
             throw new NotImplementedException();
         }
-
-        public Task SendDoneMessage(ExecutionContextBase context)
-        {
-            context.CheckArgNull(nameof(context));
-
-            var metadata = (IFinalStateMetadata) _metadata;
-
-            var content = metadata.GetContent(context.ScriptData);
-
-            var parameters = metadata.GetParams(context.ScriptData);
-
-            return context.SendDoneMessageToParentAsync(content, parameters);
-        }
     }
 }

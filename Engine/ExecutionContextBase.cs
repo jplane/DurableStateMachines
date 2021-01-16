@@ -51,14 +51,6 @@ namespace StateChartsDotNet
             _statesToInvoke = new Set<State>();
         }
 
-        internal abstract Task CancelInvokesAsync(string parentMetadataId);
-
-        internal abstract IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId);
-
-        internal abstract Task ProcessChildStateChartDoneAsync(ExternalMessage message);
-
-        internal abstract Task SendToChildStateChart(string id, ExternalMessage message);
-
         internal abstract Task DelayAsync(TimeSpan timespan);
 
         internal abstract Task<string> QueryAsync(string type, string target, IReadOnlyDictionary<string, object> parameters);
@@ -77,13 +69,6 @@ namespace StateChartsDotNet
         internal abstract Task LogInformationAsync(string message);
 
         protected abstract Task<Guid> GenerateGuid();
-
-        protected abstract Task SendMessageToParentStateChart(string _,
-                                                              string messageName,
-                                                              object content,
-                                                              string __,
-                                                              IReadOnlyDictionary<string, object> parameters,
-                                                              CancellationToken ___);
 
         protected abstract bool IsChildStateChart { get; }
 
@@ -151,64 +136,12 @@ namespace StateChartsDotNet
             }
         }
 
-        protected Task SendMessageToChildStateChart(string childId,
-                                                    string messageName,
-                                                    object content,
-                                                    string _,
-                                                    IReadOnlyDictionary<string, object> parameters,
-                                                    CancellationToken __)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(childId));
-            Debug.Assert(!string.IsNullOrWhiteSpace(messageName));
-
-            var msg = new ExternalMessage
-            {
-                Name = messageName,
-                Content = content,
-                Parameters = parameters
-            };
-
-            return SendToChildStateChart(childId, msg);
-        }
-
         internal void EnterFinalRootState()
         {
             _isRunning = false;
         }
 
         internal bool FailFast => _root.FailFast;
-
-        internal Task SendDoneMessageToParentAsync(object content,
-                                                   IReadOnlyDictionary<string, object> parameters)
-        {
-            if (IsChildStateChart)
-            {
-                var instanceId = _data["_instanceId"];
-
-                if (_error != null)
-                {
-                    return SendMessageToParentStateChart(null,
-                                                         $"done.invoke.error.{instanceId}",
-                                                         _error,
-                                                         null,
-                                                         null,
-                                                         _cancelToken);
-                }
-                else
-                {
-                    return SendMessageToParentStateChart(null,
-                                                         $"done.invoke.{instanceId}",
-                                                         content,
-                                                         null,
-                                                         parameters,
-                                                         _cancelToken);
-                }
-            }
-            else
-            {
-                return Task.CompletedTask;
-            }
-        }
 
         public async Task<string> ResolveSendMessageId(ISendMessageMetadata metadata)
         {

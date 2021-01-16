@@ -27,14 +27,12 @@ namespace StateChartsDotNet
                 throw new ExecutionException("Expecting exactly one string-based index for data lookups.");
             }
 
-            if (_data.TryGetValue((string) indexes[0], out result))
+            if (! _data.TryGetValue((string) indexes[0], out result))
             {
-                return true;
+                result = null;
             }
-            else
-            {
-                return false;
-            }
+
+            return true;
         }
 
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
@@ -55,14 +53,12 @@ namespace StateChartsDotNet
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(binder.Name));
 
-            if (_data.TryGetValue(binder.Name, out result))
+            if (! _data.TryGetValue(binder.Name, out result))
             {
-                return true;
+                result = null;
             }
-            else
-            {
-                return false;
-            }
+
+            return true;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)

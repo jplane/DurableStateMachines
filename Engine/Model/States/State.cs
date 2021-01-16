@@ -230,24 +230,6 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ProcessExternalMessageAsync(ExecutionContextBase context, ExternalMessage message)
-        {
-            var instanceIds = context.GetInstanceIdsForParent(_metadata.MetadataId);
-
-            if (instanceIds != null)
-            {
-                instanceIds = instanceIds.ToArray();
-
-                foreach (var invoke in _invokes.Value)
-                {
-                    foreach (var instanceId in instanceIds)
-                    {
-                        await invoke.ProcessExternalMessageAsync(instanceId, context, message);
-                    }
-                }
-            }
-        }
-
         public Set<State> GetEffectiveTargetStates(ExecutionContextBase context)
         {
             var set = new Set<State>();
@@ -352,8 +334,6 @@ namespace StateChartsDotNet.Model.States
             {
                 await _onExit.Value.ExecuteAsync(context);
             }
-
-            await context.CancelInvokesAsync(_metadata.MetadataId);
 
             context.Configuration.Remove(this);
         }

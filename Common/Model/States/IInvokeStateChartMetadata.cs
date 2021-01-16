@@ -6,9 +6,9 @@ namespace StateChartsDotNet.Common.Model.States
 {
     public interface IInvokeStateChartMetadata : IModelMetadata
     {
-        string IdLocation { get; }
+        string Id { get; }
+        string ResultLocation { get; }
         ChildStateChartExecutionMode ExecutionMode { get; }
-        bool Autoforward { get; }
         string RemoteUri { get; }
 
         IStateChartMetadata GetRoot();
@@ -19,7 +19,6 @@ namespace StateChartsDotNet.Common.Model.States
     public enum ChildStateChartExecutionMode
     {
         Inline = 1,
-        Isolated,
         Remote
     }
 
@@ -30,6 +29,11 @@ namespace StateChartsDotNet.Common.Model.States
             ((IModelMetadata) metadata).Validate(errors);
 
             var msgs = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(metadata.Id))
+            {
+                msgs.Add("InvokeStateChart 'Id' is not valid.");
+            }
 
             var root = metadata.GetRoot();
 

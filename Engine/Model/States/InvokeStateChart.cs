@@ -1,12 +1,9 @@
-﻿using StateChartsDotNet.Model.Data;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Messages;
-using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -39,6 +36,13 @@ namespace StateChartsDotNet.Model.States
             try
             {
                 await context.InvokeChildStateChart(_metadata, _parentMetadataId);
+
+                foreach (var content in _finalizeContent.Value)
+                {
+                    await content.ExecuteAsync(context);
+                }
+
+                context.EnqueueInternal($"done.invoke.{_metadata.Id}");
             }
             catch (Exception ex)
             {
@@ -47,35 +51,6 @@ namespace StateChartsDotNet.Model.States
             finally
             {
                 await context.LogInformationAsync("End: InvokeStateChart.Execute");
-            }
-        }
-
-        public async Task ProcessExternalMessageAsync(string instanceId, ExecutionContextBase context, ExternalMessage externalMessage)
-        {
-            instanceId.CheckArgNull(nameof(instanceId));
-            context.CheckArgNull(nameof(context));
-            externalMessage.CheckArgNull(nameof(externalMessage));
-
-            if (externalMessage.IsChildStateChartResponse && instanceId == externalMessage.CorrelationId)
-            {
-                // skip executing finalize executable content if we received an error and we're failing fast
-
-                if (context.IsRunning)
-                {
-                    foreach (var content in _finalizeContent.Value)
-                    {
-                        await content.ExecuteAsync(context);
-                    }
-                }
-
-                await context.ProcessChildStateChartDoneAsync(externalMessage);
-            }
-
-            if (context.IsRunning && _metadata.Autoforward && ! externalMessage.IsChildStateChartResponse)
-            {
-                Debug.Assert(_metadata.ExecutionMode != ChildStateChartExecutionMode.Inline);
-
-                await context.SendToChildStateChart(instanceId, externalMessage);
             }
         }
     }

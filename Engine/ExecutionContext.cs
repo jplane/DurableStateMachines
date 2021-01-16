@@ -22,7 +22,6 @@ namespace StateChartsDotNet
         private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
-        private readonly Dictionary<string, ExecutionContext> _childInstances;
 
         private Task _executeTask;
         private ExecutionContext _parentContext;
@@ -34,7 +33,6 @@ namespace StateChartsDotNet
 
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
-            _childInstances = new Dictionary<string, ExecutionContext>();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
@@ -97,31 +95,6 @@ namespace StateChartsDotNet
             return Task.CompletedTask;
         }
 
-        protected override Task SendMessageToParentStateChart(string _,
-                                                              string messageName,
-                                                              object content,
-                                                              string __,
-                                                              IReadOnlyDictionary<string, object> parameters,
-                                                              CancellationToken ___)
-        {
-            messageName.CheckArgNull(nameof(messageName));
-
-            if (_parentContext == null)
-            {
-                throw new ExecutionException("Statechart has no parent.");
-            }
-
-            var msg = new ExternalMessage
-            {
-                Name = messageName,
-                CorrelationId = (string) _data["_instanceId"],
-                Content = content,
-                Parameters = parameters
-            };
-
-            return _parentContext.SendAsync(msg);
-        }
-
         internal override Task DelayAsync(TimeSpan timespan)
         {
             Debug.Assert(timespan > TimeSpan.Zero);
@@ -154,17 +127,6 @@ namespace StateChartsDotNet
             target.CheckArgNull(nameof(target));
             parameters.CheckArgNull(nameof(parameters));
 
-            switch (type)
-            {
-                case "send-parent":
-                    messageName.CheckArgNull(nameof(messageName));
-                    return SendMessageToParentStateChart(null, messageName, content, null, parameters, this.CancelToken);
-
-                case "send-child":
-                    messageName.CheckArgNull(nameof(messageName));
-                    return SendMessageToChildStateChart(target, messageName, content, null, parameters, this.CancelToken);
-            }
-
             if (_externalServices.TryGetValue(type, out ExternalServiceDelegate service))
             {
                 return service(target, messageName, content, correlationId, parameters, this.CancelToken);
@@ -178,6 +140,11 @@ namespace StateChartsDotNet
         internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
+
+            if (metadata.ExecutionMode == ChildStateChartExecutionMode.Remote)
+            {
+                throw new NotSupportedException("Remote child statechart execution not supported for in-memory engine.");
+            }
 
             var childMachine = ResolveChildStateChart(metadata);
 
@@ -193,75 +160,16 @@ namespace StateChartsDotNet
 
             context._data["_instanceId"] = instanceId;
 
-            if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
-            {
-                _data[metadata.IdLocation] = instanceId;
-            }
-
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
                 context._data[param.Key] = param.Value;
             }
 
-            await context.StartAsync();
+            await context.StartAndWaitForCompletionAsync();
 
-            _childInstances.Add(instanceId, context);
-        }
-
-        internal override async Task CancelInvokesAsync(string parentMetadataId)
-        {
-            parentMetadataId.CheckArgNull(nameof(parentMetadataId));
-
-            foreach (var pair in _childInstances.Where(p => p.Key.StartsWith($"{parentMetadataId}.")).ToArray())
+            if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
             {
-                var context = pair.Value;
-
-                Debug.Assert(context != null);
-
-                await context.SendStopMessageAsync();
-            }
-        }
-
-        internal override IEnumerable<string> GetInstanceIdsForParent(string parentMetadataId)
-        {
-            return _childInstances.Where(p => p.Key.StartsWith($"{parentMetadataId}."))
-                                  .Select(p => p.Key)
-                                  .ToArray();
-        }
-
-        internal override async Task ProcessChildStateChartDoneAsync(ExternalMessage message)
-        {
-            message.CheckArgNull(nameof(message));
-
-            Debug.Assert(message.IsChildStateChartResponse);
-
-            if (message.IsDone)
-            {
-                if (_childInstances.TryGetValue(message.CorrelationId, out ExecutionContext context))
-                {
-                    await context.WaitForCompletionAsync();
-
-                    _childInstances.Remove(message.CorrelationId);
-                }
-                else
-                {
-                    Debug.Fail("Expected to find child state machine instance: " + message.CorrelationId);
-                }
-            }
-        }
-
-        internal override async Task SendToChildStateChart(string id, ExternalMessage message)
-        {
-            id.CheckArgNull(nameof(id));
-            message.CheckArgNull(nameof(message));
-
-            if (_childInstances.TryGetValue(id, out ExecutionContext context))
-            {
-                await context.SendAsync(message);
-            }
-            else
-            {
-                Debug.Fail("Expected to find child state machine instance: " + id);
+                _data[metadata.ResultLocation] = (IReadOnlyDictionary<string, object>) context.Data;
             }
         }
 
