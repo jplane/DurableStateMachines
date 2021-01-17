@@ -235,10 +235,14 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             var info = json.ToObject<Dictionary<string, object>>();
 
-            info["action"] = action.ToString();
-            info["statemachine"] = root.Id;
-            info["instanceId"] = _orchestrationContext.InstanceId;
-            info["parentInstanceId"] = _orchestrationContext.ParentInstanceId;
+            info["_debuggeraction"] = action.ToString();
+            info["_instanceId"] = _orchestrationContext.InstanceId;
+            info["_parentInstanceId"] = _orchestrationContext.ParentInstanceId;
+
+            foreach (var pair in this.GetDataValues())
+            {
+                info.Add(pair.Key, pair.Value);
+            }
 
             var endpoint = ResolveConfigValue(root.Debugger);
 

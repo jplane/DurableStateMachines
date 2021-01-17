@@ -1,12 +1,19 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.1.8/jsoneditor.css"
+          integrity="sha512-jleMREJi/sXJYu6+/B0AQIgzmqq0yy/NUKNZu8K/pI1vedbvTCOzUjS8svSW21JA1YiDpAEuVIxHpt4OWAilYQ=="
+          crossorigin="anonymous" />
+
     <title>World's Worst Durable State Machine Debugger</title>
+
     <style type="text/css">
         table {
             font-family: arial, sans-serif;
             border-collapse: collapse;
-            width: 60%;
         }
 
         td, th {
@@ -18,22 +25,73 @@
         tr:nth-child(even) {
             background-color: #dddddd;
         }
+
+        /* https://www.w3schools.com/howto/howto_css_three_columns.asp */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .column {
+            float: left;
+            width: 33.33%;
+            padding: 10px;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .highlighted {
+            background: #faf2c2
+        }
     </style>
+
 </head>
 <body>
-    <div class="container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody id="info-table-body"></tbody>
-        </table>
+    <div class="row">
+        <div class="column">
+            <h3>Definition</h3>
+            <div id="jsoneditor" style="height: 800px;"></div>
+            <input type="button" id="start-button" value="Start New" />
+        </div>
+        <div id="debugger" class="column">
+            <h3>Debugger</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="info-table-body"></tbody>
+            </table>
+            <input type="button" id="resume-button" value="Resume" disabled />
+        </div>
+        <div class="column">
+            <h3>Output</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="output-table-body"></tbody>
+            </table>
+            <label for="instances">State machine instance:</label>
+            <select name="instances" id="instances">
+            </select>
+            <input type="button" id="results-button" value="Check Results" disabled />
+        </div>
     </div>
     <br />
-    <input type="button" id="resume-button" value="Resume" disabled />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.1.8/jsoneditor.js"
+            integrity="sha512-Mzq/twLJa9AKKG/Lic25qLqwrzQ39ZqQMV4PpTcxN02MCXRBNd2C21hWvpJGg6PYTWqbPxSIHCoA4pkU66iBzA=="
+            crossorigin="anonymous"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.2/signalr.js"
             integrity="sha512-e1T56eW9d9boBAtzV3lvoDip3g9j3V/kJPscBH61//WkVKfbAJtzDd0LVeNDJWj6quyTi4Bw67PutCVsP4iJIQ=="
@@ -45,7 +103,112 @@
 
     <script type="text/javascript">
 
+        const orchestration_endpoint = 'http://localhost:7071/runtime/webhooks/durabletask/orchestrators/statemachine-orchestration';
+
+        const container = document.getElementById('jsoneditor');
+
+        const options = {
+            mode: 'code'
+        };
+
+        const editor = new JSONEditor(container, options);
+
+        const initialJson = {
+            statemachine: {
+                name: 'test',
+                debugger: '%DEBUGGER_ENDPOINT%',
+                states: [
+                    {
+                        id: 'state1',
+                        break: 'true',
+                        onentry: {
+                            content: [
+                                {
+                                    type: 'query',
+                                    activity: 'http-get',
+                                    resultlocation: 'x',
+                                    config: {
+                                        uri: '%TEST_FUNCTION_ENDPOINT%'
+                                    }
+                                }
+                            ]
+                        },
+                        transitions: [
+                            { target: 'alldone' }
+                        ]
+                    },
+                    {
+                        id: 'alldone',
+                        type: 'final'
+                    }
+                ]
+            }
+        };
+
+        editor.set(initialJson);
+
         document.addEventListener('DOMContentLoaded', function () {
+
+            document.getElementById('results-button').addEventListener('click', function () {
+
+                var statusuri = document.getElementById('instances').value;
+
+                if (statusuri) {
+
+                    axios.get(statusuri)
+                        .then(resp => {
+
+                            var existingTableBody = document.getElementById('output-table-body');
+
+                            var newTableBody = document.createElement('tbody');
+
+                            newTableBody.id = 'output-table-body';
+
+                            var keys = ['createdTime', 'lastUpdatedTime', 'runtimeStatus', 'input', 'output'];
+
+                            for (var key of keys) {
+
+                                var encodedKey = key;
+                                var encodedValue = resp.data[key];
+
+                                if (typeof encodedValue === 'object' && encodedValue !== null) {
+                                    encodedValue = JSON.stringify(encodedValue, null, 2);
+                                }
+
+                                var row = document.createElement('tr');
+
+                                row.innerHTML = '<td><strong>' + encodedKey + '</strong></td><td>' + encodedValue + '</td>';
+
+                                newTableBody.appendChild(row);
+                            }
+
+                            existingTableBody.parentElement.replaceChild(newTableBody, existingTableBody);
+                        });
+                }
+
+            });
+
+            document.getElementById('start-button').addEventListener('click', function () {
+
+                axios.post(orchestration_endpoint, editor.get())
+                    .then(resp => {
+
+                        var select = document.getElementById('instances');
+
+                        var option = document.createElement('option');
+
+                        option.value = resp.data.statusQueryGetUri;
+
+                        option.innerText = resp.data.id;
+
+                        select.appendChild(option);
+
+                        option.selected = true;
+
+                        document.getElementById('results-button').disabled = false;
+                    });
+
+            });
 
             var connection = new signalR.HubConnectionBuilder()
                 .withUrl('/debug')
@@ -74,6 +237,10 @@
                 existingTableBody.parentElement.replaceChild(newTableBody, existingTableBody);
 
                 document.getElementById('resume-button').disabled = false;
+
+                document.getElementById('debugger').classList.add('highlighted');
+
+                setTimeout(function () { document.getElementById('debugger').classList.remove('highlighted'); }, 500);
             });
 
             connection.start()

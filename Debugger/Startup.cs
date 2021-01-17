@@ -10,7 +10,6 @@ namespace Debugger
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
-            //services.AddCors(options => options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:7071")));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -20,7 +19,6 @@ namespace Debugger
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseCors();
             app.UseStaticFiles();
             app.UseRouting();
 
