@@ -15,21 +15,13 @@ namespace StateChartsDotNet.DurableFunctionHost
     internal class HttpService : HttpServiceBase
     {
         private readonly IDurableOrchestrationContext _context;
-        private readonly Func<string, string> _resolveConfigValue;
 
-        public HttpService(IDurableOrchestrationContext context, Func<string, string> resolveConfigValue)
+        public HttpService(IDurableOrchestrationContext context)
             : base(default)
         {
             context.CheckArgNull(nameof(context));
-            resolveConfigValue.CheckArgNull(nameof(resolveConfigValue));
 
             _context = context;
-            _resolveConfigValue = resolveConfigValue;
-        }
-
-        protected override string ResolveConfigValue(string value)
-        {
-            return _resolveConfigValue(value);
         }
 
         protected override async Task<string> Invoke(IReadOnlyDictionary<string, string> headers,

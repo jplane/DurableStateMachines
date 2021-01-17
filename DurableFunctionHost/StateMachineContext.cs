@@ -50,11 +50,6 @@ namespace StateChartsDotNet.DurableFunctionHost
             return Task.FromResult(_orchestrationContext.NewGuid());
         }
 
-        private string ResolveConfigValue(string value)
-        {
-            return _config == null ? value : (value.StartsWith("%") && value.EndsWith("%")) ? _config[value[1..^1]] : value;
-        }
-
         internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -127,13 +122,58 @@ namespace StateChartsDotNet.DurableFunctionHost
             return _orchestrationContext.CreateTimer(expiration, default);
         }
 
+        private string ResolveConfigValue(string value)
+        {
+            return _config == null ? value : (value.StartsWith("%") && value.EndsWith("%")) ? _config[value[1..^1]] : value;
+        }
+
+        private void ResolveConfigValues(JArray json)
+        {
+            foreach (var value in json.Values())
+            {
+                if (value.Type == JTokenType.String)
+                {
+                    value.Replace(JToken.FromObject(ResolveConfigValue(value.Value<string>())));
+                }
+                else if (value.Type == JTokenType.Object)
+                {
+                    ResolveConfigValues(value.Value<JObject>());
+                }
+                else if (value.Type == JTokenType.Array)
+                {
+                    ResolveConfigValues(value.Value<JArray>());
+                }
+            }
+        }
+
+        private void ResolveConfigValues(JObject json)
+        {
+            foreach (var prop in json.Properties())
+            {
+                if (prop.Value.Type == JTokenType.String)
+                {
+                    prop.Value = JToken.FromObject(ResolveConfigValue(prop.Value.Value<string>()));
+                }
+                else if (prop.Value.Type == JTokenType.Object)
+                {
+                    ResolveConfigValues(prop.Value.Value<JObject>());
+                }
+                else if (prop.Value.Type == JTokenType.Array)
+                {
+                    ResolveConfigValues(prop.Value.Value<JArray>());
+                }
+            }
+        }
+
         internal override Task<string> QueryAsync(string activityType, JObject config)
         {
             activityType.CheckArgNull(nameof(activityType));
 
+            ResolveConfigValues(config);
+
             if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext, ResolveConfigValue);
+                var http = new HttpService(_orchestrationContext);
 
                 return http.GetAsync(config);
             }
@@ -148,9 +188,11 @@ namespace StateChartsDotNet.DurableFunctionHost
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
 
+            ResolveConfigValues(config);
+
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext, ResolveConfigValue);
+                var http = new HttpService(_orchestrationContext);
 
                 return http.PostAsync(correlationId, config);
             }

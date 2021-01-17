@@ -54,8 +54,6 @@ namespace StateChartsDotNet.Services
                                                HttpMethod method,
                                                CancellationToken cancelToken);
 
-        protected abstract string ResolveConfigValue(string value);
-
         private Uri GetUri(JObject config)
         {
             Debug.Assert(config != null);
@@ -68,8 +66,6 @@ namespace StateChartsDotNet.Services
             {
                 throw new InvalidOperationException("Http operation requires configured 'uri' property.");
             }
-
-            baseUri = ResolveConfigValue(baseUri);
 
             if (string.IsNullOrWhiteSpace(queryString))
             {
@@ -107,22 +103,11 @@ namespace StateChartsDotNet.Services
             {
                 if (string.Compare(param.Key, "content-type", true, System.Globalization.CultureInfo.InvariantCulture) == 0)
                 {
-                    contentType = ResolveConfigValue((string) param.Value);
+                    contentType = (string) param.Value;
                 }
                 else
                 {
-                    string value;
-
-                    if (param.Value is string s)
-                    {
-                        value = JsonConvert.SerializeObject(ResolveConfigValue(s));
-                    }
-                    else
-                    {
-                        value = JsonConvert.SerializeObject(param.Value);
-                    }
-
-                    headers.Add(param.Key, value);
+                    headers.Add(param.Key, JsonConvert.SerializeObject(param.Value));
                 }
             }
 
@@ -144,18 +129,7 @@ namespace StateChartsDotNet.Services
 
             foreach (var param in parameters)
             {
-                string value;
-
-                if (param.Value is string s)
-                {
-                    value = JsonConvert.SerializeObject(ResolveConfigValue(s));
-                }
-                else
-                {
-                    value = JsonConvert.SerializeObject(param.Value);
-                }
-
-                builder.Append($"{param.Key}={value}&");
+                builder.Append($"{param.Key}={JsonConvert.SerializeObject(param.Value)}&");
             }
 
             return builder.ToString().Trim('&');
