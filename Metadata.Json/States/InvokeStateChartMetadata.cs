@@ -30,6 +30,10 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string MetadataId => _metadataId;
 
+        public bool BreakOnDebugger => false;
+
+        public JObject DebugInfo => null;
+
         public ChildStateChartExecutionMode ExecutionMode
         {
             get

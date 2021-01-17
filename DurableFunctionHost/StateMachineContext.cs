@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
@@ -219,6 +220,31 @@ namespace StateChartsDotNet.DurableFunctionHost
             _logger.LogInformation(message);
 
             return Task.CompletedTask;
+        }
+
+        internal override Task DebugBreak(DebuggerAction action, IStateChartMetadata root, IModelMetadata metadata)
+        {
+            Debug.Assert(root != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(root.Debugger));
+            Debug.Assert(metadata != null);
+            Debug.Assert(metadata.BreakOnDebugger);
+
+            var json = metadata.DebugInfo;
+
+            Debug.Assert(json != null);
+
+            var info = json.ToObject<Dictionary<string, object>>();
+
+            info["action"] = action.ToString();
+            info["statemachine"] = root.Id;
+            info["instanceId"] = _orchestrationContext.InstanceId;
+            info["parentInstanceId"] = _orchestrationContext.ParentInstanceId;
+
+            var endpoint = ResolveConfigValue(root.Debugger);
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
+
+            return _orchestrationContext.CallActivityAsync("debugger-break", (endpoint, info));
         }
     }
 }

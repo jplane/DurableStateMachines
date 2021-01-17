@@ -19,6 +19,10 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
         public string MetadataId => _metadataId;
 
+        public bool BreakOnDebugger => false;
+
+        public JObject DebugInfo => null;
+
         public static IExecutableContentMetadata Create(JObject element)
         {
             element.CheckArgNull(nameof(element));

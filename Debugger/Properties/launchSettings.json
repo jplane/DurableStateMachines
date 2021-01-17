@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "Debugger": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5001/main.html",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5001"
+      }
+    }
+  }
+}

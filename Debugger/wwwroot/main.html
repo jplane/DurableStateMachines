@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>World's Worst Durable State Machine Debugger</title>
+    <style type="text/css">
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 60%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="info-table-body"></tbody>
+        </table>
+    </div>
+    <br />
+    <input type="button" id="resume-button" value="Resume" disabled />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.2/signalr.js"
+            integrity="sha512-e1T56eW9d9boBAtzV3lvoDip3g9j3V/kJPscBH61//WkVKfbAJtzDd0LVeNDJWj6quyTi4Bw67PutCVsP4iJIQ=="
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"
+            integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
+            crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl('/debug')
+                .build();
+
+            connection.on('break', function (info) {
+
+                var existingTableBody = document.getElementById('info-table-body');
+
+                var newTableBody = document.createElement('tbody');
+
+                newTableBody.id = 'info-table-body';
+
+                for (var key in info) {
+
+                    var encodedKey = key;
+                    var encodedValue = info[key];
+
+                    var row = document.createElement('tr');
+
+                    row.innerHTML = '<td><strong>' + encodedKey + '</strong></td><td>' + encodedValue + '</td>';
+
+                    newTableBody.appendChild(row);
+                }
+
+                existingTableBody.parentElement.replaceChild(newTableBody, existingTableBody);
+
+                document.getElementById('resume-button').disabled = false;
+            });
+
+            connection.start()
+                .then(function () {
+
+                    document.getElementById('resume-button').addEventListener('click', function (event) {
+
+                        connection.send('resume');
+
+                        document.getElementById('resume-button').disabled = true;
+
+                        event.preventDefault();
+                    });
+                })
+                .catch(error => {
+                    console.error(error.message);
+                });
+        });
+
+    </script>
+</body>
+</html>

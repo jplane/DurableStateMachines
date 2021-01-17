@@ -12,12 +12,12 @@ using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet.DurableFunctionHost
 {
-    public class SqlQueryFunction
+    public class SqlQueryActivity
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<SqlQueryFunction> _logger;
+        private readonly ILogger<SqlQueryActivity> _logger;
 
-        public SqlQueryFunction(IConfiguration config, ILogger<SqlQueryFunction> logger)
+        public SqlQueryActivity(IConfiguration config, ILogger<SqlQueryActivity> logger)
         {
             _config = config;
             _logger = logger;

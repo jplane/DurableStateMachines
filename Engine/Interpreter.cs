@@ -69,6 +69,8 @@ namespace StateChartsDotNet
             {
                 await state.ExitAsync(context);
             }
+
+            await context.ExitAsync();
         }
 
         private static async Task ProcessStateChartInvokesAsync(ExecutionContextBase context)

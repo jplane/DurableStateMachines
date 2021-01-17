@@ -34,6 +34,10 @@ namespace StateChartsDotNet.Metadata.Json.Data
             _metadataId = element.GetUniqueElementPath();
         }
 
+        public bool BreakOnDebugger => false;
+
+        public JObject DebugInfo => null;
+
         public string MetadataId => _metadataId;
 
         public string Id => _element.Property("id").Value.Value<string>();

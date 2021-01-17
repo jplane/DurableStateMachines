@@ -28,6 +28,21 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public virtual string MetadataId => _metadataId;
 
+        public bool BreakOnDebugger => bool.Parse(_element.Property("break")?.Value.Value<string>() ?? "false");
+
+        public JObject DebugInfo
+        {
+            get
+            {
+                var json = new JObject();
+
+                json["id"] = this.Id;
+                json["metadataId"] = this.MetadataId;
+
+                return json;
+            }
+        }
+
         public virtual StateType Type =>
             this.GetStates().Any() ? StateType.Compound : StateType.Atomic;
 

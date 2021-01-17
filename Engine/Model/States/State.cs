@@ -322,11 +322,15 @@ namespace StateChartsDotNet.Model.States
                     }
                 }
             }
+
+            await context.BreakOnDebugger(DebuggerAction.EnterState, _metadata);
         }
 
         public async Task ExitAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
+
+            await context.BreakOnDebugger(DebuggerAction.ExitState, _metadata);
 
             await context.LogInformationAsync($"Exit {this.GetType().Name}: Id {this.Id}");
 

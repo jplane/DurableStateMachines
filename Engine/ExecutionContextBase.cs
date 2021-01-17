@@ -28,6 +28,7 @@ namespace StateChartsDotNet
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
         private readonly StateChart _root;
+        private readonly IStateChartMetadata _metadata;
 
         private IDictionary<string, object> _data;
         private CancellationToken _cancelToken;
@@ -40,6 +41,7 @@ namespace StateChartsDotNet
         {
             metadata.CheckArgNull(nameof(metadata));
 
+            _metadata = metadata;
             _root = new StateChart(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
@@ -68,6 +70,25 @@ namespace StateChartsDotNet
         protected abstract bool IsChildStateChart { get; }
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
+
+        internal virtual Task DebugBreak(DebuggerAction action, IStateChartMetadata root, IModelMetadata metadata)
+        {
+            return Task.CompletedTask;
+        }
+
+        internal Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            if (!string.IsNullOrWhiteSpace(_metadata.Debugger) && metadata.BreakOnDebugger)
+            {
+                return DebugBreak(action, _metadata, metadata);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
+        }
 
         internal void InternalCancel()
         {
@@ -185,6 +206,13 @@ namespace StateChartsDotNet
             }
 
             await this.Root.ExecuteScript(this);
+
+            await this.BreakOnDebugger(DebuggerAction.EnterStateMachine, _metadata);
+        }
+
+        internal Task ExitAsync()
+        {
+            return this.BreakOnDebugger(DebuggerAction.ExitStateMachine, _metadata);
         }
 
         internal StateChart Root => _root;

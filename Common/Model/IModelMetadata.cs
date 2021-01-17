@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace StateChartsDotNet.Common.Model
 {
     public interface IModelMetadata
     {
         string MetadataId { get; }
+        bool BreakOnDebugger { get; }
+        JObject DebugInfo { get; }
     }
 
     public static class ModelMetadataExtensions
