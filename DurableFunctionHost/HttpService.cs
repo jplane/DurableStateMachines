@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Primitives;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Services;
 using System;
 using System.Collections.Generic;
@@ -9,16 +10,26 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DurableFunctionHost
+namespace StateChartsDotNet.DurableFunctionHost
 {
     internal class HttpService : HttpServiceBase
     {
         private readonly IDurableOrchestrationContext _context;
+        private readonly Func<string, string> _resolveConfigValue;
 
-        public HttpService(IDurableOrchestrationContext context)
+        public HttpService(IDurableOrchestrationContext context, Func<string, string> resolveConfigValue)
             : base(default)
         {
+            context.CheckArgNull(nameof(context));
+            resolveConfigValue.CheckArgNull(nameof(resolveConfigValue));
+
             _context = context;
+            _resolveConfigValue = resolveConfigValue;
+        }
+
+        protected override string ResolveConfigValue(string value)
+        {
+            return _resolveConfigValue(value);
         }
 
         protected override async Task<string> Invoke(IReadOnlyDictionary<string, string> headers,

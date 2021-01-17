@@ -17,6 +17,11 @@ namespace StateChartsDotNet.Services
         {
         }
 
+        protected override string ResolveConfigValue(string value)
+        {
+            return value;
+        }
+
         protected override async Task<string> Invoke(IReadOnlyDictionary<string, string> headers,
                                                      Uri uri,
                                                      string content,

@@ -15,6 +15,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
 using Nito.AsyncEx;
+using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet
 {
@@ -52,14 +53,9 @@ namespace StateChartsDotNet
 
         internal abstract Task DelayAsync(TimeSpan timespan);
 
-        internal abstract Task<string> QueryAsync(string type, string target, IReadOnlyDictionary<string, object> parameters);
+        internal abstract Task<string> QueryAsync(string activityType, JObject config);
 
-        internal abstract Task SendMessageAsync(string type,
-                                                string target,
-                                                string messageName,
-                                                object content,
-                                                string correlationId,
-                                                IReadOnlyDictionary<string, object> parameters);
+        internal abstract Task SendMessageAsync(string activityType, string correlationId, JObject config);
 
         internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 
@@ -72,11 +68,6 @@ namespace StateChartsDotNet
         protected abstract bool IsChildStateChart { get; }
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
-
-        public virtual string ResolveConfigValue(string value)
-        {
-            return value;
-        }
 
         internal void InternalCancel()
         {

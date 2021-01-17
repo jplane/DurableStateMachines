@@ -12,6 +12,7 @@ using StateChartsDotNet.Common.Exceptions;
 using System.Threading;
 using StateChartsDotNet.Services;
 using StateChartsDotNet.Common.Model.Execution;
+using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet
 {
@@ -39,7 +40,6 @@ namespace StateChartsDotNet
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", _http.PostAsync);
-            _externalServices.Add("http-put", _http.PutAsync);
 
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", _http.GetAsync);
@@ -104,37 +104,29 @@ namespace StateChartsDotNet
             return Task.Delay(timespan, this.CancelToken);
         }
 
-        internal override Task<string> QueryAsync(string type, string target, IReadOnlyDictionary<string, object> parameters)
+        internal override Task<string> QueryAsync(string activityType, JObject config)
         {
-            type.CheckArgNull(nameof(type));
-            target.CheckArgNull(nameof(target));
-            parameters.CheckArgNull(nameof(parameters));
+            activityType.CheckArgNull(nameof(activityType));
 
-            if (_externalQueries.TryGetValue(type, out ExternalQueryDelegate query))
+            if (_externalQueries.TryGetValue(activityType, out ExternalQueryDelegate query))
             {
-                return query(target, parameters);
+                return query(config);
             }
 
-            throw new InvalidOperationException("Unable to resolve external query type: " + type);
+            throw new InvalidOperationException("Unable to resolve external query type: " + activityType);
         }
 
-        internal override Task SendMessageAsync(string type,
-                                                string target,
-                                                string messageName,
-                                                object content,
-                                                string correlationId,
-                                                IReadOnlyDictionary<string, object> parameters)
+        internal override Task SendMessageAsync(string activityType, string correlationId, JObject config)
         {
-            type.CheckArgNull(nameof(type));
-            target.CheckArgNull(nameof(target));
-            parameters.CheckArgNull(nameof(parameters));
+            activityType.CheckArgNull(nameof(activityType));
+            config.CheckArgNull(nameof(config));
 
-            if (_externalServices.TryGetValue(type, out ExternalServiceDelegate service))
+            if (_externalServices.TryGetValue(activityType, out ExternalServiceDelegate service))
             {
-                return service(target, messageName, content, correlationId, parameters);
+                return service(correlationId, config);
             }
 
-            throw new InvalidOperationException("Unable to resolve external service type: " + type);
+            throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
         protected override bool IsChildStateChart => _parentContext != null;

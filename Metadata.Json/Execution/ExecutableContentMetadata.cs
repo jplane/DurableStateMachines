@@ -1,14 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Exceptions;
-using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Metadata.Json.Queries;
-using StateChartsDotNet.Metadata.Json.Services;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 
 namespace StateChartsDotNet.Metadata.Json.Execution
@@ -30,12 +23,6 @@ namespace StateChartsDotNet.Metadata.Json.Execution
         {
             element.CheckArgNull(nameof(element));
 
-            var resolvers = new Func<JObject, IExecutableContentMetadata>[]
-            {
-                ServiceResolver.Resolve,
-                QueryResolver.Resolve 
-            };
-
             var type = element.Property("type").Value.Value<string>();
 
             var content = type switch
@@ -47,7 +34,9 @@ namespace StateChartsDotNet.Metadata.Json.Execution
                 "log" => new LogMetadata(element),
                 "cancel" => new CancelMetadata(element),
                 "assign" => new AssignMetadata(element),
-                _ => resolvers.Select(func => func(element)).FirstOrDefault(result => result != null)
+                "query" => new QueryMetadata(element),
+                "sendmessage" => new SendMessageMetadata(element),
+                _ => (IExecutableContentMetadata) null
             };
 
             if (content == null)

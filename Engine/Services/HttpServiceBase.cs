@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using System;
 using System.Collections.Generic;
@@ -20,62 +21,30 @@ namespace StateChartsDotNet.Services
             _token = token;
         }
 
-        public async Task<string> GetAsync(string url,
-                                           IReadOnlyDictionary<string, object> parameters)
+        public async Task<string> GetAsync(JObject config)
         {
-            url.CheckArgNull(nameof(url));
-            parameters.CheckArgNull(nameof(parameters));
+            config.CheckArgNull(nameof(config));
 
-            var parms = ResolveParameters(parameters, null);
+            var headers = GetHeaders(config, null);
 
-            var uri = GetUri(url, parms.QueryString);
+            var uri = GetUri(config);
 
-            return await Invoke(parms.Headers, uri, null, null, HttpMethod.Get, _token);
+            return await Invoke(headers.Headers, uri, null, null, HttpMethod.Get, _token);
         }
 
-        public async Task PostAsync(string url,
-                                    string _,
-                                    object content,
-                                    string correlationId,
-                                    IReadOnlyDictionary<string, object> parameters)
+        public async Task PostAsync(string correlationId, JObject config)
         {
-            url.CheckArgNull(nameof(url));
-            parameters.CheckArgNull(nameof(parameters));
+            config.CheckArgNull(nameof(config));
 
-            var parms = ResolveParameters(parameters, correlationId);
+            var headers = GetHeaders(config, correlationId);
 
-            var uri = GetUri(url, parms.QueryString);
+            var uri = GetUri(config);
 
-            var serialized = Serialize(content, parms.ContentType);
+            var content = config.Property("content")?.Value;
 
-            await Invoke(parms.Headers, uri, serialized.Content, serialized.ContentType, HttpMethod.Post, _token);
-        }
+            var serialized = Serialize(content, headers.ContentType);
 
-        public async Task PutAsync(string url,
-                                   string _,
-                                   object content,
-                                   string correlationId,
-                                   IReadOnlyDictionary<string, object> parameters)
-        {
-            url.CheckArgNull(nameof(url));
-            parameters.CheckArgNull(nameof(parameters));
-
-            var parms = ResolveParameters(parameters, correlationId);
-
-            string serializedContent = null;
-            var contentType = parms.ContentType;
-
-            var uri = GetUri(url, parms.QueryString);
-
-            if (content != null)
-            {
-                var serialized = Serialize(content, parms.ContentType);
-
-                serializedContent = serialized.Content;
-                contentType = serialized.ContentType;
-            }
-
-            await Invoke(parms.Headers, uri, serializedContent, contentType, HttpMethod.Put, _token);
+            await Invoke(headers.Headers, uri, serialized.Content, serialized.ContentType, HttpMethod.Post, _token);
         }
 
         protected abstract Task<string> Invoke(IReadOnlyDictionary<string, string> headers,
@@ -85,19 +54,34 @@ namespace StateChartsDotNet.Services
                                                HttpMethod method,
                                                CancellationToken cancelToken);
 
-        private static Uri GetUri(string url, string queryString)
+        protected abstract string ResolveConfigValue(string value);
+
+        private Uri GetUri(JObject config)
         {
+            Debug.Assert(config != null);
+
+            var queryString = GetQueryString(config);
+
+            var baseUri = config.Property("uri")?.Value.Value<string>();
+
+            if (string.IsNullOrWhiteSpace(baseUri))
+            {
+                throw new InvalidOperationException("Http operation requires configured 'uri' property.");
+            }
+
+            baseUri = ResolveConfigValue(baseUri);
+
             if (string.IsNullOrWhiteSpace(queryString))
             {
-                return new Uri(url);
+                return new Uri(baseUri);
             }
             else
             {
-                return new Uri($"{url}?{queryString}");
+                return new Uri($"{baseUri}?{queryString}");
             }
         }
 
-        private static (string Content, string ContentType) Serialize(object content, string contentType)
+        private (string Content, string ContentType) Serialize(object content, string contentType)
         {
             if (content is string s)
             {
@@ -109,12 +93,11 @@ namespace StateChartsDotNet.Services
             }
         }
 
-        private static (string QueryString, IReadOnlyDictionary<string, string> Headers, string ContentType)
-            ResolveParameters(IReadOnlyDictionary<string, object> parameters, string correlationId)
+        private (IReadOnlyDictionary<string, string> Headers, string ContentType) GetHeaders(JObject config, string correlationId)
         {
-            Debug.Assert(parameters != null);
+            Debug.Assert(config != null);
 
-            var builder = new StringBuilder();
+            var parameters = config.Property("headers")?.Value.Value<Dictionary<string, object>>() ?? new Dictionary<string, object>();
 
             var headers = new Dictionary<string, string>();
 
@@ -122,20 +105,23 @@ namespace StateChartsDotNet.Services
 
             foreach (var param in parameters)
             {
-                var value = JsonConvert.SerializeObject(param.Value);
-
-                if (param.Key.StartsWith("?"))
+                if (string.Compare(param.Key, "content-type", true, System.Globalization.CultureInfo.InvariantCulture) == 0)
                 {
-                    var key = new string(param.Key.Skip(1).ToArray());
-
-                    builder.Append($"{key}={value}&");
-                }
-                else if (string.Compare(param.Key, "content-type", true, System.Globalization.CultureInfo.InvariantCulture) == 0)
-                {
-                    contentType = (string) param.Value;
+                    contentType = ResolveConfigValue((string) param.Value);
                 }
                 else
                 {
+                    string value;
+
+                    if (param.Value is string s)
+                    {
+                        value = JsonConvert.SerializeObject(ResolveConfigValue(s));
+                    }
+                    else
+                    {
+                        value = JsonConvert.SerializeObject(param.Value);
+                    }
+
                     headers.Add(param.Key, value);
                 }
             }
@@ -145,7 +131,34 @@ namespace StateChartsDotNet.Services
                 headers.Add("X-SCDN-CORRELATION", correlationId);
             }
 
-            return (builder.ToString().Trim('&'), headers, contentType);
+            return (headers, contentType);
+        }
+
+        private string GetQueryString(JObject config)
+        {
+            Debug.Assert(config != null);
+
+            var parameters = config.Property("querystring")?.Value.Value<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+
+            var builder = new StringBuilder();
+
+            foreach (var param in parameters)
+            {
+                string value;
+
+                if (param.Value is string s)
+                {
+                    value = JsonConvert.SerializeObject(ResolveConfigValue(s));
+                }
+                else
+                {
+                    value = JsonConvert.SerializeObject(param.Value);
+                }
+
+                builder.Append($"{param.Key}={value}&");
+            }
+
+            return builder.ToString().Trim('&');
         }
     }
 }

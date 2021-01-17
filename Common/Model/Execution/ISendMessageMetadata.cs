@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace StateChartsDotNet.Common.Model.Execution
@@ -7,13 +8,9 @@ namespace StateChartsDotNet.Common.Model.Execution
     {
         string Id { get; }
         string IdLocation { get; }
-
-        string GetType(dynamic data);
-        TimeSpan GetDelay(dynamic data);
-        string GetTarget(dynamic data);
-        string GetMessageName(dynamic data);
-        object GetContent(dynamic data);
-        IReadOnlyDictionary<string, object> GetParams(dynamic data);
+        TimeSpan Delay { get; }
+        string ActivityType { get; }
+        JObject Config { get; }
     }
 
     public static class SendMessageMetadataExtensions
@@ -22,10 +19,27 @@ namespace StateChartsDotNet.Common.Model.Execution
         {
             ((IModelMetadata) metadata).Validate(errors);
 
+            var errs = new List<string>();
+
             if ((string.IsNullOrWhiteSpace(metadata.Id) && string.IsNullOrWhiteSpace(metadata.IdLocation)) ||
                 (!string.IsNullOrWhiteSpace(metadata.Id) && !string.IsNullOrWhiteSpace(metadata.IdLocation)))
             {
-                errors.Add(metadata, new List<string> { "Send Message action requires one of Id or Id location." });
+                errs.Add("Send message action requires one of Id or Id location.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(metadata.ActivityType))
+            {
+                errs.Add("Send message action requires an activity type.");
+            }
+
+            if (metadata.Config == null)
+            {
+                errs.Add("Send message action requires a configuration element.");
+            }
+
+            if (errs.Count > 0)
+            {
+                errors.Add(metadata, errs);
             }
         }
     }

@@ -22,32 +22,16 @@ namespace StateChartsDotNet.Model.Execution
 
             try
             {
-                var delay = metadata.GetDelay(context.ScriptData);
-
-                if (delay > TimeSpan.Zero)
+                if (metadata.Delay > TimeSpan.Zero)
                 {
-                    await context.DelayAsync(delay);
+                    await context.DelayAsync(metadata.Delay);
                 }
 
                 var id = await context.ResolveSendMessageId(metadata);
 
-                var type = metadata.GetType(context.ScriptData);
+                Debug.Assert(!string.IsNullOrWhiteSpace(id));
 
-                Debug.Assert(!string.IsNullOrWhiteSpace(type));
-
-                var target = context.ResolveConfigValue(metadata.GetTarget(context.ScriptData));
-
-                Debug.Assert(!string.IsNullOrWhiteSpace(target));
-
-                var messageName = metadata.GetMessageName(context.ScriptData);
-
-                var content = metadata.GetContent(context.ScriptData);
-
-                var parms = metadata.GetParams(context.ScriptData);
-
-                Debug.Assert(parms != null);
-
-                await context.SendMessageAsync(type, target, messageName, content, id, parms);
+                await context.SendMessageAsync(metadata.ActivityType, id, metadata.Config);
             }
             catch (TaskCanceledException)
             {

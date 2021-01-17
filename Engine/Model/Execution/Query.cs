@@ -28,23 +28,14 @@ namespace StateChartsDotNet.Model.Execution
 
             var metadata = (IQueryMetadata) _metadata;
 
-            var type = metadata.GetType(context.ScriptData);
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(type));
-
-            var target = context.ResolveConfigValue(metadata.GetTarget(context.ScriptData));
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(target));
-
-            var parms = metadata.GetParams(context.ScriptData);
-
-            Debug.Assert(parms != null);
-
             try
             {
-                var result = await context.QueryAsync(type, target, parms);
+                var result = await context.QueryAsync(metadata.ActivityType, metadata.Config);
 
-                context.SetDataValue(metadata.ResultLocation, result);
+                if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
+                {
+                    context.SetDataValue(metadata.ResultLocation, result);
+                }
 
                 foreach (var content in _content.Value)
                 {

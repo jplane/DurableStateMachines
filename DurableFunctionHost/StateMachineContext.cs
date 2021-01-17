@@ -1,5 +1,4 @@
-﻿using DurableFunctionHost;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -51,7 +50,7 @@ namespace StateChartsDotNet.DurableFunctionHost
             return Task.FromResult(_orchestrationContext.NewGuid());
         }
 
-        public override string ResolveConfigValue(string value)
+        private string ResolveConfigValue(string value)
         {
             return _config == null ? value : (value.StartsWith("%") && value.EndsWith("%")) ? _config[value[1..^1]] : value;
         }
@@ -128,52 +127,36 @@ namespace StateChartsDotNet.DurableFunctionHost
             return _orchestrationContext.CreateTimer(expiration, default);
         }
 
-        internal override Task<string> QueryAsync(string type, string target, IReadOnlyDictionary<string, object> parameters)
+        internal override Task<string> QueryAsync(string activityType, JObject config)
         {
-            type.CheckArgNull(nameof(type));
-            target.CheckArgNull(nameof(target));
-            parameters.CheckArgNull(nameof(parameters));
+            activityType.CheckArgNull(nameof(activityType));
 
-            if (string.Compare(type, "http-get", true, CultureInfo.InvariantCulture) == 0)
+            if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext);
+                var http = new HttpService(_orchestrationContext, ResolveConfigValue);
 
-                return http.GetAsync(target, parameters);
+                return http.GetAsync(config);
             }
             else
             {
-                return _orchestrationContext.CallActivityAsync<string>(type, (target, parameters));
+                return _orchestrationContext.CallActivityAsync<string>(activityType, config);
             }
         }
 
-        internal override Task SendMessageAsync(string type,
-                                                string target,
-                                                string messageName,
-                                                object content,
-                                                string correlationId,
-                                                IReadOnlyDictionary<string, object> parameters)
+        internal override Task SendMessageAsync(string activityType, string correlationId, JObject config)
         {
-            type.CheckArgNull(nameof(type));
-            target.CheckArgNull(nameof(target));
-            parameters.CheckArgNull(nameof(parameters));
+            activityType.CheckArgNull(nameof(activityType));
+            config.CheckArgNull(nameof(config));
 
-            if (string.Compare(type, "http-post", true, CultureInfo.InvariantCulture) == 0)
+            if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext);
+                var http = new HttpService(_orchestrationContext, ResolveConfigValue);
 
-                return http.PostAsync(target, null, content, correlationId, parameters);
-            }
-            else if (string.Compare(type, "http-put", true, CultureInfo.InvariantCulture) == 0)
-            {
-                var http = new HttpService(_orchestrationContext);
-
-                return http.PutAsync(target, null, content, correlationId, parameters);
+                return http.PostAsync(correlationId, config);
             }
             else
             {
-                var parms = (target, messageName, content, correlationId, parameters);
-
-                return _orchestrationContext.CallActivityAsync(type, parms);
+                return _orchestrationContext.CallActivityAsync(activityType, config);
             }
         }
 
