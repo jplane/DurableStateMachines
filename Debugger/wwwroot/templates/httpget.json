@@ -1,0 +1,42 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "states": [
+      {
+        "id": "state1",
+        "onentry": {
+          "content": [
+            {
+              "type": "query",
+              "activity": "http-get",
+              "resultlocation": "x",
+              "config": {
+                "uri": "%TEST_FUNCTION_ENDPOINT%"
+              }
+            }
+          ]
+        },
+        "transitions": [
+          { "target": "alldone" }
+        ]
+      },
+      {
+        "id": "alldone",
+        "type": "final"
+      }
+    ]
+  }
+}

@@ -86,6 +86,11 @@ namespace StateChartsDotNet.Model.States
 
         public async Task ExecuteContentAsync(ExecutionContextBase context)
         {
+            if (_metadata.Delay != null)
+            {
+                await context.DelayAsync(_metadata.Delay.Value);
+            }
+
             foreach (var content in _content.Value)
             {
                 await content.ExecuteAsync(context);

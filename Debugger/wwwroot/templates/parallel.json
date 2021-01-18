@@ -1,0 +1,67 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "datamodel": [
+      {
+        "id": "x",
+        "expr": "0"
+      }
+    ],
+    "states": [
+      {
+        "id": "state1",
+        "type": "parallel",
+        "states": [
+          {
+            "id": "state2",
+            "onentry": {
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "x",
+                  "expr": "x + 1"
+                }
+              ]
+            }
+          },
+          {
+            "id": "state3",
+            "onentry": {
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "x",
+                  "expr": "x + 1"
+                }
+              ]
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "cond":  "x > 1",
+            "target": "bigfinish"
+
+          }
+        ]
+      },
+      {
+        "id": "bigfinish",
+        "type": "final"
+      }
+    ]
+  }
+}

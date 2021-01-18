@@ -1,0 +1,72 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "initial": "loop",
+    "datamodel": [
+      {
+        "id": "items",
+        "expr": "new [] { 1, 2, 3, 4, 5 }"
+      },
+      {
+        "id": "sum",
+        "expr": "0"
+      }
+    ],
+    "states": [
+      {
+        "id": "loop",
+        "onentry": {
+          "content": [
+            {
+              "type": "foreach",
+              "array": "items",
+              "item": "arrayItem",
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "sum",
+                  "expr": "sum + arrayItem"
+                },
+                {
+                  "type": "log",
+                  "expr": "\"item = \" + arrayItem"
+                }
+              ]
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "cond": "sum >= 15",
+            "target": "done"
+          }
+        ]
+      },
+      {
+        "id": "done",
+        "type": "final",
+        "onentry": {
+          "content": [
+            {
+              "type": "log",
+              "expr": "\"item = \" + arrayItem"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

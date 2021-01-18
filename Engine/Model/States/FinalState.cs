@@ -18,7 +18,7 @@ namespace StateChartsDotNet.Model.States
 
         public override Task InvokeAsync(ExecutionContextBase context)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
@@ -28,12 +28,11 @@ namespace StateChartsDotNet.Model.States
 
         public override IEnumerable<State> GetChildStates()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<State>();
         }
 
         public override void RecordHistory(ExecutionContextBase context)
         {
-            throw new NotImplementedException();
         }
 
         public override Transition GetInitialStateTransition()

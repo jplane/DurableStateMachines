@@ -68,6 +68,23 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string MetadataId => _metadataId;
 
+        public TimeSpan? Delay
+        {
+            get
+            {
+                var delayExpr = _element?.Property("delay")?.Value.Value<string>();
+
+                if (string.IsNullOrWhiteSpace(delayExpr))
+                {
+                    return null;
+                }
+                else
+                {
+                    return TimeSpan.Parse(delayExpr);
+                }
+            }
+        }
+
         public JObject DebuggerInfo => null;
 
         public IEnumerable<string> Targets

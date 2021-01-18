@@ -1,0 +1,152 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "initial": "state3",
+    "datamodel": [
+      {
+        "id": "x",
+        "expr": "\"\""
+      }
+    ],
+    "states": [
+      {
+        "id": "state2",
+        "onentry": {
+          "content": [
+            {
+              "type": "assign",
+              "location": "x",
+              "expr": "x + \" [enter state2] \""
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "target": "exit",
+            "content": [
+              {
+                "type": "assign",
+                "location": "x",
+                "expr": "x + \" [transition to exit] \""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state3",
+        "initial": "state5",
+        "onentry": {
+          "content": [
+            {
+              "type": "assign",
+              "location": "x",
+              "expr": "x + \" [enter state3] \""
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "target": "state2",
+            "content": [
+              {
+                "type": "assign",
+                "location": "x",
+                "expr": "x + \" [transition to state2] \""
+              }
+            ]
+          }
+        ],
+        "states": [
+          {
+            "id": "state6",
+            "onentry": {
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "x",
+                  "expr": "x + \" [enter state6] \""
+                }
+              ]
+            },
+            "transitions": [
+              {
+                "target": "exitstate3",
+                "content": [
+                  {
+                    "type": "assign",
+                    "location": "x",
+                    "expr": "x + \" [transition to exitstate3] \""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state5",
+            "onentry": {
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "x",
+                  "expr": "x + \" [enter state5] \""
+                }
+              ]
+            },
+            "transitions": [
+              {
+                "target": "state6",
+                "content": [
+                  {
+                    "type": "assign",
+                    "location": "x",
+                    "expr": "x + \" [transition to state6] \""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "exitstate3",
+            "type": "final",
+            "onentry": {
+              "content": [
+                {
+                  "type": "assign",
+                  "location": "x",
+                  "expr": "x + \" [enter exitstate3] \""
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "exit",
+        "type": "final",
+        "onentry": {
+          "content": [
+            {
+              "type": "assign",
+              "location": "x",
+              "expr": "x + \" [enter exit ;-)] \""
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "states": [
+      {
+        "id": "state1",
+        "onentry": {
+          "content": [
+            {
+              "id": "test-func",
+              "type": "sendmessage",
+              "activity": "http-post",
+              "config": {
+                "uri": "http://localhost:7071/api/TestFunction",
+                "content": {
+                  "value": 5
+                }
+              }
+            }
+          ]
+        },
+        "transitions": [
+          { "target": "alldone" }
+        ]
+      },
+      {
+        "id": "alldone",
+        "type": "final"
+      }
+    ]
+  }
+}

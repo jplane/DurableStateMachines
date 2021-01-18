@@ -1,0 +1,81 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "args": {
+    "x": 4732
+  },
+  "statemachine": {
+    "name": "outer",
+    "states": [
+      {
+        "id": "outerState1",
+        "invokes": [
+          {
+            "id": "innerInvoke",
+            "params": [
+              {
+                "name": "y",
+                "location": "x"
+              }
+            ],
+            "resultlocation": "innerData",
+            "content": {
+              "name": "inner",
+              "states": [
+                {
+                  "id": "innerState1",
+                  "onentry": {
+                    "content": [
+                      {
+                        "type": "assign",
+                        "location": "z",
+                        "expr": "y * 2"
+                      }
+                    ]
+                  },
+                  "transitions": [
+                    {
+                      "target": "inneralldone"
+                    }
+                  ]
+                },
+                {
+                  "id": "inneralldone",
+                  "type": "final"
+                }
+              ]
+            },
+            "finalize": [
+              {
+                "type": "assign",
+                "location": "innerZ",
+                "expr": "innerData[\"z\"]"
+              }
+            ]
+          }
+        ],
+        "transitions": [
+          {
+            "cond": "innerData != null",
+            "target": "outeralldone"
+          }
+        ]
+      },
+      {
+        "id": "outeralldone",
+        "type": "final"
+      }
+    ]
+  }
+}

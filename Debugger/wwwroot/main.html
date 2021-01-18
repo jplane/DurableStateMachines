@@ -54,8 +54,18 @@
     <div class="row">
         <div class="column">
             <h3>Definition</h3>
+            <label for="templates">State machine template:</label>
+            <select name="templates" id="templates">
+                <option value="/templates/httpget.json" selected>HTTP Get</option>
+                <option value="/templates/httppost.json">HTTP Post</option>
+                <option value="/templates/parentchild.json">Parent-child</option>
+                <option value="/templates/compound.json">Compound states</option>
+                <option value="/templates/parallel.json">Parallel states</option>
+                <option value="/templates/foreach.json">For-each loop</option>
+                <option value="/templates/sqlquery.json">SQL query</option>
+            </select>
             <div id="jsoneditor" style="height: 800px;"></div>
-            <input type="button" id="start-button" value="Start New" />
+            <input type="button" id="start-button" value="Start New Instance" />
         </div>
         <div id="debugger" class="column">
             <h3>Debugger</h3>
@@ -84,7 +94,7 @@
             <label for="instances">State machine instance:</label>
             <select name="instances" id="instances">
             </select>
-            <input type="button" id="results-button" value="Check Results" disabled />
+            <input type="button" id="results-button" value="Get Status" disabled />
         </div>
     </div>
     <br />
@@ -113,46 +123,22 @@
 
         const editor = new JSONEditor(container, options);
 
-        const initialJson = {
-            debug: {
-                uri: '%DEBUGGER_ENDPOINT%',
-                instructions: [
-                    { action: "enterstate", element: "*" },
-                    { action: "exitstate", element: "*" }
-                ]
-            },
-            statemachine: {
-                name: 'test',
-                states: [
-                    {
-                        id: 'state1',
-                        onentry: {
-                            content: [
-                                {
-                                    type: 'query',
-                                    activity: 'http-get',
-                                    resultlocation: 'x',
-                                    config: {
-                                        uri: '%TEST_FUNCTION_ENDPOINT%'
-                                    }
-                                }
-                            ]
-                        },
-                        transitions: [
-                            { target: 'alldone' }
-                        ]
-                    },
-                    {
-                        id: 'alldone',
-                        type: 'final'
-                    }
-                ]
-            }
-        };
+        function loadEditor() {
 
-        editor.set(initialJson);
+            axios.get(document.getElementById('templates').value)
+                .then(resp => {
+                    editor.set(resp.data);
+                });
+        }
+
+        loadEditor();
 
         document.addEventListener('DOMContentLoaded', function () {
+
+            document.getElementById('templates').addEventListener('change', function () {
+
+                loadEditor();
+            });
 
             document.getElementById('results-button').addEventListener('click', function () {
 

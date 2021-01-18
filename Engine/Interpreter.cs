@@ -228,7 +228,8 @@ namespace StateChartsDotNet
 
             var enabledTransitions = new Set<Transition>();
 
-            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.Type == StateType.Atomic);
+            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.Type == StateType.Atomic ||
+                                                                                    s.Type == StateType.Final);
 
             foreach (var state in atomicStates)
             {

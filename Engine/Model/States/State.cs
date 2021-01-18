@@ -296,7 +296,7 @@ namespace StateChartsDotNet.Model.States
                 }
                 else
                 {
-                    context.EnqueueInternal("done.state." + this.Id);
+                    context.EnqueueInternal("done.state." + _parent.Id);
 
                     var grandparent = _parent?.Parent;
 

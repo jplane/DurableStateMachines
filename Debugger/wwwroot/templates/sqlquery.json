@@ -1,0 +1,43 @@
+{
+  "debug": {
+    "uri": "%DEBUGGER_ENDPOINT%",
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "statemachine": {
+    "name": "test",
+    "states": [
+      {
+        "id": "state1",
+        "onentry": {
+          "content": [
+            {
+              "type": "query",
+              "activity": "sql-query",
+              "resultlocation": "x",
+              "config": {
+                "connectionstring": "%SQL_CONN_STRING%",
+                "query": "SELECT TOP 10 [FirstName], [LastName] FROM [SalesLT].[Customer]"
+              }
+            }
+          ]
+        },
+        "transitions": [
+          { "target": "alldone" }
+        ]
+      },
+      {
+        "id": "alldone",
+        "type": "final"
+      }
+    ]
+  }
+}
