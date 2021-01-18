@@ -28,9 +28,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public virtual string MetadataId => _metadataId;
 
-        public bool BreakOnDebugger => bool.Parse(_element.Property("break")?.Value.Value<string>() ?? "false");
-
-        public JObject DebugInfo
+        public JObject DebuggerInfo
         {
             get
             {

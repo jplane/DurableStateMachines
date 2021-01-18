@@ -6,8 +6,7 @@ namespace StateChartsDotNet.Common.Model
     public interface IModelMetadata
     {
         string MetadataId { get; }
-        bool BreakOnDebugger { get; }
-        JObject DebugInfo { get; }
+        JObject DebuggerInfo { get; }
     }
 
     public static class ModelMetadataExtensions

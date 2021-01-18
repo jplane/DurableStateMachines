@@ -13,7 +13,6 @@ namespace StateChartsDotNet.Common.Model.States
     {
         bool FailFast { get; }
         Databinding Databinding { get; }
-        string Debugger { get; }
 
         IScriptMetadata GetScript();
 

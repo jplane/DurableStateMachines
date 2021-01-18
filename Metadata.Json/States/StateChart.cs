@@ -83,8 +83,6 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public override StateType Type => StateType.Root;
 
-        public string Debugger => _element.Value<string>("debugger");
-
         public bool FailFast
         {
             get => bool.Parse(_element.Value<string>("failfast") ?? "false");

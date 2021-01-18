@@ -114,13 +114,18 @@
         const editor = new JSONEditor(container, options);
 
         const initialJson = {
+            debug: {
+                uri: '%DEBUGGER_ENDPOINT%',
+                instructions: [
+                    { action: "enterstate", element: "*" },
+                    { action: "exitstate", element: "*" }
+                ]
+            },
             statemachine: {
                 name: 'test',
-                debugger: '%DEBUGGER_ENDPOINT%',
                 states: [
                     {
                         id: 'state1',
-                        break: 'true',
                         onentry: {
                             content: [
                                 {

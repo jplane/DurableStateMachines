@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.States;
@@ -21,10 +22,12 @@ namespace StateChartsDotNet.DurableFunctionHost
     {
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
+        private readonly DebuggerInfo _debugInfo;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
                                    IReadOnlyDictionary<string, object> data,
+                                   DebuggerInfo debugInfo,
                                    IConfiguration config,
                                    ILogger logger)
             : base(metadata, default, logger)
@@ -36,6 +39,7 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             _orchestrationContext = orchestrationContext;
             _config = config;
+            _debugInfo = debugInfo;
 
             foreach (var pair in data)
             {
@@ -222,33 +226,42 @@ namespace StateChartsDotNet.DurableFunctionHost
             return Task.CompletedTask;
         }
 
-        internal override Task DebugBreak(DebuggerAction action, IStateChartMetadata root, IModelMetadata metadata)
+        internal override Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
         {
-            Debug.Assert(root != null);
-            Debug.Assert(!string.IsNullOrWhiteSpace(root.Debugger));
             Debug.Assert(metadata != null);
-            Debug.Assert(metadata.BreakOnDebugger);
 
-            var json = metadata.DebugInfo;
-
-            Debug.Assert(json != null);
-
-            var info = json.ToObject<Dictionary<string, object>>();
-
-            info["_debuggeraction"] = action.ToString();
-            info["_instanceId"] = _orchestrationContext.InstanceId;
-            info["_parentInstanceId"] = _orchestrationContext.ParentInstanceId;
-
-            foreach (var pair in this.GetDataValues())
+            if (_debugInfo != null && _debugInfo.IsMatch(action, metadata.MetadataId))
             {
-                info.Add(pair.Key, pair.Value);
+                var json = metadata.DebuggerInfo;
+
+                Debug.Assert(json != null);
+
+                var info = json.ToObject<Dictionary<string, object>>();
+
+                info["_debuggeraction"] = action.ToString();
+                info["_instanceId"] = _orchestrationContext.InstanceId;
+                info["_parentInstanceId"] = _orchestrationContext.ParentInstanceId;
+
+                foreach (var pair in this.GetDataValues())
+                {
+                    info.Add(pair.Key, pair.Value);
+                }
+
+                if (string.IsNullOrWhiteSpace(_debugInfo.DebugUri))
+                {
+                    throw new InvalidOperationException("Debugger uri is invalid.");
+                }
+
+                var endpoint = ResolveConfigValue(_debugInfo.DebugUri);
+
+                Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
+
+                return _orchestrationContext.CallActivityAsync("debugger-break", (endpoint, info));
             }
-
-            var endpoint = ResolveConfigValue(root.Debugger);
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
-
-            return _orchestrationContext.CallActivityAsync("debugger-break", (endpoint, info));
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }

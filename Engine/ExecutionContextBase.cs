@@ -16,6 +16,7 @@ using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
 using Nito.AsyncEx;
 using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet
 {
@@ -71,23 +72,9 @@ namespace StateChartsDotNet
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
 
-        internal virtual Task DebugBreak(DebuggerAction action, IStateChartMetadata root, IModelMetadata metadata)
+        internal virtual Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
         {
             return Task.CompletedTask;
-        }
-
-        internal Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
-        {
-            Debug.Assert(metadata != null);
-
-            if (!string.IsNullOrWhiteSpace(_metadata.Debugger) && metadata.BreakOnDebugger)
-            {
-                return DebugBreak(action, _metadata, metadata);
-            }
-            else
-            {
-                return Task.CompletedTask;
-            }
         }
 
         internal void InternalCancel()
