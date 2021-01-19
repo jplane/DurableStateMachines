@@ -66,7 +66,7 @@ namespace StateChartsDotNet
 
         internal abstract Task LogInformationAsync(string message);
 
-        protected abstract Task<Guid> GenerateGuid();
+        protected abstract Guid GenerateGuid();
 
         protected abstract bool IsChildStateChart { get; }
 
@@ -154,7 +154,7 @@ namespace StateChartsDotNet
 
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = (await this.GenerateGuid()).ToString("N");
+                id = this.GenerateGuid().ToString("N");
 
                 await this.LogDebugAsync($"Synthentic Id = {id}");
 

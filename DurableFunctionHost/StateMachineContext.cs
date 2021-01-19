@@ -45,14 +45,17 @@ namespace StateChartsDotNet.DurableFunctionHost
             {
                 SetDataValue(pair.Key, pair.Value);
             }
+
+            SetDataValue("_instanceId", _orchestrationContext.InstanceId);
+            SetDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
         }
 
         public Dictionary<string, object> ResultData => this.GetDataValues().Where(pair => !pair.Key.StartsWith("_"))
                                                                             .ToDictionary(p => p.Key, p => p.Value);
 
-        protected override Task<Guid> GenerateGuid()
+        protected override Guid GenerateGuid()
         {
-            return Task.FromResult(_orchestrationContext.NewGuid());
+            return _orchestrationContext.NewGuid();
         }
 
         internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
@@ -67,14 +70,6 @@ namespace StateChartsDotNet.DurableFunctionHost
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData)
                                                                 .ToDictionary(p => p.Key, p => p.Value));
 
-            inputs["_parentInstanceId"] = _orchestrationContext.InstanceId;
-
-            var instanceId = (await GenerateGuid()).ToString("N");
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
-
-            inputs["_instanceId"] = instanceId;
-
             var json = JObject.Parse((await childMachine.ToStringAsync(default)).Item2);
 
             Debug.Assert(json != null);
@@ -82,14 +77,15 @@ namespace StateChartsDotNet.DurableFunctionHost
             var payload = new StateMachineRequestPayload
             {
                 Arguments = inputs,
-                StateMachineDefinition = json
+                StateMachineDefinition = json,
+                DebugInfo = _debugInfo
             };
 
             Dictionary<string, object> childData = null;
 
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                childData = await _orchestrationContext.CallSubOrchestratorAsync<Dictionary<string, object>>("statemachine-orchestration", instanceId, payload);
+                childData = await _orchestrationContext.CallSubOrchestratorAsync<Dictionary<string, object>>("statemachine-orchestration", payload);
             }
             else
             {
@@ -239,8 +235,6 @@ namespace StateChartsDotNet.DurableFunctionHost
                 var info = json.ToObject<Dictionary<string, object>>();
 
                 info["_debuggeraction"] = action.ToString();
-                info["_instanceId"] = _orchestrationContext.InstanceId;
-                info["_parentInstanceId"] = _orchestrationContext.ParentInstanceId;
 
                 foreach (var pair in this.GetDataValues())
                 {

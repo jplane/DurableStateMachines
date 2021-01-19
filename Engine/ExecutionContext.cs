@@ -44,7 +44,7 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", _http.GetAsync);
 
-            SetDataValue("_instanceId", $"{metadata.MetadataId}.{Guid.NewGuid():N}");
+            SetDataValue("_instanceId", this.GenerateGuid().ToString("N"));
         }
 
         public async Task StartAsync()
@@ -148,12 +148,6 @@ namespace StateChartsDotNet
 
             context._parentContext = this;
 
-            var instanceId = $"{metadata.MetadataId}.{await GenerateGuid():N}";
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(instanceId));
-
-            context.SetDataValue("_instanceId", instanceId);
-
             foreach (var param in metadata.GetParams(this.ScriptData))
             {
                 context.SetDataValue(param.Key, param.Value);
@@ -172,9 +166,9 @@ namespace StateChartsDotNet
             return _externalMessages.DequeueAsync(this.CancelToken);
         }
 
-        protected override Task<Guid> GenerateGuid()
+        protected override Guid GenerateGuid()
         {
-            return Task.FromResult(Guid.NewGuid());
+            return Guid.NewGuid();
         }
 
         internal override Task LogDebugAsync(string message)
