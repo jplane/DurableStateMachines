@@ -14,6 +14,7 @@
         table {
             font-family: arial, sans-serif;
             border-collapse: collapse;
+            max-width: 150px;
         }
 
         td, th {
@@ -34,7 +35,7 @@
 
         .column {
             float: left;
-            width: 33.33%;
+            width: 50%;
             padding: 10px;
         }
 
@@ -72,51 +73,55 @@
             <br />
             <input type="button" id="start-button" value="Start New Instance" />
         </div>
-        <div id="debugger" class="column">
-            <h3>Debugger</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody id="info-table-body"></tbody>
-            </table>
-            <br />
-            <br />
-            <input type="button" id="resume-button" value="Resume" disabled />
-        </div>
         <div class="column">
-            <h3>Output</h3>
-            <label for="instances">State machine instance:</label>
-            <select name="instances" id="instances">
-            </select>
-            <input type="button" id="status-button" value="Get Status" disabled />
-            <br />
-            <br />
-            <label for="sendevent">Event:</label>
-            <br />
-            <br />
-            <textarea id="sendevent" name="sendevent" rows="6" cols="40">
+            <div>
+                <h3>Output</h3>
+                <label for="instances">State machine instance:</label>
+                <select name="instances" id="instances">
+                </select>
+                <input type="button" id="status-button" value="Get Status" disabled />
+                <br />
+                <br />
+                <label for="sendevent">Event:</label>
+                <br />
+                <br />
+                <textarea id="sendevent" name="sendevent" rows="6" cols="40">
 {
   "name": "some event"
 }
             </textarea>
+                <br />
+                <br />
+                <input type="button" id="send-event-button" value="Send Event" disabled />
+                <br />
+                <br />
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="output-table-body"></tbody>
+                </table>
+            </div>
             <br />
             <br />
-            <input type="button" id="send-event-button" value="Send Event" disabled />
-            <br />
-            <br />
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody id="output-table-body"></tbody>
-            </table>
+            <div id="debugger">
+                <h3>Debugger</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="info-table-body"></tbody>
+                </table>
+                <br />
+                <br />
+                <input type="button" id="resume-button" value="Resume" disabled />
+            </div>
         </div>
     </div>
     <br />
