@@ -63,8 +63,13 @@
                 <option value="/templates/parallel.json">Parallel states</option>
                 <option value="/templates/foreach.json">For-each loop</option>
                 <option value="/templates/sqlquery.json">SQL query</option>
+                <option value="/templates/microwave.json">Microwave (external events)</option>
             </select>
+            <br />
+            <br />
             <div id="jsoneditor" style="height: 800px;"></div>
+            <br />
+            <br />
             <input type="button" id="start-button" value="Start New Instance" />
         </div>
         <div id="debugger" class="column">
@@ -78,10 +83,31 @@
                 </thead>
                 <tbody id="info-table-body"></tbody>
             </table>
+            <br />
+            <br />
             <input type="button" id="resume-button" value="Resume" disabled />
         </div>
         <div class="column">
             <h3>Output</h3>
+            <label for="instances">State machine instance:</label>
+            <select name="instances" id="instances">
+            </select>
+            <input type="button" id="status-button" value="Get Status" disabled />
+            <br />
+            <br />
+            <label for="sendevent">Event:</label>
+            <br />
+            <br />
+            <textarea id="sendevent" name="sendevent" rows="6" cols="40">
+{
+  "name": "some event"
+}
+            </textarea>
+            <br />
+            <br />
+            <input type="button" id="send-event-button" value="Send Event" disabled />
+            <br />
+            <br />
             <table>
                 <thead>
                     <tr>
@@ -91,10 +117,6 @@
                 </thead>
                 <tbody id="output-table-body"></tbody>
             </table>
-            <label for="instances">State machine instance:</label>
-            <select name="instances" id="instances">
-            </select>
-            <input type="button" id="results-button" value="Get Status" disabled />
         </div>
     </div>
     <br />
@@ -140,9 +162,22 @@
                 loadEditor();
             });
 
-            document.getElementById('results-button').addEventListener('click', function () {
+            document.getElementById('send-event-button').addEventListener('click', function () {
 
-                var statusuri = document.getElementById('instances').value;
+                var instanceData = JSON.parse(document.getElementById('instances').value);
+
+                var sendeventuri = instanceData.sendEventPostUri.replace("{eventName}", "state-machine-event");
+
+                if (sendeventuri) {
+                    axios.post(sendeventuri, JSON.parse(sendevent.value));
+                }
+            });
+
+            document.getElementById('status-button').addEventListener('click', function () {
+
+                var instanceData = JSON.parse(document.getElementById('instances').value);
+
+                var statusuri = instanceData.statusQueryGetUri;
 
                 if (statusuri) {
 
@@ -188,7 +223,7 @@
 
                         var option = document.createElement('option');
 
-                        option.value = resp.data.statusQueryGetUri;
+                        option.value = JSON.stringify(resp.data);
 
                         option.innerText = resp.data.id;
 
@@ -196,7 +231,9 @@
 
                         option.selected = true;
 
-                        document.getElementById('results-button').disabled = false;
+                        document.getElementById('status-button').disabled = false;
+
+                        document.getElementById('send-event-button').disabled = false;
                     });
 
             });
