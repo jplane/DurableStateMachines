@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Data.SqlClient;
@@ -24,7 +25,7 @@ namespace StateChartsDotNet.DurableFunctionHost
         }
 
         [FunctionName("sql-query")]
-        public string SqlQueryScalar([ActivityTrigger] IDurableActivityContext context)
+        public async Task<string> SqlQuery([ActivityTrigger] IDurableActivityContext context)
         {
             Debug.Assert(context != null);
 
@@ -55,15 +56,15 @@ namespace StateChartsDotNet.DurableFunctionHost
                     CommandText = query
                 };
 
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
 
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     var schema = reader.GetColumnSchema();
 
                     var rows = new List<JObject>();
 
-                    while (reader.Read())
+                    while (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         var row = new JObject();
 
