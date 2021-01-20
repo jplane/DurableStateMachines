@@ -23,6 +23,7 @@
               "type": "query",
               "activity": "sql-query",
               "resultlocation": "x",
+              "configtype": "statechartsdotnet.durablefunctionhost.sqlqueryconfiguration",
               "config": {
                 "connectionstring": "%SQL_CONN_STRING%",
                 "query": "SELECT TOP 10 [FirstName], [LastName] FROM [SalesLT].[Customer]"

@@ -28,11 +28,11 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public virtual string MetadataId => _metadataId;
 
-        public JObject DebuggerInfo
+        public IReadOnlyDictionary<string, object> DebuggerInfo
         {
             get
             {
-                var json = new JObject();
+                var json = new Dictionary<string, object>();
 
                 json["id"] = this.Id;
                 json["metadataId"] = this.MetadataId;

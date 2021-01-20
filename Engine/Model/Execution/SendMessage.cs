@@ -31,7 +31,7 @@ namespace StateChartsDotNet.Model.Execution
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(id));
 
-                await context.SendMessageAsync(metadata.ActivityType, id, metadata.Config);
+                await context.SendMessageAsync(metadata.ActivityType, id, metadata.Configuration);
             }
             catch (TaskCanceledException)
             {

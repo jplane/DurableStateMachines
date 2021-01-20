@@ -85,7 +85,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             }
         }
 
-        public JObject DebuggerInfo => null;
+        public IReadOnlyDictionary<string, object> DebuggerInfo => null;
 
         public IEnumerable<string> Targets
         {

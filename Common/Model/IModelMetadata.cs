@@ -6,7 +6,7 @@ namespace StateChartsDotNet.Common.Model
     public interface IModelMetadata
     {
         string MetadataId { get; }
-        JObject DebuggerInfo { get; }
+        IReadOnlyDictionary<string, object> DebuggerInfo { get; }
     }
 
     public static class ModelMetadataExtensions

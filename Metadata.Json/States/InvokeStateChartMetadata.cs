@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.Json.States
 
         public string MetadataId => _metadataId;
 
-        public JObject DebuggerInfo => null;
+        public IReadOnlyDictionary<string, object> DebuggerInfo => null;
 
         public ChildStateChartExecutionMode ExecutionMode
         {

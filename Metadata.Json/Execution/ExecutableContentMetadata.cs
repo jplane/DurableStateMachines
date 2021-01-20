@@ -2,7 +2,7 @@
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
-
+using System.Collections.Generic;
 
 namespace StateChartsDotNet.Metadata.Json.Execution
 {
@@ -19,7 +19,7 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
         public string MetadataId => _metadataId;
 
-        public JObject DebuggerInfo => null;
+        public IReadOnlyDictionary<string, object> DebuggerInfo => null;
 
         public static IExecutableContentMetadata Create(JObject element)
         {

@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Model.Execution;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Json.Execution
@@ -16,7 +18,33 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
         public string ResultLocation => _element.Property("resultlocation")?.Value.Value<string>();
 
-        public JObject Config => _element.Property("config")?.Value.Value<JObject>();
+        public string ConfigurationType => _element.Property("configtype")?.Value.Value<string>();
+
+        public IQueryConfiguration Configuration
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(this.ConfigurationType))
+                {
+                    throw new InvalidOperationException("Missing configuration type for query metadata.");
+                }
+
+                Func<Type, bool> filter = t =>
+                    typeof(IQueryConfiguration).IsAssignableFrom(t) &&
+                           string.Compare(t.FullName, this.ConfigurationType, true, CultureInfo.InvariantCulture) == 0;
+
+                var type = AppDomain.CurrentDomain.GetAssemblies()
+                                                  .SelectMany(asm => asm.GetTypes())
+                                                  .SingleOrDefault(filter);
+
+                if (type == null)
+                {
+                    throw new InvalidOperationException("Unable to resolve specified configuration type for query metadata.");
+                }
+
+                return (IQueryConfiguration) _element.Property("config")?.Value.ToObject(type);
+            }
+        }
 
         public IEnumerable<IExecutableContentMetadata> GetExecutableContent()
         {

@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Model.Execution
 
             try
             {
-                var result = await context.QueryAsync(metadata.ActivityType, metadata.Config);
+                var result = await context.QueryAsync(metadata.ActivityType, metadata.Configuration);
 
                 if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
                 {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,30 +21,32 @@ namespace StateChartsDotNet.Services
             _token = token;
         }
 
-        public async Task<string> GetAsync(JObject config)
+        public async Task<string> GetAsync(IQueryConfiguration input)
         {
-            config.CheckArgNull(nameof(config));
+            input.CheckArgNull(nameof(input));
+
+            var config = (HttpQueryConfiguration) input;
 
             var headers = GetHeaders(config, null);
 
             var uri = GetUri(config);
 
-            return await Invoke(headers.Headers, uri, null, null, HttpMethod.Get, _token);
+            return await Invoke(headers, uri, null, null, HttpMethod.Get, _token);
         }
 
-        public async Task PostAsync(string correlationId, JObject config)
+        public async Task PostAsync(string correlationId, ISendMessageConfiguration input)
         {
-            config.CheckArgNull(nameof(config));
+            input.CheckArgNull(nameof(input));
+
+            var config = (HttpSendMessageConfiguration) input;
 
             var headers = GetHeaders(config, correlationId);
 
             var uri = GetUri(config);
 
-            var content = config.Property("content")?.Value;
+            var serialized = Serialize(config);
 
-            var serialized = Serialize(content, headers.ContentType);
-
-            await Invoke(headers.Headers, uri, serialized.Content, serialized.ContentType, HttpMethod.Post, _token);
+            await Invoke(headers, uri, serialized.Content, serialized.ContentType, HttpMethod.Post, _token);
         }
 
         protected abstract Task<string> Invoke(IReadOnlyDictionary<string, string> headers,
@@ -54,13 +56,13 @@ namespace StateChartsDotNet.Services
                                                HttpMethod method,
                                                CancellationToken cancelToken);
 
-        private Uri GetUri(JObject config)
+        private Uri GetUri(HttpConfiguration config)
         {
             Debug.Assert(config != null);
 
             var queryString = GetQueryString(config);
 
-            var baseUri = config.Property("uri")?.Value.Value<string>();
+            var baseUri = config.Uri;
 
             if (string.IsNullOrWhiteSpace(baseUri))
             {
@@ -77,38 +79,27 @@ namespace StateChartsDotNet.Services
             }
         }
 
-        private (string Content, string ContentType) Serialize(object content, string contentType)
+        private (string Content, string ContentType) Serialize(HttpSendMessageConfiguration config)
         {
-            if (content is string s)
+            if (config.Content is string s)
             {
-                return (s, contentType ?? "text/plain");
+                return (s, config.ContentType ?? "text/plain");
             }
             else
             {
-                return (JsonConvert.SerializeObject(content), contentType ?? "application/json");
+                return (JsonConvert.SerializeObject(config.Content), "application/json");
             }
         }
 
-        private (IReadOnlyDictionary<string, string> Headers, string ContentType) GetHeaders(JObject config, string correlationId)
+        private IReadOnlyDictionary<string, string> GetHeaders(HttpConfiguration config, string correlationId)
         {
             Debug.Assert(config != null);
 
-            var parameters = config.Property("headers")?.Value.Value<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-
             var headers = new Dictionary<string, string>();
 
-            string contentType = null;
-
-            foreach (var param in parameters)
+            foreach (var param in config.Headers ?? Enumerable.Empty<KeyValuePair<string, string>>())
             {
-                if (string.Compare(param.Key, "content-type", true, System.Globalization.CultureInfo.InvariantCulture) == 0)
-                {
-                    contentType = (string) param.Value;
-                }
-                else
-                {
-                    headers.Add(param.Key, JsonConvert.SerializeObject(param.Value));
-                }
+                headers.Add(param.Key, JsonConvert.SerializeObject(param.Value));
             }
 
             if (!string.IsNullOrWhiteSpace(correlationId))
@@ -116,18 +107,16 @@ namespace StateChartsDotNet.Services
                 headers.Add("X-SCDN-CORRELATION", correlationId);
             }
 
-            return (headers, contentType);
+            return headers;
         }
 
-        private string GetQueryString(JObject config)
+        private string GetQueryString(HttpConfiguration config)
         {
             Debug.Assert(config != null);
 
-            var parameters = config.Property("querystring")?.Value.Value<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-
             var builder = new StringBuilder();
 
-            foreach (var param in parameters)
+            foreach (var param in config.QueryString ?? Enumerable.Empty<KeyValuePair<string, string>>())
             {
                 builder.Append($"{param.Key}={JsonConvert.SerializeObject(param.Value)}&");
             }

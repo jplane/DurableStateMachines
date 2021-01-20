@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Json.Execution
 {
@@ -19,6 +22,32 @@ namespace StateChartsDotNet.Metadata.Json.Execution
 
         public string ActivityType => _element.Property("activity")?.Value.Value<string>();
 
-        public JObject Config => _element.Property("config")?.Value.Value<JObject>();
+        public string ConfigurationType => _element.Property("configtype")?.Value.Value<string>();
+
+        public ISendMessageConfiguration Configuration
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(this.ConfigurationType))
+                {
+                    throw new InvalidOperationException("Missing configuration type for send message metadata.");
+                }
+
+                Func<Type, bool> filter = t =>
+                    typeof(ISendMessageConfiguration).IsAssignableFrom(t) &&
+                           string.Compare(t.FullName, this.ConfigurationType, true, CultureInfo.InvariantCulture) == 0;
+
+                var type = AppDomain.CurrentDomain.GetAssemblies()
+                                                  .SelectMany(asm => asm.GetTypes())
+                                                  .SingleOrDefault(filter);
+
+                if (type == null)
+                {
+                    throw new InvalidOperationException("Unable to resolve specified configuration type for send message metadata.");
+                }
+
+                return (ISendMessageConfiguration) _element.Property("config")?.Value.ToObject(type);
+            }
+        }
     }
 }

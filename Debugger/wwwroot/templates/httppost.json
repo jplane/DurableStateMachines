@@ -23,6 +23,7 @@
               "id": "test-func",
               "type": "sendmessage",
               "activity": "http-post",
+              "configtype": "statechartsdotnet.services.httpsendmessageconfiguration",
               "config": {
                 "uri": "http://localhost:7071/api/TestFunction",
                 "content": {

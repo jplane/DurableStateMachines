@@ -10,9 +10,27 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.DurableFunctionHost
 {
+    public class SqlQueryConfiguration : IQueryConfiguration
+    {
+        public virtual void ResolveConfigValues(Func<string, string> resolver)
+        {
+            resolver.CheckArgNull(nameof(resolver));
+
+            this.ConnectionString = resolver(this.ConnectionString);
+        }
+
+        [JsonProperty("connectionstring")]
+        public string ConnectionString { get; set; }
+
+        [JsonProperty("query")]
+        public string Query { get; set; }
+    }
+
     public class SqlQueryActivity
     {
         private readonly IConfiguration _config;
@@ -29,31 +47,30 @@ namespace StateChartsDotNet.DurableFunctionHost
         {
             Debug.Assert(context != null);
 
-            var jsonConfig = context.GetInput<JObject>();
+            var config = context.GetInput<SqlQueryConfiguration>();
 
-            Debug.Assert(jsonConfig != null);
-
-            var connectionString = jsonConfig["connectionstring"].Value<string>();
-
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (config == null)
             {
-                throw new InvalidOperationException("SQL query requires configured connection string.");
+                throw new InvalidOperationException("Missing configuration for sql query activity.");
             }
 
-            var query = jsonConfig["query"].Value<string>();
-
-            if (string.IsNullOrWhiteSpace(query))
+            if (string.IsNullOrWhiteSpace(config.ConnectionString))
             {
-                throw new InvalidOperationException("SQL query requires configured query.");
+                throw new InvalidOperationException("Missing connection string for sql query activity.");
             }
 
-            using (var conn = new SqlConnection(connectionString))
+            if (string.IsNullOrWhiteSpace(config.Query))
+            {
+                throw new InvalidOperationException("Missing query for sql query activity.");
+            }
+
+            using (var conn = new SqlConnection(config.ConnectionString))
             {
                 var cmd = new SqlCommand
                 {
                     Connection = conn,
                     CommandType = CommandType.Text,
-                    CommandText = query
+                    CommandText = config.Query
                 };
 
                 await conn.OpenAsync().ConfigureAwait(false);

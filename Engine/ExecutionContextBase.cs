@@ -56,9 +56,9 @@ namespace StateChartsDotNet
 
         internal abstract Task DelayAsync(TimeSpan timespan);
 
-        internal abstract Task<string> QueryAsync(string activityType, JObject config);
+        internal abstract Task<string> QueryAsync(string activityType, IQueryConfiguration config);
 
-        internal abstract Task SendMessageAsync(string activityType, string correlationId, JObject config);
+        internal abstract Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config);
 
         internal abstract Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 

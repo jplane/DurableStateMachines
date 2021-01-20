@@ -7,6 +7,7 @@ using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
+using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using System;
 using System.Collections.Generic;
@@ -166,11 +167,12 @@ namespace StateChartsDotNet.DurableFunctionHost
             }
         }
 
-        internal override Task<string> QueryAsync(string activityType, JObject config)
+        internal override Task<string> QueryAsync(string activityType, IQueryConfiguration config)
         {
             activityType.CheckArgNull(nameof(activityType));
+            config.CheckArgNull(nameof(config));
 
-            ResolveConfigValues(config);
+            config.ResolveConfigValues(this.ResolveConfigValue);
 
             if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
@@ -184,12 +186,12 @@ namespace StateChartsDotNet.DurableFunctionHost
             }
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, JObject config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config)
         {
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
 
-            ResolveConfigValues(config);
+            config.ResolveConfigValues(this.ResolveConfigValue);
 
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
@@ -228,11 +230,7 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             if (_debugInfo != null && _debugInfo.IsMatch(action, metadata.MetadataId))
             {
-                var json = metadata.DebuggerInfo;
-
-                Debug.Assert(json != null);
-
-                var info = json.ToObject<Dictionary<string, object>>();
+                var info = new Dictionary<string, object>(metadata.DebuggerInfo);
 
                 info["_debuggeraction"] = action.ToString();
 

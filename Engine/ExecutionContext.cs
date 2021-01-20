@@ -104,7 +104,7 @@ namespace StateChartsDotNet
             return Task.Delay(timespan, this.CancelToken);
         }
 
-        internal override Task<string> QueryAsync(string activityType, JObject config)
+        internal override Task<string> QueryAsync(string activityType, IQueryConfiguration config)
         {
             activityType.CheckArgNull(nameof(activityType));
 
@@ -116,7 +116,7 @@ namespace StateChartsDotNet
             throw new InvalidOperationException("Unable to resolve external query type: " + activityType);
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, JObject config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config)
         {
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));

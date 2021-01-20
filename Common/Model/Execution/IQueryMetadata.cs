@@ -8,7 +8,7 @@ namespace StateChartsDotNet.Common.Model.Execution
     {
         string ResultLocation { get; }
         string ActivityType { get; }
-        JObject Config { get; }
+        IQueryConfiguration Configuration { get; }
         IEnumerable<IExecutableContentMetadata> GetExecutableContent();
     }
 
@@ -25,7 +25,7 @@ namespace StateChartsDotNet.Common.Model.Execution
                 errs.Add("Query action requires an activity type.");
             }
 
-            if (metadata.Config == null)
+            if (metadata.Configuration == null)
             {
                 errs.Add("Query action requires a configuration element.");
             }

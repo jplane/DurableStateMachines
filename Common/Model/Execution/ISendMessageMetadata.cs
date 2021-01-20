@@ -10,7 +10,7 @@ namespace StateChartsDotNet.Common.Model.Execution
         string IdLocation { get; }
         TimeSpan Delay { get; }
         string ActivityType { get; }
-        JObject Config { get; }
+        ISendMessageConfiguration Configuration { get; }
     }
 
     public static class SendMessageMetadataExtensions
@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Common.Model.Execution
                 errs.Add("Send message action requires an activity type.");
             }
 
-            if (metadata.Config == null)
+            if (metadata.Configuration == null)
             {
                 errs.Add("Send message action requires a configuration element.");
             }

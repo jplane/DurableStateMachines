@@ -20,7 +20,7 @@ namespace StateChartsDotNet.Metadata.Json.Data
             _metadataId = element.GetUniqueElementPath();
         }
 
-        public JObject DebuggerInfo => null;
+        public IReadOnlyDictionary<string, object> DebuggerInfo => null;
 
         public string MetadataId => _metadataId;
 
