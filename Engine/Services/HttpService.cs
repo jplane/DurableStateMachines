@@ -12,8 +12,8 @@ namespace StateChartsDotNet.Services
     {
         private static HttpClient _client = new HttpClient();
 
-        public HttpService(CancellationToken token)
-            : base(token)
+        public HttpService(object data, CancellationToken token)
+            : base(data, token)
         {
         }
 

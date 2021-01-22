@@ -176,7 +176,7 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext);
+                var http = new HttpService(this.ScriptData, _orchestrationContext);
 
                 return http.GetAsync(config);
             }
@@ -195,7 +195,7 @@ namespace StateChartsDotNet.DurableFunctionHost
 
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(_orchestrationContext);
+                var http = new HttpService(this.ScriptData, _orchestrationContext);
 
                 return http.PostAsync(correlationId, config);
             }

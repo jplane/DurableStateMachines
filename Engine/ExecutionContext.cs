@@ -36,7 +36,7 @@ namespace StateChartsDotNet
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
-            _http = new HttpService(cancelToken);
+            _http = new HttpService(this.ScriptData, cancelToken);
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", _http.PostAsync);
@@ -157,7 +157,7 @@ namespace StateChartsDotNet
 
             if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
             {
-                SetDataValue(metadata.ResultLocation, (IReadOnlyDictionary<string, object>) context.Data);
+                SetDataValue(metadata.ResultLocation, new Dictionary<string, object>(context.Data));
             }
         }
 

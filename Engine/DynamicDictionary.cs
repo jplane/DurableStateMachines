@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -7,7 +8,7 @@ using StateChartsDotNet.Common.Exceptions;
 
 namespace StateChartsDotNet
 {
-    public class DynamicDictionary : DynamicObject
+    public class DynamicDictionary : DynamicObject, IDictionary<string, object>
     {
         private readonly IDictionary<string, object> _data;
 
@@ -69,5 +70,41 @@ namespace StateChartsDotNet
 
             return true;
         }
+
+        ICollection<string> IDictionary<string, object>.Keys => _data.Keys;
+
+        ICollection<object> IDictionary<string, object>.Values => _data.Values;
+
+        int ICollection<KeyValuePair<string, object>>.Count => _data.Count;
+
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly => _data.IsReadOnly;
+
+        object IDictionary<string, object>.this[string key]
+        {
+            get => _data[key];
+            set => _data[key] = value;
+        }
+
+        void IDictionary<string, object>.Add(string key, object value) => _data.Add(key, value);
+
+        bool IDictionary<string, object>.ContainsKey(string key) => _data.ContainsKey(key);
+
+        bool IDictionary<string, object>.Remove(string key) => _data.Remove(key);
+
+        bool IDictionary<string, object>.TryGetValue(string key, out object value) => _data.TryGetValue(key, out value);
+
+        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item) => _data.Add(item);
+
+        void ICollection<KeyValuePair<string, object>>.Clear() => _data.Clear();
+
+        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item) => _data.Contains(item);
+
+        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => _data.CopyTo(array, arrayIndex);
+
+        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item) => _data.Remove(item);
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator() => _data.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _data.GetEnumerator();
     }
 }

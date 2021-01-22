@@ -16,8 +16,8 @@ namespace StateChartsDotNet.DurableFunctionHost
     {
         private readonly IDurableOrchestrationContext _context;
 
-        public HttpService(IDurableOrchestrationContext context)
-            : base(default)
+        public HttpService(object data, IDurableOrchestrationContext context)
+            : base(data, default)
         {
             context.CheckArgNull(nameof(context));
 

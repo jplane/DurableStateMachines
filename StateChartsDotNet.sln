@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableFunctionHost", "Dura
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Debugger", "Debugger\Debugger.csproj", "{8673CE18-0C16-47DA-A602-FEBB6A668950}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata.Fluent", "Metadata.Fluent\Metadata.Fluent.csproj", "{5F7564C0-C9ED-4F49-B649-02E06CE8A2EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{562E52ED-C015-4249-9F33-52C2835B74EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{8673CE18-0C16-47DA-A602-FEBB6A668950}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8673CE18-0C16-47DA-A602-FEBB6A668950}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8673CE18-0C16-47DA-A602-FEBB6A668950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F7564C0-C9ED-4F49-B649-02E06CE8A2EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F7564C0-C9ED-4F49-B649-02E06CE8A2EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F7564C0-C9ED-4F49-B649-02E06CE8A2EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F7564C0-C9ED-4F49-B649-02E06CE8A2EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{562E52ED-C015-4249-9F33-52C2835B74EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{562E52ED-C015-4249-9F33-52C2835B74EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{562E52ED-C015-4249-9F33-52C2835B74EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{562E52ED-C015-4249-9F33-52C2835B74EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

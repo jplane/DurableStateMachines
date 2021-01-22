@@ -14,10 +14,12 @@ namespace StateChartsDotNet.Services
 {
     internal abstract class HttpServiceBase
     {
+        private readonly dynamic _data;
         private readonly CancellationToken _token;
 
-        protected HttpServiceBase(CancellationToken token)
+        protected HttpServiceBase(object data, CancellationToken token)
         {
+            _data = data;
             _token = token;
         }
 
@@ -81,13 +83,17 @@ namespace StateChartsDotNet.Services
 
         private (string Content, string ContentType) Serialize(HttpSendMessageConfiguration config)
         {
-            if (config.Content is string s)
+            Debug.Assert(config != null);
+
+            var content = config.GetContent(_data);
+
+            if (content is string s)
             {
                 return (s, config.ContentType ?? "text/plain");
             }
             else
             {
-                return (JsonConvert.SerializeObject(config.Content), "application/json");
+                return (JsonConvert.SerializeObject(content), "application/json");
             }
         }
 

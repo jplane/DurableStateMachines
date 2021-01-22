@@ -26,7 +26,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             _metadataId = element.GetUniqueElementPath();
         }
 
-        public string Id => _element.Property("id").Value.Value<string>();
+        public string Id => _element.Property("id")?.Value.Value<string>();
 
         public string MetadataId => _metadataId;
 
