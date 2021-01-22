@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\Metadata.Fluent\Metadata.Fluent.csproj" />
     <ProjectReference Include="..\Metadata.Json\Metadata.Json.csproj" />
   </ItemGroup>
   <ItemGroup>

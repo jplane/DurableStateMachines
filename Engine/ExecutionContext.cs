@@ -131,7 +131,7 @@ namespace StateChartsDotNet
 
         protected override bool IsChildStateChart => _parentContext != null;
 
-        internal override async Task InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
+        internal override async Task<IDictionary<string, object>> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -155,10 +155,7 @@ namespace StateChartsDotNet
 
             await context.StartAndWaitForCompletionAsync();
 
-            if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
-            {
-                SetDataValue(metadata.ResultLocation, new Dictionary<string, object>(context.Data));
-            }
+            return context.Data;
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

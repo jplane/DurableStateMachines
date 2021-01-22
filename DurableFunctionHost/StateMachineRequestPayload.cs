@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Json.States;
 using System.Collections.Generic;
 
 namespace StateChartsDotNet.DurableFunctionHost
@@ -15,6 +15,9 @@ namespace StateChartsDotNet.DurableFunctionHost
         [JsonProperty("args")]
         public Dictionary<string, object> Arguments { get; internal set; }
 
+        [JsonProperty("format", ItemConverterType = typeof(StringEnumConverter))]
+        public StateMachineDefinitionFormat Format { get; internal set; }
+
         [JsonProperty("statemachine")]
         public JObject StateMachineDefinition { get; internal set; }
 
@@ -25,7 +28,26 @@ namespace StateChartsDotNet.DurableFunctionHost
                 return null;
             }
 
-            return new StateChart(this.StateMachineDefinition);
+            IStateChartMetadata result = null;
+
+            switch (this.Format)
+            {
+                case StateMachineDefinitionFormat.Json:
+                    result = new Metadata.Json.States.StateChart(this.StateMachineDefinition);
+                    break;
+
+                case StateMachineDefinitionFormat.Fluent:
+                    result = Metadata.Fluent.States.StateChart.Deserialize(this.StateMachineDefinition.Value<string>());
+                    break;
+            }
+
+            return result;
         }
+    }
+
+    public enum StateMachineDefinitionFormat
+    {
+        Json = 1,
+        Fluent
     }
 }

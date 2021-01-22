@@ -28,46 +28,38 @@ namespace StateChartsDotNet.Metadata.Json.States
             document.InitDocumentPosition();
         }
 
-        public Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default)
+        public string Serialize()
         {
-            return Task.FromResult(("json", _element.ToString()));
+            return _element.ToString();
         }
 
-        public static Task<IStateChartMetadata> FromStringAsync(string content,
-                                                                CancellationToken cancelToken = default)
+        public static IStateChartMetadata Deserialize(string content)
         {
             content.CheckArgNull(nameof(content));
 
             var json = JObject.Parse(content);
 
-            var statechart = new StateChart(json);
-
-            return Task.FromResult((IStateChartMetadata) statechart);
+            return new StateChart(json);
         }
 
-        public async Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default)
+        public void Serialize(Stream stream)
         {
             stream.CheckArgNull(nameof(stream));
 
             using var writer = new StreamWriter(stream, Encoding.UTF8, -1, true);
 
-            await writer.WriteAsync(_element.ToString());
-
-            return "json";
+            writer.Write(_element.ToString());
         }
 
-        public static async Task<IStateChartMetadata> DeserializeAsync(Stream stream,
-                                                                       CancellationToken cancelToken = default)
+        public static IStateChartMetadata Deserialize(Stream stream)
         {
             stream.CheckArgNull(nameof(stream));
 
             using var reader = new StreamReader(stream, Encoding.UTF8, true, -1, true);
 
-            var json = JObject.Parse(await reader.ReadToEndAsync());
+            var json = JObject.Parse(reader.ReadToEnd());
 
-            var statechart = new StateChart(json);
-
-            return statechart;
+            return new StateChart(json);
         }
 
         public static Task<IStateChartMetadata> FromJson(JObject json)

@@ -12,6 +12,7 @@
       }
     ]
   },
+  "format": "json",
   "statemachine": {
     "name": "test",
     "datamodel": [
@@ -52,7 +53,7 @@
         ],
         "transitions": [
           {
-            "cond":  "x > 1",
+            "cond": "x > 1",
             "target": "bigfinish"
 
           }

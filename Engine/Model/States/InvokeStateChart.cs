@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using StateChartsDotNet.Common;
+using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -35,7 +36,14 @@ namespace StateChartsDotNet.Model.States
 
             try
             {
-                await context.InvokeChildStateChart(_metadata, _parentMetadataId);
+                var data = await context.InvokeChildStateChart(_metadata, _parentMetadataId);
+
+                Debug.Assert(data != null);
+
+                if (!string.IsNullOrWhiteSpace(_metadata.ResultLocation))
+                {
+                    context.SetDataValue(_metadata.ResultLocation, data);
+                }
 
                 foreach (var content in _finalizeContent.Value)
                 {

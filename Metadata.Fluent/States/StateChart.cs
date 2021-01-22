@@ -43,23 +43,16 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IStateMetadata _Parent => null;
 
-        public async Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default)
+        public string Serialize()
         {
             using var stream = new MemoryStream();
 
-            var metadataType = await this.SerializeAsync(stream, cancelToken);
+            Serialize(stream);
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(metadataType));
-
-            stream.Position = 0;
-
-            var bytes = Convert.ToBase64String(stream.ToArray());
-
-            return (metadataType, bytes);
+            return Convert.ToBase64String(stream.ToArray());
         }
 
-        public static Task<IStateChartMetadata> FromStringAsync(string content,
-                                                                CancellationToken cancelToken = default)
+        public static IStateChartMetadata Deserialize(string content)
         {
             content.CheckArgNull(nameof(content));
 
@@ -67,18 +60,16 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             using var stream = new MemoryStream(bytes);
 
-            return DeserializeAsync(stream, cancelToken);
+            return Deserialize(stream);
         }
 
-        public Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default)
+        public void Serialize(Stream stream)
         {
             stream.CheckArgNull(nameof(stream));
 
             using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
 
             Serialize(writer);
-
-            return Task.FromResult("fluent");
         }
 
         internal override void Serialize(BinaryWriter writer)
@@ -99,16 +90,13 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             writer.WriteMany(_stateChartInvokes, (o, w) => o.Serialize(w));
         }
 
-        public static Task<IStateChartMetadata> DeserializeAsync(Stream stream,
-                                                                 CancellationToken cancelToken = default)
+        public static IStateChartMetadata Deserialize(Stream stream)
         {
             stream.CheckArgNull(nameof(stream));
 
             using var reader = new BinaryReader(stream, Encoding.UTF8, true);
 
-            var statechart = Deserialize(reader);
-
-            return Task.FromResult((IStateChartMetadata) statechart);
+            return Deserialize(reader);
         }
 
         internal static StateChart Deserialize(BinaryReader reader)

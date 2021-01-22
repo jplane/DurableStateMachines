@@ -12,6 +12,7 @@
       }
     ]
   },
+  "format": "json",
   "statemachine": {
     "name": "test",
     "initial": "loop",

@@ -16,8 +16,8 @@ namespace StateChartsDotNet.Common.Model.States
 
         IScriptMetadata GetScript();
 
-        Task<string> SerializeAsync(Stream stream, CancellationToken cancelToken = default);
-        Task<(string, string)> ToStringAsync(CancellationToken cancelToken = default);
+        void Serialize(Stream stream);
+        string Serialize();
     }
 
     public static class StateChartMetadataExtensions
