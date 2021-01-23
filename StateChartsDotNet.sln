@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata.Fluent", "Metadata
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{562E52ED-C015-4249-9F33-52C2835B74EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DurableFunctionClient", "DurableFunctionClient\DurableFunctionClient.csproj", "{D32E4284-E05E-4B9F-BB57-03E784209782}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{562E52ED-C015-4249-9F33-52C2835B74EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{562E52ED-C015-4249-9F33-52C2835B74EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{562E52ED-C015-4249-9F33-52C2835B74EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D32E4284-E05E-4B9F-BB57-03E784209782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D32E4284-E05E-4B9F-BB57-03E784209782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D32E4284-E05E-4B9F-BB57-03E784209782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D32E4284-E05E-4B9F-BB57-03E784209782}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

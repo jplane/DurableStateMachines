@@ -43,13 +43,15 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IStateMetadata _Parent => null;
 
-        public string Serialize()
+        public JObject ToJson()
         {
             using var stream = new MemoryStream();
 
             Serialize(stream);
 
-            return Convert.ToBase64String(stream.ToArray());
+            var base64 = Convert.ToBase64String(stream.ToArray());
+
+            return JObject.FromObject(base64);
         }
 
         public static IStateChartMetadata Deserialize(string content)

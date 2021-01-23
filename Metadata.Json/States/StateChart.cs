@@ -28,9 +28,9 @@ namespace StateChartsDotNet.Metadata.Json.States
             document.InitDocumentPosition();
         }
 
-        public string Serialize()
+        public JObject ToJson()
         {
-            return _element.ToString();
+            return _element;
         }
 
         public static IStateChartMetadata Deserialize(string content)

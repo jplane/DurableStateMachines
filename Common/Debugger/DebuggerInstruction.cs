@@ -1,15 +1,11 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace StateChartsDotNet.Common.Debugger
 {
     public class DebuggerInstruction
     {
-        [JsonProperty("action", ItemConverterType = typeof(StringEnumConverter))]
+        [JsonProperty("action")]
         public DebuggerAction Action { get; internal set; }
 
         [JsonProperty("element")]

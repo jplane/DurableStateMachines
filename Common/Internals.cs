@@ -5,6 +5,7 @@ using System.Text;
 
 [assembly: InternalsVisibleTo("StateChartsDotNet")]
 [assembly: InternalsVisibleTo("StateChartsDotNet.Durable")]
+[assembly: InternalsVisibleTo("StateChartsDotNet.DurableFunctionClient")]
 [assembly: InternalsVisibleTo("StateChartsDotNet.DurableFunctionHost")]
 [assembly: InternalsVisibleTo("StateChartsDotNet.Metadata.Xml")]
 [assembly: InternalsVisibleTo("StateChartsDotNet.Metadata.Json")]

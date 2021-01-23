@@ -17,7 +17,7 @@ namespace StateChartsDotNet.Common.Model.States
         IScriptMetadata GetScript();
 
         void Serialize(Stream stream);
-        string Serialize();
+        JObject ToJson();
     }
 
     public static class StateChartMetadataExtensions

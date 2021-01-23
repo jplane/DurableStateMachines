@@ -7,15 +7,12 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Services;
 using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Exceptions;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
-using Nito.AsyncEx;
-using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet

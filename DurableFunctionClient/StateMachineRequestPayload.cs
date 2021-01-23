@@ -5,7 +5,7 @@ using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunctionClient
 {
     public class StateMachineRequestPayload
     {
@@ -15,7 +15,7 @@ namespace StateChartsDotNet.DurableFunctionHost
         [JsonProperty("args")]
         public Dictionary<string, object> Arguments { get; internal set; }
 
-        [JsonProperty("format", ItemConverterType = typeof(StringEnumConverter))]
+        [JsonProperty("format")]
         public StateMachineDefinitionFormat Format { get; internal set; }
 
         [JsonProperty("statemachine")]
@@ -45,6 +45,7 @@ namespace StateChartsDotNet.DurableFunctionHost
         }
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum StateMachineDefinitionFormat
     {
         Json = 1,

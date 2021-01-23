@@ -9,6 +9,7 @@ using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
+using StateChartsDotNet.DurableFunctionClient;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -74,7 +75,7 @@ namespace StateChartsDotNet.DurableFunctionHost
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData)
                                                                 .ToDictionary(p => p.Key, p => p.Value));
 
-            var json = JObject.Parse(childMachine.Serialize());
+            var json = childMachine.ToJson();
 
             Debug.Assert(json != null);
 
@@ -227,7 +228,7 @@ namespace StateChartsDotNet.DurableFunctionHost
             {
                 var info = new Dictionary<string, object>(metadata.DebuggerInfo);
 
-                info["_debuggeraction"] = action.ToString();
+                info["_debuggeraction"] = action;
 
                 foreach (var pair in this.GetDataValues())
                 {
