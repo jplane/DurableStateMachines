@@ -5,7 +5,7 @@ using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace StateChartsDotNet.DurableFunction.Client
 {
     public static class StateMachineExtensions
     {

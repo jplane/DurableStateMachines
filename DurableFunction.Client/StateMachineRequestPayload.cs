@@ -5,7 +5,7 @@ using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace StateChartsDotNet.DurableFunction.Client
 {
     public class StateMachineRequestPayload
     {

@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.Execution;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunction.Host
 {
     public class SqlQueryConfiguration : IQueryConfiguration
     {

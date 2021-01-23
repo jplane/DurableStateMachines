@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Reflection;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunction.Host
 {
     public static class TestFunction
     {

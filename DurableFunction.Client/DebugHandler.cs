@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace StateChartsDotNet.DurableFunction.Client
 {
     public abstract class DebugHandler
     {

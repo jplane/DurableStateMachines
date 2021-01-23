@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.DurableFunctionClient</AssemblyName>
-    <RootNamespace>StateChartsDotNet.DurableFunctionClient</RootNamespace>
+    <AssemblyName>StateChartsDotNet.DurableFunction.Client</AssemblyName>
+    <RootNamespace>StateChartsDotNet.DurableFunction.Client</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 

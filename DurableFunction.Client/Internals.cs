@@ -3,4 +3,4 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-[assembly: InternalsVisibleTo("StateChartsDotNet.DurableFunctionHost")]
+[assembly: InternalsVisibleTo("StateChartsDotNet.DurableFunction.Host")]

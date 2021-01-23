@@ -6,9 +6,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using StateChartsDotNet.DurableFunctionClient;
+using StateChartsDotNet.DurableFunction.Client;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunction.Host
 {
     public class StateMachineOrchestration
     {

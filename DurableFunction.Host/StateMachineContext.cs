@@ -9,7 +9,7 @@ using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableFunctionClient;
+using StateChartsDotNet.DurableFunction.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunction.Host
 {
     internal class StateMachineContext : ExecutionContextBase
     {

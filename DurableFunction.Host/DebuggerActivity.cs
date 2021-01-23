@@ -8,7 +8,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace StateChartsDotNet.DurableFunction.Host
 {
     public class DebuggerActivity
     {
