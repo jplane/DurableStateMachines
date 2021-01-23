@@ -59,7 +59,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             metadata._id = reader.ReadNullableString();
             metadata._resultLocation = reader.ReadNullableString();
 
-            metadata._finalizeExecutableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+            metadata._finalizeExecutableContent.AddRange(reader.ReadMany(ExecutableContentMetadata._Deserialize,
+                                                    o => ((dynamic)o).Parent = metadata));
 
             metadata._params.AddRange(reader.ReadMany(ParamMetadata<InvokeStateChartMetadata<TParent>>.Deserialize,
                                                        o => o.Parent = metadata));

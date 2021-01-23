@@ -33,7 +33,8 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             metadata.MetadataId = reader.ReadNullableString();
 
-            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+            metadata._executableContent.AddRange(reader.ReadMany(ExecutableContentMetadata._Deserialize,
+                                                    o => ((dynamic)o).Parent = metadata));
 
             return metadata;
         }

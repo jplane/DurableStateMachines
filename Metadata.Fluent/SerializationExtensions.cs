@@ -1,14 +1,10 @@
 ﻿using Newtonsoft.Json;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
 
 namespace StateChartsDotNet.Metadata.Fluent
 {
@@ -19,17 +15,26 @@ namespace StateChartsDotNet.Metadata.Fluent
         public static void WriteObject(this BinaryWriter writer, object obj)
         {
             if (obj == null)
+            {
                 writer.Write(NullValue);
+            }
             else
+            {
+                writer.Write(string.Empty); // "not null"
                 writer.Write(JsonConvert.SerializeObject(obj));
+            }
         }
 
         public static void WriteNullableString(this BinaryWriter writer, string s)
         {
             if (s == null)
+            {
                 writer.Write(NullValue);
+            }
             else
+            {
                 writer.Write(s);
+            }
         }
 
         public static void Write(this BinaryWriter writer, Expression expr)
@@ -58,7 +63,7 @@ namespace StateChartsDotNet.Metadata.Fluent
             }
             else
             {
-                writer.Write(true);
+                writer.Write(string.Empty); // "not null"
                 write(metadata, writer);
             }
         }
@@ -80,9 +85,13 @@ namespace StateChartsDotNet.Metadata.Fluent
             var obj = reader.ReadString();
 
             if (obj != NullValue)
-                return JsonConvert.DeserializeObject(obj);
+            {
+                return JsonConvert.DeserializeObject(reader.ReadString());
+            }
             else
+            {
                 return null;
+            }
         }
 
         public static string ReadNullableString(this BinaryReader reader)
@@ -94,10 +103,12 @@ namespace StateChartsDotNet.Metadata.Fluent
 
         public static TFunc Read<TFunc>(this BinaryReader reader) where TFunc : LambdaExpression
         {
-            var null_indidcator = reader.ReadString();
+            var null_indicator = reader.ReadString();
 
-            if (null_indidcator == NullValue)
+            if (null_indicator == NullValue)
+            {
                 return null;
+            }
 
             var deserializer = new ExpressionTreeBinaryDeserializer(reader);
 
@@ -108,9 +119,9 @@ namespace StateChartsDotNet.Metadata.Fluent
                                                 Func<BinaryReader, TMetadata> readItem,
                                                 Action<TMetadata> initializer)
         {
-            var null_indidcator = reader.ReadString();
+            var null_indicator = reader.ReadString();
 
-            if (null_indidcator != NullValue)
+            if (null_indicator != NullValue)
             {
                 var metadata = readItem(reader);
 

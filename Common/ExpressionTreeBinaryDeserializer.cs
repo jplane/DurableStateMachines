@@ -42,7 +42,6 @@ namespace StateChartsDotNet.Common
             {
                 case ExpressionType.Parameter:
                     var name = _reader.ReadString();
-                    _reader.ReadString(); // ignore
                     expr = _parms[name];
                     break;
 
@@ -124,7 +123,6 @@ namespace StateChartsDotNet.Common
 
         private ParameterExpression VisitParameter()
         {
-            _reader.ReadString();
             var name = _reader.ReadString();
             var type = Type.GetType(_reader.ReadString());
             return Expression.Parameter(type, name);
@@ -206,12 +204,12 @@ namespace StateChartsDotNet.Common
 
             if (isInstance)
             {
-                return Expression.Call(method, args);
+                var obj = VisitExpression();
+                return Expression.Call(obj, method, args);
             }
             else
             {
-                var obj = VisitExpression();
-                return Expression.Call(obj, method, args);
+                return Expression.Call(method, args);
             }
         }
 

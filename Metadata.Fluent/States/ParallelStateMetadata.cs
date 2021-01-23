@@ -60,7 +60,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             metadata._onExit = reader.Read(OnEntryExitMetadata<ParallelStateMetadata<TParent>>.Deserialize,
                                            o => o.Parent = metadata);
 
-            metadata._states.AddRange(StateMetadata.DeserializeMany(reader, metadata));
+            metadata._states.AddRange(reader.ReadMany(StateMetadata._Deserialize,
+                                             o => ((dynamic) o).Parent = metadata));
 
             metadata._transitions.AddRange(reader.ReadMany(TransitionMetadata<ParallelStateMetadata<TParent>>.Deserialize,
                                                              o => o.Parent = metadata));

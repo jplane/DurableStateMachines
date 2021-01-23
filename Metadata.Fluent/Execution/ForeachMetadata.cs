@@ -52,7 +52,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             metadata._indexLocation = reader.ReadNullableString();
             metadata._items = (IEnumerable) reader.ReadObject();
             metadata._getItems = reader.Read<Expression<Func<IDictionary<string, object>, IEnumerable>>>();
-            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            metadata._executableContent.AddRange(reader.ReadMany(ExecutableContentMetadata._Deserialize,
+                                                    o => ((dynamic)o).Parent = metadata));
 
             return metadata;
         }

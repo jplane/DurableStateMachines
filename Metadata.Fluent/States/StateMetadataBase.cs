@@ -29,7 +29,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             writer.WriteNullableString(this.MetadataId);
         }
 
-        internal static StateMetadata Deserialize(BinaryReader reader, dynamic parent)
+        internal static StateMetadata _Deserialize(BinaryReader reader)
         {
             reader.CheckArgNull(nameof(reader));
 
@@ -45,23 +45,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             Debug.Assert(deserializeMethod != null);
 
-            dynamic metadata = (StateMetadata) deserializeMethod.Invoke(null, new[] { reader });
-
-            metadata.Parent = parent;
-
-            return metadata;
-        }
-
-        internal static IEnumerable<StateMetadata> DeserializeMany(BinaryReader reader, dynamic parent)
-        {
-            reader.CheckArgNull(nameof(reader));
-
-            var count = reader.ReadInt32();
-
-            for (var i = 0; i < count; i++)
-            {
-                yield return Deserialize(reader, parent);
-            }
+            return (StateMetadata) deserializeMethod.Invoke(null, new[] { reader });
         }
 
         public abstract StateType Type { get; }

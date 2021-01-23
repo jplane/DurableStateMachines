@@ -29,32 +29,23 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
             writer.WriteNullableString(this.MetadataId);
         }
 
-        internal static IEnumerable<ExecutableContentMetadata> DeserializeMany(BinaryReader reader, dynamic parent)
+        internal static ExecutableContentMetadata _Deserialize(BinaryReader reader)
         {
             reader.CheckArgNull(nameof(reader));
 
-            var count = reader.ReadInt32();
+            var aqtn = reader.ReadNullableString();
 
-            for (var i = 0; i < count; i++)
-            {
-                var aqtn = reader.ReadNullableString();
+            Debug.Assert(!string.IsNullOrWhiteSpace(aqtn));
 
-                Debug.Assert(!string.IsNullOrWhiteSpace(aqtn));
+            var type = Type.GetType(aqtn);
 
-                var type = Type.GetType(aqtn);
+            Debug.Assert(type != null);
 
-                Debug.Assert(type != null);
+            var deserializeMethod = type.GetMethod("Deserialize", BindingFlags.NonPublic | BindingFlags.Static);
 
-                var deserializeMethod = type.GetMethod("Deserialize", BindingFlags.NonPublic | BindingFlags.Static);
+            Debug.Assert(deserializeMethod != null);
 
-                Debug.Assert(deserializeMethod != null);
-
-                dynamic metadata = (ExecutableContentMetadata)deserializeMethod.Invoke(null, new[] { reader });
-
-                metadata.Parent = parent;
-
-                yield return metadata;
-            }
+            return (ExecutableContentMetadata) deserializeMethod.Invoke(null, new[] { reader });
         }
     }
 }

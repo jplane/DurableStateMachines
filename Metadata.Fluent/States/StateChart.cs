@@ -43,7 +43,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
         protected override IStateMetadata _Parent => null;
 
-        public JObject ToJson()
+        public JToken ToJson()
         {
             using var stream = new MemoryStream();
 
@@ -51,7 +51,7 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             var base64 = Convert.ToBase64String(stream.ToArray());
 
-            return JObject.FromObject(base64);
+            return JToken.FromObject(base64);
         }
 
         public static IStateChartMetadata Deserialize(string content)
@@ -111,8 +111,10 @@ namespace StateChartsDotNet.Metadata.Fluent.States
 
             var statechart = new StateChart(name);
 
-            statechart.MetadataId = reader.ReadNullableString();
+            reader.ReadNullableString();    // MetadataId, can safely ignore
+
             statechart._databinding = (Databinding)reader.ReadInt32();
+
             statechart._failFast = reader.ReadBoolean();
 
             statechart._datamodel = reader.Read(DatamodelMetadata<StateChart>.Deserialize,
@@ -124,7 +126,8 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             statechart._script = reader.Read(ScriptMetadata<StateChart>.Deserialize,
                                              o => o.Parent = statechart);
 
-            statechart._states.AddRange(StateMetadata.DeserializeMany(reader, statechart));
+            statechart._states.AddRange(reader.ReadMany(StateMetadata._Deserialize,
+                                             o => ((dynamic) o).Parent = statechart));
 
             statechart._transitions.AddRange(reader.ReadMany(TransitionMetadata<StateChart>.Deserialize,
                                                              o => o.Parent = statechart));

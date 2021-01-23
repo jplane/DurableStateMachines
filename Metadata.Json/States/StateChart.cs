@@ -28,7 +28,7 @@ namespace StateChartsDotNet.Metadata.Json.States
             document.InitDocumentPosition();
         }
 
-        public JObject ToJson()
+        public JToken ToJson()
         {
             return _element;
         }

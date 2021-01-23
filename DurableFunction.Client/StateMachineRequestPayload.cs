@@ -19,7 +19,12 @@ namespace StateChartsDotNet.DurableFunction.Client
         public StateMachineDefinitionFormat Format { get; internal set; }
 
         [JsonProperty("statemachine")]
-        public JObject StateMachineDefinition { get; internal set; }
+        public JToken StateMachineDefinition { get; internal set; }
+
+        internal string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
 
         internal IStateChartMetadata GetMetadata()
         {
@@ -33,7 +38,7 @@ namespace StateChartsDotNet.DurableFunction.Client
             switch (this.Format)
             {
                 case StateMachineDefinitionFormat.Json:
-                    result = new Metadata.Json.States.StateChart(this.StateMachineDefinition);
+                    result = new Metadata.Json.States.StateChart((JObject) this.StateMachineDefinition);
                     break;
 
                 case StateMachineDefinitionFormat.Fluent:

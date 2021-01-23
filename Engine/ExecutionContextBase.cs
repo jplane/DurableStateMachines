@@ -222,13 +222,6 @@ namespace StateChartsDotNet
             {
                 _isRunning = false;
             }
-            else if (msg.IsChildStateChartResponse && msg.IsInvokeError)
-            {
-                Debug.Assert(msg.Content != null);
-                Debug.Assert(msg.Content is Exception);
-
-                _error = (Exception) msg.Content;
-            }
 
             return msg;
         }

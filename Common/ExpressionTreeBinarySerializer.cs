@@ -22,7 +22,8 @@ namespace StateChartsDotNet.Common
 
             foreach (var parm in lambda.Parameters)
             {
-                Visit(parm);
+                _writer.Write(parm.Name);
+                _writer.Write(parm.Type.AssemblyQualifiedName);
             }
 
             Visit(lambda.Body);
@@ -34,7 +35,6 @@ namespace StateChartsDotNet.Common
         {
             _writer.Write(node.NodeType.ToString().ToLowerInvariant());
             _writer.Write(node.Name);
-            _writer.Write(node.Type.AssemblyQualifiedName);
             return node;
         }
 

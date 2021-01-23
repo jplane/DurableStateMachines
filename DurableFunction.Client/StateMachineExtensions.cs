@@ -1,8 +1,13 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.DurableFunction.Client
@@ -24,6 +29,19 @@ namespace StateChartsDotNet.DurableFunction.Client
             client.CheckArgNull(nameof(client));
             definition.CheckArgNull(nameof(definition));
 
+            var payload = GetPayload(definition, arguments, debugInfo);
+
+            Debug.Assert(payload != null);
+
+            return client.StartNewAsync("statemachine-orchestration", payload);
+        }
+
+        internal static StateMachineRequestPayload GetPayload(IStateChartMetadata definition,
+                                                              IDictionary<string, object> arguments,
+                                                              DebuggerInfo debugInfo)
+        {
+            Debug.Assert(definition != null);
+
             var format = StateMachineDefinitionFormat.Fluent;
 
             if (definition is Metadata.Json.States.StateChart)
@@ -31,15 +49,13 @@ namespace StateChartsDotNet.DurableFunction.Client
                 format = StateMachineDefinitionFormat.Json;
             }
 
-            var payload = new StateMachineRequestPayload
+            return new StateMachineRequestPayload
             {
                 StateMachineDefinition = definition.ToJson(),
                 Format = format,
                 Arguments = arguments == null ? null : new Dictionary<string, object>(arguments),
                 DebugInfo = debugInfo
             };
-
-            return client.StartNewAsync("statemachine-orchestration", payload);
         }
     }
 }

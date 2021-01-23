@@ -62,10 +62,22 @@ namespace StateChartsDotNet.Metadata.Fluent.States
             metadata._type = (TransitionType)reader.ReadInt32();
             metadata._evalCondition = reader.Read<Expression<Func<IDictionary<string, object>, bool>>>();
 
-            metadata._targets.AddRange(reader.ReadNullableString().Split('|'));
-            metadata._messages.AddRange(reader.ReadNullableString().Split('|'));
+            var targets = reader.ReadNullableString();
 
-            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+            if (!string.IsNullOrWhiteSpace(targets))
+            {
+                metadata._targets.AddRange(targets.Split('|'));
+            }
+
+            var messages = reader.ReadNullableString();
+
+            if (!string.IsNullOrWhiteSpace(messages))
+            {
+                metadata._messages.AddRange(messages.Split('|'));
+            }
+
+            metadata._executableContent.AddRange(reader.ReadMany(ExecutableContentMetadata._Deserialize,
+                                                    o => ((dynamic)o).Parent = metadata));
 
             var delayString = reader.ReadNullableString();
 

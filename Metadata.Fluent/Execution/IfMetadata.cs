@@ -46,7 +46,9 @@ namespace StateChartsDotNet.Metadata.Fluent.Execution
 
             metadata.MetadataId = reader.ReadNullableString();
             metadata._eval = reader.Read<Expression<Func<IDictionary<string, object>, bool>>>();
-            metadata._executableContent.AddRange(ExecutableContentMetadata.DeserializeMany(reader, metadata));
+
+            metadata._executableContent.AddRange(reader.ReadMany(ExecutableContentMetadata._Deserialize,
+                                                    o => ((dynamic)o).Parent = metadata));
 
             metadata._elseIfs.AddRange(reader.ReadMany(ElseIfMetadata<IfMetadata<TParent>>.Deserialize,
                                                        o => o.Parent = metadata));
