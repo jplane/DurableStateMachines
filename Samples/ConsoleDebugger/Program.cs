@@ -1,7 +1,5 @@
 ﻿using ConsoleDebugger;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StateChartsDotNet.DurableFunction.Client;
@@ -36,15 +34,17 @@ namespace ConsoleApp1
 
             Debug.Assert(config != null);
 
-            //var hook = new DebugHook();
+            var hook = new DebugHook();
 
-            //hook.DebuggerUri = config["DEBUGGER_URI"];
+            hook.DebuggerUri = config["DEBUGGER_URI"];
+
+            var debuggerTask = hook.StartAsync();
 
             using var client = new StateMachineHttpClient();
 
             client.BaseAddress = new Uri(config["DF_URI"]);
 
-            await client.StartNewAsync(machine);
+            await client.StartNewAsync(machine, hook.GetDebuggerInfo());
 
             DurableOrchestrationStatus status = null;
 
@@ -73,6 +73,10 @@ namespace ConsoleApp1
             }
 
             await host.RunAsync();
+
+            await hook.StopAsync();
+            
+            await debuggerTask;
         }
 
         static IHostBuilder CreateHostBuilder(string[] args) =>

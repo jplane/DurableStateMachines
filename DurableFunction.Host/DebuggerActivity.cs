@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace StateChartsDotNet.DurableFunction.Host
@@ -34,7 +35,10 @@ namespace StateChartsDotNet.DurableFunction.Host
 
             var tcs = new TaskCompletionSource<bool>();
 
-            var signalr = new HubConnectionBuilder().WithUrl(data.Uri).Build();
+            var signalr = new HubConnectionBuilder()
+                                .WithUrl(data.Uri)
+                                .AddNewtonsoftJsonProtocol()
+                                .Build();
 
             signalr.On("resume", () => tcs.SetResult(true));
 

@@ -232,7 +232,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 foreach (var pair in this.GetDataValues())
                 {
-                    info.Add(pair.Key, JsonConvert.SerializeObject(pair.Value));
+                    info.Add(pair.Key, pair.Value);
                 }
 
                 if (string.IsNullOrWhiteSpace(_debugInfo.DebugUri))

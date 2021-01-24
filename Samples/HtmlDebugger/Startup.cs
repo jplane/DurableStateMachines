@@ -9,7 +9,8 @@ namespace HtmlDebugger
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR();
+            services.AddSignalR()
+                    .AddNewtonsoftJsonProtocol();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -20,6 +21,7 @@ namespace HtmlDebugger
             }
 
             app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

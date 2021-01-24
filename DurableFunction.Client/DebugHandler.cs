@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Debugger;
 using System;
@@ -49,12 +50,15 @@ namespace StateChartsDotNet.DurableFunction.Client
 
                 _tcs = new TaskCompletionSource<bool>();
 
-                _conn = new HubConnectionBuilder().WithUrl(this.DebuggerUri).Build();
+                _conn = new HubConnectionBuilder()
+                                    .WithUrl(this.DebuggerUri)
+                                    .AddNewtonsoftJsonProtocol()
+                                    .Build();
             }
 
             Func<IDictionary<string, object>, Task> handler = data =>
             {
-                var action = (DebuggerAction) data["_debuggeraction"];
+                var action = (DebuggerAction) Enum.Parse(typeof(DebuggerAction), (string) data["_debuggeraction"]);
 
                 Task task = null;
 

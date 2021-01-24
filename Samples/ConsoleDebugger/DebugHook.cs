@@ -14,25 +14,49 @@ namespace ConsoleDebugger
 
         protected override Task OnEnterStateMachine(IDictionary<string, object> data)
         {
-            Console.WriteLine($"Enter state machine: {data["id"]}");
+            foreach (var key in data.Keys)
+            {
+                Console.WriteLine($"{key} = {data[key]}");
+            }
+
+            Console.WriteLine();
+
             return base.OnEnterStateMachine(data);
         }
 
         protected override Task OnExitStateMachine(IDictionary<string, object> data)
         {
-            Console.WriteLine($"Exit state machine: {data["id"]}");
+            foreach (var key in data.Keys)
+            {
+                Console.WriteLine($"{key} = {data[key]}");
+            }
+
+            Console.WriteLine();
+
             return base.OnExitStateMachine(data);
         }
 
         protected override Task OnEnterState(IDictionary<string, object> data)
         {
-            Console.WriteLine($"Enter state: {data["id"]}");
+            foreach (var key in data.Keys)
+            {
+                Console.WriteLine($"{key} = {data[key]}");
+            }
+
+            Console.WriteLine();
+
             return base.OnEnterState(data);
         }
 
         protected override Task OnExitState(IDictionary<string, object> data)
         {
-            Console.WriteLine($"Exit state: {data["id"]}");
+            foreach (var key in data.Keys)
+            {
+                Console.WriteLine($"{key} = {data[key]}");
+            }
+
+            Console.WriteLine();
+
             return base.OnExitState(data);
         }
     }
