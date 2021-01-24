@@ -1,4 +1,5 @@
 ﻿using StateChartsDotNet.Common;
+using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
@@ -45,9 +46,6 @@ namespace StateChartsDotNet.Model.Execution
                 case ISendMessageMetadata send:
                     content = new SendMessage(send);
                     break;
-                case ICancelMetadata cancel:
-                    content = new Cancel(cancel);
-                    break;
                 case IAssignMetadata assign:
                     content = new Assign(assign);
                     break;
@@ -67,6 +65,8 @@ namespace StateChartsDotNet.Model.Execution
         {
             await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
 
+            await context.BreakOnDebugger(DebuggerAction.BeforeAction, _metadata);
+
             try
             {
                 await _ExecuteAsync(context);
@@ -81,6 +81,8 @@ namespace StateChartsDotNet.Model.Execution
             }
             finally
             {
+                await context.BreakOnDebugger(DebuggerAction.AfterAction, _metadata);
+
                 await context.LogInformationAsync($"End: {this.GetType().Name}.Execute");
             }
         }

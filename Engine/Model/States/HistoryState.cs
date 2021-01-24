@@ -22,11 +22,6 @@ namespace StateChartsDotNet.Model.States
             throw new NotImplementedException();
         }
 
-        public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
-        {
-            return Task.CompletedTask;
-        }
-
         public override IEnumerable<State> GetChildStates()
         {
             throw new NotImplementedException();

@@ -32,17 +32,16 @@ namespace StateChartsDotNet.DurableFunction.Host
             var payload = context.GetInput<StateMachineRequestPayload>();
 
             Debug.Assert(payload != null);
-
-            var definition = payload.GetMetadata();
-
-            if (definition == null)
-            {
-                throw new InvalidOperationException("Request must include a state machine definition.");
-            }
+            Debug.Assert(payload.StateMachineDefinition != null);
 
             var args = payload.Arguments ?? new Dictionary<string, object>();
 
-            var executionContext = new StateMachineContext(definition, context, args, payload.DebugInfo, payload.Format, _config, logger);
+            var executionContext = new StateMachineContext(payload.StateMachineDefinition,
+                                                           context,
+                                                           args,
+                                                           payload.DebugInfo,
+                                                           _config,
+                                                           logger);
 
             logger.LogInformation("Begin state machine execution");
 

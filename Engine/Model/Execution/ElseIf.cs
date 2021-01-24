@@ -10,17 +10,17 @@ namespace StateChartsDotNet.Model.Execution
     internal class ElseIf
     {
         private readonly Lazy<ExecutableContent[]> _content;
-        private readonly Func<dynamic, bool> _cond;
+        private readonly IElseIfMetadata _metadata;
 
-        public ElseIf(Func<dynamic, bool> condition, IEnumerable<IExecutableContentMetadata> contentMetadata)
+        public ElseIf(IElseIfMetadata metadata)
         {
-            contentMetadata.CheckArgNull(nameof(contentMetadata));
+            metadata.CheckArgNull(nameof(metadata));
 
-            _cond = condition;
+            _metadata = metadata;
 
             _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return contentMetadata.Select(ExecutableContent.Create).ToArray();
+                return _metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Model.Execution
 
             try
             {
-                var result = _cond(context.ScriptData);
+                var result = _metadata.EvalCondition(context.ScriptData);
 
                 await context.LogDebugAsync($"Condition = {result}");
 

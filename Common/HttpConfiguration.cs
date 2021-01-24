@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using StateChartsDotNet.Common.ExpressionTrees;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
@@ -39,78 +40,43 @@ namespace StateChartsDotNet.Common
 
     public class HttpSendMessageConfiguration : HttpConfiguration, ISendMessageConfiguration
     {
+        private readonly Lazy<Func<dynamic, object>> _getContent;
+
+        public HttpSendMessageConfiguration()
+        {
+            _getContent = new Lazy<Func<dynamic, object>>(() =>
+            {
+                if (!string.IsNullOrWhiteSpace(this.ContentExpression))
+                {
+                    return ExpressionCompiler.Compile<object>(this.ContentExpression);
+                }
+                else if (this.ContentFunction != null)
+                {
+                    var func = this.ContentFunction.Compile();
+
+                    Debug.Assert(func != null);
+
+                    return data => func((IDictionary<string, object>) data);
+                }
+                else
+                {
+                    return _ => this.Content;
+                }
+            });
+        }
+
         [JsonProperty("contenttype")]
         public string ContentType { get; set; }
 
         [JsonProperty("content")]
         public object Content { get; set; }
 
-        [JsonProperty("contentexpr")]
+        [JsonProperty("contentexpression")]
         public string ContentExpression { get; set; }
 
-        [JsonProperty("contentexprtype")]
-        public HttpSendMessageContentType ContentExpressionType { get; set; }
+        [JsonProperty("contentfunction", ItemConverterType = typeof(ExpressionTreeConverter))]
+        public Expression<Func<IDictionary<string, object>, object>> ContentFunction { get; set; }
 
-        internal void SetContentExpressionTree(LambdaExpression expression)
-        {
-            using var ms = new MemoryStream();
-            using var writer = new BinaryWriter(ms);
-
-            var serializer = new ExpressionTreeBinarySerializer(writer);
-
-            serializer.Visit(expression);
-
-            this.Content = null;
-
-            this.ContentExpression = Convert.ToBase64String(ms.ToArray());
-
-            this.ContentExpressionType = HttpSendMessageContentType.ExpressionTree;
-        }
-
-        internal object GetContent(dynamic data)
-        {
-            object result = this.Content;
-
-            switch (this.ContentExpressionType)
-            {
-                case HttpSendMessageContentType.CSharpExpression:
-                    {
-                        var func = ExpressionCompiler.Compile<object>(this.ContentExpression);
-
-                        Debug.Assert(func != null);
-
-                        result = func(data);
-                    }
-                    break;
-
-                case HttpSendMessageContentType.ExpressionTree:
-                    {
-                        using var ms = new MemoryStream(Convert.FromBase64String(this.ContentExpression));
-                        using var reader = new BinaryReader(ms);
-
-                        var deserializer = new ExpressionTreeBinaryDeserializer(reader);
-
-                        var lambdaExpr = deserializer.Visit();
-
-                        Debug.Assert(lambdaExpr != null);
-
-                        var func = (Func<IDictionary<string, object>, object>) lambdaExpr.Compile();
-
-                        Debug.Assert(func != null);
-
-                        result = func(data);
-                    }
-                    break;
-            }
-
-            return result;
-        }
-    }
-
-    public enum HttpSendMessageContentType
-    {
-        StaticValue = 1,
-        CSharpExpression,
-        ExpressionTree
+        internal object GetContent(dynamic data) => _getContent.Value(data);
     }
 }

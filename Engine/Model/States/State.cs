@@ -9,6 +9,7 @@ using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
 using System.Diagnostics;
 using StateChartsDotNet.Common.Debugger;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -20,17 +21,13 @@ namespace StateChartsDotNet.Model.States
         protected readonly Lazy<OnEntryExit> _onExit;
         protected readonly Lazy<Transition[]> _transitions;
         protected readonly Lazy<InvokeStateChart[]> _invokes;
-        protected readonly Lazy<Datamodel> _datamodel;
         protected readonly Lazy<State[]> _states;
         protected readonly Lazy<Transition> _initialTransition;
-
-        private bool _firstEntry;
 
         public State(IStateMetadata metadata, State parent)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _firstEntry = true;
             _metadata = metadata;
             _parent = parent;
 
@@ -62,16 +59,6 @@ namespace StateChartsDotNet.Model.States
             _invokes = new Lazy<InvokeStateChart[]>(() =>
             {
                 return _metadata.GetStateChartInvokes().Select(sm => new InvokeStateChart(sm, _metadata.MetadataId)).ToArray();
-            });
-
-            _datamodel = new Lazy<Datamodel>(() =>
-            {
-                var meta = _metadata.GetDatamodel();
-
-                if (meta != null)
-                    return new Datamodel(meta);
-                else
-                    return null;
             });
 
             _initialTransition = new Lazy<Transition>(() =>
@@ -126,22 +113,6 @@ namespace StateChartsDotNet.Model.States
         public virtual Transition GetInitialStateTransition()
         {
             return _initialTransition.Value;
-        }
-
-        public virtual async Task InitDatamodel(ExecutionContextBase context, bool recursive)
-        {
-            if (_datamodel.Value != null)
-            {
-                await _datamodel.Value.Init(context);
-            }
-
-            if (recursive)
-            {
-                foreach (var child in GetChildStates())
-                {
-                    await child.InitDatamodel(context, recursive);
-                }
-            }
         }
 
         public virtual async Task InvokeAsync(ExecutionContextBase context)
@@ -254,16 +225,11 @@ namespace StateChartsDotNet.Model.States
 
             await context.LogInformationAsync($"Enter {this.GetType().Name}: Id {this.Id}");
 
+            await context.BreakOnDebugger(DebuggerAction.EnterState, _metadata);
+
             context.Configuration.Add(this);
 
             context.StatesToInvoke.Add(this);
-
-            if (context.Root.Binding == Databinding.Late && _firstEntry)
-            {
-                await this.InitDatamodel(context, false);
-
-                _firstEntry = false;
-            }
 
             if (_onEntry.Value != null)
             {
@@ -322,15 +288,11 @@ namespace StateChartsDotNet.Model.States
                     }
                 }
             }
-
-            await context.BreakOnDebugger(DebuggerAction.EnterState, _metadata);
         }
 
         public async Task ExitAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
-
-            await context.BreakOnDebugger(DebuggerAction.ExitState, _metadata);
 
             await context.LogInformationAsync($"Exit {this.GetType().Name}: Id {this.Id}");
 
@@ -340,6 +302,8 @@ namespace StateChartsDotNet.Model.States
             }
 
             context.Configuration.Remove(this);
+
+            await context.BreakOnDebugger(DebuggerAction.ExitState, _metadata);
         }
 
         public bool IsDescendent(State state)
@@ -351,7 +315,25 @@ namespace StateChartsDotNet.Model.States
 
         public static int Compare(State state1, State state2)
         {
-            return state1._metadata.DepthFirstCompare(state2._metadata);
+            if (state1 == null && state2 == null)
+            {
+                return 0;
+            }
+            else if (state1 == null)
+            {
+                return -1;
+            }
+            else if (state2 == null)
+            {
+                return 1;
+            }
+            else
+            {
+                var state1DocOrder = state1._metadata.GetDocumentOrder();
+                var state2DocOrder = state2._metadata.GetDocumentOrder();
+
+                return state1DocOrder == state2DocOrder ? 0 : state1DocOrder > state2DocOrder ? -1 : 1;
+            }
         }
 
         public static int ReverseCompare(State state1, State state2)

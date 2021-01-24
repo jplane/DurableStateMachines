@@ -31,8 +31,6 @@ namespace StateChartsDotNet
         public ExecutionContext(IStateChartMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
             : base(metadata, cancelToken, logger)
         {
-            metadata.Validate();
-
             _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();

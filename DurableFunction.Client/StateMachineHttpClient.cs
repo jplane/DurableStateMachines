@@ -4,9 +4,11 @@ using Nito.AsyncEx;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
+using StateChartsDotNet.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,12 +24,12 @@ namespace StateChartsDotNet.DurableFunction.Client
         {
         }
 
-        public Task StartNewAsync(IStateChartMetadata definition, DebuggerInfo debugInfo = null)
+        public Task StartNewAsync(StateMachine definition, DebuggerInfo debugInfo = null)
         {
             return StartNewAsync(definition, null, debugInfo);
         }
 
-        public async Task StartNewAsync(IStateChartMetadata definition,
+        public async Task StartNewAsync(StateMachine definition,
                                         IDictionary<string, object> arguments,
                                         DebuggerInfo debugInfo = null)
         {
@@ -40,9 +42,12 @@ namespace StateChartsDotNet.DurableFunction.Client
 
             using var _ = await _lock.LockAsync();
 
-            var payload = StateMachineExtensions.GetPayload(definition, arguments, debugInfo);
-
-            Debug.Assert(payload != null);
+            var payload = new StateMachineRequestPayload
+            {
+                StateMachineDefinition = definition,
+                Arguments = arguments?.ToDictionary(p => p.Key, p => p.Value) ?? new Dictionary<string, object>(),
+                DebugInfo = debugInfo
+            };
 
             var content = new StringContent(payload.ToJson(), Encoding.UTF8, "application/json");
 

@@ -6,11 +6,11 @@ using StateChartsDotNet.Common.Model.Data;
 
 namespace StateChartsDotNet.Model.Data
 {
-    internal class Datamodel
+    internal class DataModel
     {
         protected readonly Lazy<DataInit[]> _data;
 
-        public Datamodel(IDatamodelMetadata metadata)
+        public DataModel(IDataModelMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 

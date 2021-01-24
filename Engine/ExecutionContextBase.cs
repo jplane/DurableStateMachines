@@ -39,6 +39,8 @@ namespace StateChartsDotNet
         {
             metadata.CheckArgNull(nameof(metadata));
 
+            metadata.Validate();
+
             _metadata = metadata;
             _root = new StateChart(metadata);
             _cancelToken = cancelToken;
@@ -182,16 +184,13 @@ namespace StateChartsDotNet
         {
             _data["_name"] = this.Root.Name;
 
+            await this.BreakOnDebugger(DebuggerAction.EnterStateMachine, _metadata);
+
             _isRunning = true;
 
-            if (this.Root.Binding == Databinding.Early)
-            {
-                await this.Root.InitDatamodel(this, true);
-            }
+            await this.Root.InitDataModel(this);
 
             await this.Root.ExecuteScript(this);
-
-            await this.BreakOnDebugger(DebuggerAction.EnterStateMachine, _metadata);
         }
 
         internal Task ExitAsync()

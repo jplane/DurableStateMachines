@@ -8,6 +8,7 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Messages;
+using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -86,6 +87,10 @@ namespace StateChartsDotNet.Model.States
 
         public async Task ExecuteContentAsync(ExecutionContextBase context)
         {
+            context.CheckArgNull(nameof(context));
+
+            await context.BreakOnDebugger(DebuggerAction.MakeTransition, _metadata);
+
             if (_metadata.Delay != null)
             {
                 await context.DelayAsync(_metadata.Delay.Value);

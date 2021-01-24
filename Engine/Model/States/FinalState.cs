@@ -21,11 +21,6 @@ namespace StateChartsDotNet.Model.States
             return Task.CompletedTask;
         }
 
-        public override Task InitDatamodel(ExecutionContextBase context, bool recursive)
-        {
-            return Task.CompletedTask;
-        }
-
         public override IEnumerable<State> GetChildStates()
         {
             return Enumerable.Empty<State>();

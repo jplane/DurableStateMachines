@@ -3,7 +3,9 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StateChartsDotNet.DurableFunction.Client;
-using StateChartsDotNet.Metadata.Fluent.States;
+using StateChartsDotNet.Metadata.Data;
+using StateChartsDotNet.Metadata.Execution;
+using StateChartsDotNet.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,16 +21,46 @@ namespace ConsoleApp1
 
             using IHost host = CreateHostBuilder(args).Build();
 
-            var machine = StateChart.Define("test")
-                                    .DataInit("x", 1)
-                                    .State("state1")
-                                        .OnEntry
-                                            .Assign("x", data => ((long)data["x"]) + 1)._
-                                        .OnExit
-                                            .Assign("x", data => ((long)data["x"]) + 1)._
-                                        .Transition
-                                            .Target("alldone")._._
-                                    .FinalState("alldone")._;
+            var machine = new StateMachine
+            {
+                Id = "test",
+                DataModel = new DataModel
+                {
+                    Items =
+                    {
+                        new DataInit { Id = "x", Value = 1 }
+                    }
+                },
+                States =
+                {
+                    new AtomicState
+                    {
+                        Id = "state1",
+                        OnEntry = new OnEntryExit
+                        {
+                            Actions =
+                            {
+                                new Assign { Location = "x", ValueExpression = "x + 1" }
+                            }
+                        },
+                        OnExit = new OnEntryExit
+                        {
+                            Actions =
+                            {
+                                new Assign { Location = "x", ValueExpression = "x + 1" }
+                            }
+                        },
+                        Transitions =
+                        {
+                            new Transition { Targets = { "alldone" } }
+                        }
+                    },
+                    new FinalState
+                    {
+                        Id = "alldone"
+                    }
+                }
+            };
 
             var config = (IConfiguration) host.Services.GetService(typeof(IConfiguration));
 

@@ -10,6 +10,7 @@ using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.DurableFunction.Client;
+using StateChartsDotNet.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,13 +26,11 @@ namespace StateChartsDotNet.DurableFunction.Host
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
         private readonly DebuggerInfo _debugInfo;
-        private readonly StateMachineDefinitionFormat _format;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
                                    IReadOnlyDictionary<string, object> data,
                                    DebuggerInfo debugInfo,
-                                   StateMachineDefinitionFormat format,
                                    IConfiguration config,
                                    ILogger logger)
             : base(metadata, default, logger)
@@ -44,7 +43,6 @@ namespace StateChartsDotNet.DurableFunction.Host
             _orchestrationContext = orchestrationContext;
             _config = config;
             _debugInfo = debugInfo;
-            _format = format;
 
             foreach (var pair in data)
             {
@@ -71,19 +69,15 @@ namespace StateChartsDotNet.DurableFunction.Host
             var childMachine = ResolveChildStateChart(metadata);
 
             Debug.Assert(childMachine != null);
+            Debug.Assert(childMachine is StateMachine); // for now :-)
 
             var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData)
                                                                 .ToDictionary(p => p.Key, p => p.Value));
 
-            var json = childMachine.ToJson();
-
-            Debug.Assert(json != null);
-
             var payload = new StateMachineRequestPayload
             {
                 Arguments = inputs,
-                StateMachineDefinition = json,
-                Format = _format,
+                StateMachineDefinition = (StateMachine) childMachine,
                 DebugInfo = _debugInfo
             };
 

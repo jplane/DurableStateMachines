@@ -22,9 +22,9 @@ namespace StateChartsDotNet.Model.Execution
 
             try
             {
-                if (metadata.Delay > TimeSpan.Zero)
+                if (metadata.Delay != null)
                 {
-                    await context.DelayAsync(metadata.Delay);
+                    await context.DelayAsync(metadata.Delay.Value);
                 }
 
                 var id = await context.ResolveSendMessageId(metadata);

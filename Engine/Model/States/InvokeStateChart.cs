@@ -5,6 +5,7 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Model.Execution;
 using StateChartsDotNet.Common;
 using System.Diagnostics;
+using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet.Model.States
 {
@@ -34,6 +35,8 @@ namespace StateChartsDotNet.Model.States
 
             await context.LogInformationAsync("Start: InvokeStateChart.Execute");
 
+            await context.BreakOnDebugger(DebuggerAction.BeforeInvokeChildStateMachine, _metadata);
+
             try
             {
                 var data = await context.InvokeChildStateChart(_metadata, _parentMetadataId);
@@ -42,7 +45,7 @@ namespace StateChartsDotNet.Model.States
 
                 if (!string.IsNullOrWhiteSpace(_metadata.ResultLocation))
                 {
-                    context.SetDataValue(_metadata.ResultLocation, data);
+                    context.SetDataValue(_metadata.ResultLocation, new DynamicDictionary(data));
                 }
 
                 foreach (var content in _finalizeContent.Value)
@@ -58,6 +61,8 @@ namespace StateChartsDotNet.Model.States
             }
             finally
             {
+                await context.BreakOnDebugger(DebuggerAction.AfterInvokeChildStateMachine, _metadata);
+
                 await context.LogInformationAsync("End: InvokeStateChart.Execute");
             }
         }

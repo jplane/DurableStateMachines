@@ -9,6 +9,11 @@ namespace StateChartsDotNet.Common.Debugger
         EnterStateMachine = 1,
         ExitStateMachine,
         EnterState,
-        ExitState
+        ExitState,
+        MakeTransition,
+        BeforeAction,
+        AfterAction,
+        BeforeInvokeChildStateMachine,
+        AfterInvokeChildStateMachine
     }
 }

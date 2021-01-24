@@ -79,6 +79,26 @@ namespace StateChartsDotNet.DurableFunction.Client
                     case DebuggerAction.ExitState:
                         task = OnExitState(data);
                         break;
+
+                    case DebuggerAction.MakeTransition:
+                        task = OnMakeTransition(data);
+                        break;
+
+                    case DebuggerAction.BeforeAction:
+                        task = OnBeforeAction(data);
+                        break;
+
+                    case DebuggerAction.AfterAction:
+                        task = OnAfterAction(data);
+                        break;
+
+                    case DebuggerAction.BeforeInvokeChildStateMachine:
+                        task = OnBeforeInvokeChildStateMachine(data);
+                        break;
+
+                    case DebuggerAction.AfterInvokeChildStateMachine:
+                        task = OnAfterInvokeChildStateMachine(data);
+                        break;
                 }
 
                 return task;
@@ -127,6 +147,31 @@ namespace StateChartsDotNet.DurableFunction.Client
         }
 
         protected virtual Task OnExitState(IDictionary<string, object> data)
+        {
+            return Resume();
+        }
+
+        protected virtual Task OnMakeTransition(IDictionary<string, object> data)
+        {
+            return Resume();
+        }
+
+        protected virtual Task OnBeforeAction(IDictionary<string, object> data)
+        {
+            return Resume();
+        }
+
+        protected virtual Task OnAfterAction(IDictionary<string, object> data)
+        {
+            return Resume();
+        }
+
+        protected virtual Task OnBeforeInvokeChildStateMachine(IDictionary<string, object> data)
+        {
+            return Resume();
+        }
+
+        protected virtual Task OnAfterInvokeChildStateMachine(IDictionary<string, object> data)
         {
             return Resume();
         }

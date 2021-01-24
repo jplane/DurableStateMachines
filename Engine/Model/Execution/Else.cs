@@ -11,13 +11,13 @@ namespace StateChartsDotNet.Model.Execution
     {
         private readonly Lazy<ExecutableContent[]> _content;
 
-        public Else(IEnumerable<IExecutableContentMetadata> contentMetadata)
+        public Else(IElseMetadata metadata)
         {
-            contentMetadata.CheckArgNull(nameof(contentMetadata));
+            metadata.CheckArgNull(nameof(metadata));
 
             _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return contentMetadata.Select(ExecutableContent.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 

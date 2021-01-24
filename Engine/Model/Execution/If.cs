@@ -26,11 +26,11 @@ namespace StateChartsDotNet.Model.Execution
 
             _else = new Lazy<Else>(() =>
             {
-                var elseExecutableContent = metadata.GetElseExecutableContent();
+                var elseMetadata = metadata.GetElse();
 
-                if (elseExecutableContent != null)
+                if (elseMetadata != null)
                 {
-                    return new Else(elseExecutableContent);
+                    return new Else(elseMetadata);
                 }
                 else
                 {
@@ -39,29 +39,14 @@ namespace StateChartsDotNet.Model.Execution
             });
 
             _elseifs = new Lazy<ElseIf[]>(() =>
-            {
-                var elseifs = new List<ElseIf>();
-
-                var conditions = metadata.GetElseIfConditions().ToArray();
-
-                var content = metadata.GetElseIfExecutableContent().ToArray();
-
-                Debug.Assert(conditions.Length == content.Length);
-
-                for (var i = 0; i < conditions.Length; i++)
-                {
-                    elseifs.Add(new ElseIf(conditions[i], content[i]));
-                }
-
-                return elseifs.ToArray();
-            });
+                metadata.GetElseIfs().Select(metadata => new ElseIf(metadata)).ToArray());
         }
 
         protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
-            var result = ((IIfMetadata) _metadata).EvalIfCondition(context.ScriptData);
+            var result = ((IIfMetadata) _metadata).EvalCondition(context.ScriptData);
 
             await context.LogDebugAsync($"Condition = {result}");
 
