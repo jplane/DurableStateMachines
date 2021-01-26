@@ -12,15 +12,17 @@ The utility of traditional state machines goes down as system complexity increas
 
 ## Goals
 
-StateChartsDotNet aims to provide a full-featured statechart implementation for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/).
+StateChartsDotNet aims to provide a full-featured statechart implementation for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/). This means you can run state machines locally on your laptop, or anywhere Azure Functions will run (Kubernetes, Azure serverless, edge compute, etc.).
 
 Some specific design and implementation choices:
 
-- An [abstraction](./Common/Model) for describing statechart definitions and an initial [JSON](./Metadata.Json) implementation
+- An [abstraction](./Common/Model) for describing statechart definitions and an [initial](./Metadata) implementation
 
 - Abstractions for both [pull](./Common/Model/Execution/IQueryMetadata.cs)- and [push](./Common/Model/Execution/ISendMessageMetadata.cs)-based communication with external systems; talk to all your favorite native cloud services from within your statechart!
 
 - In addition to parent-child state relationships _within_ a single statechart, there is also support for parent-child relationships _between_ statechart instances (execute statechart A within the context of statechart B, etc.)
+
+- A configurable [debugger service](./DurableFunction.Client/DebugHandler.cs) implemented with [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction)... observe state machine execution as it occurs, set breakpoints to observe remote execution, etc.
 
 ## Getting Started
 
@@ -32,45 +34,78 @@ In SCDN you define statecharts using declarative metadata in JSON. See below for
 
 For advanced scenarios, you can also define your own metadata syntax and map it to primitives the SCDN engines can interpret and execute directly.
 
-## [Azure Functions host](./DurableFunctionHost)
+## Usage
 
 Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [HTTP API](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-http-api).
 
-```
-POST /runtime/webhooks/durabletask/orchestrators/statemachine-orchestration
-
+```csharp
+var machine = new StateMachine
 {
-    "args": {
-        "x": 56
-    },
-    "statemachine": {
-        "name": "sm1",
-        "states": [
+    Id = "test",
+    States =
+    {
+        new AtomicState
+        {
+            Id = "state1",
+            OnEntry = new OnEntryExit
             {
-                "id": "s1",
-                "onentry": {
-                    "content": [
-                        {
-                            "type": "assign",
-                            "location": "y",
-                            "expr": "x * 2"
-                        }
-                    ]
-                },
-                "transitions": [
+                Actions =
+                {
+                    new SendMessage
                     {
-                        "target": "alldone"
+                        Id = "test-post",
+                        ActivityType = "http-post",
+                        Configuration = new HttpSendMessageConfiguration
+                        {
+                            Uri = "http://localhost:4444/",
+                            Content = new { value = 5 }
+                        }
                     }
-                ]
+                }
             },
+            Transitions =
             {
-                "id": "alldone",
-                "type": "final"
+                new Transition { Targets = { "alldone" } }
             }
-        ]
+        },
+        new FinalState
+        {
+            Id = "alldone"
+        }
     }
+};
+
+using var client = new StateMachineHttpClient();
+
+client.BaseAddress = new Uri("https://FUNCTIONS-ENDPOINT");
+
+await client.StartNewAsync(machine;
+
+DurableOrchestrationStatus status = null;
+
+var done = false;
+
+while (!done)
+{
+    await Task.Delay(1000);
+
+    status = await client.GetStatusAsync();
+
+    done = status.RuntimeStatus == OrchestrationRuntimeStatus.Canceled ||
+            status.RuntimeStatus == OrchestrationRuntimeStatus.Completed ||
+            status.RuntimeStatus == OrchestrationRuntimeStatus.Failed ||
+            status.RuntimeStatus == OrchestrationRuntimeStatus.Terminated;
 }
 
+if (status.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
+{
+    var output = status.Output.ToObject<Dictionary<string, object>>();
+
+    foreach (var key in output.Keys)
+    {
+        Console.WriteLine($"{key} = {output[key]}");
+    }
+}
 ```
 
 ## Background and Resources
