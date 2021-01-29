@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
@@ -10,15 +11,32 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class InvokeStateChart : IInvokeStateChartMetadata
+    public class InvokeStateChart<TData> : IInvokeStateChartMetadata
     {
-        private MetadataList<ExecutableContent> _actions;
-        private StateMachine _definition;
+        private readonly Lazy<Func<dynamic, object>> _getData;
+
+        private MetadataList<ExecutableContent<TData>> _actions;
+        private StateMachine<TData> _definition;
 
         public InvokeStateChart()
         {
-            this.CompletionActions = new MetadataList<ExecutableContent>();
-            this.Parameters = new List<Param>();
+            this.CompletionActions = new MetadataList<ExecutableContent<TData>>();
+
+            _getData = new Lazy<Func<dynamic, object>>(() =>
+            {
+                if (!string.IsNullOrWhiteSpace(this.DataExpression))
+                {
+                    return ExpressionCompiler.Compile<object>(this.DataExpression);
+                }
+                else if (this.DataFunction != null)
+                {
+                    return data => this.DataFunction(data);
+                }
+                else
+                {
+                    return _ => throw new InvalidOperationException("Unable to resolve 'get data' function.");
+                }
+            });
         }
 
         internal Func<IModelMetadata, string> MetadataIdResolver { private get; set; }
@@ -37,18 +55,20 @@ namespace StateChartsDotNet.Metadata.States
         [JsonProperty("remoteuri")]
         public string RemoteUri { get; set; }
 
+        public Func<TData, object> DataFunction { get; set; }
+
+        [JsonProperty("dataexpression")]
+        private string DataExpression { get; set; }
+
         [JsonProperty("definition")]
-        public StateMachine Definition
+        public StateMachine<TData> Definition
         {
             get => _definition;
             set => _definition = value;
         }
 
-        [JsonProperty("parameters")]
-        public List<Param> Parameters { get; set; }
-
-        [JsonProperty("completionactions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> CompletionActions
+        [JsonProperty("completionactions")]
+        public MetadataList<ExecutableContent<TData>> CompletionActions
         {
             get => _actions;
 
@@ -94,13 +114,6 @@ namespace StateChartsDotNet.Metadata.States
 
             this.Definition?.Validate(errorMap);
 
-            for (var i = 0; i < this.Parameters.Count; i++)
-            {
-                var param = this.Parameters[i];
-
-                param.Validate($"{((IModelMetadata) this).MetadataId}.params[{i}]", errorMap);
-            }
-
             foreach (var action in this.CompletionActions)
             {
                 action.Validate(errorMap);
@@ -129,7 +142,6 @@ namespace StateChartsDotNet.Metadata.States
 
         IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => this.Definition;
 
-        IReadOnlyDictionary<string, object> IInvokeStateChartMetadata.GetParams(dynamic data) =>
-            this.Parameters?.ToDictionary(p => p.Name, p => p.GetValue(data)) ?? new Dictionary<string, object>();
+        object IInvokeStateChartMetadata.GetData(dynamic data) => _getData.Value(data);
     }
 }

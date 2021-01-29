@@ -8,13 +8,13 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class Query : ExecutableContent, IQueryMetadata
+    public class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
 
         public Query()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
         }
 
         [JsonProperty("activitytype")]
@@ -26,8 +26,8 @@ namespace StateChartsDotNet.Metadata.Execution
         [JsonProperty("configuration")]
         public IQueryConfiguration Configuration { get; set; }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 

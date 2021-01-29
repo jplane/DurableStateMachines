@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class Log : ExecutableContent, ILogMetadata
+    public class Log<TData> : ExecutableContent<TData>, ILogMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
 
@@ -25,11 +25,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.MessageFunction != null)
                 {
-                    var func = this.MessageFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>)data);
+                    return data => this.MessageFunction(data);
                 }
                 else
                 {
@@ -41,11 +37,10 @@ namespace StateChartsDotNet.Metadata.Execution
         [JsonProperty("message")]
         public string Message { get; set; }
 
-        [JsonProperty("messagefunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, string>> MessageFunction { get; set; }
+        public Func<TData, string> MessageFunction { get; set; }
 
         [JsonProperty("messageexpression")]
-        public string MessageExpression { get; set; }
+        private string MessageExpression { get; set; }
 
         public string GetMessage(dynamic data) => _messageGetter.Value(data);
 

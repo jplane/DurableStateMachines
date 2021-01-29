@@ -8,38 +8,38 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class HistoryState : State
+    internal class HistoryState<TData> : State<TData>
     {
-        public HistoryState(IHistoryStateMetadata metadata, State parent)
+        public HistoryState(IHistoryStateMetadata metadata, State<TData> parent)
             : base(metadata, parent)
         {
         }
 
         public bool IsDeep => ((IHistoryStateMetadata) _metadata).IsDeep;
 
-        public override Task InvokeAsync(ExecutionContextBase context)
+        public override Task InvokeAsync(ExecutionContextBase<TData> context)
         {
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<State> GetChildStates()
+        public override IEnumerable<State<TData>> GetChildStates()
         {
             throw new NotImplementedException();
         }
 
-        public override Transition GetInitialStateTransition()
+        public override Transition<TData> GetInitialStateTransition()
         {
             throw new NotImplementedException();
         }
 
-        public override void RecordHistory(ExecutionContextBase context)
+        public override void RecordHistory(ExecutionContextBase<TData> context)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitTransition(List<State> targetStates,
-                                    Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
-                                    StateChart root)
+        public void VisitTransition(List<State<TData>> targetStates,
+                                    Dictionary<string, Set<ExecutableContent<TData>>> defaultHistoryContent,
+                                    StateChart<TData> root)
         {
             var transition = _transitions.Value.Single();
 

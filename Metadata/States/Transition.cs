@@ -13,16 +13,16 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class Transition : ITransitionMetadata
+    public class Transition<TData> : ITransitionMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
         private string _syntheticMetadataId;
 
         public Transition()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
             this.Targets = new List<string>();
             this.Messages = new List<string>();
 
@@ -34,11 +34,7 @@ namespace StateChartsDotNet.Metadata.States
                 }
                 else if (this.ConditionFunction != null)
                 {
-                    var func = this.ConditionFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>)data);
+                    return data => this.ConditionFunction(data);
                 }
                 else
                 {
@@ -85,14 +81,13 @@ namespace StateChartsDotNet.Metadata.States
         [JsonProperty("type")]
         public TransitionType Type { get; set; }
 
-        [JsonProperty("conditionfunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, bool>> ConditionFunction { get; set; }
+        public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
-        public string ConditionExpression { get; set; }
+        private string ConditionExpression { get; set; }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 

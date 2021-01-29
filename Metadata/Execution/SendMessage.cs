@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class SendMessage : ExecutableContent, ISendMessageMetadata
+    public class SendMessage<TData> : ExecutableContent<TData>, ISendMessageMetadata
     {
         public SendMessage()
         {

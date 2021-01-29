@@ -8,21 +8,21 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class AtomicState : State, IStateMetadata
+    public class AtomicState<TData> : State<TData>, IStateMetadata
     {
-        private OnEntryExit _onEntry;
-        private OnEntryExit _onExit;
-        private MetadataList<Transition> _transitions;
-        private MetadataList<InvokeStateChart> _invokes;
+        private OnEntryExit<TData> _onEntry;
+        private OnEntryExit<TData> _onExit;
+        private MetadataList<Transition<TData>> _transitions;
+        private MetadataList<InvokeStateChart<TData>> _invokes;
 
         public AtomicState()
         {
-            this.Transitions = new MetadataList<Transition>();
-            this.Invokes = new MetadataList<InvokeStateChart>();
+            this.Transitions = new MetadataList<Transition<TData>>();
+            this.Invokes = new MetadataList<InvokeStateChart<TData>>();
         }
 
         [JsonProperty("onentry")]
-        public OnEntryExit OnEntry
+        public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
 
@@ -44,7 +44,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("onexit")]
-        public OnEntryExit OnExit
+        public OnEntryExit<TData> OnExit
         {
             get => _onExit;
 
@@ -66,7 +66,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("transitions")]
-        public MetadataList<Transition> Transitions
+        public MetadataList<Transition<TData>> Transitions
         {
             get => _transitions;
 
@@ -89,7 +89,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("childinvocations")]
-        public MetadataList<InvokeStateChart> Invokes
+        public MetadataList<InvokeStateChart<TData>> Invokes
         {
             get => _invokes;
 

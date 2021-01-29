@@ -11,18 +11,18 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class If : ExecutableContent, IIfMetadata
+    public class If<TData> : ExecutableContent<TData>, IIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent> _actions;
-        private MetadataList<ElseIf> _elseIfs;
-        private Else _else;
+        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<ElseIf<TData>> _elseIfs;
+        private Else<TData> _else;
 
         public If()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
-            this.ElseIfs = new MetadataList<ElseIf>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.ElseIfs = new MetadataList<ElseIf<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -32,11 +32,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.ConditionFunction != null)
                 {
-                    var func = this.ConditionFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>)data);
+                    return data => this.ConditionFunction(data);
                 }
                 else
                 {
@@ -45,14 +41,13 @@ namespace StateChartsDotNet.Metadata.Execution
             });
         }
 
-        [JsonProperty("conditionfunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, bool>> ConditionFunction { get; set; }
+        public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
-        public string ConditionExpression { get; set; }
+        private string ConditionExpression { get; set; }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 
@@ -75,7 +70,7 @@ namespace StateChartsDotNet.Metadata.Execution
         }
 
         [JsonProperty("elseifs")]
-        public MetadataList<ElseIf> ElseIfs
+        public MetadataList<ElseIf<TData>> ElseIfs
         {
             get => _elseIfs;
 
@@ -98,7 +93,7 @@ namespace StateChartsDotNet.Metadata.Execution
         }
 
         [JsonProperty("else")]
-        public Else Else
+        public Else<TData> Else
         {
             get => _else;
 

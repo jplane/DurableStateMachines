@@ -21,19 +21,20 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.DurableFunction.Host
 {
-    internal class StateMachineContext : ExecutionContextBase
+    internal class StateMachineContext<TData> : ExecutionContextBase<TData>
     {
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
         private readonly DebuggerInfo _debugInfo;
+        private readonly TData _data;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
-                                   IReadOnlyDictionary<string, object> data,
+                                   TData data,
                                    DebuggerInfo debugInfo,
                                    IConfiguration config,
                                    ILogger logger)
-            : base(metadata, default, logger)
+            : base(metadata, data, default, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
@@ -43,25 +44,20 @@ namespace StateChartsDotNet.DurableFunction.Host
             _orchestrationContext = orchestrationContext;
             _config = config;
             _debugInfo = debugInfo;
-
-            foreach (var pair in data)
-            {
-                SetDataValue(pair.Key, pair.Value);
-            }
+            _data = data;
 
             SetDataValue("_instanceId", _orchestrationContext.InstanceId);
             SetDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
         }
 
-        public Dictionary<string, object> ResultData => this.GetDataValues().Where(pair => !pair.Key.StartsWith("_"))
-                                                                            .ToDictionary(p => p.Key, p => p.Value);
+        public TData ResultData => _data;
 
         protected override Guid GenerateGuid()
         {
             return _orchestrationContext.NewGuid();
         }
 
-        internal override async Task<IDictionary<string, object>> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
+        internal override async Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
             parentStateMetadataId.CheckArgNull(nameof(parentStateMetadataId));
@@ -69,21 +65,21 @@ namespace StateChartsDotNet.DurableFunction.Host
             var childMachine = ResolveChildStateChart(metadata);
 
             Debug.Assert(childMachine != null);
-            Debug.Assert(childMachine is StateMachine); // for now :-)
+            Debug.Assert(childMachine is StateMachine<TData>); // for now :-)
 
-            var inputs = new Dictionary<string, object>(metadata.GetParams(this.ScriptData)
-                                                                .ToDictionary(p => p.Key, p => p.Value));
+            var input = (TData) metadata.GetData(this.ExecutionData);
 
-            var payload = new StateMachineRequestPayload
+            var payload = new StateMachineRequestPayload<TData>
             {
-                Arguments = inputs,
-                StateMachineDefinition = (StateMachine) childMachine,
-                DebugInfo = _debugInfo
+                Arguments = input,
+                StateMachineIdentifier = metadata.GetRootIdentifier(),
+                DebugInfo = _debugInfo,
+                IsChildStateMachine = true
             };
 
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                return await _orchestrationContext.CallSubOrchestratorAsync<Dictionary<string, object>>("statemachine-orchestration", payload);
+                return await _orchestrationContext.CallSubOrchestratorAsync<TData>("statemachine-orchestration", payload);
             }
             else
             {
@@ -99,11 +95,9 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 Debug.Assert(response != null);
 
-                return JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
+                return JsonConvert.DeserializeObject<TData>(response.Content);
             }
         }
-
-        protected override bool IsChildStateChart => this.GetDataValues().Any(pair => pair.Key == "_parentInstanceId");
 
         internal override Task DelayAsync(TimeSpan timespan)
         {
@@ -166,7 +160,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
             if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(this.ScriptData, _orchestrationContext);
+                var http = new HttpService(this.ExecutionData, _orchestrationContext);
 
                 return http.GetAsync(config);
             }
@@ -185,7 +179,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(this.ScriptData, _orchestrationContext);
+                var http = new HttpService(this.ExecutionData, _orchestrationContext);
 
                 return http.PostAsync(correlationId, config);
             }

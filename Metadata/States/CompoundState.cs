@@ -8,17 +8,17 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class CompoundState : State, IStateMetadata
+    public class CompoundState<TData> : State<TData>, IStateMetadata
     {
-        private OnEntryExit _onEntry;
-        private OnEntryExit _onExit;
-        private MetadataList<Transition> _transitions;
-        private MetadataList<State> _states;
+        private OnEntryExit<TData> _onEntry;
+        private OnEntryExit<TData> _onExit;
+        private MetadataList<Transition<TData>> _transitions;
+        private MetadataList<State<TData>> _states;
 
         public CompoundState()
         {
-            this.Transitions = new MetadataList<Transition>();
-            this.States = new MetadataList<State>();
+            this.Transitions = new MetadataList<Transition<TData>>();
+            this.States = new MetadataList<State<TData>>();
         }
 
         internal override int SetDocumentOrder(int order)
@@ -37,7 +37,7 @@ namespace StateChartsDotNet.Metadata.States
         public string InitialState { get; set; }
 
         [JsonProperty("onentry")]
-        public OnEntryExit OnEntry
+        public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
 
@@ -59,7 +59,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("onexit")]
-        public OnEntryExit OnExit
+        public OnEntryExit<TData> OnExit
         {
             get => _onExit;
 
@@ -81,7 +81,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("transitions")]
-        public MetadataList<Transition> Transitions
+        public MetadataList<Transition<TData>> Transitions
         {
             get => _transitions;
 
@@ -103,8 +103,8 @@ namespace StateChartsDotNet.Metadata.States
             }
         }
 
-        [JsonProperty("states", ItemConverterType = typeof(StateConverter))]
-        public MetadataList<State> States
+        [JsonProperty("states")]
+        public MetadataList<State<TData>> States
         {
             get => _states;
 
@@ -183,13 +183,13 @@ namespace StateChartsDotNet.Metadata.States
         {
             if (!string.IsNullOrWhiteSpace(this.InitialState))
             {
-                return new Transition(this.InitialState, this.MetadataIdResolver(this));
+                return new Transition<TData>(this.InitialState, this.MetadataIdResolver(this));
             }
             else
             {
                 var firstChild = ((IStateMetadata) this).GetStates().FirstOrDefault(sm => ! (sm is IHistoryStateMetadata));
 
-                return firstChild == null ? null : new Transition(firstChild.Id, this.MetadataIdResolver(this));
+                return firstChild == null ? null : new Transition<TData>(firstChild.Id, this.MetadataIdResolver(this));
             }
         }
 

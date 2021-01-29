@@ -16,25 +16,27 @@ using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet
 {
-    public class ExecutionContext : ExecutionContextBase, IExecutionContext
+    public class ExecutionContext<TData> : ExecutionContextBase<TData>, IExecutionContext where TData : new()
     {
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly AsyncLock _lock;
-        private readonly Interpreter _interpreter;
+        private readonly Interpreter<TData> _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly HttpService _http;
 
         private Task _executeTask;
-        private ExecutionContext _parentContext;
 
-        public ExecutionContext(IStateChartMetadata metadata, CancellationToken cancelToken, ILogger logger = null)
-            : base(metadata, cancelToken, logger)
+        public ExecutionContext(IStateChartMetadata metadata,
+                                TData data,
+                                CancellationToken cancelToken,
+                                ILogger logger = null)
+            : base(metadata, data, cancelToken, logger)
         {
             _lock = new AsyncLock();
-            _interpreter = new Interpreter();
+            _interpreter = new Interpreter<TData>();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
-            _http = new HttpService(this.ScriptData, cancelToken);
+            _http = new HttpService(this.ExecutionData, cancelToken);
 
             _externalServices = new Dictionary<string, ExternalServiceDelegate>();
             _externalServices.Add("http-post", _http.PostAsync);
@@ -127,9 +129,7 @@ namespace StateChartsDotNet
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
-        protected override bool IsChildStateChart => _parentContext != null;
-
-        internal override async Task<IDictionary<string, object>> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
+        internal override async Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -142,18 +142,15 @@ namespace StateChartsDotNet
 
             Debug.Assert(childMachine != null);
 
-            var context = new ExecutionContext(childMachine, this.CancelToken, _logger);
+            var data = (TData) (metadata.GetData(this.ExecutionData) ?? new TData());
 
-            context._parentContext = this;
+            var context = new ExecutionContext<TData>(childMachine, data, this.CancelToken, _logger);
 
-            foreach (var param in metadata.GetParams(this.ScriptData))
-            {
-                context.SetDataValue(param.Key, param.Value);
-            }
+            ((dynamic) context.ExecutionData)["_ischild"] = true;
 
             await context.StartAndWaitForCompletionAsync();
 
-            return context.Data;
+            return data;
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

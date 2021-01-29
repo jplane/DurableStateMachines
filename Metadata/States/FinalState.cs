@@ -8,17 +8,17 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class FinalState : State, IFinalStateMetadata
+    public class FinalState<TData> : State<TData>, IFinalStateMetadata
     {
-        private OnEntryExit _onEntry;
-        private OnEntryExit _onExit;
+        private OnEntryExit<TData> _onEntry;
+        private OnEntryExit<TData> _onExit;
 
         public FinalState()
         {
         }
 
         [JsonProperty("onentry")]
-        public OnEntryExit OnEntry
+        public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
 
@@ -40,7 +40,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("onexit")]
-        public OnEntryExit OnExit
+        public OnEntryExit<TData> OnExit
         {
             get => _onExit;
 

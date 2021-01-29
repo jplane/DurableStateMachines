@@ -7,9 +7,9 @@ using System;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class OnEntryExit
+    internal class OnEntryExit<TData>
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<ExecutableContent<TData>[]> _content;
         private readonly bool _isEntry;
 
         public OnEntryExit(IOnEntryExitMetadata metadata)
@@ -18,13 +18,13 @@ namespace StateChartsDotNet.Model.States
 
             _isEntry = metadata.IsEntry;
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<ExecutableContent<TData>[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
             });
         }
 
-        public async Task ExecuteAsync(ExecutionContextBase context)
+        public async Task ExecuteAsync(ExecutionContextBase<TData> context)
         {
             context.CheckArgNull(nameof(context));
 

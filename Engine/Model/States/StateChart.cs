@@ -8,27 +8,27 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class StateChart : State
+    internal class StateChart<TData> : State<TData>
     {
-        private readonly Lazy<Script> _script;
+        private readonly Lazy<Script<TData>> _script;
 
         public StateChart(IStateChartMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _script = new Lazy<Script>(() =>
+            _script = new Lazy<Script<TData>>(() =>
             {
                 var meta = metadata.GetScript();
 
                 if (meta != null)
-                    return new Script(meta);
+                    return new Script<TData>(meta);
                 else
                     return null;
             });
         }
 
-        public async Task ExecuteScript(ExecutionContextBase context)
+        public async Task ExecuteScript(ExecutionContextBase<TData> context)
         {
             if (_script.Value != null)
             {
@@ -42,12 +42,12 @@ namespace StateChartsDotNet.Model.States
 
         public override string Id => "[ROOT]";
 
-        public override Task InvokeAsync(ExecutionContextBase context)
+        public override Task InvokeAsync(ExecutionContextBase<TData> context)
         {
             throw new NotImplementedException();
         }
 
-        public override void RecordHistory(ExecutionContextBase context)
+        public override void RecordHistory(ExecutionContextBase<TData> context)
         {
             throw new NotImplementedException();
         }

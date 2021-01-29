@@ -14,7 +14,8 @@ namespace StateChartsDotNet.Common.Model.States
         string RemoteUri { get; }
 
         IStateChartMetadata GetRoot();
-        IReadOnlyDictionary<string, object> GetParams(dynamic data);
+        string GetRootIdentifier();
+        object GetData(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
     }
 

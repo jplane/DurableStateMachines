@@ -7,43 +7,43 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace StateChartsDotNet.Metadata
 {
-    public class StateConverter : JsonConverter<State>
+    public class StateConverter<TData> : JsonConverter<State<TData>>
     {
-        public override void WriteJson(JsonWriter writer, [AllowNull] State value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, [AllowNull] State<TData> value, JsonSerializer serializer)
         {
             serializer.Serialize(writer, value);
         }
 
-        public override State ReadJson(JsonReader reader,
-                                       Type objectType,
-                                       [AllowNull] State existingValue,
-                                       bool hasExistingValue,
-                                       JsonSerializer serializer)
+        public override State<TData> ReadJson(JsonReader reader,
+                                              Type objectType,
+                                              [AllowNull] State<TData> existingValue,
+                                              bool hasExistingValue,
+                                              JsonSerializer serializer)
         {
             var json = JObject.Load(reader);
 
-            State state = null;
+            State<TData> state = null;
 
             switch (json["type"].Value<string>())
             {
                 case "atomic":
-                    state = json.ToObject<AtomicState>();
+                    state = json.ToObject<AtomicState<TData>>();
                     break;
 
                 case "compound":
-                    state = json.ToObject<CompoundState>();
+                    state = json.ToObject<CompoundState<TData>>();
                     break;
 
                 case "parallel":
-                    state = json.ToObject<ParallelState>();
+                    state = json.ToObject<ParallelState<TData>>();
                     break;
 
                 case "final":
-                    state = json.ToObject<FinalState>();
+                    state = json.ToObject<FinalState<TData>>();
                     break;
 
                 case "history":
-                    state = json.ToObject<HistoryState>();
+                    state = json.ToObject<HistoryState<TData>>();
                     break;
 
                 default:

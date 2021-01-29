@@ -7,14 +7,14 @@ using System.Diagnostics;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class SendMessage : ExecutableContent
+    internal class SendMessage<TData> : ExecutableContent<TData>
     {
         public SendMessage(ISendMessageMetadata metadata)
             : base(metadata)
         {
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContextBase context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase<TData> context)
         {
             context.CheckArgNull(nameof(context));
 

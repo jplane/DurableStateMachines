@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public abstract class State : IModelMetadata
+    public class State<TData> : IModelMetadata
     {
         protected int? _documentOrder;
 
-        internal State()
+        protected internal State()
         {
         }
 
@@ -24,7 +24,9 @@ namespace StateChartsDotNet.Metadata.States
             set { }
         }
 
-        internal abstract void Validate(IDictionary<string, List<string>> errors);
+        internal virtual void Validate(IDictionary<string, List<string>> errors)
+        {
+        }
 
         protected internal Func<IModelMetadata, string> MetadataIdResolver { protected get; set; }
 

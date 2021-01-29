@@ -8,17 +8,17 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class Else : ExecutableContent, IElseMetadata
+    public class Else<TData> : ExecutableContent<TData>, IElseMetadata
     {
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
 
         public Else()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
         }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 

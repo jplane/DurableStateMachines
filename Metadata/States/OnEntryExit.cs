@@ -10,13 +10,13 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class OnEntryExit : IOnEntryExitMetadata
+    public class OnEntryExit<TData> : IOnEntryExitMetadata
     {
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
 
         public OnEntryExit()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
         }
 
         internal bool IsEntry { private get; set; }
@@ -25,8 +25,8 @@ namespace StateChartsDotNet.Metadata.States
 
         string IModelMetadata.MetadataId => this.MetadataIdResolver?.Invoke(this);
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 

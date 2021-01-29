@@ -17,23 +17,25 @@ using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet
 {
-    public abstract class ExecutionContextBase
+    public abstract class ExecutionContextBase<TData>
     {
         protected readonly ILogger _logger;
 
-        private readonly Dictionary<string, IEnumerable<State>> _historyValues;
+        private readonly Dictionary<string, IEnumerable<State<TData>>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
-        private readonly Set<State> _configuration;
-        private readonly Set<State> _statesToInvoke;
-        private readonly StateChart _root;
+        private readonly Set<State<TData>> _configuration;
+        private readonly Set<State<TData>> _statesToInvoke;
+        private readonly StateChart<TData> _root;
         private readonly IStateChartMetadata _metadata;
 
-        private IDictionary<string, object> _data;
+        private TData _data;
+        private IDictionary<string, object> _internalData;
         private CancellationToken _cancelToken;
         private Exception _error;
         private bool _isRunning = false;
 
         internal ExecutionContextBase(IStateChartMetadata metadata,
+                                      TData data,
                                       CancellationToken cancelToken,
                                       ILogger logger = null)
         {
@@ -42,15 +44,16 @@ namespace StateChartsDotNet
             metadata.Validate();
 
             _metadata = metadata;
-            _root = new StateChart(metadata);
+            _data = data;
+            _root = new StateChart<TData>(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
 
-            _data = new Dictionary<string, object>();
-            _historyValues = new Dictionary<string, IEnumerable<State>>();
+            _internalData = new Dictionary<string, object>();
+            _historyValues = new Dictionary<string, IEnumerable<State<TData>>>();
             _internalMessages = new Queue<InternalMessage>();
-            _configuration = new Set<State>();
-            _statesToInvoke = new Set<State>();
+            _configuration = new Set<State<TData>>();
+            _statesToInvoke = new Set<State<TData>>();
         }
 
         internal abstract Task DelayAsync(TimeSpan timespan);
@@ -59,7 +62,7 @@ namespace StateChartsDotNet
 
         internal abstract Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config);
 
-        internal abstract Task<IDictionary<string, object>> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
+        internal abstract Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 
         internal abstract Task LogDebugAsync(string message);
 
@@ -67,9 +70,9 @@ namespace StateChartsDotNet
 
         protected abstract Guid GenerateGuid();
 
-        protected abstract bool IsChildStateChart { get; }
-
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
+
+        protected bool IsChildStateChart => _internalData.ContainsKey("_ischild");
 
         internal virtual Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
         {
@@ -115,19 +118,6 @@ namespace StateChartsDotNet
             get => _isRunning && (!this.FailFast || _error == null);
         }
 
-        public IDictionary<string, object> Data
-        {
-            get
-            {
-                if (this.IsRunning)
-                {
-                    throw new InvalidOperationException("Cannot read execution state while the state machine is running.");
-                }
-
-                return new ExternalDictionary(_data);
-            }
-        }
-
         internal void CheckErrorPropagation()
         {
             if (this.FailFast && _error != null)
@@ -159,7 +149,7 @@ namespace StateChartsDotNet
 
                 if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
                 {
-                    _data[metadata.IdLocation] = id;
+                    _internalData[metadata.IdLocation] = id;
                 }
             }
 
@@ -182,7 +172,7 @@ namespace StateChartsDotNet
 
         internal async Task InitAsync()
         {
-            _data["_name"] = this.Root.Name;
+            _internalData["_name"] = this.Root.Name;
 
             await this.BreakOnDebugger(DebuggerAction.EnterStateMachine, _metadata);
 
@@ -196,7 +186,7 @@ namespace StateChartsDotNet
             return this.BreakOnDebugger(DebuggerAction.ExitStateMachine, _metadata);
         }
 
-        internal StateChart Root => _root;
+        internal StateChart<TData> Root => _root;
 
         internal CancellationToken CancelToken => _cancelToken;
 
@@ -213,7 +203,7 @@ namespace StateChartsDotNet
                 msg = new ExternalMessage { Name = "cancel" };
             }
 
-            _data["_event"] = msg;
+            _internalData["_event"] = msg;
 
             if (msg.IsCancel)
             {
@@ -223,14 +213,12 @@ namespace StateChartsDotNet
             return msg;
         }
 
-        internal DynamicDictionary ScriptData => new DynamicDictionary(_data);
+        internal DynamicDictionary<TData> ExecutionData => new DynamicDictionary<TData>(_internalData, _data);
 
         internal void SetDataValue(string key, object value)
         {
-            _data[key] = value;
+            ((dynamic) this.ExecutionData)[key] = value;
         }
-
-        internal IEnumerable<KeyValuePair<string, object>> GetDataValues() => _data;
 
         internal void EnqueueInternal(string message)
         {
@@ -300,21 +288,21 @@ namespace StateChartsDotNet
                 // if queue is empty, return null
             }
 
-            _data["_event"] = msg;
+            _internalData["_event"] = msg;
 
             return msg;
         }
 
-        internal Set<State> Configuration => _configuration;
+        internal Set<State<TData>> Configuration => _configuration;
 
-        internal Set<State> StatesToInvoke => _statesToInvoke;
+        internal Set<State<TData>> StatesToInvoke => _statesToInvoke;
 
-        internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
+        internal bool TryGetHistoryValue(string key, out IEnumerable<State<TData>> value)
         {
             return _historyValues.TryGetValue(key, out value);
         }
 
-        internal void StoreHistoryValue(string key, Func<State, bool> predicate)
+        internal void StoreHistoryValue(string key, Func<State<TData>, bool> predicate)
         {
             predicate.CheckArgNull(nameof(predicate));
 

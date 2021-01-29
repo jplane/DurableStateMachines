@@ -43,6 +43,11 @@ namespace StateChartsDotNet.DurableFunction.Host
                                                            _config,
                                                            logger);
 
+            if (payload.IsChildStateMachine)
+            {
+                ((dynamic)executionContext.ExecutionData)["_ischild"] = true;
+            }
+
             logger.LogInformation("Begin state machine execution");
 
             try

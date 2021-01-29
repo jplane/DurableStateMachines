@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public abstract class ExecutableContent : IExecutableContentMetadata
+    public class ExecutableContent<TData> : IExecutableContentMetadata
     {
-        internal ExecutableContent()
+        protected internal ExecutableContent()
         {
         }
 
@@ -19,7 +19,9 @@ namespace StateChartsDotNet.Metadata.Execution
             set { }
         }
 
-        internal abstract void Validate(IDictionary<string, List<string>> errors);
+        internal virtual void Validate(IDictionary<string, List<string>> errors)
+        {
+        }
 
         IReadOnlyDictionary<string, object> IModelMetadata.DebuggerInfo
         {

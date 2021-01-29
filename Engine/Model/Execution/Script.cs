@@ -5,20 +5,20 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class Script : ExecutableContent
+    internal class Script<TData> : ExecutableContent<TData>
     {
         public Script(IScriptMetadata metadata)
             : base(metadata)
         {
         }
 
-        protected override Task _ExecuteAsync(ExecutionContextBase context)
+        protected override Task _ExecuteAsync(ExecutionContextBase<TData> context)
         {
             context.CheckArgNull(nameof(context));
 
             var metadata = (IScriptMetadata) _metadata;
 
-            metadata.Execute(context.ScriptData);
+            metadata.Execute(context.ExecutionData);
 
             return Task.CompletedTask;
         }

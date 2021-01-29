@@ -8,17 +8,17 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class ParallelState : State, IStateMetadata
+    public class ParallelState<TData> : State<TData>, IStateMetadata
     {
-        private OnEntryExit _onEntry;
-        private OnEntryExit _onExit;
-        private MetadataList<Transition> _transitions;
-        private MetadataList<State> _states;
+        private OnEntryExit<TData> _onEntry;
+        private OnEntryExit<TData> _onExit;
+        private MetadataList<Transition<TData>> _transitions;
+        private MetadataList<State<TData>> _states;
 
         public ParallelState()
         {
-            this.Transitions = new MetadataList<Transition>();
-            this.States = new MetadataList<State>();
+            this.Transitions = new MetadataList<Transition<TData>>();
+            this.States = new MetadataList<State<TData>>();
         }
 
         internal override int SetDocumentOrder(int order)
@@ -34,7 +34,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("onentry")]
-        public OnEntryExit OnEntry
+        public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
 
@@ -56,7 +56,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("onexit")]
-        public OnEntryExit OnExit
+        public OnEntryExit<TData> OnExit
         {
             get => _onExit;
 
@@ -78,7 +78,7 @@ namespace StateChartsDotNet.Metadata.States
         }
 
         [JsonProperty("transitions")]
-        public MetadataList<Transition> Transitions
+        public MetadataList<Transition<TData>> Transitions
         {
             get => _transitions;
 
@@ -100,8 +100,8 @@ namespace StateChartsDotNet.Metadata.States
             }
         }
 
-        [JsonProperty("states", ItemConverterType = typeof(StateConverter))]
-        public MetadataList<State> States
+        [JsonProperty("states")]
+        public MetadataList<State<TData>> States
         {
             get => _states;
 
@@ -137,7 +137,7 @@ namespace StateChartsDotNet.Metadata.States
 
             foreach (var state in this.States)
             {
-                if (state is FinalState)
+                if (state is FinalState<TData>)
                 {
                     errors.Add("Parallel states cannot have FinalState child states.");
                 }

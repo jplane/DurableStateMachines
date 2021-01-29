@@ -11,15 +11,15 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class ElseIf : ExecutableContent, IElseIfMetadata
+    public class ElseIf<TData> : ExecutableContent<TData>, IElseIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
 
         public ElseIf()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -29,11 +29,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.ConditionFunction != null)
                 {
-                    var func = this.ConditionFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>)data);
+                    return data => this.ConditionFunction(data);
                 }
                 else
                 {
@@ -42,14 +38,13 @@ namespace StateChartsDotNet.Metadata.Execution
             });
         }
 
-        [JsonProperty("conditionfunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, bool>> ConditionFunction { get; set; }
+        public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
-        public string ConditionExpression { get; set; }
+        private string ConditionExpression { get; set; }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 

@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class Script : ExecutableContent, IScriptMetadata
+    public class Script<TData> : ExecutableContent<TData>, IScriptMetadata
     {
         private Lazy<Func<dynamic, object>> _executor;
 
@@ -25,13 +25,9 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.Function != null)
                 {
-                    var func = this.Function.Compile();
-
-                    Debug.Assert(func != null);
-
                     return data =>
                     {
-                        func((IDictionary<string, object>)data);
+                        this.Function(data);
                         return null;
                     };
                 }
@@ -42,11 +38,10 @@ namespace StateChartsDotNet.Metadata.Execution
             });
         }
 
-        [JsonProperty("function", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Action<IDictionary<string, object>>> Function { get; set; }
+        public Action<TData> Function { get; set; }
 
         [JsonProperty("expression")]
-        public string Expression { get; set; }
+        private string Expression { get; set; }
 
         public void Execute(dynamic data) => _executor.Value(data);
 

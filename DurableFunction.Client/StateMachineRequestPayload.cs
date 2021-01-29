@@ -5,16 +5,19 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.DurableFunction.Client
 {
-    public class StateMachineRequestPayload
+    public class StateMachineRequestPayload<TData>
     {
         [JsonProperty("debug")]
         public DebuggerInfo DebugInfo { get; internal set; }
 
         [JsonProperty("args")]
-        public Dictionary<string, object> Arguments { get; internal set; }
+        public TData Arguments { get; internal set; }
 
-        [JsonProperty("statemachine")]
-        public StateMachine StateMachineDefinition { get; internal set; }
+        [JsonProperty("statemachineid")]
+        public string StateMachineIdentifier { get; internal set; }
+
+        [JsonProperty("ischildstatemachine")]
+        public bool IsChildStateMachine { get; internal set; }
 
         internal string ToJson()
         {

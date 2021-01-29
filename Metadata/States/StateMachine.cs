@@ -11,14 +11,14 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class StateMachine : IStateChartMetadata
+    public class StateMachine<TData> : IStateChartMetadata
     {
-        private Script _initScript;
-        private MetadataList<State> _states;
+        private Script<TData> _initScript;
+        private MetadataList<State<TData>> _states;
 
         public StateMachine()
         {
-            this.States = new MetadataList<State>();
+            this.States = new MetadataList<State<TData>>();
         }
 
         [JsonProperty("id")]
@@ -31,7 +31,7 @@ namespace StateChartsDotNet.Metadata.States
         public bool FailFast { get; set; }
 
         [JsonProperty("initscript")]
-        public Script InitScript
+        public Script<TData> InitScript
         {
             get => _initScript;
 
@@ -51,8 +51,8 @@ namespace StateChartsDotNet.Metadata.States
             }
         }
 
-        [JsonProperty("states", ItemConverterType = typeof(StateConverter))]
-        public MetadataList<State> States
+        [JsonProperty("states")]
+        public MetadataList<State<TData>> States
         {
             get => _states;
 
@@ -108,7 +108,7 @@ namespace StateChartsDotNet.Metadata.States
 
             foreach (var state in this.States)
             {
-                if (state is HistoryState)
+                if (state is HistoryState<TData>)
                 {
                     errors.Add("History states cannot be a direct child of a state machine root.");
                 }
@@ -149,13 +149,13 @@ namespace StateChartsDotNet.Metadata.States
         {
             if (!string.IsNullOrWhiteSpace(this.InitialState))
             {
-                return new Transition(this.InitialState, this.Id);
+                return new Transition<TData>(this.InitialState, this.Id);
             }
             else
             {
                 var firstChild = ((IStateMetadata)this).GetStates().FirstOrDefault(sm => !(sm is IHistoryStateMetadata));
 
-                return firstChild == null ? null : new Transition(firstChild.Id, this.Id);
+                return firstChild == null ? null : new Transition<TData>(firstChild.Id, this.Id);
             }
         }
 

@@ -11,25 +11,25 @@ namespace StateChartsDotNet.DurableFunction.Client
 {
     public static class StateMachineExtensions
     {
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client,
-                                                             StateMachine definition,
-                                                             DebuggerInfo debugInfo = null)
+        public static Task<string> StartNewStateMachineAsync<TData>(this IDurableClient client,
+                                                                    string stateMachineId,
+                                                                    DebuggerInfo debugInfo = null)
         {
-            return StartNewStateMachineAsync(client, definition, null, debugInfo);
+            return StartNewStateMachineAsync<TData>(client, stateMachineId, default, debugInfo);
         }
 
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client,
-                                                             StateMachine definition,
-                                                             IDictionary<string, object> arguments,
-                                                             DebuggerInfo debugInfo = null)
+        public static Task<string> StartNewStateMachineAsync<TData>(this IDurableClient client,
+                                                                    string stateMachineId,
+                                                                    TData arguments,
+                                                                    DebuggerInfo debugInfo = null)
         {
             client.CheckArgNull(nameof(client));
-            definition.CheckArgNull(nameof(definition));
+            stateMachineId.CheckArgNull(nameof(stateMachineId));
 
-            var payload = new StateMachineRequestPayload
+            var payload = new StateMachineRequestPayload<TData>
             {
-                StateMachineDefinition = definition,
-                Arguments = arguments?.ToDictionary(p => p.Key, p => p.Value) ?? new Dictionary<string, object>(),
+                StateMachineIdentifier = stateMachineId,
+                Arguments = arguments,
                 DebugInfo = debugInfo
             };
 

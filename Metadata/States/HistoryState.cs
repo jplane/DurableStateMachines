@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States
 {
-    public class HistoryState : State, IHistoryStateMetadata
+    public class HistoryState<TData> : State<TData>, IHistoryStateMetadata
     {
         public HistoryState()
         {

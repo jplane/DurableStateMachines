@@ -7,63 +7,63 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace StateChartsDotNet.Metadata
 {
-    public class ExecutableContentConverter : JsonConverter<ExecutableContent>
+    public class ExecutableContentConverter<TData> : JsonConverter<ExecutableContent<TData>>
     {
-        public override void WriteJson(JsonWriter writer, [AllowNull] ExecutableContent value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, [AllowNull] ExecutableContent<TData> value, JsonSerializer serializer)
         {
             serializer.Serialize(writer, value);
         }
 
-        public override ExecutableContent ReadJson(JsonReader reader,
-                                                   Type objectType,
-                                                   [AllowNull] ExecutableContent existingValue,
-                                                   bool hasExistingValue,
-                                                   JsonSerializer serializer)
+        public override ExecutableContent<TData> ReadJson(JsonReader reader,
+                                                          Type objectType,
+                                                          [AllowNull] ExecutableContent<TData> existingValue,
+                                                          bool hasExistingValue,
+                                                          JsonSerializer serializer)
         {
             var json = JObject.Load(reader);
 
-            ExecutableContent content = null;
+            ExecutableContent<TData> content = null;
 
             switch (json["type"].Value<string>())
             {
                 case "assign":
-                    content = json.ToObject<Assign>();
+                    content = json.ToObject<Assign<TData>>();
                     break;
 
                 case "else":
-                    content = json.ToObject<Else>();
+                    content = json.ToObject<Else<TData>>();
                     break;
 
                 case "elseif":
-                    content = json.ToObject<ElseIf>();
+                    content = json.ToObject<ElseIf<TData>>();
                     break;
 
                 case "foreach":
-                    content = json.ToObject<Foreach>();
+                    content = json.ToObject<Foreach<TData>>();
                     break;
 
                 case "if":
-                    content = json.ToObject<If>();
+                    content = json.ToObject<If<TData>>();
                     break;
 
                 case "log":
-                    content = json.ToObject<Log>();
+                    content = json.ToObject<Log<TData>>();
                     break;
 
                 case "query":
-                    content = json.ToObject<Query>();
+                    content = json.ToObject<Query<TData>>();
                     break;
 
                 case "raise":
-                    content = json.ToObject<Raise>();
+                    content = json.ToObject<Raise<TData>>();
                     break;
 
                 case "script":
-                    content = json.ToObject<Script>();
+                    content = json.ToObject<Script<TData>>();
                     break;
 
                 case "sendmessage":
-                    content = json.ToObject<SendMessage>();
+                    content = json.ToObject<SendMessage<TData>>();
                     break;
 
                 default:

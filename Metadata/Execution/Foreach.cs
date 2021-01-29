@@ -12,14 +12,14 @@ using System.Linq.Expressions;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
-    public class Foreach : ExecutableContent, IForeachMetadata
+    public class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
     {
-        private MetadataList<ExecutableContent> _actions;
+        private MetadataList<ExecutableContent<TData>> _actions;
         private readonly Lazy<Func<dynamic, IEnumerable>> _arrayGetter;
 
         public Foreach()
         {
-            this.Actions = new MetadataList<ExecutableContent>();
+            this.Actions = new MetadataList<ExecutableContent<TData>>();
 
             _arrayGetter = new Lazy<Func<dynamic, IEnumerable>>(() =>
             {
@@ -29,11 +29,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.ValueFunction != null)
                 {
-                    var func = this.ValueFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>)data);
+                    return data => this.ValueFunction(data);
                 }
                 else
                 {
@@ -42,8 +38,8 @@ namespace StateChartsDotNet.Metadata.Execution
             });
         }
 
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter))]
-        public MetadataList<ExecutableContent> Actions
+        [JsonProperty("actions")]
+        public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
 
@@ -74,11 +70,10 @@ namespace StateChartsDotNet.Metadata.Execution
         [JsonProperty("value")]
         public IEnumerable Value { get; set; }
 
-        [JsonProperty("valuefunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, IEnumerable>> ValueFunction { get; set; }
+        public Func<TData, IEnumerable> ValueFunction { get; set; }
 
         [JsonProperty("valueexpression")]
-        public string ValueExpression { get; set; }
+        private string ValueExpression { get; set; }
 
         internal override void Validate(IDictionary<string, List<string>> errorMap)
         {
