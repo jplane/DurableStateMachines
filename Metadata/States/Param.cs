@@ -2,24 +2,27 @@
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.ExpressionTrees;
 using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace StateChartsDotNet.Metadata.Data
+namespace StateChartsDotNet.Metadata.States
 {
-    public class DataInit : IDataInitMetadata
+    public class Param
     {
         private Lazy<Func<dynamic, object>> _valueGetter;
 
-        public DataInit()
+        public Param()
         {
             _valueGetter = new Lazy<Func<dynamic, object>>(() =>
             {
-                if (!string.IsNullOrWhiteSpace(this.ValueExpression))
+                if (!string.IsNullOrWhiteSpace(this.Location))
+                {
+                    return data => data[this.Location];
+                }
+                else if (!string.IsNullOrWhiteSpace(this.ValueExpression))
                 {
                     return ExpressionCompiler.Compile<object>(this.ValueExpression);
                 }
@@ -38,8 +41,11 @@ namespace StateChartsDotNet.Metadata.Data
             });
         }
 
-        [JsonProperty("id")]
-        public string Id { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("location")]
+        public string Location { get; set; }
 
         [JsonProperty("value")]
         public object Value { get; set; }
@@ -50,39 +56,24 @@ namespace StateChartsDotNet.Metadata.Data
         [JsonProperty("valueexpression")]
         public string ValueExpression { get; set; }
 
-        internal void Validate(IDictionary<string, List<string>> errorMap)
+        public object GetValue(dynamic data) => _valueGetter.Value(data);
+
+        internal void Validate(string metadataId, IDictionary<string, List<string>> errorMap)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(metadataId));
             Debug.Assert(errorMap != null);
 
             var errors = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(this.Id))
+            if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add("Id is invalid.");
+                errors.Add("Parameter name is invalid.");
             }
 
             if (errors.Any())
             {
-                errorMap.Add(((IModelMetadata) this).MetadataId, errors);
+                errorMap.Add(metadataId, errors);
             }
         }
-
-        IReadOnlyDictionary<string, object> IModelMetadata.DebuggerInfo
-        {
-            get
-            {
-                var info = new Dictionary<string, object>();
-
-                info["metadataId"] = ((IModelMetadata) this).MetadataId;
-
-                return info;
-            }
-        }
-
-        string IModelMetadata.MetadataId => this.MetadataIdResolver?.Invoke(this);
-
-        internal Func<IModelMetadata, string> MetadataIdResolver { private get; set; }
-
-        object IDataInitMetadata.GetValue(dynamic data) => _valueGetter.Value(data);
     }
 }

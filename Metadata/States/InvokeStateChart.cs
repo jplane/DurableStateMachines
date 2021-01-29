@@ -2,7 +2,6 @@
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Data;
 using StateChartsDotNet.Metadata.Execution;
 using System;
 using System.Collections.Generic;

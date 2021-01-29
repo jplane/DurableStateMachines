@@ -1,5 +1,4 @@
-﻿using StateChartsDotNet.Common.Model.Data;
-using StateChartsDotNet.Common.Model.Execution;
+﻿using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.Common.Model.States
 {
@@ -8,7 +7,6 @@ namespace StateChartsDotNet.Common.Model.States
         bool FailFast { get; }
 
         IScriptMetadata GetScript();
-        IDataModelMetadata GetDataModel();
         void Validate();
     }
 }

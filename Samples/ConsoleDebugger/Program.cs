@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StateChartsDotNet.DurableFunction.Client;
-using StateChartsDotNet.Metadata.Data;
 using StateChartsDotNet.Metadata.Execution;
 using StateChartsDotNet.Metadata.States;
 using System;
@@ -24,13 +23,6 @@ namespace ConsoleApp1
             var machine = new StateMachine
             {
                 Id = "test",
-                DataModel = new DataModel
-                {
-                    Items =
-                    {
-                        new DataInit { Id = "x", Value = 1 }
-                    }
-                },
                 States =
                 {
                     new AtomicState

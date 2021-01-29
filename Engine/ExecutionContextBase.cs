@@ -188,8 +188,6 @@ namespace StateChartsDotNet
 
             _isRunning = true;
 
-            await this.Root.InitDataModel(this);
-
             await this.Root.ExecuteScript(this);
         }
 

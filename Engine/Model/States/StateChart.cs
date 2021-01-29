@@ -5,14 +5,12 @@ using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Model;
 using System.Threading.Tasks;
-using StateChartsDotNet.Model.Data;
 
 namespace StateChartsDotNet.Model.States
 {
     internal class StateChart : State
     {
         private readonly Lazy<Script> _script;
-        private readonly Lazy<DataModel> _datamodel;
 
         public StateChart(IStateChartMetadata metadata)
             : base(metadata, null)
@@ -28,16 +26,6 @@ namespace StateChartsDotNet.Model.States
                 else
                     return null;
             });
-
-            _datamodel = new Lazy<DataModel>(() =>
-            {
-                var meta = metadata.GetDataModel();
-
-                if (meta != null)
-                    return new DataModel(meta);
-                else
-                    return null;
-            });
         }
 
         public async Task ExecuteScript(ExecutionContextBase context)
@@ -45,14 +33,6 @@ namespace StateChartsDotNet.Model.States
             if (_script.Value != null)
             {
                 await _script.Value.ExecuteAsync(context);
-            }
-        }
-
-        public async Task InitDataModel(ExecutionContextBase context)
-        {
-            if (_datamodel.Value != null)
-            {
-                await _datamodel.Value.Init(context);
             }
         }
 

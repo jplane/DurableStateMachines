@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Metadata.Data;
 using StateChartsDotNet.Metadata.Execution;
 using StateChartsDotNet.Metadata.States;
 using System;
@@ -20,14 +19,6 @@ namespace StateChartsDotNet.Tests
             {
                 Id = "test",
                 InitialState = "loop",
-                DataModel = new DataModel
-                {
-                    Items =
-                    {
-                        new DataInit { Id = "items", ValueExpression = "new [] { 1, 2, 3, 4, 5 }" },
-                        new DataInit { Id = "sum", Value = 0 }
-                    }
-                },
                 States =
                 {
                     new AtomicState
@@ -75,6 +66,10 @@ namespace StateChartsDotNet.Tests
             var tuple = factory(machine, null);
 
             var context = tuple.Item1;
+
+            context.Data["items"] = new[] { 1, 2, 3, 4, 5 };
+
+            context.Data["sum"] = 0;
 
             await context.StartAndWaitForCompletionAsync();
 

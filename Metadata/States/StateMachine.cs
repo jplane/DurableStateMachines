@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json;
 using StateChartsDotNet.Common.Exceptions;
 using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Data;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Data;
 using StateChartsDotNet.Metadata.Execution;
 using System;
 using System.Collections.Generic;
@@ -16,7 +14,6 @@ namespace StateChartsDotNet.Metadata.States
     public class StateMachine : IStateChartMetadata
     {
         private Script _initScript;
-        private DataModel _datamodel;
         private MetadataList<State> _states;
 
         public StateMachine()
@@ -51,27 +48,6 @@ namespace StateChartsDotNet.Metadata.States
                 }
 
                 _initScript = value;
-            }
-        }
-
-        [JsonProperty("datamodel")]
-        public DataModel DataModel
-        {
-            get => _datamodel;
-
-            set
-            {
-                if (_datamodel != null)
-                {
-                    _datamodel.MetadataIdResolver = null;
-                }
-
-                if (value != null)
-                {
-                    value.MetadataIdResolver = _ => $"{this.Id ?? "statemachine"}.datamodel";
-                }
-
-                _datamodel = value;
             }
         }
 
@@ -142,8 +118,6 @@ namespace StateChartsDotNet.Metadata.States
 
             this.InitScript?.Validate(errorMap);
 
-            this.DataModel?.Validate(errorMap);
-
             if (errors.Any())
             {
                 errorMap.Add(((IModelMetadata)this).MetadataId, errors);
@@ -170,8 +144,6 @@ namespace StateChartsDotNet.Metadata.States
         int IStateMetadata.GetDocumentOrder() => 0;
 
         bool IStateMetadata.IsDescendentOf(IStateMetadata state) => false;
-
-        IDataModelMetadata IStateChartMetadata.GetDataModel() => this.DataModel;
 
         ITransitionMetadata IStateMetadata.GetInitialTransition()
         {

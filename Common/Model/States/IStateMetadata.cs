@@ -1,5 +1,4 @@
-﻿using StateChartsDotNet.Common.Model.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace StateChartsDotNet.Common.Model.States
