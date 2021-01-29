@@ -56,7 +56,7 @@ namespace StateChartsDotNet.Metadata.Execution
         {
             get => _actions;
 
-            set
+            private set
             {
                 if (value == null)
                 {
@@ -79,7 +79,7 @@ namespace StateChartsDotNet.Metadata.Execution
         {
             get => _elseIfs;
 
-            set
+            private set
             {
                 if (value == null)
                 {

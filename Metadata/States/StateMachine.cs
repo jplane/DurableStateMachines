@@ -56,7 +56,7 @@ namespace StateChartsDotNet.Metadata.States
         {
             get => _states;
 
-            set
+            private set
             {
                 if (value == null)
                 {

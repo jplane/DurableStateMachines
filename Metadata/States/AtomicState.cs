@@ -70,7 +70,7 @@ namespace StateChartsDotNet.Metadata.States
         {
             get => _transitions;
 
-            set
+            private set
             {
                 if (value == null)
                 {
@@ -93,7 +93,7 @@ namespace StateChartsDotNet.Metadata.States
         {
             get => _invokes;
 
-            set
+            private set
             {
                 if (value == null)
                 {

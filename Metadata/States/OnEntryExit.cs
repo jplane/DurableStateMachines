@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.States
         {
             get => _actions;
 
-            set
+            private set
             {
                 if (value == null)
                 {

@@ -47,7 +47,7 @@ namespace StateChartsDotNet.Metadata.Execution
         {
             get => _actions;
 
-            set
+            private set
             {
                 if (value == null)
                 {
