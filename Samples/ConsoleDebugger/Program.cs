@@ -20,34 +20,34 @@ namespace ConsoleApp1
 
             using IHost host = CreateHostBuilder(args).Build();
 
-            var machine = new StateMachine
+            var machine = new StateMachine<(int x, int y)>
             {
                 Id = "test",
                 States =
                 {
-                    new AtomicState
+                    new AtomicState<(int x, int y)>
                     {
                         Id = "state1",
-                        OnEntry = new OnEntryExit
+                        OnEntry = new OnEntryExit<(int x, int y)>
                         {
                             Actions =
                             {
-                                new Assign { Location = "x", ValueExpression = "x + 1" }
+                                new Assign<(int x, int y)> { Location = "x", ValueFunction = data => data.x + 1 }
                             }
                         },
-                        OnExit = new OnEntryExit
+                        OnExit = new OnEntryExit<(int x, int y)>
                         {
                             Actions =
                             {
-                                new Assign { Location = "x", ValueExpression = "x + 1" }
+                                new Assign<(int x, int y)> { Location = "x", ValueFunction = data => data.x + 1 }
                             }
                         },
                         Transitions =
                         {
-                            new Transition { Targets = { "alldone" } }
+                            new Transition<(int x, int y)> { Targets = { "alldone" } }
                         }
                     },
-                    new FinalState
+                    new FinalState<(int x, int y)>
                     {
                         Id = "alldone"
                     }

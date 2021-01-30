@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
@@ -16,7 +17,6 @@ namespace StateChartsDotNet.Metadata.States
         private readonly Lazy<Func<dynamic, object>> _getData;
 
         private MetadataList<ExecutableContent<TData>> _actions;
-        private StateMachine<TData> _definition;
 
         public InvokeStateChart()
         {
@@ -60,12 +60,8 @@ namespace StateChartsDotNet.Metadata.States
         [JsonProperty("dataexpression")]
         private string DataExpression { get; set; }
 
-        [JsonProperty("definition")]
-        public StateMachine<TData> Definition
-        {
-            get => _definition;
-            set => _definition = value;
-        }
+        [JsonProperty("statemachineidentifier")]
+        public string StateMachineIdentifier { get; set; }
 
         [JsonProperty("completionactions")]
         public MetadataList<ExecutableContent<TData>> CompletionActions
@@ -107,12 +103,10 @@ namespace StateChartsDotNet.Metadata.States
                 errors.Add("ChildStateChartExecutionMode.Remote requires a RemoteUri value.");
             }
 
-            if (this.Definition == null)
+            if (string.IsNullOrWhiteSpace(this.StateMachineIdentifier))
             {
-                errors.Add("Definition is invalid.");
+                errors.Add("State machine identifier is invalid.");
             }
-
-            this.Definition?.Validate(errorMap);
 
             foreach (var action in this.CompletionActions)
             {
@@ -140,7 +134,9 @@ namespace StateChartsDotNet.Metadata.States
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() =>
             this.CompletionActions ?? Enumerable.Empty<IExecutableContentMetadata>();
 
-        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => this.Definition;
+        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => null;
+
+        string IInvokeStateChartMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
 
         object IInvokeStateChartMetadata.GetData(dynamic data) => _getData.Value(data);
     }

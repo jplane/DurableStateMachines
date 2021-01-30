@@ -8,22 +8,22 @@ using System.Collections;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class Foreach<TData> : ExecutableContent<TData>
+    internal class Foreach : ExecutableContent
     {
-        private readonly Lazy<ExecutableContent<TData>[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public Foreach(IForeachMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent<TData>[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContextBase<TData> context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

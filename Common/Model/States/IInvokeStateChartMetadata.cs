@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.Common.Model.States

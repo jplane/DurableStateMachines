@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal abstract class ExecutableContent<TData>
+    internal abstract class ExecutableContent
     {
         protected readonly IExecutableContentMetadata _metadata;
 
@@ -20,37 +20,37 @@ namespace StateChartsDotNet.Model.Execution
             _metadata = metadata;
         }
 
-        public static ExecutableContent<TData> Create(IExecutableContentMetadata metadata)
+        public static ExecutableContent Create(IExecutableContentMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            ExecutableContent<TData> content = null;
+            ExecutableContent content = null;
 
             switch (metadata)
             {
                 case IIfMetadata @if:
-                    content = new If<TData>(@if);
+                    content = new If(@if);
                     break;
                 case IRaiseMetadata raise:
-                    content = new Raise<TData>(raise);
+                    content = new Raise(raise);
                     break;
                 case IScriptMetadata script:
-                    content = new Script<TData>(script);
+                    content = new Script(script);
                     break;
                 case IForeachMetadata @foreach:
-                    content = new Foreach<TData>(@foreach);
+                    content = new Foreach(@foreach);
                     break;
                 case ILogMetadata log:
-                    content = new Log<TData>(log);
+                    content = new Log(log);
                     break;
                 case ISendMessageMetadata send:
-                    content = new SendMessage<TData>(send);
+                    content = new SendMessage(send);
                     break;
                 case IAssignMetadata assign:
-                    content = new Assign<TData>(assign);
+                    content = new Assign(assign);
                     break;
                 case IQueryMetadata query:
-                    content = new Query<TData>(query);
+                    content = new Query(query);
                     break;
             }
 
@@ -59,9 +59,9 @@ namespace StateChartsDotNet.Model.Execution
             return content;
         }
 
-        protected abstract Task _ExecuteAsync(ExecutionContextBase<TData> context);
+        protected abstract Task _ExecuteAsync(ExecutionContextBase context);
 
-        public async Task ExecuteAsync(ExecutionContextBase<TData> context)
+        public async Task ExecuteAsync(ExecutionContextBase context)
         {
             await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
 

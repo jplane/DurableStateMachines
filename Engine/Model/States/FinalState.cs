@@ -8,28 +8,28 @@ using System.Collections.Generic;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class FinalState<TData> : State<TData>
+    internal class FinalState : State
     {
-        public FinalState(IFinalStateMetadata metadata, State<TData> parent)
+        public FinalState(IFinalStateMetadata metadata, State parent)
             : base(metadata, parent)
         {
         }
 
-        public override Task InvokeAsync(ExecutionContextBase<TData> context)
+        public override Task InvokeAsync(ExecutionContextBase context)
         {
             return Task.CompletedTask;
         }
 
-        public override IEnumerable<State<TData>> GetChildStates()
+        public override IEnumerable<State> GetChildStates()
         {
-            return Enumerable.Empty<State<TData>>();
+            return Enumerable.Empty<State>();
         }
 
-        public override void RecordHistory(ExecutionContextBase<TData> context)
+        public override void RecordHistory(ExecutionContextBase context)
         {
         }
 
-        public override Transition<TData> GetInitialStateTransition()
+        public override Transition GetInitialStateTransition()
         {
             throw new NotImplementedException();
         }

@@ -16,11 +16,11 @@ using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet
 {
-    public class ExecutionContext<TData> : ExecutionContextBase<TData>, IExecutionContext where TData : new()
+    public class ExecutionContext : ExecutionContextBase, IExecutionContext
     {
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly AsyncLock _lock;
-        private readonly Interpreter<TData> _interpreter;
+        private readonly Interpreter _interpreter;
         private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
         private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
         private readonly HttpService _http;
@@ -28,13 +28,15 @@ namespace StateChartsDotNet
         private Task _executeTask;
 
         public ExecutionContext(IStateChartMetadata metadata,
-                                TData data,
+                                object data,
                                 CancellationToken cancelToken,
+                                Func<string, IStateChartMetadata> lookupChild = null,
+                                bool isChild = false,
                                 ILogger logger = null)
-            : base(metadata, data, cancelToken, logger)
+            : base(metadata, data, cancelToken, lookupChild, isChild, logger)
         {
             _lock = new AsyncLock();
-            _interpreter = new Interpreter<TData>();
+            _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
             _http = new HttpService(this.ExecutionData, cancelToken);
 
@@ -129,7 +131,7 @@ namespace StateChartsDotNet
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
-        internal override async Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
+        internal override async Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -142,11 +144,9 @@ namespace StateChartsDotNet
 
             Debug.Assert(childMachine != null);
 
-            var data = (TData) (metadata.GetData(this.ExecutionData) ?? new TData());
+            var data = metadata.GetData(this.ExecutionData);
 
-            var context = new ExecutionContext<TData>(childMachine, data, this.CancelToken, _logger);
-
-            ((dynamic) context.ExecutionData)["_ischild"] = true;
+            var context = new ExecutionContext(childMachine, data, this.CancelToken, _lookupChild, true, _logger);
 
             await context.StartAndWaitForCompletionAsync();
 

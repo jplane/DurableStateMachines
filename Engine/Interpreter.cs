@@ -11,13 +11,13 @@ using StateChartsDotNet.Common.Messages;
 
 namespace StateChartsDotNet
 {
-    internal class Interpreter<TData>
+    internal class Interpreter
     {
         public Interpreter()
         {
         }
 
-        public async Task RunAsync(ExecutionContextBase<TData> context)
+        public async Task RunAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -51,21 +51,21 @@ namespace StateChartsDotNet
             context.CheckErrorPropagation();
         }
 
-        private async Task EnterStatechartAsync(ExecutionContextBase<TData> context)
+        private async Task EnterStatechartAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
             await context.InitAsync();
 
             await EnterStatesAsync(context,
-                                   new List<Transition<TData>>(new[] { context.Root.GetInitialStateTransition() }));
+                                   new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));
         }
 
-        private static async Task ExitStatechartAsync(ExecutionContextBase<TData> context)
+        private static async Task ExitStatechartAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
-            foreach (var state in context.Configuration.Sort(State<TData>.ReverseCompare))
+            foreach (var state in context.Configuration.Sort(State.ReverseCompare))
             {
                 await state.ExitAsync(context);
             }
@@ -73,11 +73,11 @@ namespace StateChartsDotNet
             await context.ExitAsync();
         }
 
-        private static async Task ProcessStateChartInvokesAsync(ExecutionContextBase<TData> context)
+        private static async Task ProcessStateChartInvokesAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
-            foreach (var state in context.StatesToInvoke.Sort(State<TData>.Compare))
+            foreach (var state in context.StatesToInvoke.Sort(State.Compare))
             {
                 await state.InvokeAsync(context);
             }
@@ -85,7 +85,7 @@ namespace StateChartsDotNet
             context.StatesToInvoke.Clear();
         }
 
-        private async Task ProcessExternalMessageAsync(ExecutionContextBase<TData> context)
+        private async Task ProcessExternalMessageAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -102,7 +102,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task MacrostepAsync(ExecutionContextBase<TData> context)
+        private async Task MacrostepAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -138,7 +138,7 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task MicrostepAsync(ExecutionContextBase<TData> context, IEnumerable<Transition<TData>> enabledTransitions)
+        private async Task MicrostepAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(enabledTransitions != null);
 
@@ -154,7 +154,7 @@ namespace StateChartsDotNet
             await EnterStatesAsync(context, enabledTransitions);
         }
 
-        private async Task ExitStatesAsync(ExecutionContextBase<TData> context, IEnumerable<Transition<TData>> enabledTransitions)
+        private async Task ExitStatesAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
             var exitSet = ComputeExitSet(context, enabledTransitions);
 
@@ -167,7 +167,7 @@ namespace StateChartsDotNet
                 context.StatesToInvoke.Remove(state);
             }
 
-            foreach (var state in exitSet.Sort(State<TData>.ReverseCompare))
+            foreach (var state in exitSet.Sort(State.ReverseCompare))
             {
                 Debug.Assert(state != null);
 
@@ -177,12 +177,12 @@ namespace StateChartsDotNet
             }
         }
 
-        private Set<State<TData>> ComputeExitSet(ExecutionContextBase<TData> context, IEnumerable<Transition<TData>> transitions)
+        private Set<State> ComputeExitSet(ExecutionContextBase context, IEnumerable<Transition> transitions)
         {
             Debug.Assert(context != null);
             Debug.Assert(transitions != null);
 
-            var statesToExit = new Set<State<TData>>();
+            var statesToExit = new Set<State>();
 
             foreach (var transition in transitions)
             {
@@ -207,33 +207,33 @@ namespace StateChartsDotNet
             return statesToExit;
         }
 
-        private Set<Transition<TData>> SelectTransitions(ExecutionContextBase<TData> context, Message evt)
+        private Set<Transition> SelectTransitions(ExecutionContextBase context, Message evt)
         {
             return SelectTransitions(context,
                                      transition => transition.MatchesMessage(evt) &&
                                                    transition.EvaluateCondition(context));
         }
 
-        private Set<Transition<TData>> SelectMessagelessTransitions(ExecutionContextBase<TData> context)
+        private Set<Transition> SelectMessagelessTransitions(ExecutionContextBase context)
         {
             return SelectTransitions(context,
                                      transition => !transition.HasMessage &&
                                                    transition.EvaluateCondition(context));
         }
 
-        private Set<Transition<TData>> SelectTransitions(ExecutionContextBase<TData> context, Func<Transition<TData>, bool> predicate)
+        private Set<Transition> SelectTransitions(ExecutionContextBase context, Func<Transition, bool> predicate)
         {
             Debug.Assert(context != null);
             Debug.Assert(predicate != null);
 
-            var enabledTransitions = new Set<Transition<TData>>();
+            var enabledTransitions = new Set<Transition>();
 
-            var atomicStates = context.Configuration.Sort(State<TData>.Compare).Where(s => s.Type == StateType.Atomic ||
+            var atomicStates = context.Configuration.Sort(State.Compare).Where(s => s.Type == StateType.Atomic ||
                                                                                     s.Type == StateType.Final);
 
             foreach (var state in atomicStates)
             {
-                var all = new List<State<TData>>
+                var all = new List<State>
                 {
                     state
                 };
@@ -270,13 +270,13 @@ namespace StateChartsDotNet
             return enabledTransitions;
         }
 
-        private Set<Transition<TData>> RemoveConflictingTransitions(ExecutionContextBase<TData> context,
-                                                             IEnumerable<Transition<TData>> enabledTransitions)
+        private Set<Transition> RemoveConflictingTransitions(ExecutionContextBase context,
+                                                             IEnumerable<Transition> enabledTransitions)
         {
             Debug.Assert(context != null);
             Debug.Assert(enabledTransitions != null);
 
-            var filteredTransitions = new Set<Transition<TData>>();
+            var filteredTransitions = new Set<Transition>();
 
             foreach (var transition1 in enabledTransitions)
             {
@@ -284,17 +284,17 @@ namespace StateChartsDotNet
 
                 var t1Preempted = false;
 
-                var transitionsToRemove = new Set<Transition<TData>>();
+                var transitionsToRemove = new Set<Transition>();
 
                 foreach (var transition2 in filteredTransitions)
                 {
                     Debug.Assert(transition2 != null);
 
-                    var exitSet1 = ComputeExitSet(context, new List<Transition<TData>> { transition1 });
+                    var exitSet1 = ComputeExitSet(context, new List<Transition> { transition1 });
 
                     Debug.Assert(exitSet1 != null);
 
-                    var exitSet2 = ComputeExitSet(context, new List<Transition<TData>> { transition2 });
+                    var exitSet2 = ComputeExitSet(context, new List<Transition> { transition2 });
 
                     Debug.Assert(exitSet2 != null);
 
@@ -328,17 +328,17 @@ namespace StateChartsDotNet
             return filteredTransitions;
         }
 
-        private async Task EnterStatesAsync(ExecutionContextBase<TData> context, IEnumerable<Transition<TData>> enabledTransitions)
+        private async Task EnterStatesAsync(ExecutionContextBase context, IEnumerable<Transition> enabledTransitions)
         {
-            var statesToEnter = new Set<State<TData>>();
+            var statesToEnter = new Set<State>();
 
-            var statesForDefaultEntry = new Set<State<TData>>();
+            var statesForDefaultEntry = new Set<State>();
 
-            var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent<TData>>>();
+            var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent>>();
 
             await ComputeEntrySetAsync(context, enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
-            foreach (var state in statesToEnter.Sort(State<TData>.Compare))
+            foreach (var state in statesToEnter.Sort(State.Compare))
             {
                 Debug.Assert(state != null);
 
@@ -346,11 +346,11 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task ComputeEntrySetAsync(ExecutionContextBase<TData> context,
-                                                IEnumerable<Transition<TData>> enabledTransitions,
-                                                Set<State<TData>> statesToEnter,
-                                                Set<State<TData>> statesForDefaultEntry,
-                                                Dictionary<string, Set<ExecutableContent<TData>>> defaultHistoryContent)
+        private async Task ComputeEntrySetAsync(ExecutionContextBase context,
+                                                IEnumerable<Transition> enabledTransitions,
+                                                Set<State> statesToEnter,
+                                                Set<State> statesForDefaultEntry,
+                                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(context != null);
             Debug.Assert(enabledTransitions != null);
@@ -381,12 +381,12 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task AddAncestorStatesToEnterAsync(ExecutionContextBase<TData> context,
-                                                         State<TData> state,
-                                                         State<TData> ancestor,
-                                                         Set<State<TData>> statesToEnter,
-                                                         Set<State<TData>> statesForDefaultEntry,
-                                                         Dictionary<string, Set<ExecutableContent<TData>>> defaultHistoryContent)
+        private async Task AddAncestorStatesToEnterAsync(ExecutionContextBase context,
+                                                         State state,
+                                                         State ancestor,
+                                                         Set<State> statesToEnter,
+                                                         Set<State> statesForDefaultEntry,
+                                                         Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(state != null);
             Debug.Assert(statesToEnter != null);
@@ -420,11 +420,11 @@ namespace StateChartsDotNet
             }
         }
 
-        private async Task AddDescendentStatesToEnterAsync(ExecutionContextBase<TData> context,
-                                                           State<TData> state,
-                                                           Set<State<TData>> statesToEnter,
-                                                           Set<State<TData>> statesForDefaultEntry,
-                                                           Dictionary<string, Set<ExecutableContent<TData>>> defaultHistoryContent)
+        private async Task AddDescendentStatesToEnterAsync(ExecutionContextBase context,
+                                                           State state,
+                                                           Set<State> statesToEnter,
+                                                           Set<State> statesForDefaultEntry,
+                                                           Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             Debug.Assert(context != null);
             Debug.Assert(state != null);
@@ -433,7 +433,7 @@ namespace StateChartsDotNet
 
             if (state.Type == StateType.History)
             {
-                if (context.TryGetHistoryValue(state.Id, out IEnumerable<State<TData>> resolvedStates))
+                if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> resolvedStates))
                 {
                     foreach (var resolved in resolvedStates)
                     {
@@ -451,9 +451,9 @@ namespace StateChartsDotNet
                 }
                 else
                 {
-                    var targetStates = new List<State<TData>>();
+                    var targetStates = new List<State>();
 
-                    ((HistoryState<TData>) state).VisitTransition(targetStates, defaultHistoryContent, context.Root);
+                    ((HistoryState) state).VisitTransition(targetStates, defaultHistoryContent, context.Root);
 
                     foreach (var target in targetStates)
                     {

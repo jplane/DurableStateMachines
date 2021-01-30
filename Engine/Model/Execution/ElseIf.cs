@@ -7,9 +7,9 @@ using System;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class ElseIf<TData>
+    internal class ElseIf
     {
-        private readonly Lazy<ExecutableContent<TData>[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
         private readonly IElseIfMetadata _metadata;
 
         public ElseIf(IElseIfMetadata metadata)
@@ -18,13 +18,13 @@ namespace StateChartsDotNet.Model.Execution
 
             _metadata = metadata;
 
-            _content = new Lazy<ExecutableContent<TData>[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return _metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return _metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        public async Task<bool> ConditionalExecuteAsync(ExecutionContextBase<TData> context)
+        public async Task<bool> ConditionalExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

@@ -14,29 +14,34 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Debugger;
+using System.Net.WebSockets;
 
 namespace StateChartsDotNet
 {
-    public abstract class ExecutionContextBase<TData>
+    public abstract class ExecutionContextBase
     {
         protected readonly ILogger _logger;
+        protected readonly Func<string, IStateChartMetadata> _lookupChild;
 
-        private readonly Dictionary<string, IEnumerable<State<TData>>> _historyValues;
+        private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
-        private readonly Set<State<TData>> _configuration;
-        private readonly Set<State<TData>> _statesToInvoke;
-        private readonly StateChart<TData> _root;
+        private readonly Set<State> _configuration;
+        private readonly Set<State> _statesToInvoke;
+        private readonly StateChart _root;
         private readonly IStateChartMetadata _metadata;
+        private readonly bool _isChild;
 
-        private TData _data;
+        private object _data;
         private IDictionary<string, object> _internalData;
         private CancellationToken _cancelToken;
         private Exception _error;
         private bool _isRunning = false;
 
         internal ExecutionContextBase(IStateChartMetadata metadata,
-                                      TData data,
+                                      object data,
                                       CancellationToken cancelToken,
+                                      Func<string, IStateChartMetadata> lookupChild = null,
+                                      bool isChild = false,
                                       ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -45,15 +50,17 @@ namespace StateChartsDotNet
 
             _metadata = metadata;
             _data = data;
-            _root = new StateChart<TData>(metadata);
+            _root = new StateChart(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
+            _lookupChild = lookupChild;
+            _isChild = isChild;
 
             _internalData = new Dictionary<string, object>();
-            _historyValues = new Dictionary<string, IEnumerable<State<TData>>>();
+            _historyValues = new Dictionary<string, IEnumerable<State>>();
             _internalMessages = new Queue<InternalMessage>();
-            _configuration = new Set<State<TData>>();
-            _statesToInvoke = new Set<State<TData>>();
+            _configuration = new Set<State>();
+            _statesToInvoke = new Set<State>();
         }
 
         internal abstract Task DelayAsync(TimeSpan timespan);
@@ -62,7 +69,7 @@ namespace StateChartsDotNet
 
         internal abstract Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config);
 
-        internal abstract Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
+        internal abstract Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
 
         internal abstract Task LogDebugAsync(string message);
 
@@ -72,7 +79,16 @@ namespace StateChartsDotNet
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
 
-        protected bool IsChildStateChart => _internalData.ContainsKey("_ischild");
+        protected bool IsChildStateChart => _isChild;
+
+        protected IReadOnlyDictionary<string, object> GetDebuggerValues()
+        {
+            var dict = new Dictionary<string, object>(_internalData);
+
+            dict.Add("executionstate", _data);
+
+            return dict;
+        }
 
         internal virtual Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
         {
@@ -160,14 +176,9 @@ namespace StateChartsDotNet
         {
             Debug.Assert(metadata != null);
 
-            var childMachine = metadata.GetRoot();
-
-            if (childMachine == null)
-            {
-                throw new ExecutionException("Unable to resolve metadata for child statechart.");
-            }
-
-            return childMachine;
+            return metadata.GetRoot() ??
+                   _lookupChild?.Invoke(metadata.GetRootIdentifier()) ??
+                   throw new InvalidOperationException($"Unable to resolve child state machine: {metadata.MetadataId}");
         }
 
         internal async Task InitAsync()
@@ -186,7 +197,7 @@ namespace StateChartsDotNet
             return this.BreakOnDebugger(DebuggerAction.ExitStateMachine, _metadata);
         }
 
-        internal StateChart<TData> Root => _root;
+        internal StateChart Root => _root;
 
         internal CancellationToken CancelToken => _cancelToken;
 
@@ -213,7 +224,7 @@ namespace StateChartsDotNet
             return msg;
         }
 
-        internal DynamicDictionary<TData> ExecutionData => new DynamicDictionary<TData>(_internalData, _data);
+        internal DynamicDictionary ExecutionData => new DynamicDictionary(_internalData, _data);
 
         internal void SetDataValue(string key, object value)
         {
@@ -293,16 +304,16 @@ namespace StateChartsDotNet
             return msg;
         }
 
-        internal Set<State<TData>> Configuration => _configuration;
+        internal Set<State> Configuration => _configuration;
 
-        internal Set<State<TData>> StatesToInvoke => _statesToInvoke;
+        internal Set<State> StatesToInvoke => _statesToInvoke;
 
-        internal bool TryGetHistoryValue(string key, out IEnumerable<State<TData>> value)
+        internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
         {
             return _historyValues.TryGetValue(key, out value);
         }
 
-        internal void StoreHistoryValue(string key, Func<State<TData>, bool> predicate)
+        internal void StoreHistoryValue(string key, Func<State, bool> predicate)
         {
             predicate.CheckArgNull(nameof(predicate));
 

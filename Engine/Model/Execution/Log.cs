@@ -5,14 +5,14 @@ using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class Log<TData> : ExecutableContent<TData>
+    internal class Log : ExecutableContent
     {
         public Log(ILogMetadata metadata)
             : base(metadata)
         {
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContextBase<TData> context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

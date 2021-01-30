@@ -7,21 +7,21 @@ using StateChartsDotNet.Common.Model.Execution;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class Else<TData>
+    internal class Else
     {
-        private readonly Lazy<ExecutableContent<TData>[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public Else(IElseMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent<TData>[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        public async Task Execute(ExecutionContextBase<TData> context)
+        public async Task Execute(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

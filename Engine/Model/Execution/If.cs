@@ -8,29 +8,29 @@ using System;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class If<TData> : ExecutableContent<TData>
+    internal class If : ExecutableContent
     {
-        private readonly Lazy<ElseIf<TData>[]> _elseifs;
-        private readonly Lazy<Else<TData>> _else;
-        private readonly Lazy<ExecutableContent<TData>[]> _content;
+        private readonly Lazy<ElseIf[]> _elseifs;
+        private readonly Lazy<Else> _else;
+        private readonly Lazy<ExecutableContent[]> _content;
 
         public If(IIfMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent<TData>[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
 
-            _else = new Lazy<Else<TData>>(() =>
+            _else = new Lazy<Else>(() =>
             {
                 var elseMetadata = metadata.GetElse();
 
                 if (elseMetadata != null)
                 {
-                    return new Else<TData>(elseMetadata);
+                    return new Else(elseMetadata);
                 }
                 else
                 {
@@ -38,11 +38,11 @@ namespace StateChartsDotNet.Model.Execution
                 }
             });
 
-            _elseifs = new Lazy<ElseIf<TData>[]>(() =>
-                metadata.GetElseIfs().Select(metadata => new ElseIf<TData>(metadata)).ToArray());
+            _elseifs = new Lazy<ElseIf[]>(() =>
+                metadata.GetElseIfs().Select(metadata => new ElseIf(metadata)).ToArray());
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContextBase<TData> context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

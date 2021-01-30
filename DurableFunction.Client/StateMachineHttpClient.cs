@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.DurableFunction.Client
 {
-    public class StateMachineHttpClient<TData> : HttpClient
+    public class StateMachineHttpClient : HttpClient
     {
         private readonly AsyncLock _lock = new AsyncLock();
         private StateMachineResponsePayload _response;
@@ -30,7 +30,7 @@ namespace StateChartsDotNet.DurableFunction.Client
         }
 
         public async Task StartNewAsync(string stateMachineId,
-                                        TData data,
+                                        object input,
                                         DebuggerInfo debugInfo = null)
         {
             stateMachineId.CheckArgNull(nameof(stateMachineId));
@@ -42,10 +42,10 @@ namespace StateChartsDotNet.DurableFunction.Client
 
             using var _ = await _lock.LockAsync();
 
-            var payload = new StateMachineRequestPayload<TData>
+            var payload = new StateMachineRequestPayload
             {
                 StateMachineIdentifier = stateMachineId,
-                Arguments = data,
+                Input = input,
                 DebugInfo = debugInfo
             };
 

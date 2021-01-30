@@ -8,12 +8,12 @@ using StateChartsDotNet.Common.Exceptions;
 
 namespace StateChartsDotNet
 {
-    public class DynamicDictionary<TData> : DynamicObject, IDictionary<string, object>
+    public class DynamicDictionary : DynamicObject, IDictionary<string, object>
     {
         private readonly IDictionary<string, object> _internalData;
-        private readonly TData _data;
+        private readonly object _data;
 
-        public DynamicDictionary(IDictionary<string, object> internalData, TData data)
+        public DynamicDictionary(IDictionary<string, object> internalData, object data)
         {
             internalData.CheckArgNull(nameof(internalData));
             data.CheckArgNull(nameof(data));

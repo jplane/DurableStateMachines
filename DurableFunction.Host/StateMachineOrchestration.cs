@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.DurableFunction.Client;
 
 namespace StateChartsDotNet.DurableFunction.Host
@@ -13,16 +13,20 @@ namespace StateChartsDotNet.DurableFunction.Host
     public class StateMachineOrchestration
     {
         private readonly IConfiguration _config;
+        private readonly IStateMachineFactory _factory;
         private readonly ILogger<StateMachineOrchestration> _logger;
 
-        public StateMachineOrchestration(IConfiguration config, ILogger<StateMachineOrchestration> logger)
+        public StateMachineOrchestration(IConfiguration config,
+                                         IStateMachineFactory factory,
+                                         ILogger<StateMachineOrchestration> logger)
         {
             _config = config;
+            _factory = factory;
             _logger = logger;
         }
 
         [FunctionName("statemachine-orchestration")]
-        public async Task<Dictionary<string, object>> RunOrchestrator(
+        public async Task<object> RunOrchestrator(
                 [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             Debug.Assert(context != null);
@@ -32,21 +36,29 @@ namespace StateChartsDotNet.DurableFunction.Host
             var payload = context.GetInput<StateMachineRequestPayload>();
 
             Debug.Assert(payload != null);
-            Debug.Assert(payload.StateMachineDefinition != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(payload.StateMachineIdentifier));
 
-            var args = payload.Arguments ?? new Dictionary<string, object>();
+            Func<string, IStateChartMetadata> lookupDefinition = identifier =>
+            {
+                _factory.TryResolveIdentifier(identifier, out IStateChartMetadata metadata);
+                return metadata;
+            };
 
-            var executionContext = new StateMachineContext(payload.StateMachineDefinition,
+            var stateMachineDefinition = lookupDefinition(payload.StateMachineIdentifier);
+
+            if (stateMachineDefinition == null)
+            {
+                throw new InvalidOperationException($"Unable to resolve definition for state machine id: {payload.StateMachineIdentifier}");
+            }
+
+            var executionContext = new StateMachineContext(stateMachineDefinition,
                                                            context,
-                                                           args,
+                                                           payload.Input,
+                                                           payload.IsChildStateMachine,
                                                            payload.DebugInfo,
                                                            _config,
+                                                           lookupDefinition,
                                                            logger);
-
-            if (payload.IsChildStateMachine)
-            {
-                ((dynamic)executionContext.ExecutionData)["_ischild"] = true;
-            }
 
             logger.LogInformation("Begin state machine execution");
 
@@ -56,7 +68,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 await interpreter.RunAsync(executionContext);
 
-                return executionContext.ResultData;
+                return executionContext.GetData();
             }
             finally
             {

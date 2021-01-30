@@ -10,31 +10,31 @@ using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.DurableFunction.Client;
-using StateChartsDotNet.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace StateChartsDotNet.DurableFunction.Host
 {
-    internal class StateMachineContext<TData> : ExecutionContextBase<TData>
+    internal class StateMachineContext : ExecutionContextBase
     {
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
         private readonly DebuggerInfo _debugInfo;
-        private readonly TData _data;
+        private readonly object _data;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
-                                   TData data,
+                                   object data,
+                                   bool isChild,
                                    DebuggerInfo debugInfo,
                                    IConfiguration config,
+                                   Func<string, IStateChartMetadata> lookupChild,
                                    ILogger logger)
-            : base(metadata, data, default, logger)
+            : base(metadata, data, default, lookupChild, isChild, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
@@ -50,14 +50,14 @@ namespace StateChartsDotNet.DurableFunction.Host
             SetDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
         }
 
-        public TData ResultData => _data;
+        public object GetData() => _data;
 
         protected override Guid GenerateGuid()
         {
             return _orchestrationContext.NewGuid();
         }
 
-        internal override async Task<TData> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
+        internal override async Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
             parentStateMetadataId.CheckArgNull(nameof(parentStateMetadataId));
@@ -65,13 +65,12 @@ namespace StateChartsDotNet.DurableFunction.Host
             var childMachine = ResolveChildStateChart(metadata);
 
             Debug.Assert(childMachine != null);
-            Debug.Assert(childMachine is StateMachine<TData>); // for now :-)
 
-            var input = (TData) metadata.GetData(this.ExecutionData);
+            var input = metadata.GetData(this.ExecutionData);
 
-            var payload = new StateMachineRequestPayload<TData>
+            var payload = new StateMachineRequestPayload
             {
-                Arguments = input,
+                Input = input,
                 StateMachineIdentifier = metadata.GetRootIdentifier(),
                 DebugInfo = _debugInfo,
                 IsChildStateMachine = true
@@ -79,7 +78,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                return await _orchestrationContext.CallSubOrchestratorAsync<TData>("statemachine-orchestration", payload);
+                return await _orchestrationContext.CallSubOrchestratorAsync<object>("statemachine-orchestration", payload);
             }
             else
             {
@@ -95,7 +94,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 Debug.Assert(response != null);
 
-                return JsonConvert.DeserializeObject<TData>(response.Content);
+                return JsonConvert.DeserializeObject(response.Content);
             }
         }
 
@@ -218,7 +217,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 info["_debuggeraction"] = action;
 
-                foreach (var pair in this.GetDataValues())
+                foreach (var pair in this.GetDebuggerValues())
                 {
                     info.Add(pair.Key, pair.Value);
                 }

@@ -9,11 +9,11 @@ using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class InvokeStateChart<TData>
+    internal class InvokeStateChart
     {
         private readonly IInvokeStateChartMetadata _metadata;
         private readonly string _parentMetadataId;
-        private readonly Lazy<ExecutableContent<TData>[]> _finalizeContent;
+        private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
         public InvokeStateChart(IInvokeStateChartMetadata metadata, string parentMetadataId)
         {
@@ -23,13 +23,13 @@ namespace StateChartsDotNet.Model.States
             _metadata = metadata;
             _parentMetadataId = parentMetadataId;
 
-            _finalizeContent = new Lazy<ExecutableContent<TData>[]>(() =>
+            _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
-                return metadata.GetFinalizeExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return metadata.GetFinalizeExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        public async Task ExecuteAsync(ExecutionContextBase<TData> context)
+        public async Task ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

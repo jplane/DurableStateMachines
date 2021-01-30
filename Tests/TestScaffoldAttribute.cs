@@ -6,13 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Tests
 {
-    public delegate (IExecutionContext, CancellationTokenSource) ScaffoldFactoryDelegate(IStateChartMetadata metadata, ILogger logger);
+    public delegate (IExecutionContext, CancellationTokenSource)
+            ScaffoldFactoryDelegate(IStateChartMetadata metadata, object data, Func<string, IStateChartMetadata> lookup, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
     public class TestScaffoldAttribute : Attribute, ITestDataSource
@@ -23,11 +22,11 @@ namespace StateChartsDotNet.Tests
         {
             yield return new object[]
             {
-                (ScaffoldFactoryDelegate) ((machine, logger) =>
+                (ScaffoldFactoryDelegate) ((machine, data, lookup, logger) =>
                 {
                     var cts = new CancellationTokenSource();
 
-                    var context = new ExecutionContext(machine, cts.Token, logger);
+                    var context = new ExecutionContext(machine, data, cts.Token, lookup, false, logger);
                     
                     return (context, cts);
                 }),

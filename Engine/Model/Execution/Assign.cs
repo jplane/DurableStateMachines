@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace StateChartsDotNet.Model.Execution
 {
-    internal class Assign<TData> : ExecutableContent<TData>
+    internal class Assign : ExecutableContent
     {
         public Assign(IAssignMetadata metadata)
             : base(metadata)
         {
         }
 
-        protected override async Task _ExecuteAsync(ExecutionContextBase<TData> context)
+        protected override async Task _ExecuteAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 

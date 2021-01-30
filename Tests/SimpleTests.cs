@@ -11,69 +11,78 @@ namespace StateChartsDotNet.Tests
     [TestClass]
     public class SimpleTests : TestBase
     {
+        public class TestData
+        {
+            public int[] Items;
+            public int Sum;
+            public int ArrayItem;
+        }
+
         [TestMethod]
         [TestScaffold]
         public async Task Foreach(ScaffoldFactoryDelegate factory, string _)
         {
-            var machine = new StateMachine
+            var machine = new StateMachine<TestData>
             {
                 Id = "test",
                 InitialState = "loop",
                 States =
                 {
-                    new AtomicState
+                    new AtomicState<TestData>
                     {
                         Id = "loop",
-                        OnEntry = new OnEntryExit
+                        OnEntry = new OnEntryExit<TestData>
                         {
                             Actions =
                             {
-                                new Foreach
+                                new Foreach<TestData>
                                 {
                                     CurrentItemLocation = "arrayItem",
-                                    ValueExpression = "items",
+                                    ValueFunction = data => data.Items,
                                     Actions =
                                     {
-                                        new Assign { Location = "sum", ValueExpression = "sum + arrayItem" },
-                                        new Log { MessageExpression = "\"item = \" + arrayItem" }
+                                        new Assign<TestData> { Location = "sum", ValueFunction = d => d.Sum + d.ArrayItem },
+                                        new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
                                     }
                                 }
                             }
                         },
                         Transitions =
                         {
-                            new Transition
+                            new Transition<TestData>
                             {
-                                ConditionExpression = "sum >= 15",
+                                ConditionFunction = d => d.Sum >= 15,
                                 Targets = { "done" }
                             }
                         }
                     },
-                    new FinalState
+                    new FinalState<TestData>
                     {
                         Id = "done",
-                        OnEntry = new OnEntryExit
+                        OnEntry = new OnEntryExit<TestData>
                         {
                             Actions =
                             {
-                                new Log { MessageExpression = "\"item = \" + arrayItem" }
+                                new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
                             }
                         }
                     }
                 }
             };
 
-            var tuple = factory(machine, null);
+            var data = new TestData
+            {
+                Items = new[] { 1, 2, 3, 4, 5 },
+                Sum = 0
+            };
+
+            var tuple = factory(machine, data, null, null);
 
             var context = tuple.Item1;
 
-            context.Data["items"] = new[] { 1, 2, 3, 4, 5 };
-
-            context.Data["sum"] = 0;
-
             await context.StartAndWaitForCompletionAsync();
 
-            Assert.AreEqual(15, Convert.ToInt32(context.Data["sum"]));
+            Assert.AreEqual(15, data.Sum);
         }
 
         [TestMethod]
@@ -82,19 +91,19 @@ namespace StateChartsDotNet.Tests
         {
             var listenerTask = Task.Run(() => InProcWebServer.EchoAsync("http://localhost:4444/"));
 
-            var machine = new StateMachine
+            var machine = new StateMachine<bool>
             {
                 Id = "test",
                 States =
                 {
-                    new AtomicState
+                    new AtomicState<bool>
                     {
                         Id = "state1",
-                        OnEntry = new OnEntryExit
+                        OnEntry = new OnEntryExit<bool>
                         {
                             Actions =
                             {
-                                new SendMessage
+                                new SendMessage<bool>
                                 {
                                     Id = "test-post",
                                     ActivityType = "http-post",
@@ -108,17 +117,17 @@ namespace StateChartsDotNet.Tests
                         },
                         Transitions =
                         {
-                            new Transition { Targets = { "alldone" } }
+                            new Transition<bool> { Targets = { "alldone" } }
                         }
                     },
-                    new FinalState
+                    new FinalState<bool>
                     {
                         Id = "alldone"
                     }
                 }
             };
 
-            var tuple = factory(machine, Logger);
+            var tuple = factory(machine, true, null, Logger);
 
             var context = tuple.Item1;
 
@@ -139,19 +148,19 @@ namespace StateChartsDotNet.Tests
 
             var listenerTask = Task.Run(() => InProcWebServer.JsonResultAsync(uri, new { value = 43 }));
 
-            var machine = new StateMachine
+            var machine = new StateMachine<(string x, string y)>
             {
                 Id = "test",
                 States =
                 {
-                    new AtomicState
+                    new AtomicState<(string x, string y)>
                     {
                         Id = "state1",
-                        OnEntry = new OnEntryExit
+                        OnEntry = new OnEntryExit<(string x, string y)>
                         {
                             Actions =
                             {
-                                new Query
+                                new Query<(string x, string y)>
                                 {
                                     ActivityType = "http-get",
                                     ResultLocation = "x",
@@ -164,17 +173,19 @@ namespace StateChartsDotNet.Tests
                         },
                         Transitions =
                         {
-                            new Transition { Targets = { "alldone" } }
+                            new Transition<(string x, string y)> { Targets = { "alldone" } }
                         }
                     },
-                    new FinalState
+                    new FinalState<(string x, string y)>
                     {
                         Id = "alldone"
                     }
                 }
             };
 
-            var tuple = factory(machine, Logger);
+            (string x, string y) data = ("", "");
+
+            var tuple = factory(machine, data, null, Logger);
 
             var context = tuple.Item1;
 
@@ -182,7 +193,7 @@ namespace StateChartsDotNet.Tests
 
             await Task.WhenAll(task, listenerTask);
 
-            var jsonResult = (string) context.Data["x"];
+            var jsonResult = data.x;
 
             Assert.IsNotNull(jsonResult);
 
@@ -195,91 +206,78 @@ namespace StateChartsDotNet.Tests
         [TestScaffold]
         public async Task SimpleParentChild(ScaffoldFactoryDelegate factory, string _)
         {
-            var machine = new StateMachine
+            var machine = new StateMachine<(int x, (int x, int y) innerX)>
             {
                 Id = "outer",
                 States =
                 {
-                    new AtomicState
+                    new AtomicState<(int x, (int x, int y) innerX)>
                     {
                         Id = "state1",
                         Invokes =
                         {
-                            new InvokeStateChart
+                            new InvokeStateChart<(int x, (int x, int y) innerX)>
                             {
                                 Id = "an-invoke",
-                                Parameters =
-                                {
-                                    new Param
-                                    {
-                                        Name = "x",
-                                        Location = "x"
-                                    }
-                                },
-                                ResultLocation = "innerResults",
-                                Definition = new StateMachine
-                                {
-                                    Id = "inner",
-                                    States =
-                                    {
-                                        new AtomicState
-                                        {
-                                            Id = "innerState1",
-                                            OnEntry = new OnEntryExit
-                                            {
-                                                Actions =
-                                                {
-                                                    new Assign { Location = "x", ValueExpression = "x * 2" }
-                                                }
-                                            },
-                                            Transitions =
-                                            {
-                                                new Transition { Targets = { "alldone" } }
-                                            }
-                                        },
-                                        new FinalState
-                                        {
-                                            Id = "alldone"
-                                        }
-                                    }
-                                },
-                                CompletionActions =
-                                {
-                                    new Assign { Location = "innerX", ValueExpression = "innerResults[\"x\"]" }
-                                }
+                                StateMachineIdentifier = "inner",
+                                DataFunction = d => (d.x, 0),
+                                ResultLocation = "innerX"
                             }
                         },
                         Transitions =
                         {
-                            new Transition 
+                            new Transition<(int x, (int x, int y) innerX)>
                             {
                                 Messages = { "done.invoke.*" },
                                 Targets = { "alldone" }
                             }
                         }
                     },
-                    new FinalState
+                    new FinalState<(int x, (int x, int y) innerX)>
                     {
                         Id = "alldone"
                     }
                 }
             };
 
-            var tuple = factory(machine, null);
+            var childMachine = new StateMachine<(int x, int y)>
+            {
+                Id = "inner",
+                States =
+                {
+                    new AtomicState<(int x, int y)>
+                    {
+                        Id = "innerState1",
+                        OnEntry = new OnEntryExit<(int x, int y)>
+                        {
+                            Actions =
+                            {
+                                new Assign<(int x, int y)> { Location = "x", ValueFunction = d => d.x * 2 }
+                            }
+                        },
+                        Transitions =
+                        {
+                            new Transition<(int x, int y)> { Targets = { "alldone" } }
+                        }
+                    },
+                    new FinalState<(int x, int y)>
+                    {
+                        Id = "alldone"
+                    }
+                }
+            };
+
+            (int x, (int x, int y) innerX) data = (5, (0, 0));
+
+            var tuple = factory(machine, data, _ => childMachine, null);
 
             var context = tuple.Item1;
 
-            context.Data["x"] = 5;
-
             await context.StartAndWaitForCompletionAsync();
 
-            var x = Convert.ToInt32(context.Data["x"]);
+            Assert.AreEqual(5, data.x);
 
-            Assert.AreEqual(5, x);
-
-            var innerX = Convert.ToInt32(context.Data["innerX"]);
-
-            Assert.AreEqual(10, innerX);
+            Assert.AreEqual(10, data.innerX.x);
         }
     }
 }

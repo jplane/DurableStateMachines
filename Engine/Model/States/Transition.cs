@@ -12,13 +12,13 @@ using StateChartsDotNet.Common.Debugger;
 
 namespace StateChartsDotNet.Model.States
 {
-    internal class Transition<TData>
+    internal class Transition
     {
-        private readonly Lazy<ExecutableContent<TData>[]> _content;
+        private readonly Lazy<ExecutableContent[]> _content;
         private readonly ITransitionMetadata _metadata;
-        private readonly State<TData> _source;
+        private readonly State _source;
 
-        public Transition(ITransitionMetadata metadata, State<TData> source)
+        public Transition(ITransitionMetadata metadata, State source)
         {
             metadata.CheckArgNull(nameof(metadata));
             source.CheckArgNull(nameof(source));
@@ -26,17 +26,17 @@ namespace StateChartsDotNet.Model.States
             _metadata = metadata;
             _source = source;
 
-            _content = new Lazy<ExecutableContent<TData>[]>(() =>
+            _content = new Lazy<ExecutableContent[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent<TData>.Create).ToArray();
+                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
             });
         }
 
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent<TData>>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
         {
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            defaultHistoryContent[id] = new Set<ExecutableContent<TData>>(_content.Value);
+            defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
         }
 
         public bool HasMessage => _metadata.Messages.Any();
@@ -69,7 +69,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public bool EvaluateCondition(ExecutionContextBase<TData> context)
+        public bool EvaluateCondition(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -85,7 +85,7 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public async Task ExecuteContentAsync(ExecutionContextBase<TData> context)
+        public async Task ExecuteContentAsync(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
@@ -102,18 +102,18 @@ namespace StateChartsDotNet.Model.States
             }
         }
 
-        public bool IsSourceDescendent(Transition<TData> transition)
+        public bool IsSourceDescendent(Transition transition)
         {
             transition.CheckArgNull(nameof(transition));
 
             return _source.IsDescendent(transition._source);
         }
 
-        public IEnumerable<State<TData>> GetTargetStates(StateChart<TData> root)
+        public IEnumerable<State> GetTargetStates(StateChart root)
         {
             root.CheckArgNull(nameof(root));
 
-            var targets = new List<State<TData>>();
+            var targets = new List<State>();
 
             foreach (var id in _metadata.Targets)
             {
@@ -123,11 +123,11 @@ namespace StateChartsDotNet.Model.States
             return targets.AsEnumerable();
         }
 
-        public Set<State<TData>> GetEffectiveTargetStates(ExecutionContextBase<TData> context)
+        public Set<State> GetEffectiveTargetStates(ExecutionContextBase context)
         {
             context.CheckArgNull(nameof(context));
 
-            var targets = new Set<State<TData>>();
+            var targets = new Set<State>();
 
             foreach (var state in GetTargetStates(context.Root))
             {
@@ -135,7 +135,7 @@ namespace StateChartsDotNet.Model.States
 
                 if (state.Type == StateType.History)
                 {
-                    if (context.TryGetHistoryValue(state.Id, out IEnumerable<State<TData>> value))
+                    if (context.TryGetHistoryValue(state.Id, out IEnumerable<State> value))
                     {
                         targets.Union(value);
                     }
@@ -153,7 +153,7 @@ namespace StateChartsDotNet.Model.States
             return targets;
         }
 
-        public State<TData> GetTransitionDomain(ExecutionContextBase<TData> context)
+        public State GetTransitionDomain(ExecutionContextBase context)
         {
             var targetStates = GetEffectiveTargetStates(context);
 
