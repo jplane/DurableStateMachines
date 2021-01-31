@@ -2,22 +2,18 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
-    <AssemblyName>StateChartsDotNet.DurableFunction.Host</AssemblyName>
-    <RootNamespace>StateChartsDotNet.DurableFunction.Host</RootNamespace>
+    <AssemblyName>FunctionApp1</AssemblyName>
+    <RootNamespace>FunctionApp1</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.7.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.10" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\DurableFunction.Client\DurableFunction.Client.csproj" />
-    <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\..\DurableFunctionHost\DurableFunctionHost.csproj" />
+    <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

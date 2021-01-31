@@ -41,15 +41,16 @@ namespace StateChartsDotNet.Model.Execution
 
             await context.LogDebugAsync($"Foreach: Array length {items.Length}");
 
-            Debug.Assert(! string.IsNullOrWhiteSpace(foreachMetadata.Item));
-
             for (var idx = 0; idx < items.Length; idx++)
             {
                 await context.LogDebugAsync($"Foreach: Array item index {idx}");
 
                 var item = items[idx];
 
-                context.SetDataValue(foreachMetadata.Item, item);
+                if (!string.IsNullOrWhiteSpace(foreachMetadata.Item))
+                {
+                    context.SetDataValue(foreachMetadata.Item, item);
+                }
 
                 if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
                 {

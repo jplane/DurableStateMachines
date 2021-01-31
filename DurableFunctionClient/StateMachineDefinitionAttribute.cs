@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StateChartsDotNet.DurableFunction.Host
+namespace StateChartsDotNet.DurableFunctionClient
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class StateMachineDefinitionAttribute : Attribute

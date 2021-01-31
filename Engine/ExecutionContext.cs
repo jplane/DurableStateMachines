@@ -46,7 +46,7 @@ namespace StateChartsDotNet
             _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
             _externalQueries.Add("http-get", _http.GetAsync);
 
-            SetDataValue("_instanceId", this.GenerateGuid().ToString("N"));
+            SetInternalDataValue("_instanceId", this.GenerateGuid().ToString("N"));
         }
 
         public async Task StartAsync()

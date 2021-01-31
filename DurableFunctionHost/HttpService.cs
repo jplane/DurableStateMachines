@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunction.Host
+namespace StateChartsDotNet.DurableFunctionHost
 {
     internal class HttpService : HttpServiceBase
     {

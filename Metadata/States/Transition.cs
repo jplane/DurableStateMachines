@@ -34,7 +34,7 @@ namespace StateChartsDotNet.Metadata.States
                 }
                 else if (this.ConditionFunction != null)
                 {
-                    return data => this.ConditionFunction(data);
+                    return data => this.ConditionFunction((TData) data);
                 }
                 else
                 {

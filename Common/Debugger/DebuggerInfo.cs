@@ -6,10 +6,10 @@ namespace StateChartsDotNet.Common.Debugger
     public class DebuggerInfo
     {
         [JsonProperty("uri")]
-        public string DebugUri { get; internal set; }
+        public string DebugUri { get; set; }
 
         [JsonProperty("instructions")]
-        public DebuggerInstruction[] DebugInstructions { get; internal set; }
+        public DebuggerInstruction[] DebugInstructions { get; set; }
 
         internal bool IsMatch(DebuggerAction action, string element)
         {

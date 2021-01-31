@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunction.Client
+namespace StateChartsDotNet.DurableFunctionClient
 {
     public abstract class DebugHandler
     {
@@ -21,16 +21,13 @@ namespace StateChartsDotNet.DurableFunction.Client
         {
         }
 
-        public DebuggerInfo GetDebuggerInfo()
-        {
-            return new DebuggerInfo
-            {
-                DebugInstructions = this.SupportedInstructions.ToArray(),
-                DebugUri = this.DebuggerUri
-            };
-        }
-
         public string DebuggerUri { get; set; }
+
+        public virtual DebuggerInfo DebuggerInfo => new DebuggerInfo
+        {
+            DebugUri = this.DebuggerUri,
+            DebugInstructions = this.AllInstructions.ToArray()
+        };
 
         public async Task StartAsync()
         {
@@ -119,7 +116,7 @@ namespace StateChartsDotNet.DurableFunction.Client
             return Task.CompletedTask;
         }
 
-        protected virtual IEnumerable<DebuggerInstruction> SupportedInstructions
+        private IEnumerable<DebuggerInstruction> AllInstructions
         {
             get
             {

@@ -27,7 +27,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 {
                     return data =>
                     {
-                        this.Function(data);
+                        this.Function((TData) data);
                         return null;
                     };
                 }

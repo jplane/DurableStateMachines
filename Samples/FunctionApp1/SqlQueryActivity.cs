@@ -19,8 +19,6 @@ namespace StateChartsDotNet.DurableFunction.Host
     {
         public virtual void ResolveConfigValues(Func<string, string> resolver)
         {
-            resolver.CheckArgNull(nameof(resolver));
-
             this.ConnectionString = resolver(this.ConnectionString);
         }
 

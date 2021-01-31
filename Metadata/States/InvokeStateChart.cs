@@ -30,7 +30,7 @@ namespace StateChartsDotNet.Metadata.States
                 }
                 else if (this.DataFunction != null)
                 {
-                    return data => this.DataFunction(data);
+                    return data => this.DataFunction((TData) data);
                 }
                 else
                 {
@@ -62,6 +62,9 @@ namespace StateChartsDotNet.Metadata.States
 
         [JsonProperty("statemachineidentifier")]
         public string StateMachineIdentifier { get; set; }
+
+        [JsonProperty("statemachinedefinition")]
+        private JObject Definition { get; set; }
 
         [JsonProperty("completionactions")]
         public MetadataList<ExecutableContent<TData>> CompletionActions
@@ -134,7 +137,7 @@ namespace StateChartsDotNet.Metadata.States
         IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() =>
             this.CompletionActions ?? Enumerable.Empty<IExecutableContentMetadata>();
 
-        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => null;
+        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>();
 
         string IInvokeStateChartMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
 

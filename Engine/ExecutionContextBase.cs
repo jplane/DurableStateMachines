@@ -226,9 +226,15 @@ namespace StateChartsDotNet
 
         internal DynamicDictionary ExecutionData => new DynamicDictionary(_internalData, _data);
 
+        internal void SetInternalDataValue(string key, object value)
+        {
+            _internalData[key] = value;
+        }
+
         internal void SetDataValue(string key, object value)
         {
-            ((dynamic) this.ExecutionData)[key] = value;
+            dynamic data = this.ExecutionData;
+            data[key] = value;
         }
 
         internal void EnqueueInternal(string message)

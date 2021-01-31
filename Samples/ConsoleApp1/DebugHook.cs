@@ -1,10 +1,11 @@
-﻿using StateChartsDotNet.DurableFunction.Client;
+﻿using Newtonsoft.Json;
+using StateChartsDotNet.DurableFunctionClient;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleDebugger
+namespace ConsoleApp1
 {
     internal class DebugHook : DebugHandler
     {
@@ -16,7 +17,7 @@ namespace ConsoleDebugger
         {
             foreach (var key in data.Keys)
             {
-                Console.WriteLine($"{key} = {data[key]}");
+                Console.WriteLine($"{key} = {JsonConvert.SerializeObject(data[key])}");
             }
 
             Console.WriteLine();

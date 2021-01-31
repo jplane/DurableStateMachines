@@ -9,7 +9,8 @@ using StateChartsDotNet.Common.Messages;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableFunction.Client;
+using StateChartsDotNet.DurableFunctionClient;
+using StateChartsDotNet.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunction.Host
+namespace StateChartsDotNet.DurableFunctionHost
 {
     internal class StateMachineContext : ExecutionContextBase
     {
@@ -46,8 +47,8 @@ namespace StateChartsDotNet.DurableFunction.Host
             _debugInfo = debugInfo;
             _data = data;
 
-            SetDataValue("_instanceId", _orchestrationContext.InstanceId);
-            SetDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
+            SetInternalDataValue("_instanceId", _orchestrationContext.InstanceId);
+            SetInternalDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
         }
 
         public object GetData() => _data;
@@ -66,27 +67,24 @@ namespace StateChartsDotNet.DurableFunction.Host
 
             Debug.Assert(childMachine != null);
 
-            var input = metadata.GetData(this.ExecutionData);
+            (string endpoint, object payload) details = GetEndpointAndPayload(metadata);
 
-            var payload = new StateMachineRequestPayload
-            {
-                Input = input,
-                StateMachineIdentifier = metadata.GetRootIdentifier(),
-                DebugInfo = _debugInfo,
-                IsChildStateMachine = true
-            };
+            Debug.Assert(!string.IsNullOrWhiteSpace(details.endpoint));
+            Debug.Assert(details.payload != null);
 
             if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
             {
-                return await _orchestrationContext.CallSubOrchestratorAsync<object>("statemachine-orchestration", payload);
+                return await _orchestrationContext.CallSubOrchestratorAsync<object>(details.endpoint, details.payload);
             }
             else
             {
+                Debug.Fail("Need to sort out by-id vs. by-def for remote invocation.");
+
                 Debug.Assert(!string.IsNullOrWhiteSpace(metadata.RemoteUri));
 
                 var uri = new Uri(metadata.RemoteUri);
 
-                var content = JsonConvert.SerializeObject(payload);
+                var content = JsonConvert.SerializeObject(details.payload);
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(content));
 
@@ -95,6 +93,36 @@ namespace StateChartsDotNet.DurableFunction.Host
                 Debug.Assert(response != null);
 
                 return JsonConvert.DeserializeObject(response.Content);
+            }
+        }
+
+        private (string, object) GetEndpointAndPayload(IInvokeStateChartMetadata metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            var input = metadata.GetData(this.ExecutionData);
+
+            var isByIdentifier = _lookupChild != null;
+
+            if (isByIdentifier)
+            {
+                return (StateMachineExtensions.StateMachineWithNameEndpoint, new StateMachinePayload
+                {
+                    Input = input,
+                    StateMachineIdentifier = metadata.GetRootIdentifier(),
+                    DebugInfo = _debugInfo,
+                    IsChildStateMachine = true
+                });
+            }
+            else
+            {
+                return (FunctionProvider.StateMachineWithDefinitionEndpoint, new StateMachineDefinitionPayload
+                {
+                    Input = (Dictionary<string, object>) input,
+                    Definition = (StateMachine<Dictionary<string, object>>) metadata.GetRoot(),
+                    DebugInfo = _debugInfo,
+                    IsChildStateMachine = true
+                });
             }
         }
 
@@ -231,7 +259,7 @@ namespace StateChartsDotNet.DurableFunction.Host
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
 
-                return _orchestrationContext.CallActivityAsync("debugger-break", (endpoint, info));
+                return _orchestrationContext.CallActivityAsync("statemachine-debugger-break", (endpoint, info));
             }
             else
             {

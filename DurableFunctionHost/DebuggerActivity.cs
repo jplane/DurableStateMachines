@@ -9,20 +9,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace StateChartsDotNet.DurableFunction.Host
+namespace StateChartsDotNet.DurableFunctionHost
 {
-    public class DebuggerActivity
+    public class StateMachineDebuggerActivity
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<DebuggerActivity> _logger;
+        private readonly ILogger<StateMachineDebuggerActivity> _logger;
 
-        public DebuggerActivity(IConfiguration config, ILogger<DebuggerActivity> logger)
+        public StateMachineDebuggerActivity(IConfiguration config, ILogger<StateMachineDebuggerActivity> logger)
         {
             _config = config;
             _logger = logger;
         }
 
-        [FunctionName("debugger-break")]
         public async Task RunAsync(
             [ActivityTrigger] IDurableActivityContext context)
         {

@@ -23,7 +23,7 @@ namespace StateChartsDotNet.Metadata.Execution
                 }
                 else if (this.ValueFunction != null)
                 {
-                    return data => this.ValueFunction(data);
+                    return data => this.ValueFunction((TData) data);
                 }
                 else
                 {

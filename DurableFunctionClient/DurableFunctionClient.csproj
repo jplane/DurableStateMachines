@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.DurableFunction.Client</AssemblyName>
-    <RootNamespace>StateChartsDotNet.DurableFunction.Client</RootNamespace>
+    <AssemblyName>StateChartsDotNet.DurableFunctionClient</AssemblyName>
+    <RootNamespace>StateChartsDotNet.DurableFunctionClient</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.10" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
