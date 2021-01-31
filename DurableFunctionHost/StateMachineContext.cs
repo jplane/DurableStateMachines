@@ -25,7 +25,6 @@ namespace StateChartsDotNet.DurableFunctionHost
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
         private readonly DebuggerInfo _debugInfo;
-        private readonly object _data;
 
         public StateMachineContext(IStateChartMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
@@ -35,7 +34,7 @@ namespace StateChartsDotNet.DurableFunctionHost
                                    IConfiguration config,
                                    Func<string, IStateChartMetadata> lookupChild,
                                    ILogger logger)
-            : base(metadata, data, default, lookupChild, isChild, logger)
+            : base(metadata, default, lookupChild, isChild, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));

@@ -7,7 +7,6 @@ namespace StateChartsDotNet.Common.Model.Execution
     public interface ISendMessageMetadata : IExecutableContentMetadata
     {
         string Id { get; }
-        string IdLocation { get; }
         TimeSpan? Delay { get; }
         string ActivityType { get; }
         ISendMessageConfiguration Configuration { get; }

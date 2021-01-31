@@ -47,12 +47,12 @@ namespace StateChartsDotNet.Model.Execution
 
                 var item = items[idx];
 
-                if (!string.IsNullOrWhiteSpace(foreachMetadata.Item))
+                if (!foreachMetadata.Item.Equals(default))
                 {
                     context.SetDataValue(foreachMetadata.Item, item);
                 }
 
-                if (!string.IsNullOrWhiteSpace(foreachMetadata.Index))
+                if (!foreachMetadata.Index.Equals(default))
                 {
                     context.SetDataValue(foreachMetadata.Index, idx);
                 }

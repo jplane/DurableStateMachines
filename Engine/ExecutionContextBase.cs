@@ -15,6 +15,7 @@ using System.Threading;
 using StateChartsDotNet.Common.Model.Execution;
 using StateChartsDotNet.Common.Debugger;
 using System.Net.WebSockets;
+using System.Reflection;
 
 namespace StateChartsDotNet
 {
@@ -22,6 +23,8 @@ namespace StateChartsDotNet
     {
         protected readonly ILogger _logger;
         protected readonly Func<string, IStateChartMetadata> _lookupChild;
+
+        protected object _data;
 
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
@@ -31,14 +34,12 @@ namespace StateChartsDotNet
         private readonly IStateChartMetadata _metadata;
         private readonly bool _isChild;
 
-        private object _data;
         private IDictionary<string, object> _internalData;
         private CancellationToken _cancelToken;
         private Exception _error;
         private bool _isRunning = false;
 
         internal ExecutionContextBase(IStateChartMetadata metadata,
-                                      object data,
                                       CancellationToken cancelToken,
                                       Func<string, IStateChartMetadata> lookupChild = null,
                                       bool isChild = false,
@@ -49,7 +50,6 @@ namespace StateChartsDotNet
             metadata.Validate();
 
             _metadata = metadata;
-            _data = data;
             _root = new StateChart(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
@@ -151,27 +151,6 @@ namespace StateChartsDotNet
 
         internal bool FailFast => _root.FailFast;
 
-        public async Task<string> ResolveSendMessageId(ISendMessageMetadata metadata)
-        {
-            metadata.CheckArgNull(nameof(metadata));
-
-            var id = metadata.Id;
-
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                id = this.GenerateGuid().ToString("N");
-
-                await this.LogDebugAsync($"Synthentic Id = {id}");
-
-                if (!string.IsNullOrWhiteSpace(metadata.IdLocation))
-                {
-                    _internalData[metadata.IdLocation] = id;
-                }
-            }
-
-            return id;
-        }
-
         protected IStateChartMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
         {
             Debug.Assert(metadata != null);
@@ -229,6 +208,20 @@ namespace StateChartsDotNet
         internal void SetInternalDataValue(string key, object value)
         {
             _internalData[key] = value;
+        }
+
+        internal void SetDataValue((string name, MemberInfo member) key, object value)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(key.name) || key.member != null);
+
+            if (!string.IsNullOrWhiteSpace(key.name))
+            {
+                SetDataValue(key.name, value);
+            }
+            else
+            {
+                SetDataValue(key.member.Name, value);
+            }
         }
 
         internal void SetDataValue(string key, object value)

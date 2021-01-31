@@ -37,11 +37,11 @@ namespace StateChartsDotNet.Tests
                             {
                                 new Foreach<TestData>
                                 {
-                                    CurrentItemLocation = "arrayItem",
+                                    CurrentItemTarget = d => d.ArrayItem,
                                     ValueFunction = data => data.Items,
                                     Actions =
                                     {
-                                        new Assign<TestData> { Location = "sum", ValueFunction = d => d.Sum + d.ArrayItem },
+                                        new Assign<TestData> { Target = d => d.Sum, ValueFunction = d => d.Sum + d.ArrayItem },
                                         new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
                                     }
                                 }
@@ -76,11 +76,11 @@ namespace StateChartsDotNet.Tests
                 Sum = 0
             };
 
-            var tuple = factory(machine, data, null, null);
+            var tuple = factory(machine, null, null);
 
             var context = tuple.Item1;
 
-            await context.StartAndWaitForCompletionAsync();
+            await context.StartAsync(data);
 
             Assert.AreEqual(15, data.Sum);
         }
@@ -127,11 +127,11 @@ namespace StateChartsDotNet.Tests
                 }
             };
 
-            var tuple = factory(machine, true, null, Logger);
+            var tuple = factory(machine, null, Logger);
 
             var context = tuple.Item1;
 
-            await context.StartAndWaitForCompletionAsync();
+            await context.StartAsync(true);
 
             var jsonResult = await listenerTask;
 
@@ -163,7 +163,7 @@ namespace StateChartsDotNet.Tests
                                 new Query<(string x, string y)>
                                 {
                                     ActivityType = "http-get",
-                                    ResultLocation = "x",
+                                    ResultTarget = d => d.x,
                                     Configuration = new HttpQueryConfiguration
                                     {
                                         Uri = "http://localhost:4444/"
@@ -185,19 +185,15 @@ namespace StateChartsDotNet.Tests
 
             (string x, string y) data = ("", "");
 
-            var tuple = factory(machine, data, null, Logger);
+            var tuple = factory(machine, null, Logger);
 
             var context = tuple.Item1;
 
-            var task = context.StartAndWaitForCompletionAsync();
+            var task = context.StartAsync(data);
 
             await Task.WhenAll(task, listenerTask);
 
-            var jsonResult = data.x;
-
-            Assert.IsNotNull(jsonResult);
-
-            var content = JsonConvert.DeserializeAnonymousType(jsonResult, new { value = default(int) });
+            var content = JsonConvert.DeserializeAnonymousType(task.Result.x, new { value = default(int) });
 
             Assert.AreEqual(43, content.value);
         }
@@ -221,7 +217,7 @@ namespace StateChartsDotNet.Tests
                                 Id = "an-invoke",
                                 StateMachineIdentifier = "inner",
                                 DataFunction = d => (d.x, 0),
-                                ResultLocation = "innerX"
+                                ResultTarget = d => d.innerX
                             }
                         },
                         Transitions =
@@ -252,7 +248,7 @@ namespace StateChartsDotNet.Tests
                         {
                             Actions =
                             {
-                                new Assign<(int x, int y)> { Location = "x", ValueFunction = d => d.x * 2 }
+                                new Assign<(int x, int y)> { Target = d => d.x, ValueFunction = d => d.x * 2 }
                             }
                         },
                         Transitions =
@@ -269,11 +265,11 @@ namespace StateChartsDotNet.Tests
 
             (int x, (int x, int y) innerX) data = (5, (0, 0));
 
-            var tuple = factory(machine, data, _ => childMachine, null);
+            var tuple = factory(machine, _ => childMachine, null);
 
             var context = tuple.Item1;
 
-            await context.StartAndWaitForCompletionAsync();
+            data = await context.StartAsync(data);
 
             Assert.AreEqual(5, data.x);
 

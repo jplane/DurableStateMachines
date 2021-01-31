@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.States
 {
@@ -16,6 +18,7 @@ namespace StateChartsDotNet.Metadata.States
     {
         private readonly Lazy<Func<dynamic, object>> _getData;
 
+        private MemberInfo _resultTarget;
         private MetadataList<ExecutableContent<TData>> _actions;
 
         public InvokeStateChart()
@@ -46,8 +49,13 @@ namespace StateChartsDotNet.Metadata.States
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        public Expression<Func<TData, object>> ResultTarget
+        {
+            set => _resultTarget = value.ExtractMember(nameof(ResultTarget));
+        }
+
         [JsonProperty("resultlocation")]
-        public string ResultLocation { get; set; }
+        private string ResultLocation { get; set; }
 
         [JsonProperty("mode")]
         public ChildStateChartExecutionMode ExecutionMode { get; set; }
@@ -142,5 +150,7 @@ namespace StateChartsDotNet.Metadata.States
         string IInvokeStateChartMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
 
         object IInvokeStateChartMetadata.GetData(dynamic data) => _getData.Value(data);
+
+        (string, MemberInfo) IInvokeStateChartMetadata.ResultLocation => (this.ResultLocation, _resultTarget);
     }
 }

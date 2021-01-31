@@ -6,11 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
     public class Assign<TData> : ExecutableContent<TData>, IAssignMetadata
     {
+        private MemberInfo _target;
         private Lazy<Func<dynamic, object>> _valueGetter;
 
         public Assign()
@@ -38,9 +41,9 @@ namespace StateChartsDotNet.Metadata.Execution
 
             var errors = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(this.Location))
+            if (string.IsNullOrWhiteSpace(this.TargetName) && _target == null)
             {
-                errors.Add("Location is invalid.");
+                errors.Add("One of TargetName or Target must be set.");
             }
 
             if (errors.Any())
@@ -49,8 +52,13 @@ namespace StateChartsDotNet.Metadata.Execution
             }
         }
 
-        [JsonProperty("location")]
-        public string Location { get; set; }
+        public Expression<Func<TData, object>> Target
+        {
+            set => _target = value.ExtractMember(nameof(Target));
+        }
+
+        [JsonProperty("target")]
+        private string TargetName { get; set; }
 
         [JsonProperty("value")]
         public object Value { get; set; }
@@ -61,5 +69,7 @@ namespace StateChartsDotNet.Metadata.Execution
         private string ValueExpression { get; set; }
 
         public object GetValue(dynamic data) => _valueGetter.Value(data);
+
+        (string, MemberInfo) IAssignMetadata.Location => (this.TargetName, _target);
     }
 }

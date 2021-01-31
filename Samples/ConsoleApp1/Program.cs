@@ -39,18 +39,18 @@ namespace ConsoleApp1
 
             //var debuggerTask = hook.StartAsync();
 
-            var state = new TestState
-            {
-                X = 5
-            };
+            //var state = new TestState
+            //{
+            //    X = 5
+            //};
 
-            var instanceId = await client.StartNewStateMachineAsync("test", state);
+            var instanceId = await client.StartNewStateMachineAsync("tupletest", (5, 0));
 
-            var output = await client.WaitForStateMachineCompletionAsync<TestState>(instanceId);
+            var output = await client.WaitForStateMachineCompletionAsync<(int x, int y)>(instanceId);
 
             Console.WriteLine(output.Item2.RuntimeStatus);
 
-            Console.WriteLine(output.Item1.X);
+            Console.WriteLine(output.Item1.x);
 
             await host.RunAsync();
 

@@ -6,7 +6,6 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Metadata.Execution;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace StateChartsDotNet.Metadata.States

@@ -17,9 +17,6 @@ namespace StateChartsDotNet.Metadata.Execution
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("idlocation")]
-        public string IdLocation { get; set; }
-
         [JsonProperty("delay")]
         public TimeSpan? Delay { get; set; }
 
@@ -45,9 +42,9 @@ namespace StateChartsDotNet.Metadata.Execution
                 errors.Add("ActivityType is invalid.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.Id) && string.IsNullOrWhiteSpace(this.IdLocation))
+            if (string.IsNullOrWhiteSpace(this.Id))
             {
-                errors.Add("One of Id or IdLocation must be set.");
+                errors.Add("Id is invalid.");
             }
 
             if (errors.Any())

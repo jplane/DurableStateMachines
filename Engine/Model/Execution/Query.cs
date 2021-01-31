@@ -32,7 +32,7 @@ namespace StateChartsDotNet.Model.Execution
             {
                 var result = await context.QueryAsync(metadata.ActivityType, metadata.Configuration);
 
-                if (!string.IsNullOrWhiteSpace(metadata.ResultLocation))
+                if (!metadata.ResultLocation.Equals(default))
                 {
                     context.SetDataValue(metadata.ResultLocation, result);
                 }

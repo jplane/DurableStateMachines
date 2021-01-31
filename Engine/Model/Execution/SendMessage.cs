@@ -27,11 +27,7 @@ namespace StateChartsDotNet.Model.Execution
                     await context.DelayAsync(metadata.Delay.Value);
                 }
 
-                var id = await context.ResolveSendMessageId(metadata);
-
-                Debug.Assert(!string.IsNullOrWhiteSpace(id));
-
-                await context.SendMessageAsync(metadata.ActivityType, id, metadata.Configuration);
+                await context.SendMessageAsync(metadata.ActivityType, metadata.Id, metadata.Configuration);
             }
             catch (TaskCanceledException)
             {

@@ -43,7 +43,7 @@ namespace StateChartsDotNet.Model.States
 
                 Debug.Assert(data != null);
 
-                if (!string.IsNullOrWhiteSpace(_metadata.ResultLocation))
+                if (!_metadata.ResultLocation.Equals(default))
                 {
                     context.SetDataValue(_metadata.ResultLocation, data);
                 }

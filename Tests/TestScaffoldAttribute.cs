@@ -10,8 +10,8 @@ using System.Threading;
 
 namespace StateChartsDotNet.Tests
 {
-    public delegate (IExecutionContext, CancellationTokenSource)
-            ScaffoldFactoryDelegate(IStateChartMetadata metadata, object data, Func<string, IStateChartMetadata> lookup, ILogger logger);
+    public delegate (ExecutionContext, CancellationTokenSource)
+            ScaffoldFactoryDelegate(IStateChartMetadata metadata, Func<string, IStateChartMetadata> lookup, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
     public class TestScaffoldAttribute : Attribute, ITestDataSource
@@ -22,11 +22,11 @@ namespace StateChartsDotNet.Tests
         {
             yield return new object[]
             {
-                (ScaffoldFactoryDelegate) ((machine, data, lookup, logger) =>
+                (ScaffoldFactoryDelegate) ((machine, lookup, logger) =>
                 {
                     var cts = new CancellationTokenSource();
 
-                    var context = new ExecutionContext(machine, data, cts.Token, lookup, false, logger);
+                    var context = new ExecutionContext(machine, cts.Token, lookup, false, logger);
                     
                     return (context, cts);
                 }),

@@ -1,15 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
+using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
     public class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {
+        private MemberInfo _resultTarget;
         private MetadataList<ExecutableContent<TData>> _actions;
 
         public Query()
@@ -20,8 +25,13 @@ namespace StateChartsDotNet.Metadata.Execution
         [JsonProperty("activitytype")]
         public string ActivityType { get; set; }
 
+        public Expression<Func<TData, object>> ResultTarget
+        {
+            set => _resultTarget = value.ExtractMember(nameof(ResultTarget));
+        }
+
         [JsonProperty("resultlocation")]
-        public string ResultLocation { get; set; }
+        private string ResultLocation { get; set; }
 
         [JsonProperty("configuration")]
         public IQueryConfiguration Configuration { get; set; }
@@ -65,9 +75,9 @@ namespace StateChartsDotNet.Metadata.Execution
                 errors.Add("ActivityType is invalid.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.ResultLocation))
+            if (string.IsNullOrWhiteSpace(this.ResultLocation) && _resultTarget == null)
             {
-                errors.Add("ResultLocation is invalid.");
+                errors.Add("Result target/location is invalid.");
             }
 
             foreach (var action in this.Actions)
@@ -80,6 +90,8 @@ namespace StateChartsDotNet.Metadata.Execution
                 errorMap.Add(((IModelMetadata)this).MetadataId, errors);
             }
         }
+
+        (string, MemberInfo) IQueryMetadata.ResultLocation => (this.ResultLocation, _resultTarget);
 
         IEnumerable<IExecutableContentMetadata> IQueryMetadata.GetExecutableContent() =>
             this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();

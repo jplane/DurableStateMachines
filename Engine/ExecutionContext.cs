@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -8,86 +7,58 @@ using StateChartsDotNet.Common;
 using Nito.AsyncEx;
 using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.Common.Messages;
-using StateChartsDotNet.Common.Exceptions;
 using System.Threading;
 using StateChartsDotNet.Services;
 using StateChartsDotNet.Common.Model.Execution;
-using Newtonsoft.Json.Linq;
 
 namespace StateChartsDotNet
 {
-    public class ExecutionContext : ExecutionContextBase, IExecutionContext
+    public class ExecutionContext : ExecutionContextBase
     {
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
-        private readonly AsyncLock _lock;
         private readonly Interpreter _interpreter;
-        private readonly Dictionary<string, ExternalServiceDelegate> _externalServices;
-        private readonly Dictionary<string, ExternalQueryDelegate> _externalQueries;
-        private readonly HttpService _http;
-
-        private Task _executeTask;
+        private readonly Lazy<Dictionary<string, ExternalServiceDelegate>> _externalServices;
+        private readonly Lazy<Dictionary<string, ExternalQueryDelegate>> _externalQueries;
+        private readonly Lazy<HttpService> _http;
 
         public ExecutionContext(IStateChartMetadata metadata,
-                                object data,
                                 CancellationToken cancelToken,
                                 Func<string, IStateChartMetadata> lookupChild = null,
                                 bool isChild = false,
                                 ILogger logger = null)
-            : base(metadata, data, cancelToken, lookupChild, isChild, logger)
+            : base(metadata, cancelToken, lookupChild, isChild, logger)
         {
-            _lock = new AsyncLock();
             _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
-            _http = new HttpService(this.ExecutionData, cancelToken);
 
-            _externalServices = new Dictionary<string, ExternalServiceDelegate>();
-            _externalServices.Add("http-post", _http.PostAsync);
+            _http = new Lazy<HttpService>(() => new HttpService(this.ExecutionData, cancelToken));
 
-            _externalQueries = new Dictionary<string, ExternalQueryDelegate>();
-            _externalQueries.Add("http-get", _http.GetAsync);
+            _externalServices = new Lazy<Dictionary<string, ExternalServiceDelegate>>(() =>
+            {
+                var services = new Dictionary<string, ExternalServiceDelegate>();
+                services.Add("http-post", _http.Value.PostAsync);
+                return services;
+            });
+
+            _externalQueries = new Lazy<Dictionary<string, ExternalQueryDelegate>>(() =>
+            {
+                var queries = new Dictionary<string, ExternalQueryDelegate>();
+                queries.Add("http-get", _http.Value.GetAsync);
+                return queries;
+            });
+        }
+
+        public async Task<TData> StartAsync<TData>(TData data)
+        {
+            data.CheckArgNull(nameof(data));
+
+            _data = data;
 
             SetInternalDataValue("_instanceId", this.GenerateGuid().ToString("N"));
-        }
 
-        public async Task StartAsync()
-        {
-            using (await _lock.LockAsync())
-            {
-                if (_executeTask != null && !_executeTask.IsCompleted)
-                {
-                    throw new InvalidOperationException("StateChart instance is already running.");
-                }
+            await _interpreter.RunAsync(this);
 
-                _executeTask = _interpreter.RunAsync(this);
-            }
-        }
-
-        public async Task WaitForCompletionAsync()
-        {
-            using (await _lock.LockAsync())
-            {
-                if (_executeTask == null)
-                {
-                    throw new InvalidOperationException("StateChart instance is already running.");
-                }
-
-                await _executeTask;    // task is already bounded by token passed in StartAsync()
-            }
-        }
-
-        public async Task StartAndWaitForCompletionAsync()
-        {
-            using (await _lock.LockAsync())
-            {
-                if (_executeTask != null && !_executeTask.IsCompleted)
-                {
-                    throw new InvalidOperationException("StateChart instance is already running.");
-                }
-
-                _executeTask = _interpreter.RunAsync(this);
-
-                await _executeTask;
-            }
+            return (TData) _data;
         }
 
         protected override Task SendAsync(ExternalMessage message)
@@ -110,7 +81,7 @@ namespace StateChartsDotNet
         {
             activityType.CheckArgNull(nameof(activityType));
 
-            if (_externalQueries.TryGetValue(activityType, out ExternalQueryDelegate query))
+            if (_externalQueries.Value.TryGetValue(activityType, out ExternalQueryDelegate query))
             {
                 return query(config);
             }
@@ -123,7 +94,7 @@ namespace StateChartsDotNet
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
 
-            if (_externalServices.TryGetValue(activityType, out ExternalServiceDelegate service))
+            if (_externalServices.Value.TryGetValue(activityType, out ExternalServiceDelegate service))
             {
                 return service(correlationId, config);
             }
@@ -131,7 +102,7 @@ namespace StateChartsDotNet
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
-        internal override async Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
+        internal override Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -146,11 +117,9 @@ namespace StateChartsDotNet
 
             var data = metadata.GetData(this.ExecutionData);
 
-            var context = new ExecutionContext(childMachine, data, this.CancelToken, _lookupChild, true, _logger);
+            var context = new ExecutionContext(childMachine, this.CancelToken, _lookupChild, true, _logger);
 
-            await context.StartAndWaitForCompletionAsync();
-
-            return data;
+            return context.StartAsync(data);
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

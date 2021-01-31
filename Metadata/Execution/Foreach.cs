@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.ExpressionTrees;
 using StateChartsDotNet.Common.Model;
 using StateChartsDotNet.Common.Model.Execution;
 using System;
@@ -9,11 +8,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace StateChartsDotNet.Metadata.Execution
 {
     public class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
     {
+        private MemberInfo _currentItemTarget;
+        private MemberInfo _currentIndexTarget;
         private MetadataList<ExecutableContent<TData>> _actions;
         private readonly Lazy<Func<dynamic, IEnumerable>> _arrayGetter;
 
@@ -61,11 +63,21 @@ namespace StateChartsDotNet.Metadata.Execution
             }
         }
 
+        public Expression<Func<TData, object>> CurrentItemTarget
+        {
+            set => _currentItemTarget = value.ExtractMember(nameof(CurrentItemTarget));
+        }
+
         [JsonProperty("currentitemlocation")]
-        public string CurrentItemLocation { get; set; }
+        private string CurrentItemLocation { get; set; }
+
+        public Expression<Func<TData, object>> CurrentIndexTarget
+        {
+            set => _currentIndexTarget = value.ExtractMember(nameof(CurrentIndexTarget));
+        }
 
         [JsonProperty("currentindexlocation")]
-        public string CurrentIndexLocation { get; set; }
+        private string CurrentIndexLocation { get; set; }
 
         [JsonProperty("value")]
         public IEnumerable Value { get; set; }
@@ -88,11 +100,6 @@ namespace StateChartsDotNet.Metadata.Execution
                 errors.Add("One of Value, ValueExpression, or ValueFunction must be set.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.CurrentItemLocation))
-            {
-                errors.Add("CurrentItemLocation is invalid.");
-            }
-
             foreach (var action in this.Actions)
             {
                 action.Validate(errorMap);
@@ -106,9 +113,9 @@ namespace StateChartsDotNet.Metadata.Execution
 
         IEnumerable IForeachMetadata.GetArray(dynamic data) => _arrayGetter.Value(data);
 
-        string IForeachMetadata.Item => this.CurrentItemLocation;
+        (string, MemberInfo) IForeachMetadata.Item => (this.CurrentItemLocation, _currentItemTarget);
 
-        string IForeachMetadata.Index => this.CurrentIndexLocation;
+        (string, MemberInfo) IForeachMetadata.Index => (this.CurrentIndexLocation, _currentIndexTarget);
 
         IEnumerable<IExecutableContentMetadata> IForeachMetadata.GetExecutableContent() =>
             this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();

@@ -41,10 +41,16 @@ namespace StateChartsDotNet
                 var name = (string) indexes[0];
 
                 var prop = _data.GetType().GetProperty(name);
+                var field = _data.GetType().GetField(name);
 
                 if (prop != null)
                 {
                     result = prop.GetValue(_data, null);
+                    return true;
+                }
+                else if (field != null)
+                {
+                    result = field.GetValue(_data);
                     return true;
                 }
                 else if (_data is IDictionary<string, object> dict && dict.TryGetValue(name, out result))
@@ -71,10 +77,15 @@ namespace StateChartsDotNet
                 var name = (string) indexes[0];
 
                 var prop = _data.GetType().GetProperty(name);
+                var field = _data.GetType().GetField(name);
 
                 if (prop != null)
                 {
                     prop.SetValue(_data, value);
+                }
+                else if (field != null)
+                {
+                    field.SetValue(_data, value);
                 }
                 else if (_data is IDictionary<string, object> dict)
                 {
@@ -96,10 +107,16 @@ namespace StateChartsDotNet
             Debug.Assert(!string.IsNullOrWhiteSpace(binder.Name));
 
             var prop = _data.GetType().GetProperty(binder.Name);
+            var field = _data.GetType().GetField(binder.Name);
 
             if (prop != null)
             {
                 result = prop.GetValue(_data, null);
+                return true;
+            }
+            else if (field != null)
+            {
+                result = field.GetValue(_data);
                 return true;
             }
             else if (_data is IDictionary<string, object> dict && dict.TryGetValue(binder.Name, out result))
@@ -119,10 +136,15 @@ namespace StateChartsDotNet
             Debug.Assert(!string.IsNullOrWhiteSpace(binder.Name));
 
             var prop = _data.GetType().GetProperty(binder.Name);
+            var field = _data.GetType().GetField(binder.Name);
 
             if (prop != null)
             {
                 prop.SetValue(_data, value);
+            }
+            else if (field != null)
+            {
+                field.SetValue(_data, value);
             }
             else if (_data is IDictionary<string, object> dict)
             {

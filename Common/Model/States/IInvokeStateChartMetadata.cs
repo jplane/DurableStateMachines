@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -10,7 +11,7 @@ namespace StateChartsDotNet.Common.Model.States
     public interface IInvokeStateChartMetadata : IModelMetadata
     {
         string Id { get; }
-        string ResultLocation { get; }
+        (string, MemberInfo) ResultLocation { get; }
         ChildStateChartExecutionMode ExecutionMode { get; }
         string RemoteUri { get; }
 
