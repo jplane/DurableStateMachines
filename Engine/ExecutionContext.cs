@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using StateChartsDotNet.Common;
+using DSM.Common;
 using Nito.AsyncEx;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Common.Messages;
+using DSM.Common.Model.States;
+using DSM.Common.Messages;
 using System.Threading;
-using StateChartsDotNet.Services;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Engine.Services;
+using DSM.Common.Model.Execution;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     public class ExecutionContext : ExecutionContextBase
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace StateChartsDotNet.Common.ExpressionTrees
+namespace DSM.Common.ExpressionTrees
 {
     internal class ExpressionTreeBinaryDeserializer
     {

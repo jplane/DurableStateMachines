@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.States;
+using ExecContext=DSM.Engine.ExecutionContext;
+using DSM.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 
-namespace StateChartsDotNet.Tests
+namespace DSM.Tests
 {
-    public delegate (ExecutionContext, CancellationTokenSource)
+    public delegate (ExecContext, CancellationTokenSource)
             ScaffoldFactoryDelegate(IStateChartMetadata metadata, Func<string, IStateChartMetadata> lookup, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
@@ -26,7 +26,7 @@ namespace StateChartsDotNet.Tests
                 {
                     var cts = new CancellationTokenSource();
 
-                    var context = new ExecutionContext(machine, cts.Token, lookup, false, logger);
+                    var context = new ExecContext(machine, cts.Token, lookup, false, logger);
                     
                     return (context, cts);
                 }),

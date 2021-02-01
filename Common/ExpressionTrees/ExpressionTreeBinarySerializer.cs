@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 
-namespace StateChartsDotNet.Common.ExpressionTrees
+namespace DSM.Common.ExpressionTrees
 {
     internal class ExpressionTreeBinarySerializer : ExpressionVisitor
     {

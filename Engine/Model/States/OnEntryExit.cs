@@ -1,11 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model.States;
+using DSM.Engine.Model.Execution;
 using System;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.States
+namespace DSM.Engine.Model.States
 {
     internal class OnEntryExit
     {

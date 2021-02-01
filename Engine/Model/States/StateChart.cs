@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using StateChartsDotNet.Model.Execution;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Common.Model;
+using DSM.Engine.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model.States;
+using DSM.Common.Model;
 using System.Threading.Tasks;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.States
+namespace DSM.Engine.Model.States
 {
     internal class StateChart : State
     {

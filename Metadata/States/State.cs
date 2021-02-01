@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.States;
+using DSM.Common.Model;
+using DSM.Common.Model.States;
 using System;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.Metadata.States
+namespace DSM.Metadata.States
 {
     public class State<TData> : IModelMetadata
     {

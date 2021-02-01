@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet</AssemblyName>
-    <RootNamespace>StateChartsDotNet</RootNamespace>
+    <AssemblyName>DSM.Engine</AssemblyName>
+    <RootNamespace>DSM.Engine</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 

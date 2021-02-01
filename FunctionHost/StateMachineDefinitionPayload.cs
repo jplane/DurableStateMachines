@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common.Debugger;
-using StateChartsDotNet.Metadata.States;
+using DSM.Common.Debugger;
+using DSM.Metadata.States;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace DSM.FunctionClient
 {
     public class StateMachineDefinitionPayload
     {

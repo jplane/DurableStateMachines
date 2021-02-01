@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Linq;
 
-namespace StateChartsDotNet.Common.Debugger
+namespace DSM.Common.Debugger
 {
     public class DebuggerInfo
     {

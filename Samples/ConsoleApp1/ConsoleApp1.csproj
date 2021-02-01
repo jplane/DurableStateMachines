@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DurableFunctionClient\DurableFunctionClient.csproj" />
+    <ProjectReference Include="..\..\FunctionClient\FunctionClient.csproj" />
     <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />
   </ItemGroup>
 

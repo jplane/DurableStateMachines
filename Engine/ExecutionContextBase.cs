@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using StateChartsDotNet.Model.States;
+using DSM.Engine.Model.States;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Common.Messages;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Exceptions;
+using DSM.Common;
+using DSM.Common.Model.States;
+using DSM.Common.Messages;
+using DSM.Common.Model;
+using DSM.Common.Exceptions;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Common.Debugger;
-using System.Net.WebSockets;
+using DSM.Common.Model.Execution;
+using DSM.Common.Debugger;
 using System.Reflection;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     public abstract class ExecutionContextBase
     {

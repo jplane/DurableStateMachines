@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using StateChartsDotNet.Model.Execution;
+using DSM.Engine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Messages;
-using StateChartsDotNet.Common.Debugger;
+using DSM.Common.Model.States;
+using DSM.Common.Model;
+using DSM.Common;
+using DSM.Common.Messages;
+using DSM.Common.Debugger;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.States
+namespace DSM.Engine.Model.States
 {
     internal class Transition
     {

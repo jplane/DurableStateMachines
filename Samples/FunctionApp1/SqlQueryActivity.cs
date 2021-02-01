@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model.Execution;
 
-namespace StateChartsDotNet.DurableFunction.Host
+namespace DSM.DurableFunction.Host
 {
     public class SqlQueryConfiguration : IQueryConfiguration
     {

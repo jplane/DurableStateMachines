@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
-namespace StateChartsDotNet.Common.ExpressionTrees
+namespace DSM.Common.ExpressionTrees
 {
     public class ExpressionTreeConverter : JsonConverter<LambdaExpression>
     {

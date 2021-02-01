@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Debugger;
-using StateChartsDotNet.Common.Model.States;
+using DSM.Common;
+using DSM.Common.Debugger;
+using DSM.Common.Model.States;
 using System.Diagnostics;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace DSM.FunctionClient
 {
     public class StateMachinePayload
     {

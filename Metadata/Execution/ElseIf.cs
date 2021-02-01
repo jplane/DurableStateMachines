@@ -1,13 +1,13 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model;
+using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace StateChartsDotNet.Metadata.Execution
+namespace DSM.Metadata.Execution
 {
     public class ElseIf<TData> : ExecutableContent<TData>, IElseIfMetadata
     {

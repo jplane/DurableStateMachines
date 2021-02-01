@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace StateChartsDotNet.Common.Model.Execution
+namespace DSM.Common.Model.Execution
 {
     public interface IQueryMetadata : IExecutableContentMetadata
     {

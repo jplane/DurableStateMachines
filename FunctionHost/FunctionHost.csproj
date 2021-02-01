@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.DurableFunctionHost</AssemblyName>
-    <RootNamespace>StateChartsDotNet.DurableFunctionHost</RootNamespace>
+    <AssemblyName>DSM.FunctionHost</AssemblyName>
+    <RootNamespace>DSM.FunctionHost</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\DurableFunctionClient\DurableFunctionClient.csproj" />
+    <ProjectReference Include="..\FunctionClient\FunctionClient.csproj" />
     <ProjectReference Include="..\Engine\Engine.csproj" />
   </ItemGroup>
 

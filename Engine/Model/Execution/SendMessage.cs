@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using StateChartsDotNet.Common;
+using DSM.Common;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common.Model.Execution;
-using System.Diagnostics;
+using DSM.Common.Model.Execution;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.Execution
+namespace DSM.Engine.Model.Execution
 {
     internal class SendMessage : ExecutableContent
     {

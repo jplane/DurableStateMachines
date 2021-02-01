@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Model.Execution;
-using StateChartsDotNet.Common;
+using DSM.Common.Model.States;
+using DSM.Engine.Model.Execution;
+using DSM.Common;
 using System.Diagnostics;
-using StateChartsDotNet.Common.Debugger;
+using DSM.Common.Debugger;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.States
+namespace DSM.Engine.Model.States
 {
     internal class InvokeStateChart
     {

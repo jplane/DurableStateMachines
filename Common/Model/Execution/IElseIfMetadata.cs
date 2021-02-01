@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StateChartsDotNet.Common.Model.Execution
+namespace DSM.Common.Model.Execution
 {
     public interface IElseIfMetadata : IExecutableContentMetadata
     {

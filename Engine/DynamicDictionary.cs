@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using StateChartsDotNet.Common;
+using DSM.Common;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     public class DynamicDictionary : DynamicObject
     {

@@ -13,10 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F949
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata", "Metadata\Metadata.csproj", "{A458DCE0-253E-4255-811B-A1C15EC4559F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableFunctionHost", "DurableFunctionHost\DurableFunctionHost.csproj", "{1049C265-B623-44AA-A17C-87178822492A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableFunctionClient", "DurableFunctionClient\DurableFunctionClient.csproj", "{520A5055-E845-40A4-A6E4-1237E8FDDED1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionApp1", "Samples\FunctionApp1\FunctionApp1.csproj", "{75A82939-E411-47F8-BC5C-8315C38C8D56}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "Samples\ConsoleApp1\ConsoleApp1.csproj", "{FDFC940D-B6DE-4F06-8ADF-932A6C9A3587}"
@@ -24,6 +20,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary1", "Samples\ClassLibrary1\ClassLibrary1.csproj", "{D345DF83-C284-4EF0-A075-A65684C38D92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HtmlDebugger", "Samples\HtmlDebugger\HtmlDebugger.csproj", "{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionClient", "FunctionClient\FunctionClient.csproj", "{EDC44367-7B0F-4230-ADDD-1571C01D99E5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionHost", "FunctionHost\FunctionHost.csproj", "{EC4F8E3B-D78C-4F22-86A9-C63EE7971E07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,14 +47,6 @@ Global
 		{A458DCE0-253E-4255-811B-A1C15EC4559F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A458DCE0-253E-4255-811B-A1C15EC4559F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A458DCE0-253E-4255-811B-A1C15EC4559F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1049C265-B623-44AA-A17C-87178822492A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1049C265-B623-44AA-A17C-87178822492A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1049C265-B623-44AA-A17C-87178822492A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1049C265-B623-44AA-A17C-87178822492A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{520A5055-E845-40A4-A6E4-1237E8FDDED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{520A5055-E845-40A4-A6E4-1237E8FDDED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{520A5055-E845-40A4-A6E4-1237E8FDDED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{520A5055-E845-40A4-A6E4-1237E8FDDED1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75A82939-E411-47F8-BC5C-8315C38C8D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75A82939-E411-47F8-BC5C-8315C38C8D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75A82939-E411-47F8-BC5C-8315C38C8D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -71,6 +63,14 @@ Global
 		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDC44367-7B0F-4230-ADDD-1571C01D99E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDC44367-7B0F-4230-ADDD-1571C01D99E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDC44367-7B0F-4230-ADDD-1571C01D99E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDC44367-7B0F-4230-ADDD-1571C01D99E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC4F8E3B-D78C-4F22-86A9-C63EE7971E07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC4F8E3B-D78C-4F22-86A9-C63EE7971E07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC4F8E3B-D78C-4F22-86A9-C63EE7971E07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC4F8E3B-D78C-4F22-86A9-C63EE7971E07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

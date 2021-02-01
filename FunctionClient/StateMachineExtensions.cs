@@ -1,10 +1,10 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Debugger;
+using DSM.Common;
+using DSM.Common.Debugger;
 using System;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace DSM.FunctionClient
 {
     public static class StateMachineExtensions
     {

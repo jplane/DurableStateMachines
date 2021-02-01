@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     public class StateMachineDebuggerActivity
     {

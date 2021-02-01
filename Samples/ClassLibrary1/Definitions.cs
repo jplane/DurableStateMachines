@@ -1,6 +1,6 @@
-﻿using StateChartsDotNet.DurableFunctionClient;
-using StateChartsDotNet.Metadata.Execution;
-using StateChartsDotNet.Metadata.States;
+﻿using DSM.FunctionClient;
+using DSM.Metadata.Execution;
+using DSM.Metadata.States;
 
 namespace ClassLibrary1
 {

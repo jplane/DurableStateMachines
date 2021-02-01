@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace StateChartsDotNet.Common.Model
+namespace DSM.Common.Model
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum StateType

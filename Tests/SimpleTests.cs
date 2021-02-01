@@ -1,12 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Metadata.Execution;
-using StateChartsDotNet.Metadata.States;
+using DSM.Common;
+using DSM.Metadata.Execution;
+using DSM.Metadata.States;
 using System;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Tests
+namespace DSM.Tests
 {
     [TestClass]
     public class SimpleTests : TestBase

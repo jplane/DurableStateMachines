@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Tests
+namespace DSM.Tests
 {
     public static class InProcWebServer
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Primitives;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Services;
+using DSM.Common;
+using DSM.Engine.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     internal class HttpService : HttpServiceBase
     {

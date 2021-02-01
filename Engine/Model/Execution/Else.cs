@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model.Execution;
+using DSM.Engine;
 
-namespace StateChartsDotNet.Model.Execution
+namespace DSM.Engine.Model.Execution
 {
     internal class Else
     {

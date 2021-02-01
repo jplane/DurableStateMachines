@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Messages
+namespace DSM.Common.Messages
 {
     public abstract class Message
     {

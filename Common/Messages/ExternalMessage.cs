@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Messages
+namespace DSM.Common.Messages
 {
     public class ExternalMessage : Message
     {

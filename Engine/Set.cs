@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using StateChartsDotNet.Common;
+using DSM.Common;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     internal class Set<T> : IEnumerable<T>
     {

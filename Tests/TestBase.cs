@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace StateChartsDotNet.Tests
+namespace DSM.Tests
 {
     public abstract class TestBase
     {

@@ -1,12 +1,12 @@
-﻿using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Model.Execution;
+﻿using DSM.Common.Model.States;
+using DSM.Engine;
+using DSM.Engine.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Model.States
+namespace DSM.Engine.Model.States
 {
     internal class HistoryState : State
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StateChartsDotNet.Common
+namespace DSM.Common
 {
     public static class ValidationExtensions
     {

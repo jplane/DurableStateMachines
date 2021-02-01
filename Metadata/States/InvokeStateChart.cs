@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.Execution;
+using DSM.Common;
+using DSM.Common.Model;
+using DSM.Common.Model.Execution;
+using DSM.Common.Model.States;
+using DSM.Metadata.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace StateChartsDotNet.Metadata.States
+namespace DSM.Metadata.States
 {
     public class InvokeStateChart<TData> : IInvokeStateChartMetadata
     {

@@ -1,6 +1,6 @@
-﻿using StateChartsDotNet.Common.Model.Execution;
+﻿using DSM.Common.Model.Execution;
 
-namespace StateChartsDotNet.Common.Model.States
+namespace DSM.Common.Model.States
 {
     public interface IStateChartMetadata : IStateMetadata
     {

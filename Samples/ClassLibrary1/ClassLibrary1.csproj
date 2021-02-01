@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DurableFunctionClient\DurableFunctionClient.csproj" />
+    <ProjectReference Include="..\..\FunctionClient\FunctionClient.csproj" />
   </ItemGroup>
 
 </Project>

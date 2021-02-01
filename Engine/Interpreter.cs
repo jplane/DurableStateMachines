@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using StateChartsDotNet.Model.States;
-using StateChartsDotNet.Model.Execution;
+using DSM.Engine.Model.States;
+using DSM.Engine.Model.Execution;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Messages;
+using DSM.Common.Model;
+using DSM.Common;
+using DSM.Common.Messages;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     internal class Interpreter
     {

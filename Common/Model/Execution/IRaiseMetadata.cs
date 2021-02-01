@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Model.Execution
+namespace DSM.Common.Model.Execution
 {
     public interface IRaiseMetadata : IExecutableContentMetadata
     {

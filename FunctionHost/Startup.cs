@@ -2,9 +2,9 @@
 using Microsoft.Azure.WebJobs.Script.Description;
 using Microsoft.Extensions.DependencyInjection;
 
-[assembly: FunctionsStartup(typeof(StateChartsDotNet.DurableFunctionHost.Startup))]
+[assembly: FunctionsStartup(typeof(DSM.FunctionHost.Startup))]
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     public class Startup : FunctionsStartup
     {

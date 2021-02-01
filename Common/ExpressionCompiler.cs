@@ -10,10 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Exceptions;
+using DSM.Common;
+using DSM.Common.Exceptions;
 
-namespace StateChartsDotNet.Common
+namespace DSM.Common
 {
     // this is a naive implementation
     // at minimum it should:

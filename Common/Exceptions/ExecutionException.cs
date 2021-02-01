@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace StateChartsDotNet.Common.Exceptions
+namespace DSM.Common.Exceptions
 {
     public sealed class ExecutionException : StateChartException
     {

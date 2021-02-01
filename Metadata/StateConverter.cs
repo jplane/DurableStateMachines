@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Metadata.States;
+using DSM.Metadata.States;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace StateChartsDotNet.Metadata
+namespace DSM.Metadata
 {
     public class StateConverter<TData> : JsonConverter<State<TData>>
     {

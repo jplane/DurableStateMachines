@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StateChartsDotNet.Common.Model.Execution
+namespace DSM.Common.Model.Execution
 {
     public interface IQueryConfiguration
     {

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.Metadata</AssemblyName>
-    <RootNamespace>StateChartsDotNet.Metadata</RootNamespace>
+    <AssemblyName>DSM.Metadata</AssemblyName>
+    <RootNamespace>DSM.Metadata</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 

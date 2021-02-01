@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>StateChartsDotNet.Tests</AssemblyName>
-    <RootNamespace>StateChartsDotNet.Tests</RootNamespace>
+    <AssemblyName>DSM.Tests</AssemblyName>
+    <RootNamespace>DSM.Tests</RootNamespace>
     <LangVersion>9.0</LangVersion>
     <RunSettingsFilePath>$(MSBuildProjectDirectory)\default.runsettings</RunSettingsFilePath>
   </PropertyGroup>

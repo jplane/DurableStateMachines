@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.States;
+using DSM.Common.Model;
+using DSM.Common.Model.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace StateChartsDotNet.Metadata.States
+namespace DSM.Metadata.States
 {
     public class HistoryState<TData> : State<TData>, IHistoryStateMetadata
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Services
+namespace DSM.Engine.Services
 {
     internal abstract class HttpServiceBase
     {

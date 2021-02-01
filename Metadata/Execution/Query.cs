@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common;
+using DSM.Common.Model;
+using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace StateChartsDotNet.Metadata.Execution
+namespace DSM.Metadata.Execution
 {
     public class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {

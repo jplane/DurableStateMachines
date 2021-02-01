@@ -1,8 +1,9 @@
-﻿using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.Execution;
+﻿using DSM.Common;
+using DSM.Common.Model.Execution;
+using DSM.Engine;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Model.Execution
+namespace DSM.Engine.Model.Execution
 {
     internal class Assign : ExecutableContent
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Script.Description;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.DurableFunctionClient;
+using DSM.FunctionClient;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     internal class FunctionProvider : IFunctionProvider
     {

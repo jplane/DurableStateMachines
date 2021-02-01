@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableFunctionClient;
+using DSM.Common;
+using DSM.Common.Model.States;
+using DSM.FunctionClient;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     public interface IStateMachineDefinitionProvider
     {

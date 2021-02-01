@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace StateChartsDotNet.Common.Model.States
+namespace DSM.Common.Model.States
 {
     public interface IStateMetadata : IModelMetadata
     {

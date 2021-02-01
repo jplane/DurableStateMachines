@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using StateChartsDotNet.Common.Debugger;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableFunctionClient;
+using DSM.Common.Debugger;
+using DSM.Common.Model.States;
+using DSM.Engine;
+using DSM.FunctionClient;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     public static class StateMachineOrchestration
     {

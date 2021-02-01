@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace StateChartsDotNet.Common.Exceptions
+namespace DSM.Common.Exceptions
 {
     public sealed class MetadataValidationException : StateChartException
     {

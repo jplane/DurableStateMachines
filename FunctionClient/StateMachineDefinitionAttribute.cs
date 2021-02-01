@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace DSM.FunctionClient
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class StateMachineDefinitionAttribute : Attribute

@@ -1,4 +1,4 @@
-﻿namespace StateChartsDotNet.Common.Model.States
+﻿namespace DSM.Common.Model.States
 {
     public interface IHistoryStateMetadata : IStateMetadata
     {

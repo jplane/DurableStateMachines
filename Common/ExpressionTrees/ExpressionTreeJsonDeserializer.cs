@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-namespace StateChartsDotNet.Common.ExpressionTrees
+namespace DSM.Common.ExpressionTrees
 {
     internal class ExpressionTreeJsonDeserializer
     {

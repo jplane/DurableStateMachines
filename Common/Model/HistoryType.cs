@@ -1,4 +1,4 @@
-﻿namespace StateChartsDotNet.Common.Model
+﻿namespace DSM.Common.Model
 {
     public enum HistoryType
     {

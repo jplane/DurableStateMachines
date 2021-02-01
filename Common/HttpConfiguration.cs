@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common.ExpressionTrees;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common.ExpressionTrees;
+using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace StateChartsDotNet.Common
+namespace DSM.Common
 {
     public abstract class HttpConfiguration
     {

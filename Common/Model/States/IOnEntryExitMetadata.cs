@@ -1,7 +1,7 @@
-﻿using StateChartsDotNet.Common.Model.Execution;
+﻿using DSM.Common.Model.Execution;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Model.States
+namespace DSM.Common.Model.States
 {
     public interface IOnEntryExitMetadata : IModelMetadata
     {

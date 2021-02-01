@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
-using StateChartsDotNet.Common.Model;
+using DSM.Common.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace StateChartsDotNet.Metadata
+namespace DSM.Metadata
 {
     [JsonArray]
     public class MetadataList<TMetadata> : IList<TMetadata> where TMetadata : IModelMetadata

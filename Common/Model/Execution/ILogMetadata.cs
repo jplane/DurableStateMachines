@@ -1,4 +1,4 @@
-﻿namespace StateChartsDotNet.Common.Model.Execution
+﻿namespace DSM.Common.Model.Execution
 {
     public interface ILogMetadata : IExecutableContentMetadata
     {

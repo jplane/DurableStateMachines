@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Services
+namespace DSM.Engine.Services
 {
     internal class HttpService : HttpServiceBase
     {

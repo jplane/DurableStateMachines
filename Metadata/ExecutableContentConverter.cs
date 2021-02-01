@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Metadata.Execution;
+using DSM.Metadata.Execution;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace StateChartsDotNet.Metadata
+namespace DSM.Metadata
 {
     public class ExecutableContentConverter<TData> : JsonConverter<ExecutableContent<TData>>
     {

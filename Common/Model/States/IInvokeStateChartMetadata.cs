@@ -4,9 +4,9 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common.Model.Execution;
 
-namespace StateChartsDotNet.Common.Model.States
+namespace DSM.Common.Model.States
 {
     public interface IInvokeStateChartMetadata : IModelMetadata
     {

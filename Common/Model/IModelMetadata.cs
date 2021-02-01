@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet.Common.Model
+namespace DSM.Common.Model
 {
     public interface IModelMetadata
     {

@@ -1,8 +1,8 @@
-﻿using StateChartsDotNet.Common.Messages;
+﻿using DSM.Common.Messages;
 using System;
 using System.Collections.Generic;
 
-namespace StateChartsDotNet
+namespace DSM.Engine
 {
     public class InternalMessage : Message
     {

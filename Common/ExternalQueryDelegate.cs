@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common.Model.Execution;
+using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.Common
+namespace DSM.Common
 {
     public delegate Task<string> ExternalQueryDelegate(IQueryConfiguration config);
 }

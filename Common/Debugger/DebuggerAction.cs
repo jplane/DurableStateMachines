@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace StateChartsDotNet.Common.Debugger
+namespace DSM.Common.Debugger
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum DebuggerAction

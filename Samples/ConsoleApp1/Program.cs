@@ -4,7 +4,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using StateChartsDotNet.DurableFunctionClient;
+using DSM.FunctionClient;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;

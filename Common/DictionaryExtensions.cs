@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StateChartsDotNet.Common
+namespace DSM.Common
 {
     public static class DictionaryExtensions
     {

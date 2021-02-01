@@ -3,14 +3,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StateChartsDotNet.Common;
-using StateChartsDotNet.Common.Debugger;
-using StateChartsDotNet.Common.Messages;
-using StateChartsDotNet.Common.Model;
-using StateChartsDotNet.Common.Model.Execution;
-using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.DurableFunctionClient;
-using StateChartsDotNet.Metadata.States;
+using DSM.Common;
+using DSM.Common.Debugger;
+using DSM.Common.Messages;
+using DSM.Common.Model;
+using DSM.Common.Model.Execution;
+using DSM.Common.Model.States;
+using DSM.Engine;
+using DSM.FunctionClient;
+using DSM.Metadata.States;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +19,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionHost
+namespace DSM.FunctionHost
 {
     internal class StateMachineContext : ExecutionContextBase
     {

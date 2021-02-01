@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx;
-using StateChartsDotNet.Common.Debugger;
+using DSM.Common.Debugger;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StateChartsDotNet.DurableFunctionClient
+namespace DSM.FunctionClient
 {
     public abstract class DebugListener
     {
