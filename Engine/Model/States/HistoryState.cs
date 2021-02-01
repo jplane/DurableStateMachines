@@ -39,7 +39,7 @@ namespace DSM.Engine.Model.States
 
         public void VisitTransition(List<State> targetStates,
                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent,
-                                    StateChart root)
+                                    StateMachine root)
         {
             var transition = _transitions.Value.Single();
 

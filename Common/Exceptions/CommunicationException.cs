@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace DSM.Common.Exceptions
 {
-    public sealed class CommunicationException : StateChartException
+    public sealed class CommunicationException : StateMachineException
     {
         public CommunicationException()
         {

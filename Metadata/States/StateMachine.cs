@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
-    public class StateMachine<TData> : IStateChartMetadata
+    public class StateMachine<TData> : IStateMachineMetadata
     {
         private Script<TData> _initScript;
         private MetadataList<State<TData>> _states;
@@ -158,7 +158,7 @@ namespace DSM.Metadata.States
             }
         }
 
-        IScriptMetadata IStateChartMetadata.GetScript() => this.InitScript;
+        IScriptMetadata IStateMachineMetadata.GetScript() => this.InitScript;
 
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => this.States.Cast<IStateMetadata>();
 
@@ -166,7 +166,7 @@ namespace DSM.Metadata.States
 
         IOnEntryExitMetadata IStateMetadata.GetOnExit() => throw new NotSupportedException();
 
-        IEnumerable<IInvokeStateChartMetadata> IStateMetadata.GetStateChartInvokes() => throw new NotSupportedException();
+        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() => throw new NotSupportedException();
 
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() => Enumerable.Empty<ITransitionMetadata>();
     }

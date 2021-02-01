@@ -21,7 +21,7 @@ namespace DSM.Engine
     public abstract class ExecutionContextBase
     {
         protected readonly ILogger _logger;
-        protected readonly Func<string, IStateChartMetadata> _lookupChild;
+        protected readonly Func<string, IStateMachineMetadata> _lookupChild;
 
         protected object _data;
 
@@ -29,8 +29,8 @@ namespace DSM.Engine
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly Set<State> _configuration;
         private readonly Set<State> _statesToInvoke;
-        private readonly StateChart _root;
-        private readonly IStateChartMetadata _metadata;
+        private readonly StateMachine _root;
+        private readonly IStateMachineMetadata _metadata;
         private readonly bool _isChild;
 
         private IDictionary<string, object> _internalData;
@@ -38,9 +38,9 @@ namespace DSM.Engine
         private Exception _error;
         private bool _isRunning = false;
 
-        internal ExecutionContextBase(IStateChartMetadata metadata,
+        internal ExecutionContextBase(IStateMachineMetadata metadata,
                                       CancellationToken cancelToken,
-                                      Func<string, IStateChartMetadata> lookupChild = null,
+                                      Func<string, IStateMachineMetadata> lookupChild = null,
                                       bool isChild = false,
                                       ILogger logger = null)
         {
@@ -49,7 +49,7 @@ namespace DSM.Engine
             metadata.Validate();
 
             _metadata = metadata;
-            _root = new StateChart(metadata);
+            _root = new StateMachine(metadata);
             _cancelToken = cancelToken;
             _logger = logger;
             _lookupChild = lookupChild;
@@ -68,7 +68,7 @@ namespace DSM.Engine
 
         internal abstract Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config);
 
-        internal abstract Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId);
+        internal abstract Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId);
 
         internal abstract Task LogDebugAsync(string message);
 
@@ -78,7 +78,7 @@ namespace DSM.Engine
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
 
-        protected bool IsChildStateChart => _isChild;
+        protected bool IsChildStateMachine => _isChild;
 
         protected IReadOnlyDictionary<string, object> GetDebuggerValues()
         {
@@ -96,7 +96,7 @@ namespace DSM.Engine
 
         internal void InternalCancel()
         {
-            if (!IsChildStateChart)
+            if (!IsChildStateMachine)
             {
                 _isRunning = false;
             }
@@ -137,7 +137,7 @@ namespace DSM.Engine
         {
             if (this.FailFast && _error != null)
             {
-                Debug.Assert(_error is StateChartException);
+                Debug.Assert(_error is StateMachineException);
 
                 ExceptionDispatchInfo.Capture(_error).Throw();
             }
@@ -150,7 +150,7 @@ namespace DSM.Engine
 
         internal bool FailFast => _root.FailFast;
 
-        protected IStateChartMetadata ResolveChildStateChart(IInvokeStateChartMetadata metadata)
+        protected IStateMachineMetadata ResolveChildStateMachine(IInvokeStateMachineMetadata metadata)
         {
             Debug.Assert(metadata != null);
 
@@ -175,7 +175,7 @@ namespace DSM.Engine
             return this.BreakOnDebugger(DebuggerAction.ExitStateMachine, _metadata);
         }
 
-        internal StateChart Root => _root;
+        internal StateMachine Root => _root;
 
         internal CancellationToken CancelToken => _cancelToken;
 
@@ -240,7 +240,7 @@ namespace DSM.Engine
 
             if (! (ex is CommunicationException))
             {
-                ex = new CommunicationException("A communication error occurred during statechart processing.", ex);
+                ex = new CommunicationException("A communication error occurred during statemachine processing.", ex);
             }
 
             var evt = new InternalMessage
@@ -262,7 +262,7 @@ namespace DSM.Engine
 
             if (! (ex is ExecutionException))
             {
-                ex = new ExecutionException("An error occurred during statechart processing.", ex);
+                ex = new ExecutionException("An error occurred during statemachine processing.", ex);
             }
 
             var evt = new InternalMessage

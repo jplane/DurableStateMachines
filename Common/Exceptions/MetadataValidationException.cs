@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DSM.Common.Exceptions
 {
-    public sealed class MetadataValidationException : StateChartException
+    public sealed class MetadataValidationException : StateMachineException
     {
         private readonly IReadOnlyDictionary<string, string[]> _errors;
 

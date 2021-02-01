@@ -23,7 +23,7 @@ namespace DSM.Engine
 
             await context.LogInformationAsync("Start: event loop");
 
-            await EnterStatechartAsync(context);
+            await EnterStateMachineAsync(context);
 
             while (context.IsRunning)
             {
@@ -33,7 +33,7 @@ namespace DSM.Engine
 
                 if (context.IsRunning)
                 {
-                    await ProcessStateChartInvokesAsync(context);
+                    await ProcessStateMachineInvokesAsync(context);
 
                     if (!context.HasInternalMessages)
                     {
@@ -44,14 +44,14 @@ namespace DSM.Engine
                 await context.LogInformationAsync("End: event loop cycle");
             }
 
-            await ExitStatechartAsync(context);
+            await ExitStateMachineAsync(context);
 
             await context.LogInformationAsync("End: event loop");
 
             context.CheckErrorPropagation();
         }
 
-        private async Task EnterStatechartAsync(ExecutionContextBase context)
+        private async Task EnterStateMachineAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -61,7 +61,7 @@ namespace DSM.Engine
                                    new List<Transition>(new[] { context.Root.GetInitialStateTransition() }));
         }
 
-        private static async Task ExitStatechartAsync(ExecutionContextBase context)
+        private static async Task ExitStateMachineAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 
@@ -73,7 +73,7 @@ namespace DSM.Engine
             await context.ExitAsync();
         }
 
-        private static async Task ProcessStateChartInvokesAsync(ExecutionContextBase context)
+        private static async Task ProcessStateMachineInvokesAsync(ExecutionContextBase context)
         {
             Debug.Assert(context != null);
 

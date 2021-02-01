@@ -71,7 +71,7 @@ namespace DSM.Engine.Model.Execution
             {
                 await _ExecuteAsync(context);
             }
-            catch (StateChartException)
+            catch (StateMachineException)
             {
                 throw;
             }

@@ -100,7 +100,7 @@ namespace DSM.Metadata.States
 
         IOnEntryExitMetadata IStateMetadata.GetOnExit() => this.OnExit;
 
-        IEnumerable<IInvokeStateChartMetadata> IStateMetadata.GetStateChartInvokes() => throw new NotSupportedException();
+        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() => throw new NotSupportedException();
 
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => throw new NotSupportedException();
 

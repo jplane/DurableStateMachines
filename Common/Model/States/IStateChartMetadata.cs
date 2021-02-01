@@ -2,7 +2,7 @@
 
 namespace DSM.Common.Model.States
 {
-    public interface IStateChartMetadata : IStateMetadata
+    public interface IStateMachineMetadata : IStateMetadata
     {
         bool FailFast { get; }
 

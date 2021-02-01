@@ -10,13 +10,13 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.States
 {
-    internal class InvokeStateChart
+    internal class InvokeStateMachine
     {
-        private readonly IInvokeStateChartMetadata _metadata;
+        private readonly IInvokeStateMachineMetadata _metadata;
         private readonly string _parentMetadataId;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
-        public InvokeStateChart(IInvokeStateChartMetadata metadata, string parentMetadataId)
+        public InvokeStateMachine(IInvokeStateMachineMetadata metadata, string parentMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
             parentMetadataId.CheckArgNull(nameof(parentMetadataId));
@@ -34,13 +34,13 @@ namespace DSM.Engine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            await context.LogInformationAsync("Start: InvokeStateChart.Execute");
+            await context.LogInformationAsync("Start: InvokeStateMachine.Execute");
 
             await context.BreakOnDebugger(DebuggerAction.BeforeInvokeChildStateMachine, _metadata);
 
             try
             {
-                var data = await context.InvokeChildStateChart(_metadata, _parentMetadataId);
+                var data = await context.InvokeChildStateMachine(_metadata, _parentMetadataId);
 
                 Debug.Assert(data != null);
 
@@ -64,7 +64,7 @@ namespace DSM.Engine.Model.States
             {
                 await context.BreakOnDebugger(DebuggerAction.AfterInvokeChildStateMachine, _metadata);
 
-                await context.LogInformationAsync("End: InvokeStateChart.Execute");
+                await context.LogInformationAsync("End: InvokeStateMachine.Execute");
             }
         }
     }

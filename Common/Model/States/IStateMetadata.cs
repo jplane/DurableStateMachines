@@ -19,7 +19,7 @@ namespace DSM.Common.Model.States
 
         IEnumerable<ITransitionMetadata> GetTransitions();
 
-        IEnumerable<IInvokeStateChartMetadata> GetStateChartInvokes();
+        IEnumerable<IInvokeStateMachineMetadata> GetStateMachineInvokes();
 
         ITransitionMetadata GetInitialTransition();
 

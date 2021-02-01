@@ -13,20 +13,20 @@ namespace DSM.FunctionHost
 {
     public interface IStateMachineDefinitionProvider
     {
-        IStateChartMetadata GetStateMachine(string identifier);
+        IStateMachineMetadata GetStateMachine(string identifier);
     }
 
     internal class DefinitionResolver
     {
         private readonly IConfiguration _config;
         private readonly Lazy<IStateMachineDefinitionProvider[]> _providers;
-        private readonly ConcurrentDictionary<string, IStateChartMetadata> _funcs;
+        private readonly ConcurrentDictionary<string, IStateMachineMetadata> _funcs;
 
         public DefinitionResolver(IConfiguration config)
         {
             _config = config;
 
-            _funcs = new ConcurrentDictionary<string, IStateChartMetadata>();
+            _funcs = new ConcurrentDictionary<string, IStateMachineMetadata>();
 
             _providers = new Lazy<IStateMachineDefinitionProvider[]>(() =>
                             Assembly.Load(_config["DEFINITIONS_ASSEMBLY"])  // TODO: change this
@@ -44,7 +44,7 @@ namespace DSM.FunctionHost
             {
                 return false;
             }
-            else if (!typeof(IStateChartMetadata).IsAssignableFrom(propertyType) ||
+            else if (!typeof(IStateMachineMetadata).IsAssignableFrom(propertyType) ||
                      prop.GetGetMethod() == null ||
                      (!prop.GetGetMethod().IsStatic && prop.ReflectedType.GetConstructor(Type.EmptyTypes) == null))
             {
@@ -54,7 +54,7 @@ namespace DSM.FunctionHost
             return true;
         }
 
-        public IStateChartMetadata Resolve(string identifier)
+        public IStateMachineMetadata Resolve(string identifier)
         {
             identifier.CheckArgNull(nameof(identifier));
 
@@ -73,7 +73,7 @@ namespace DSM.FunctionHost
 
                     if (prop.GetGetMethod().IsStatic)
                     {
-                        return (IStateChartMetadata)targetProps[0].prop.GetValue(null);
+                        return (IStateMachineMetadata)targetProps[0].prop.GetValue(null);
                     }
                     else
                     {
@@ -81,7 +81,7 @@ namespace DSM.FunctionHost
 
                         Debug.Assert(instance != null);
 
-                        return (IStateChartMetadata)targetProps[0].prop.GetValue(instance);
+                        return (IStateMachineMetadata)targetProps[0].prop.GetValue(instance);
                     }
                 }
                 else if (targetProps.Length > 1)

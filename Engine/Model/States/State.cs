@@ -19,7 +19,7 @@ namespace DSM.Engine.Model.States
         protected readonly Lazy<OnEntryExit> _onEntry;
         protected readonly Lazy<OnEntryExit> _onExit;
         protected readonly Lazy<Transition[]> _transitions;
-        protected readonly Lazy<InvokeStateChart[]> _invokes;
+        protected readonly Lazy<InvokeStateMachine[]> _invokes;
         protected readonly Lazy<State[]> _states;
         protected readonly Lazy<Transition> _initialTransition;
 
@@ -55,9 +55,9 @@ namespace DSM.Engine.Model.States
                 return _metadata.GetTransitions().Select(tm => new Transition(tm, this)).ToArray();
             });
 
-            _invokes = new Lazy<InvokeStateChart[]>(() =>
+            _invokes = new Lazy<InvokeStateMachine[]>(() =>
             {
-                return _metadata.GetStateChartInvokes().Select(sm => new InvokeStateChart(sm, _metadata.MetadataId)).ToArray();
+                return _metadata.GetStateMachineInvokes().Select(sm => new InvokeStateMachine(sm, _metadata.MetadataId)).ToArray();
             });
 
             _initialTransition = new Lazy<Transition>(() =>

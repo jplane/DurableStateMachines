@@ -27,13 +27,13 @@ namespace DSM.FunctionHost
         private readonly IConfiguration _config;
         private readonly DebuggerInfo _debugInfo;
 
-        public StateMachineContext(IStateChartMetadata metadata,
+        public StateMachineContext(IStateMachineMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
                                    object data,
                                    bool isChild,
                                    DebuggerInfo debugInfo,
                                    IConfiguration config,
-                                   Func<string, IStateChartMetadata> lookupChild,
+                                   Func<string, IStateMachineMetadata> lookupChild,
                                    ILogger logger)
             : base(metadata, default, lookupChild, isChild, logger)
         {
@@ -58,12 +58,12 @@ namespace DSM.FunctionHost
             return _orchestrationContext.NewGuid();
         }
 
-        internal override async Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string parentStateMetadataId)
+        internal override async Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId)
         {
             metadata.CheckArgNull(nameof(metadata));
             parentStateMetadataId.CheckArgNull(nameof(parentStateMetadataId));
 
-            var childMachine = ResolveChildStateChart(metadata);
+            var childMachine = ResolveChildStateMachine(metadata);
 
             Debug.Assert(childMachine != null);
 
@@ -72,7 +72,7 @@ namespace DSM.FunctionHost
             Debug.Assert(!string.IsNullOrWhiteSpace(details.endpoint));
             Debug.Assert(details.payload != null);
 
-            if (metadata.ExecutionMode == ChildStateChartExecutionMode.Inline)
+            if (metadata.ExecutionMode == ChildStateMachineExecutionMode.Inline)
             {
                 return await _orchestrationContext.CallSubOrchestratorAsync<object>(details.endpoint, details.payload);
             }
@@ -96,7 +96,7 @@ namespace DSM.FunctionHost
             }
         }
 
-        private (string, object) GetEndpointAndPayload(IInvokeStateChartMetadata metadata)
+        private (string, object) GetEndpointAndPayload(IInvokeStateMachineMetadata metadata)
         {
             Debug.Assert(metadata != null);
 

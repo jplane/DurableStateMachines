@@ -74,11 +74,11 @@ namespace DSM.FunctionHost
         }
 
         private static async Task<object> RunAsync(IDurableOrchestrationContext context,
-                                                   IStateChartMetadata stateMachineDefinition,
+                                                   IStateMachineMetadata stateMachineDefinition,
                                                    object input,
                                                    bool isChildStateMachine,
                                                    DebuggerInfo debugInfo,
-                                                   Func<string, IStateChartMetadata> resolver,
+                                                   Func<string, IStateMachineMetadata> resolver,
                                                    ILogger logger)
         {
             Debug.Assert(context != null);

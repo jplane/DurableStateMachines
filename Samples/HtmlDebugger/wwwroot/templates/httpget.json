@@ -24,7 +24,6 @@
               "type": "query",
               "activity": "http-get",
               "resultlocation": "x",
-              "configtype": "statechartsdotnet.common.httpqueryconfiguration",
               "config": {
                 "uri": "%TEST_FUNCTION_ENDPOINT%"
               }

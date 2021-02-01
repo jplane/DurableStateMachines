@@ -8,21 +8,21 @@ using DSM.Common.Model.Execution;
 
 namespace DSM.Common.Model.States
 {
-    public interface IInvokeStateChartMetadata : IModelMetadata
+    public interface IInvokeStateMachineMetadata : IModelMetadata
     {
         string Id { get; }
         (string, MemberInfo) ResultLocation { get; }
-        ChildStateChartExecutionMode ExecutionMode { get; }
+        ChildStateMachineExecutionMode ExecutionMode { get; }
         string RemoteUri { get; }
 
-        IStateChartMetadata GetRoot();
+        IStateMachineMetadata GetRoot();
         string GetRootIdentifier();
         object GetData(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum ChildStateChartExecutionMode
+    public enum ChildStateMachineExecutionMode
     {
         Inline = 1,
         Remote

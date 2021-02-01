@@ -179,7 +179,7 @@ namespace DSM.Metadata.States
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() =>
             this.Transitions ?? Enumerable.Empty<ITransitionMetadata>();
 
-        IEnumerable<IInvokeStateChartMetadata> IStateMetadata.GetStateChartInvokes() => throw new NotSupportedException();
+        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() => throw new NotSupportedException();
 
         ITransitionMetadata IStateMetadata.GetInitialTransition() => throw new NotSupportedException();
 

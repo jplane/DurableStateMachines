@@ -4,18 +4,18 @@ using System.Runtime.Serialization;
 
 namespace DSM.Common.Exceptions
 {
-    public class StateChartException : Exception
+    public class StateMachineException : Exception
     {
-        public StateChartException()
+        public StateMachineException()
         {
         }
 
-        public StateChartException(string message)
+        public StateMachineException(string message)
             : base(message)
         {
         }
 
-        public StateChartException(string message, Exception inner)
+        public StateMachineException(string message, Exception inner)
             : base(message, inner)
         {
         }

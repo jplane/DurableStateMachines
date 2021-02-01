@@ -21,9 +21,9 @@ namespace DSM.Engine
         private readonly Lazy<Dictionary<string, ExternalQueryDelegate>> _externalQueries;
         private readonly Lazy<HttpService> _http;
 
-        public ExecutionContext(IStateChartMetadata metadata,
+        public ExecutionContext(IStateMachineMetadata metadata,
                                 CancellationToken cancelToken,
-                                Func<string, IStateChartMetadata> lookupChild = null,
+                                Func<string, IStateMachineMetadata> lookupChild = null,
                                 bool isChild = false,
                                 ILogger logger = null)
             : base(metadata, cancelToken, lookupChild, isChild, logger)
@@ -102,16 +102,16 @@ namespace DSM.Engine
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
-        internal override Task<object> InvokeChildStateChart(IInvokeStateChartMetadata metadata, string _)
+        internal override Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string _)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            if (metadata.ExecutionMode == ChildStateChartExecutionMode.Remote)
+            if (metadata.ExecutionMode == ChildStateMachineExecutionMode.Remote)
             {
-                throw new NotSupportedException("Remote child statechart execution not supported for in-memory engine.");
+                throw new NotSupportedException("Remote child statemachine execution not supported for in-memory engine.");
             }
 
-            var childMachine = ResolveChildStateChart(metadata);
+            var childMachine = ResolveChildStateMachine(metadata);
 
             Debug.Assert(childMachine != null);
 

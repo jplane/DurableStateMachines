@@ -9,11 +9,11 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.States
 {
-    internal class StateChart : State
+    internal class StateMachine : State
     {
         private readonly Lazy<Script> _script;
 
-        public StateChart(IStateChartMetadata metadata)
+        public StateMachine(IStateMachineMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -37,9 +37,9 @@ namespace DSM.Engine.Model.States
             }
         }
 
-        public bool FailFast => ((IStateChartMetadata) _metadata).FailFast;
+        public bool FailFast => ((IStateMachineMetadata) _metadata).FailFast;
 
-        public string Name => ((IStateChartMetadata) _metadata).Id;
+        public string Name => ((IStateMachineMetadata) _metadata).Id;
 
         public override string Id => "[ROOT]";
 

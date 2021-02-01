@@ -14,14 +14,14 @@ using System.Reflection;
 
 namespace DSM.Metadata.States
 {
-    public class InvokeStateChart<TData> : IInvokeStateChartMetadata
+    public class InvokeStateMachine<TData> : IInvokeStateMachineMetadata
     {
         private readonly Lazy<Func<dynamic, object>> _getData;
 
         private MemberInfo _resultTarget;
         private MetadataList<ExecutableContent<TData>> _actions;
 
-        public InvokeStateChart()
+        public InvokeStateMachine()
         {
             this.CompletionActions = new MetadataList<ExecutableContent<TData>>();
 
@@ -58,7 +58,7 @@ namespace DSM.Metadata.States
         private string ResultLocation { get; set; }
 
         [JsonProperty("mode")]
-        public ChildStateChartExecutionMode ExecutionMode { get; set; }
+        public ChildStateMachineExecutionMode ExecutionMode { get; set; }
 
         [JsonProperty("remoteuri")]
         public string RemoteUri { get; set; }
@@ -108,10 +108,10 @@ namespace DSM.Metadata.States
                 errors.Add("Id is invalid.");
             }
 
-            if (this.ExecutionMode == ChildStateChartExecutionMode.Remote &&
+            if (this.ExecutionMode == ChildStateMachineExecutionMode.Remote &&
                 string.IsNullOrWhiteSpace(this.RemoteUri))
             {
-                errors.Add("ChildStateChartExecutionMode.Remote requires a RemoteUri value.");
+                errors.Add("ChildStateMachineExecutionMode.Remote requires a RemoteUri value.");
             }
 
             if (string.IsNullOrWhiteSpace(this.StateMachineIdentifier))
@@ -142,15 +142,15 @@ namespace DSM.Metadata.States
             }
         }
 
-        IEnumerable<IExecutableContentMetadata> IInvokeStateChartMetadata.GetFinalizeExecutableContent() =>
+        IEnumerable<IExecutableContentMetadata> IInvokeStateMachineMetadata.GetFinalizeExecutableContent() =>
             this.CompletionActions ?? Enumerable.Empty<IExecutableContentMetadata>();
 
-        IStateChartMetadata IInvokeStateChartMetadata.GetRoot() => this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>();
+        IStateMachineMetadata IInvokeStateMachineMetadata.GetRoot() => this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>();
 
-        string IInvokeStateChartMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
+        string IInvokeStateMachineMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
 
-        object IInvokeStateChartMetadata.GetData(dynamic data) => _getData.Value(data);
+        object IInvokeStateMachineMetadata.GetData(dynamic data) => _getData.Value(data);
 
-        (string, MemberInfo) IInvokeStateChartMetadata.ResultLocation => (this.ResultLocation, _resultTarget);
+        (string, MemberInfo) IInvokeStateMachineMetadata.ResultLocation => (this.ResultLocation, _resultTarget);
     }
 }

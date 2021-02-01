@@ -110,7 +110,7 @@ namespace DSM.Engine.Model.States
             return _source.IsDescendent(transition._source);
         }
 
-        public IEnumerable<State> GetTargetStates(StateChart root)
+        public IEnumerable<State> GetTargetStates(StateMachine root)
         {
             root.CheckArgNull(nameof(root));
 

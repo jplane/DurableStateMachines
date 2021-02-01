@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace DSM.Common.Exceptions
 {
-    public sealed class ExecutionException : StateChartException
+    public sealed class ExecutionException : StateMachineException
     {
         public ExecutionException()
         {

@@ -21,7 +21,7 @@ namespace DSM.FunctionClient
         [JsonProperty("ischildstatemachine")]
         public bool IsChildStateMachine { get; set; }
 
-        internal object DeserializeInput(IStateChartMetadata metadata)
+        internal object DeserializeInput(IStateMachineMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 

@@ -212,7 +212,7 @@ namespace DSM.Tests
                         Id = "state1",
                         Invokes =
                         {
-                            new InvokeStateChart<(int x, (int x, int y) innerX)>
+                            new InvokeStateMachine<(int x, (int x, int y) innerX)>
                             {
                                 Id = "an-invoke",
                                 StateMachineIdentifier = "inner",

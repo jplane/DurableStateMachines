@@ -11,7 +11,7 @@ using System.Threading;
 namespace DSM.Tests
 {
     public delegate (ExecContext, CancellationTokenSource)
-            ScaffoldFactoryDelegate(IStateChartMetadata metadata, Func<string, IStateChartMetadata> lookup, ILogger logger);
+            ScaffoldFactoryDelegate(IStateMachineMetadata metadata, Func<string, IStateMachineMetadata> lookup, ILogger logger);
 
     [AttributeUsage(AttributeTargets.Method)]
     public class TestScaffoldAttribute : Attribute, ITestDataSource

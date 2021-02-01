@@ -13,12 +13,12 @@ namespace DSM.Metadata.States
         private OnEntryExit<TData> _onEntry;
         private OnEntryExit<TData> _onExit;
         private MetadataList<Transition<TData>> _transitions;
-        private MetadataList<InvokeStateChart<TData>> _invokes;
+        private MetadataList<InvokeStateMachine<TData>> _invokes;
 
         public AtomicState()
         {
             this.Transitions = new MetadataList<Transition<TData>>();
-            this.Invokes = new MetadataList<InvokeStateChart<TData>>();
+            this.Invokes = new MetadataList<InvokeStateMachine<TData>>();
         }
 
         [JsonProperty("onentry")]
@@ -89,7 +89,7 @@ namespace DSM.Metadata.States
         }
 
         [JsonProperty("childinvocations")]
-        public MetadataList<InvokeStateChart<TData>> Invokes
+        public MetadataList<InvokeStateMachine<TData>> Invokes
         {
             get => _invokes;
 
@@ -161,8 +161,8 @@ namespace DSM.Metadata.States
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() =>
             this.Transitions ?? Enumerable.Empty<ITransitionMetadata>();
 
-        IEnumerable<IInvokeStateChartMetadata> IStateMetadata.GetStateChartInvokes() =>
-            this.Invokes ?? Enumerable.Empty<IInvokeStateChartMetadata>();
+        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() =>
+            this.Invokes ?? Enumerable.Empty<IInvokeStateMachineMetadata>();
 
         ITransitionMetadata IStateMetadata.GetInitialTransition() => throw new NotSupportedException();
 
