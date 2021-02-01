@@ -36,7 +36,7 @@ For advanced scenarios, you can also define your own metadata syntax and map it 
 
 ## Usage
 
-Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [HTTP API](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-http-api).
+Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [IDurableClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask.idurableclient?view=azure-dotnet) APIs.
 
 ```csharp
 
