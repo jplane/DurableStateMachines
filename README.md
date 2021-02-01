@@ -22,7 +22,7 @@ Some specific design and implementation choices:
 
 - In addition to parent-child state relationships _within_ a single statechart, there is also support for parent-child relationships _between_ statechart instances (execute statechart A within the context of statechart B, etc.)
 
-- A configurable [debugger service](./DurableFunction.Client/DebugHandler.cs) implemented with [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction)... observe state machine execution as it occurs, set breakpoints to observe remote execution, etc.
+- An extensible [telemetry service](./FunctionClient/Listener.cs) implemented with [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction)... observe state machine execution as it occurs, etc.
 
 ## Getting Started
 

@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace DSM.FunctionClient
 {
-    public abstract class DebugListener
+    public abstract class Listener
     {
         private readonly AsyncLock _lock = new AsyncLock();
         private TaskCompletionSource<bool> _tcs;
 
-        protected DebugListener()
+        protected Listener()
         {
         }
 
-        public string DebuggerUri { get; set; }
+        public string EndpointUri { get; set; }
 
         public virtual DebuggerInfo DebuggerInfo => new DebuggerInfo
         {
@@ -30,7 +30,7 @@ namespace DSM.FunctionClient
         {
             using (await _lock.LockAsync())
             {
-                if (string.IsNullOrWhiteSpace(this.DebuggerUri))
+                if (string.IsNullOrWhiteSpace(this.EndpointUri))
                 {
                     throw new InvalidOperationException("DebuggerUri property is invalid.");
                 }
@@ -40,7 +40,7 @@ namespace DSM.FunctionClient
                 _tcs = new TaskCompletionSource<bool>();
 
                 var conn = new HubConnectionBuilder()
-                                    .WithUrl(this.DebuggerUri)
+                                    .WithUrl(this.EndpointUri)
                                     .AddNewtonsoftJsonProtocol()
                                     .Build();
 
