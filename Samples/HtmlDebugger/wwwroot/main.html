@@ -247,34 +247,34 @@
                 .withUrl('/debug')
                 .build();
 
-            //connection.on('break', function (info) {
+            connection.on('break', function (info) {
 
-            //    var existingTableBody = document.getElementById('info-table-body');
+                var existingTableBody = document.getElementById('info-table-body');
 
-            //    var newTableBody = document.createElement('tbody');
+                var newTableBody = document.createElement('tbody');
 
-            //    newTableBody.id = 'info-table-body';
+                newTableBody.id = 'info-table-body';
 
-            //    for (var key in info) {
+                for (var key in info) {
 
-            //        var encodedKey = key;
-            //        var encodedValue = info[key];
+                    var encodedKey = key;
+                    var encodedValue = info[key];
 
-            //        var row = document.createElement('tr');
+                    var row = document.createElement('tr');
 
-            //        row.innerHTML = '<td><strong>' + encodedKey + '</strong></td><td>' + encodedValue + '</td>';
+                    row.innerHTML = '<td><strong>' + encodedKey + '</strong></td><td>' + encodedValue + '</td>';
 
-            //        newTableBody.appendChild(row);
-            //    }
+                    newTableBody.appendChild(row);
+                }
 
-            //    existingTableBody.parentElement.replaceChild(newTableBody, existingTableBody);
+                existingTableBody.parentElement.replaceChild(newTableBody, existingTableBody);
 
-            //    document.getElementById('resume-button').disabled = false;
+                document.getElementById('resume-button').disabled = false;
 
-            //    document.getElementById('debugger').classList.add('highlighted');
+                document.getElementById('debugger').classList.add('highlighted');
 
-            //    setTimeout(function () { document.getElementById('debugger').classList.remove('highlighted'); }, 500);
-            //});
+                setTimeout(function () { document.getElementById('debugger').classList.remove('highlighted'); }, 500);
+            });
 
             connection.start()
                 .then(function () {

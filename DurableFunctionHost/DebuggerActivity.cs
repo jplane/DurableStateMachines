@@ -42,15 +42,17 @@ namespace StateChartsDotNet.DurableFunctionHost
             signalr.On("resume", () => tcs.SetResult(true));
 
             await signalr.StartAsync();
+            await signalr.SendAsync("register", context.InstanceId);
 
             try
             {
-                await signalr.SendAsync("break", data.Config);
+                await signalr.SendAsync("break", context.InstanceId, data.Config);
 
                 await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromMinutes(2)));
             }
             finally
             {
+                await signalr.SendAsync("unregister", context.InstanceId);
                 await signalr.StopAsync();
             }
         }

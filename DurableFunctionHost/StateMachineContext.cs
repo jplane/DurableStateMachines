@@ -249,12 +249,7 @@ namespace StateChartsDotNet.DurableFunctionHost
                     info.Add(pair.Key, pair.Value);
                 }
 
-                if (string.IsNullOrWhiteSpace(_debugInfo.DebugUri))
-                {
-                    throw new InvalidOperationException("Debugger uri is invalid.");
-                }
-
-                var endpoint = ResolveConfigValue(_debugInfo.DebugUri);
+                var endpoint = _config["DEBUGGER_URI"];
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
 

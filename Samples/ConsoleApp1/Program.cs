@@ -33,17 +33,6 @@ namespace ConsoleApp1
 
             Debug.Assert(client != null);
 
-            //var hook = new DebugHook();
-
-            //hook.DebuggerUri = config["DEBUGGER_URI"];
-
-            //var debuggerTask = hook.StartAsync();
-
-            //var state = new TestState
-            //{
-            //    X = 5
-            //};
-
             var instanceId = await client.StartNewStateMachineAsync("tupletest", (5, 0));
 
             var output = await client.WaitForStateMachineCompletionAsync<(int x, int y)>(instanceId);
@@ -53,10 +42,6 @@ namespace ConsoleApp1
             Console.WriteLine(output.Item1.x);
 
             await host.RunAsync();
-
-            //await hook.StopAsync();
-            
-            //await debuggerTask;
         }
 
         static IHostBuilder CreateHostBuilder(string[] args) =>

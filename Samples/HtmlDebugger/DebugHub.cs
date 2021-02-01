@@ -8,14 +8,24 @@ namespace HtmlDebugger
 {
     public class DebugHub : Hub
     {
-        public Task Break(Dictionary<string, object> info)
+        public Task Register(string instanceId)
         {
-            return Clients.Others.SendAsync("break", info);
+            return Groups.AddToGroupAsync(Context.ConnectionId, instanceId);
         }
 
-        public Task Resume()
+        public Task UnRegister(string instanceId)
         {
-            return Clients.Others.SendAsync("resume");
+            return Groups.RemoveFromGroupAsync(Context.ConnectionId, instanceId);
+        }
+
+        public Task Break(string instanceId, Dictionary<string, object> info)
+        {
+            return Clients.Group(instanceId).SendAsync("break", info);
+        }
+
+        public Task Resume(string instanceId)
+        {
+            return Clients.Group(instanceId).SendAsync("resume");
         }
     }
 }

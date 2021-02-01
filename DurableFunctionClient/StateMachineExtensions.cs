@@ -10,17 +10,12 @@ namespace StateChartsDotNet.DurableFunctionClient
     {
         public const string StateMachineWithNameEndpoint = "statemachine-name";
 
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client,
-                                                             string stateMachineId,
-                                                             DebuggerInfo debugInfo = null)
+        public static Task<string> StartNewStateMachineAsync(this IDurableClient client, string stateMachineId)
         {
-            return StartNewStateMachineAsync(client, stateMachineId, null, debugInfo);
+            return StartNewStateMachineAsync(client, stateMachineId, null);
         }
 
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client,
-                                                             string stateMachineId,
-                                                             object input,
-                                                             DebuggerInfo debugInfo = null)
+        public static Task<string> StartNewStateMachineAsync(this IDurableClient client, string stateMachineId, object input)
         {
             client.CheckArgNull(nameof(client));
             stateMachineId.CheckArgNull(nameof(stateMachineId));
@@ -28,8 +23,7 @@ namespace StateChartsDotNet.DurableFunctionClient
             var payload = new StateMachinePayload
             {
                 StateMachineIdentifier = stateMachineId,
-                Input = input,
-                DebugInfo = debugInfo
+                Input = input
             };
 
             return client.StartNewAsync(StateMachineWithNameEndpoint, payload);

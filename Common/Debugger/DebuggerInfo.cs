@@ -5,21 +5,18 @@ namespace StateChartsDotNet.Common.Debugger
 {
     public class DebuggerInfo
     {
-        [JsonProperty("uri")]
-        public string DebugUri { get; set; }
-
         [JsonProperty("instructions")]
-        public DebuggerInstruction[] DebugInstructions { get; set; }
+        public DebuggerInstruction[] Instructions { get; set; }
 
         internal bool IsMatch(DebuggerAction action, string element)
         {
-            if (this.DebugInstructions == null)
+            if (this.Instructions == null)
             {
                 return false;
             }
             else
             {
-                return this.DebugInstructions.Any(di => di.IsMatch(action, element));
+                return this.Instructions.Any(di => di.IsMatch(action, element));
             }
         }
     }

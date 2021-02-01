@@ -3,10 +3,7 @@ using Newtonsoft.Json.Linq;
 using StateChartsDotNet.Common;
 using StateChartsDotNet.Common.Debugger;
 using StateChartsDotNet.Common.Model.States;
-using StateChartsDotNet.Metadata.States;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace StateChartsDotNet.DurableFunctionClient
 {

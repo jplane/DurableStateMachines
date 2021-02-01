@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "Samples\Cons
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary1", "Samples\ClassLibrary1\ClassLibrary1.csproj", "{D345DF83-C284-4EF0-A075-A65684C38D92}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HtmlDebugger", "Samples\HtmlDebugger\HtmlDebugger.csproj", "{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{D345DF83-C284-4EF0-A075-A65684C38D92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D345DF83-C284-4EF0-A075-A65684C38D92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D345DF83-C284-4EF0-A075-A65684C38D92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 		{75A82939-E411-47F8-BC5C-8315C38C8D56} = {F949BCD4-C9F3-4133-97B6-C8F9E1BBB5FC}
 		{FDFC940D-B6DE-4F06-8ADF-932A6C9A3587} = {F949BCD4-C9F3-4133-97B6-C8F9E1BBB5FC}
 		{D345DF83-C284-4EF0-A075-A65684C38D92} = {F949BCD4-C9F3-4133-97B6-C8F9E1BBB5FC}
+		{B2B3E390-2CF3-42A2-941E-29B0CCB0BA01} = {F949BCD4-C9F3-4133-97B6-C8F9E1BBB5FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D727EE81-C8D8-4FF0-9870-18755E5634DD}
