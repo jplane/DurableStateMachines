@@ -4,7 +4,6 @@ using StateChartsDotNet.Common.Model.States;
 using StateChartsDotNet.DurableFunctionClient;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -17,12 +16,7 @@ namespace StateChartsDotNet.DurableFunctionHost
         IStateChartMetadata GetStateMachine(string identifier);
     }
 
-    public interface IStateMachineResolver
-    {
-        IStateChartMetadata Resolve(string identifier);
-    }
-
-    internal class DefinitionResolver : IStateMachineResolver
+    internal class DefinitionResolver
     {
         private readonly IConfiguration _config;
         private readonly Lazy<IStateMachineDefinitionProvider[]> _providers;
@@ -96,7 +90,10 @@ namespace StateChartsDotNet.DurableFunctionHost
                 }
                 else
                 {
-                    var candidates = _providers.Value.Select(p => p.GetStateMachine(identifier)).ToArray();
+                    var candidates = _providers.Value
+                                               .Select(p => p.GetStateMachine(identifier))
+                                               .Where(definition => definition != null)
+                                               .ToArray();
 
                     if (candidates.Length > 1)
                     {
