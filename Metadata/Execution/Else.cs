@@ -8,6 +8,11 @@ using System.Linq;
 
 namespace DSM.Metadata.Execution
 {
+    /// <summary>
+    /// The condition-less 'else' branch of an if-elseif-else control flow block.
+    /// Only used in conjuction with <see cref="If{TData}"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class Else<TData> : ExecutableContent<TData>, IElseMetadata
     {
         private MetadataList<ExecutableContent<TData>> _actions;
@@ -17,6 +22,9 @@ namespace DSM.Metadata.Execution
             this.Actions = new MetadataList<ExecutableContent<TData>>();
         }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="Else{TData}"/> branch.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {

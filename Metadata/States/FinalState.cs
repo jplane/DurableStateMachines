@@ -8,6 +8,12 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="FinalState{TData}"/> is a <see cref="State"/> that contains no child states. It indicates the end of execution
+    ///  for its parent <see cref="CompoundState{TData}"/> or <see cref="StateMachine{TData}"/>.
+    /// It optionally defines actions that fire upon entry (<see cref="OnEntry"/>) and exit (<see cref="OnExit"/>).
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class FinalState<TData> : State<TData>, IFinalStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -17,6 +23,9 @@ namespace DSM.Metadata.States
         {
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each entry into this <see cref="FinalState{TData}"/>.
+        /// </summary>
         [JsonProperty("onentry")]
         public OnEntryExit<TData> OnEntry
         {
@@ -39,6 +48,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each exit from this <see cref="FinalState{TData}"/>.
+        /// </summary>
         [JsonProperty("onexit")]
         public OnEntryExit<TData> OnExit
         {

@@ -9,11 +9,15 @@ using System.Linq;
 
 namespace DSM.Metadata.Execution
 {
-    public class Script<TData> : ExecutableContent<TData>, IScriptMetadata
+    /// <summary>
+    /// An action to define custom behavior during execution.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    public class Logic<TData> : ExecutableContent<TData>, ILogicMetadata
     {
         private Lazy<Func<dynamic, object>> _executor;
 
-        public Script()
+        public Logic()
         {
             _executor = new Lazy<Func<dynamic, object>>(() =>
             {
@@ -36,12 +40,16 @@ namespace DSM.Metadata.Execution
             });
         }
 
+        /// <summary>
+        /// Function that defines the core behavior of this <see cref="Logic{TData}"/> element.
+        /// Execution state <typeparamref name="TData"/> is passed as an argument.
+        /// </summary>
         public Action<TData> Function { get; set; }
 
         [JsonProperty("expression")]
         private string Expression { get; set; }
 
-        public void Execute(dynamic data) => _executor.Value(data);
+        void ILogicMetadata.Execute(dynamic data) => _executor.Value(data);
 
         internal override void Validate(IDictionary<string, List<string>> errorMap)
         {

@@ -34,7 +34,7 @@ namespace DSM.Engine.Model.Execution
                 case IRaiseMetadata raise:
                     content = new Raise(raise);
                     break;
-                case IScriptMetadata script:
+                case ILogicMetadata script:
                     content = new Script(script);
                     break;
                 case IForeachMetadata @foreach:

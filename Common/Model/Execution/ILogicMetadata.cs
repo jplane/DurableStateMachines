@@ -1,6 +1,6 @@
 ﻿namespace DSM.Common.Model.Execution
 {
-    public interface IScriptMetadata : IExecutableContentMetadata
+    public interface ILogicMetadata : IExecutableContentMetadata
     {
         void Execute(dynamic data);
     }

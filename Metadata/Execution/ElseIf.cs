@@ -9,6 +9,11 @@ using System.Linq;
 
 namespace DSM.Metadata.Execution
 {
+    /// <summary>
+    /// A conditional 'elseif' branch of an if-elseif-else control flow block.
+    /// Only used in conjuction with <see cref="If{TData}"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class ElseIf<TData> : ExecutableContent<TData>, IElseIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -36,11 +41,18 @@ namespace DSM.Metadata.Execution
             });
         }
 
+        /// <summary>
+        /// Condition evaluated to determine if this <see cref="ElseIf{TData}"/> branch is executed.
+        /// Execution state <typeparamref name="TData"/> can be used as part of the conditional logic.
+        /// </summary>
         public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
         private string ConditionExpression { get; set; }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="ElseIf{TData}"/> branch.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {

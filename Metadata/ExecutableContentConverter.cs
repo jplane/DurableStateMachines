@@ -59,7 +59,7 @@ namespace DSM.Metadata
                     break;
 
                 case "script":
-                    content = json.ToObject<Script<TData>>();
+                    content = json.ToObject<Logic<TData>>();
                     break;
 
                 case "sendmessage":

@@ -27,7 +27,7 @@ namespace ClassLibrary1
                             {
                                 new Assign<TestState>
                                 {
-                                    Target = d => d.X,
+                                    To = d => d.X,
                                     ValueFunction = data => data.X + 1
                                 }
 }
@@ -38,7 +38,7 @@ namespace ClassLibrary1
                             {
                                 new Assign<TestState>
                                 {
-                                    Target = d => d.X,
+                                    To = d => d.X,
                                     ValueFunction = data => data.X + 1
                                 }
                             }
@@ -47,7 +47,7 @@ namespace ClassLibrary1
                         {
                             new Transition<TestState>
                             {
-                                Targets = { "alldone" }
+                                Target = "alldone"
                             }
                         }
                     },
@@ -74,7 +74,7 @@ namespace ClassLibrary1
                             {
                                 new Assign<(int x, int y)>
                                 {
-                                    Target = d => d.x,
+                                    To = d => d.x,
                                     ValueFunction = data => data.x + 1
                                 }
 }
@@ -85,7 +85,7 @@ namespace ClassLibrary1
                             {
                                 new Assign<(int x, int y)>
                                 {
-                                    Target = d => d.x,
+                                    To = d => d.x,
                                     ValueFunction = data => data.x + 1
                                 }
                             }
@@ -94,7 +94,7 @@ namespace ClassLibrary1
                         {
                             new Transition<(int x, int y)>
                             {
-                                Targets = { "alldone" }
+                                Target = "alldone"
                             }
                         }
                     },

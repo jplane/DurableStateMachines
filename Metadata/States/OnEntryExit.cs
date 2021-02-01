@@ -10,6 +10,10 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="OnEntryExit{TData}"/> models the actions that execute upon entry to or exit from a <see cref="State{TData}"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class OnEntryExit<TData> : IOnEntryExitMetadata
     {
         private MetadataList<ExecutableContent<TData>> _actions;
@@ -25,6 +29,9 @@ namespace DSM.Metadata.States
 
         string IModelMetadata.MetadataId => this.MetadataIdResolver?.Invoke(this);
 
+        /// <summary>
+        /// The set of actions for this <see cref="OnEntryExit{TData}"/>.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {

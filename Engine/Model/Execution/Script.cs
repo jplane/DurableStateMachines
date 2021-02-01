@@ -8,7 +8,7 @@ namespace DSM.Engine.Model.Execution
 {
     internal class Script : ExecutableContent
     {
-        public Script(IScriptMetadata metadata)
+        public Script(ILogicMetadata metadata)
             : base(metadata)
         {
         }
@@ -17,7 +17,7 @@ namespace DSM.Engine.Model.Execution
         {
             context.CheckArgNull(nameof(context));
 
-            var metadata = (IScriptMetadata) _metadata;
+            var metadata = (ILogicMetadata) _metadata;
 
             metadata.Execute(context.ExecutionData);
 

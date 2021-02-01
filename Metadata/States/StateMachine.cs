@@ -10,9 +10,13 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="StateMachine{TData}"/> defines the child states, transitions, and actions that together determine the state machines behavior and lifecycle.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class StateMachine<TData> : IStateMachineMetadata
     {
-        private Script<TData> _initScript;
+        private Logic<TData> _initScript;
         private MetadataList<State<TData>> _states;
 
         public StateMachine()
@@ -20,17 +24,32 @@ namespace DSM.Metadata.States
             this.States = new MetadataList<State<TData>>();
         }
 
+        /// <summary>
+        /// Unique identifier for this <see cref="StateMachine{TData}"/>.
+        /// </summary>
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        /// <summary>
+        /// Initial child state to enter upon entrance to this <see cref="StateMachine{TData}"/>. If empty, the first child in <see cref="States"/> is used instead.
+        /// </summary>
         [JsonProperty("initialstate")]
-        public virtual string InitialState { get; set; }
+        public string InitialState { get; set; }
 
+        /// <summary>
+        /// Normal <see cref="StateMachine{TData}"/> error semantics result in an error event with message name 'error.[REASON]'; such events can be targeted
+        ///  using <see cref="Transition{TData}.Message"/> to cause transitions to defined error <see cref="State{TData}"/>s.
+        /// If <see cref="FailFast"/> = true, the state machine interpreter will instead cause execution to stop gracefully and prevent <see cref="Transition{TData}"/> handling
+        ///  of errors.
+        /// </summary>
         [JsonProperty("failfast")]
         public bool FailFast { get; set; }
 
-        [JsonProperty("initscript")]
-        public Script<TData> InitScript
+        /// <summary>
+        /// Defines optional initialization logic for this <see cref="StateMachine{TData}"/>.
+        /// </summary>
+        [JsonProperty("initlogic")]
+        public Logic<TData> InitLogic
         {
             get => _initScript;
 
@@ -50,6 +69,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// The set of child states for this <see cref="StateMachine{TData}"/>.
+        /// </summary>
         [JsonProperty("states")]
         public MetadataList<State<TData>> States
         {
@@ -115,7 +137,7 @@ namespace DSM.Metadata.States
                 state.Validate(errorMap);
             }
 
-            this.InitScript?.Validate(errorMap);
+            this.InitLogic?.Validate(errorMap);
 
             if (errors.Any())
             {
@@ -158,7 +180,7 @@ namespace DSM.Metadata.States
             }
         }
 
-        IScriptMetadata IStateMachineMetadata.GetScript() => this.InitScript;
+        ILogicMetadata IStateMachineMetadata.GetScript() => this.InitLogic;
 
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => this.States.Cast<IStateMetadata>();
 

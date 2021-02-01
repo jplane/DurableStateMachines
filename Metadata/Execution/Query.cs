@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using DSM.Common;
 using DSM.Common.Model;
 using DSM.Common.Model.Execution;
@@ -12,6 +11,11 @@ using System.Reflection;
 
 namespace DSM.Metadata.Execution
 {
+    /// <summary>
+    /// An action that models a request-response operation as a Durable Functions Activity invocation.
+    /// To use, implement <see cref="IQueryConfiguration"/> and an activity that accepts an instance of your custom type as input.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {
         private MemberInfo _resultTarget;
@@ -22,20 +26,33 @@ namespace DSM.Metadata.Execution
             this.Actions = new MetadataList<ExecutableContent<TData>>();
         }
 
+        /// <summary>
+        /// Name of the custom activity that models your request-response operation.
+        /// </summary>
         [JsonProperty("activitytype")]
         public string ActivityType { get; set; }
 
-        public Expression<Func<TData, object>> ResultTarget
+        /// <summary>
+        /// Target field or property in <typeparamref name="TData"/> into which the query response should be assigned.
+        /// </summary>
+        public Expression<Func<TData, object>> AssignTo
         {
-            set => _resultTarget = value.ExtractMember(nameof(ResultTarget));
+            set => _resultTarget = value.ExtractMember(nameof(AssignTo));
         }
 
         [JsonProperty("resultlocation")]
         private string ResultLocation { get; set; }
 
+        /// <summary>
+        /// An instance of your custom configuration that provides all needed information for the query operation.
+        /// Instances of this class should be JSON-serializable.
+        /// </summary>
         [JsonProperty("configuration")]
         public IQueryConfiguration Configuration { get; set; }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="Query{TData}"/> once a successful response is received.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {

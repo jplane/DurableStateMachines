@@ -8,6 +8,13 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="AtomicState{TData}"/> is a <see cref="State"/> that contains no child states.
+    /// It optionally defines actions that fire upon entry (<see cref="OnEntry"/>) and exit (<see cref="OnExit"/>).
+    /// It optionally defines <see cref="Transitions"/> from this <see cref="AtomicState{TData}"/> to other states in the <see cref="StateMachine{TData}"/>.
+    /// It optionally defines invocations of child state machines in <see cref="Invokes"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class AtomicState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -21,6 +28,9 @@ namespace DSM.Metadata.States
             this.Invokes = new MetadataList<InvokeStateMachine<TData>>();
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each entry into this <see cref="AtomicState{TData}"/>.
+        /// </summary>
         [JsonProperty("onentry")]
         public OnEntryExit<TData> OnEntry
         {
@@ -43,6 +53,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each exit from this <see cref="AtomicState{TData}"/>.
+        /// </summary>
         [JsonProperty("onexit")]
         public OnEntryExit<TData> OnExit
         {
@@ -65,6 +78,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines transitions from this <see cref="AtomicState{TData}"/> to other <see cref="State"/>s.
+        /// </summary>
         [JsonProperty("transitions")]
         public MetadataList<Transition<TData>> Transitions
         {
@@ -88,6 +104,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines child state machine invocations that occur upon entry into this <see cref="AtomicState{TData}"/>.
+        /// </summary>
         [JsonProperty("childinvocations")]
         public MetadataList<InvokeStateMachine<TData>> Invokes
         {

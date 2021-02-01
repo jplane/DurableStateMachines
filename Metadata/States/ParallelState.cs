@@ -8,6 +8,15 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="ParallelState{TData}"/> is a <see cref="State"/> that contains one or more child states. When <see cref="ParallelState{TData}"/> is entered,
+    ///  each of its child <see cref="States"/> is also entered; if that child is also a <see cref="CompoundState{TData}"/> or <see cref="ParallelState{TData}"/> then
+    ///  the pattern continues recursively. For more information see: https://statecharts.github.io/glossary/parallel-state.html
+    /// It optionally defines actions that fire upon entry (<see cref="OnEntry"/>) and exit (<see cref="OnExit"/>).
+    /// It optionally defines <see cref="Transitions"/> from this <see cref="AtomicState{TData}"/> to other states in the <see cref="StateMachine{TData}"/>.
+    /// It defines child states in <see cref="States"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class ParallelState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -33,6 +42,9 @@ namespace DSM.Metadata.States
             return order;
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each entry into this <see cref="ParallelState{TData}"/>.
+        /// </summary>
         [JsonProperty("onentry")]
         public OnEntryExit<TData> OnEntry
         {
@@ -55,6 +67,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines behavior that executes upon each exit from this <see cref="ParallelState{TData}"/>.
+        /// </summary>
         [JsonProperty("onexit")]
         public OnEntryExit<TData> OnExit
         {
@@ -77,6 +92,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// Defines transitions from this <see cref="ParallelState{TData}"/> to other <see cref="State"/>s.
+        /// </summary>
         [JsonProperty("transitions")]
         public MetadataList<Transition<TData>> Transitions
         {
@@ -100,6 +118,9 @@ namespace DSM.Metadata.States
             }
         }
 
+        /// <summary>
+        /// The set of child states for this <see cref="ParallelState{TData}"/>.
+        /// </summary>
         [JsonProperty("states")]
         public MetadataList<State<TData>> States
         {

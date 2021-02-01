@@ -6,6 +6,10 @@ using System.Collections.Generic;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// Represents a state in a state machine definition. Uniquely identified by <see cref="Id"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class State<TData> : IModelMetadata
     {
         protected int? _documentOrder;
@@ -14,6 +18,9 @@ namespace DSM.Metadata.States
         {
         }
 
+        /// <summary>
+        /// Unique identifier for this <see cref="State"/> within the state machine definition.
+        /// </summary>
         [JsonProperty("id")]
         public string Id { get; set; }
 

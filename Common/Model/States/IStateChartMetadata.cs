@@ -6,7 +6,7 @@ namespace DSM.Common.Model.States
     {
         bool FailFast { get; }
 
-        IScriptMetadata GetScript();
+        ILogicMetadata GetScript();
         void Validate();
     }
 }

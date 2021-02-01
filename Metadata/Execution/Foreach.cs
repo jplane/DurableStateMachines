@@ -12,6 +12,11 @@ using System.Reflection;
 
 namespace DSM.Metadata.Execution
 {
+    /// <summary>
+    /// An iterator over a collection of items.
+    /// The child actions in <see cref="Actions"/> execute for each item in <see cref="Value"/> or <see cref="ValueFunction"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
     {
         private MemberInfo _currentItemTarget;
@@ -40,6 +45,9 @@ namespace DSM.Metadata.Execution
             });
         }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="Foreach{TData}"/> element.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {
@@ -63,25 +71,41 @@ namespace DSM.Metadata.Execution
             }
         }
 
-        public Expression<Func<TData, object>> CurrentItemTarget
+        /// <summary>
+        /// Target field or property in <typeparamref name="TData"/> where the current item is assigned during execution.
+        /// Reference this element in <see cref="Actions"/> elements as needed.
+        /// </summary>
+        public Expression<Func<TData, object>> CurrentItem
         {
-            set => _currentItemTarget = value.ExtractMember(nameof(CurrentItemTarget));
+            set => _currentItemTarget = value.ExtractMember(nameof(CurrentItem));
         }
 
         [JsonProperty("currentitemlocation")]
         private string CurrentItemLocation { get; set; }
 
-        public Expression<Func<TData, object>> CurrentIndexTarget
+        /// <summary>
+        /// Target field or property in <typeparamref name="TData"/> where the current item index is assigned during execution.
+        /// Reference this element in <see cref="Actions"/> elements as needed.
+        /// </summary>
+        public Expression<Func<TData, int>> CurrentIndex
         {
-            set => _currentIndexTarget = value.ExtractMember(nameof(CurrentIndexTarget));
+            set => _currentIndexTarget = value.ExtractMember(nameof(CurrentIndex));
         }
 
         [JsonProperty("currentindexlocation")]
         private string CurrentIndexLocation { get; set; }
 
+        /// <summary>
+        /// Static value to iterate over.
+        /// To derive this value at runtime using execution state <typeparamref name="TData"/>, use <see cref="ValueFunction"/>.
+        /// </summary>
         [JsonProperty("value")]
         public IEnumerable Value { get; set; }
 
+        /// <summary>
+        /// Function to dynamically generate the iterated elements at runtime, using execution state <typeparamref name="TData"/>.
+        /// To use a static value, use <see cref="Value"/>.
+        /// </summary>
         public Func<TData, IEnumerable> ValueFunction { get; set; }
 
         [JsonProperty("valueexpression")]

@@ -11,6 +11,11 @@ using System.Linq;
 
 namespace DSM.Metadata.States
 {
+    /// <summary>
+    /// <see cref="Transition{TData}"/> maps a set of conditions (changes to execution state <see cref="TData"/>) or arrival
+    ///  of events to zero or more target <see cref="State{TData}"/>s and an optional set of transition <see cref="Actions"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class Transition<TData> : ITransitionMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -21,8 +26,6 @@ namespace DSM.Metadata.States
         public Transition()
         {
             this.Actions = new MetadataList<ExecutableContent<TData>>();
-            this.Targets = new List<string>();
-            this.Messages = new List<string>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -43,7 +46,7 @@ namespace DSM.Metadata.States
 
         public Transition(string target, string parentMetadataId)
         {
-            this.Targets = new List<string> { target };
+            this.Target = target;
 
             _condition = new Lazy<Func<dynamic, bool>>(() => _ => true);
 
@@ -67,23 +70,49 @@ namespace DSM.Metadata.States
             }
         }
 
-        [JsonProperty("targets")]
-        public List<string> Targets { get; set; }
+        /// <summary>
+        /// Target <see cref="State{TData}"/> name for this transition. If empty or null, a matched <see cref="Transition{TData}"/> will
+        ///  execute its configured actions but will not result in a state transition.
+        /// To target multiple child states in a <see cref="ParallelState{TData}"/>, specify multiple state names separated by commas.
+        /// </summary>
+        [JsonProperty("target")]
+        public string Target { get; set; }
 
-        [JsonProperty("messages")]
-        public List<string> Messages { get; set; }
+        /// <summary>
+        /// Triggering event message name for this transition. Specify multiple names by separating with commas. Can be empty or null. Can be combined with
+        ///  <see cref="ConditionFunction"/> to define transition logic.
+        ///  Events are raised both internally by state machine execution, by a <see cref="Raise{TData}"/> action, or from external sources
+        ///  using the Durable Functions 'external events' feature: https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-external-events?tabs=csharp
+        /// </summary>
+        [JsonProperty("message")]
+        public string Message { get; set; }
 
+        /// <summary>
+        /// An optional delay for this <see cref="Transition{TData}"/> to its target <see cref="State{TData}"/>. If null, the transition is immediate.
+        /// </summary>
         [JsonProperty("delay")]
         public TimeSpan? Delay { get; set; }
 
+        /// <summary>
+        /// Affects whether a parent <see cref="CompoundState{TData}"/> is exited if this <see cref="Transition{TData}"/> targets a child of that same parent.
+        /// <see cref="TransitionType.External"/> means the parent <see cref="CompoundState{TData}"/> is exited (<see cref="CompoundState{TData}.OnExit"/> fires, etc.)
+        /// <see cref="TransitionType.Internal"/> means the parent <see cref="CompoundState{TData}"/> is not exited.
+        /// </summary>
         [JsonProperty("type")]
         public TransitionType Type { get; set; }
 
+        /// <summary>
+        /// Condition evaluated to determine if this <see cref="Transition{TData}{TData}"/> is triggered. Can be null (effectively condition == true) and can
+        ///  also be combined with event names using <see cref="Transition{TData}.Message"/>.
+        /// </summary>
         public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
         private string ConditionExpression { get; set; }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="Transition{TData}"/>, when triggered.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {
@@ -113,7 +142,7 @@ namespace DSM.Metadata.States
 
             var errors = new List<string>();
 
-            if (this.Targets.Count == 0 && this.Messages.Count == 0)
+            if (string.IsNullOrWhiteSpace(this.Target) && string.IsNullOrWhiteSpace(this.Message))
             {
                 errors.Add("Transition must specify at least one target state or one matching message.");
             }
@@ -129,9 +158,11 @@ namespace DSM.Metadata.States
             }
         }
 
-        IEnumerable<string> ITransitionMetadata.Targets => this.Targets ?? Enumerable.Empty<string>();
+        IEnumerable<string> ITransitionMetadata.Targets =>
+            string.IsNullOrWhiteSpace(this.Target) ? Enumerable.Empty<string>() : this.Target.Split(",");
 
-        IEnumerable<string> ITransitionMetadata.Messages => this.Messages ?? Enumerable.Empty<string>();
+        IEnumerable<string> ITransitionMetadata.Messages =>
+            string.IsNullOrWhiteSpace(this.Message) ? Enumerable.Empty<string>() : this.Message.Split(",");
 
         bool ITransitionMetadata.EvalCondition(dynamic data) => _condition.Value(data);
 

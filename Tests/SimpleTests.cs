@@ -37,11 +37,11 @@ namespace DSM.Tests
                             {
                                 new Foreach<TestData>
                                 {
-                                    CurrentItemTarget = d => d.ArrayItem,
+                                    CurrentItem = d => d.ArrayItem,
                                     ValueFunction = data => data.Items,
                                     Actions =
                                     {
-                                        new Assign<TestData> { Target = d => d.Sum, ValueFunction = d => d.Sum + d.ArrayItem },
+                                        new Assign<TestData> { To = d => d.Sum, ValueFunction = d => d.Sum + d.ArrayItem },
                                         new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
                                     }
                                 }
@@ -52,7 +52,7 @@ namespace DSM.Tests
                             new Transition<TestData>
                             {
                                 ConditionFunction = d => d.Sum >= 15,
-                                Targets = { "done" }
+                                Target = "done"
                             }
                         }
                     },
@@ -117,7 +117,7 @@ namespace DSM.Tests
                         },
                         Transitions =
                         {
-                            new Transition<bool> { Targets = { "alldone" } }
+                            new Transition<bool> { Target = "alldone" }
                         }
                     },
                     new FinalState<bool>
@@ -163,7 +163,7 @@ namespace DSM.Tests
                                 new Query<(string x, string y)>
                                 {
                                     ActivityType = "http-get",
-                                    ResultTarget = d => d.x,
+                                    AssignTo = d => d.x,
                                     Configuration = new HttpQueryConfiguration
                                     {
                                         Uri = "http://localhost:4444/"
@@ -173,7 +173,7 @@ namespace DSM.Tests
                         },
                         Transitions =
                         {
-                            new Transition<(string x, string y)> { Targets = { "alldone" } }
+                            new Transition<(string x, string y)> { Target = "alldone" }
                         }
                     },
                     new FinalState<(string x, string y)>
@@ -216,16 +216,16 @@ namespace DSM.Tests
                             {
                                 Id = "an-invoke",
                                 StateMachineIdentifier = "inner",
-                                DataFunction = d => (d.x, 0),
-                                ResultTarget = d => d.innerX
+                                InputFunction = d => (d.x, 0),
+                                AssignTo = d => d.innerX
                             }
                         },
                         Transitions =
                         {
                             new Transition<(int x, (int x, int y) innerX)>
                             {
-                                Messages = { "done.invoke.*" },
-                                Targets = { "alldone" }
+                                Message = "done.invoke.*",
+                                Target = "alldone"
                             }
                         }
                     },
@@ -248,12 +248,12 @@ namespace DSM.Tests
                         {
                             Actions =
                             {
-                                new Assign<(int x, int y)> { Target = d => d.x, ValueFunction = d => d.x * 2 }
+                                new Assign<(int x, int y)> { To = d => d.x, ValueFunction = d => d.x * 2 }
                             }
                         },
                         Transitions =
                         {
-                            new Transition<(int x, int y)> { Targets = { "alldone" } }
+                            new Transition<(int x, int y)> { Target = "alldone" }
                         }
                     },
                     new FinalState<(int x, int y)>

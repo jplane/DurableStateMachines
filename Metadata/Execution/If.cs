@@ -9,6 +9,11 @@ using System.Linq;
 
 namespace DSM.Metadata.Execution
 {
+    /// <summary>
+    /// A conditional 'if' branch of an if-elseif-else control flow block.
+    /// Can be used in conjuction with <see cref="ElseIf{TData}"/> and <see cref="Else{TData}"/>.
+    /// </summary>
+    /// <typeparam name="TData">The execution state of the state machine.</typeparam>
     public class If<TData> : ExecutableContent<TData>, IIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -39,11 +44,18 @@ namespace DSM.Metadata.Execution
             });
         }
 
+        /// <summary>
+        /// Condition evaluated to determine if this <see cref="If{TData}"/> branch is executed.
+        /// Execution state <typeparamref name="TData"/> can be used as part of the conditional logic.
+        /// </summary>
         public Func<TData, bool> ConditionFunction { get; set; }
 
         [JsonProperty("conditionexpression")]
         private string ConditionExpression { get; set; }
 
+        /// <summary>
+        /// The set of actions executed for this <see cref="If{TData}"/> branch.
+        /// </summary>
         [JsonProperty("actions")]
         public MetadataList<ExecutableContent<TData>> Actions
         {
@@ -67,6 +79,9 @@ namespace DSM.Metadata.Execution
             }
         }
 
+        /// <summary>
+        /// The set of <see cref="ElseIf{TData}"/> elements conditionally executed for this <see cref="If{TData}"/>.
+        /// </summary>
         [JsonProperty("elseifs")]
         public MetadataList<ElseIf<TData>> ElseIfs
         {
@@ -90,6 +105,9 @@ namespace DSM.Metadata.Execution
             }
         }
 
+        /// <summary>
+        /// The <see cref="Else{TData}"/> element conditionally executed for this <see cref="If{TData}"/>.
+        /// </summary>
         [JsonProperty("else")]
         public Else<TData> Else
         {
