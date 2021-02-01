@@ -214,20 +214,16 @@ namespace StateChartsDotNet
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(key.name) || key.member != null);
 
+            dynamic data = this.ExecutionData;
+
             if (!string.IsNullOrWhiteSpace(key.name))
             {
-                SetDataValue(key.name, value);
+                data[key.name] = value;
             }
             else
             {
-                SetDataValue(key.member.Name, value);
+                data[key.member] = value;
             }
-        }
-
-        internal void SetDataValue(string key, object value)
-        {
-            dynamic data = this.ExecutionData;
-            data[key] = value;
         }
 
         internal void EnqueueInternal(string message)

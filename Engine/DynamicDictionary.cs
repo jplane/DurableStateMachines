@@ -36,30 +36,32 @@ namespace StateChartsDotNet
         {
             indexes.CheckArgNull(nameof(indexes));
 
-            if (indexes.Length == 1 && indexes[0] != null && indexes[0].GetType() == typeof(string))
+            if (indexes.Length == 1 && indexes[0] != null)
             {
-                var name = (string) indexes[0];
+                var argType = indexes[0].GetType();
 
-                var prop = _data.GetType().GetProperty(name);
-                var field = _data.GetType().GetField(name);
+                if (typeof(PropertyInfo).IsAssignableFrom(argType))
+                {
+                    result = ((PropertyInfo)indexes[0]).GetValue(_data, null);
+                    return true;
+                }
+                else if (typeof(FieldInfo).IsAssignableFrom(argType))
+                {
+                    result = ((FieldInfo)indexes[0]).GetValue(_data);
+                    return true;
+                }
+                else if (argType == typeof(string))
+                {
+                    var name = (string)indexes[0];
 
-                if (prop != null)
-                {
-                    result = prop.GetValue(_data, null);
-                    return true;
-                }
-                else if (field != null)
-                {
-                    result = field.GetValue(_data);
-                    return true;
-                }
-                else if (_data is IDictionary<string, object> dict && dict.TryGetValue(name, out result))
-                {
-                    return true;
-                }
-                else if (_internalData.TryGetValue(name, out result))
-                {
-                    return true;
+                    if (_data is IDictionary<string, object> dict && dict.TryGetValue(name, out result))
+                    {
+                        return true;
+                    }
+                    else if (_internalData.TryGetValue(name, out result))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -70,33 +72,35 @@ namespace StateChartsDotNet
         {
             indexes.CheckArgNull(nameof(indexes));
 
-            if (indexes.Length == 1 &&
-                indexes[0] != null &&
-                indexes[0].GetType() == typeof(string))
+            if (indexes.Length == 1 && indexes[0] != null)
             {
-                var name = (string) indexes[0];
+                var argType = indexes[0].GetType();
 
-                var prop = _data.GetType().GetProperty(name);
-                var field = _data.GetType().GetField(name);
+                if (typeof(PropertyInfo).IsAssignableFrom(argType))
+                {
+                    ((PropertyInfo)indexes[0]).SetValue(_data, value);
+                    return true;
+                }
+                else if (typeof(FieldInfo).IsAssignableFrom(argType))
+                {
+                    ((FieldInfo)indexes[0]).SetValue(_data, value);
+                    return true;
+                }
+                else if (argType == typeof(string))
+                {
+                    var name = (string)indexes[0];
 
-                if (prop != null)
-                {
-                    prop.SetValue(_data, value);
-                }
-                else if (field != null)
-                {
-                    field.SetValue(_data, value);
-                }
-                else if (_data is IDictionary<string, object> dict)
-                {
-                    dict[name] = value;
-                }
-                else
-                {
-                    _internalData[name] = value;
-                }
+                    if (_data is IDictionary<string, object> dict)
+                    {
+                        dict[name] = value;
+                    }
+                    else
+                    {
+                        _internalData[name] = value;
+                    }
 
-                return true;
+                    return true;
+                }
             }
 
             return base.TrySetIndex(binder, indexes, value);
@@ -141,10 +145,12 @@ namespace StateChartsDotNet
             if (prop != null)
             {
                 prop.SetValue(_data, value);
+                return true;
             }
             else if (field != null)
             {
                 field.SetValue(_data, value);
+                return true;
             }
             else if (_data is IDictionary<string, object> dict)
             {
@@ -156,8 +162,6 @@ namespace StateChartsDotNet
                 _internalData[binder.Name] = value;
                 return true;
             }
-
-            return base.TrySetMember(binder, value);
         }
     }
 }
