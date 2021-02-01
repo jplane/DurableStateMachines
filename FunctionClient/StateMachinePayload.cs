@@ -7,19 +7,31 @@ using System.Diagnostics;
 
 namespace DSM.FunctionClient
 {
+    /// <summary>
+    /// Input type for state machine orchestrations.
+    /// </summary>
     public class StateMachinePayload
     {
+        /// <summary>
+        /// Provides optional debugging information for the state machine runtime.
+        /// </summary>
         [JsonProperty("debug")]
         public DebuggerInfo DebugInfo { get; set; }
 
+        /// <summary>
+        /// Initial execution data for the state machine runtime.
+        /// </summary>
         [JsonProperty("input")]
         public object Input { get; set; }
 
+        /// <summary>
+        /// Unique identifier for a state machine definition registered in the Durable Functions app.
+        /// </summary>
         [JsonProperty("statemachineid")]
         public string StateMachineIdentifier { get; set; }
 
         [JsonProperty("ischildstatemachine")]
-        public bool IsChildStateMachine { get; set; }
+        internal bool IsChildStateMachine { get; set; }
 
         internal object DeserializeInput(IStateMachineMetadata metadata)
         {
