@@ -39,36 +39,46 @@ For advanced scenarios, you can also define your own metadata syntax and map it 
 Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [HTTP API](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-http-api).
 
 ```csharp
-var machine = new StateMachine
+
+var machine = new StateMachine<(int x, int y)>
 {
     Id = "test",
     States =
     {
-        new AtomicState
+        new AtomicState<(int x, int y)>
         {
             Id = "state1",
-            OnEntry = new OnEntryExit
+            OnEntry = new OnEntryExit<(int x, int y)>
             {
                 Actions =
                 {
-                    new SendMessage
+                    new Assign<(int x, int y)>
                     {
-                        Id = "test-post",
-                        ActivityType = "http-post",
-                        Configuration = new HttpSendMessageConfiguration
-                        {
-                            Uri = "http://localhost:4444/",
-                            Content = new { value = 5 }
-                        }
+                        Target = d => d.x,
+                        ValueFunction = data => data.x + 1
+                    }
+                }
+            },
+            OnExit = new OnEntryExit<(int x, int y)>
+            {
+                Actions =
+                {
+                    new Assign<(int x, int y)>
+                    {
+                        Target = d => d.x,
+                        ValueFunction = data => data.x + 1
                     }
                 }
             },
             Transitions =
             {
-                new Transition { Targets = { "alldone" } }
+                new Transition<(int x, int y)>
+                {
+                    Targets = { "alldone" }
+                }
             }
         },
-        new FinalState
+        new FinalState<(int x, int y)>
         {
             Id = "alldone"
         }
