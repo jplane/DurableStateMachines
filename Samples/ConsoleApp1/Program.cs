@@ -15,8 +15,6 @@ namespace ConsoleApp1
     {
         static async Task Main(string[] args)
         {
-            await Task.Delay(5000);
-
             using IHost host = CreateHostBuilder(args).Build();
 
             var config = (IConfiguration) host.Services.GetService(typeof(IConfiguration));
