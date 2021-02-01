@@ -35,11 +35,11 @@ namespace ConsoleApp1
 
             var instanceId = await client.StartNewStateMachineAsync("tupletest", (5, 0));
 
-            var output = await client.WaitForStateMachineCompletionAsync<(int x, int y)>(instanceId);
+            var result = await client.WaitForStateMachineCompletionAsync(instanceId);
 
-            Console.WriteLine(output.Item2.RuntimeStatus);
+            Console.WriteLine(result.RuntimeStatus);
 
-            Console.WriteLine(output.Item1.x);
+            Console.WriteLine(result.ToOutput<(int x, int y)>());
 
             await host.RunAsync();
         }

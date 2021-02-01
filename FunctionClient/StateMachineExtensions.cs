@@ -29,7 +29,19 @@ namespace DSM.FunctionClient
             return client.StartNewAsync(StateMachineWithNameEndpoint, payload);
         }
 
-        public static async Task<(TResult, DurableOrchestrationStatus)> WaitForStateMachineCompletionAsync<TResult>(
+        public static TOutput ToOutput<TOutput>(this DurableOrchestrationStatus status)
+        {
+            if (status.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
+            {
+                return status.Output.ToObject<TOutput>();
+            }
+            else
+            {
+                return default;
+            }
+        }
+
+        public static async Task<DurableOrchestrationStatus> WaitForStateMachineCompletionAsync(
             this IDurableClient client, string instanceId, int pollingIntervalInMs = 1000)
         {
             client.CheckArgNull(nameof(client));
@@ -51,14 +63,7 @@ namespace DSM.FunctionClient
                        status.RuntimeStatus == OrchestrationRuntimeStatus.Terminated;
             }
 
-            TResult result = default;
-
-            if (status.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
-            {
-                result = status.Output.ToObject<TResult>();
-            }
-
-            return (result, status);
+            return status;
         }
     }
 }

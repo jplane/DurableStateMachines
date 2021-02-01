@@ -1,6 +1,6 @@
-# StateChartsDotNet
+# DurableStateMachines
 
-[![Gitter](https://badges.gitter.im/StateChartsDotNet/community.svg)](https://gitter.im/StateChartsDotNet/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+Durable state machines is an extension that adds a declarative state machine programming model on top of Azure Durable Functions. The state machine implementation is based on statecharts and the SCXML spec.
 
 ## What are statecharts?
 
@@ -8,11 +8,11 @@ The best definition comes from [here](https://statecharts.github.io/what-is-a-st
 
 > The primary feature of statecharts is that states can be organized in a hierarchy:  A statechart is a [state machine](https://statecharts.github.io/what-is-a-state-machine.html) where each state in the state machine may define its own subordinate state machines, called substates.  Those states can again define substates.
 
-The utility of traditional state machines goes down as system complexity increases, due to [state explosion](https://statecharts.github.io/state-machine-state-explosion.html). Also, state machines by themselves are merely a description of behavior, not behavior itself. Statecharts (and StateChartsDotNet) address both of these limitations.
+The utility of traditional state machines goes down as system complexity increases, due to [state explosion](https://statecharts.github.io/state-machine-state-explosion.html). Also, state machines by themselves are merely a description of behavior, not behavior itself. Statecharts (and DSM) address both of these limitations.
 
 ## Goals
 
-StateChartsDotNet aims to provide a full-featured statechart implementation for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/). This means you can run state machines locally on your laptop, or anywhere Azure Functions will run (Kubernetes, Azure serverless, edge compute, etc.).
+DSM aims to provide a full-featured statechart implementation for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/). This means you can run state machines locally on your laptop, or anywhere Azure Functions will run (Kubernetes, Azure serverless, edge compute, etc.).
 
 Some specific design and implementation choices:
 
@@ -75,37 +75,18 @@ var machine = new StateMachine
     }
 };
 
-using var client = new StateMachineHttpClient();
+IDurableClient client = GetDurableFunctionClient();     // can obtain via dependency injection
 
-client.BaseAddress = new Uri("https://FUNCTIONS-ENDPOINT");
+var data = (5, 0);                                      // any serializable type
 
-await client.StartNewAsync(machine;
+var instanceId = await client.StartNewStateMachineAsync("my-state-machine", data);
 
-DurableOrchestrationStatus status = null;
+var result = await client.WaitForStateMachineCompletionAsync(instanceId);
 
-var done = false;
+data = result.ToOutput<(int x, int y)>();
 
-while (!done)
-{
-    await Task.Delay(1000);
+Console.WriteLine(data.x);
 
-    status = await client.GetStatusAsync();
-
-    done = status.RuntimeStatus == OrchestrationRuntimeStatus.Canceled ||
-            status.RuntimeStatus == OrchestrationRuntimeStatus.Completed ||
-            status.RuntimeStatus == OrchestrationRuntimeStatus.Failed ||
-            status.RuntimeStatus == OrchestrationRuntimeStatus.Terminated;
-}
-
-if (status.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
-{
-    var output = status.Output.ToObject<Dictionary<string, object>>();
-
-    foreach (var key in output.Keys)
-    {
-        Console.WriteLine($"{key} = {output[key]}");
-    }
-}
 ```
 
 ## Background and Resources
