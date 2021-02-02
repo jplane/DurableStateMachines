@@ -13,6 +13,9 @@ namespace DSM.Metadata.Execution
     /// An action that logs messages to a configured <see cref="ILogger"/> implementation.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Log",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Log<TData> : ExecutableContent<TData>, ILogMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
@@ -40,16 +43,17 @@ namespace DSM.Metadata.Execution
         /// Static message to log.
         /// To derive this value at runtime using execution state <typeparamref name="TData"/>, use <see cref="MessageFunction"/>.
         /// </summary>
-        [JsonProperty("message")]
+        [JsonProperty("message", Required = Required.DisallowNull)]
         public string Message { get; set; }
 
         /// <summary>
         /// Function to dynamically generate the logged message at runtime, using execution state <typeparamref name="TData"/>.
         /// To use a static value, use <see cref="Message"/>.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, string> MessageFunction { get; set; }
 
-        [JsonProperty("messageexpression")]
+        [JsonProperty("messageexpression", Required = Required.DisallowNull)]
         private string MessageExpression { get; set; }
 
         string ILogMetadata.GetMessage(dynamic data) => _messageGetter.Value(data);

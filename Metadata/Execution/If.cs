@@ -14,6 +14,9 @@ namespace DSM.Metadata.Execution
     /// Can be used in conjuction with <see cref="ElseIf{TData}"/> and <see cref="Else{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "If",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class If<TData> : ExecutableContent<TData>, IIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -48,15 +51,16 @@ namespace DSM.Metadata.Execution
         /// Condition evaluated to determine if this <see cref="If{TData}"/> branch is executed.
         /// Execution state <typeparamref name="TData"/> can be used as part of the conditional logic.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, bool> ConditionFunction { get; set; }
 
-        [JsonProperty("conditionexpression")]
+        [JsonProperty("conditionexpression", Required = Required.Always)]
         private string ConditionExpression { get; set; }
 
         /// <summary>
         /// The set of actions executed for this <see cref="If{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;
@@ -82,7 +86,7 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of <see cref="ElseIf{TData}"/> elements conditionally executed for this <see cref="If{TData}"/>.
         /// </summary>
-        [JsonProperty("elseifs")]
+        [JsonProperty("elseifs", Required = Required.DisallowNull)]
         public MetadataList<ElseIf<TData>> ElseIfs
         {
             get => _elseIfs;
@@ -108,7 +112,7 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The <see cref="Else{TData}"/> element conditionally executed for this <see cref="If{TData}"/>.
         /// </summary>
-        [JsonProperty("else")]
+        [JsonProperty("else", Required = Required.DisallowNull)]
         public Else<TData> Else
         {
             get => _else;

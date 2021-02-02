@@ -4,46 +4,56 @@ using DSM.Metadata.States;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace DSM.Metadata
 {
-    public class StateConverter<TData> : JsonConverter<State<TData>>
+    public class StateConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, [AllowNull] State<TData> value, JsonSerializer serializer)
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType.IsGenericType &&
+                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(State<>));
+        }
+
+        public override void WriteJson(JsonWriter writer, [AllowNull] object value, JsonSerializer serializer)
         {
             serializer.Serialize(writer, value);
         }
 
-        public override State<TData> ReadJson(JsonReader reader,
-                                              Type objectType,
-                                              [AllowNull] State<TData> existingValue,
-                                              bool hasExistingValue,
-                                              JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader,
+                                        Type objectType,
+                                        [AllowNull] object existingValue,
+                                        JsonSerializer serializer)
         {
             var json = JObject.Load(reader);
 
-            State<TData> state = null;
+            Debug.Assert(objectType.IsGenericType);
+
+            var genericArgumentType = objectType.GetGenericArguments().Single();
+
+            Type stateType = null;
 
             switch (json["type"].Value<string>())
             {
                 case "atomic":
-                    state = json.ToObject<AtomicState<TData>>();
+                    stateType = typeof(AtomicState<>).MakeGenericType(genericArgumentType);
                     break;
 
                 case "compound":
-                    state = json.ToObject<CompoundState<TData>>();
+                    stateType = typeof(CompoundState<>).MakeGenericType(genericArgumentType);
                     break;
 
                 case "parallel":
-                    state = json.ToObject<ParallelState<TData>>();
+                    stateType = typeof(ParallelState<>).MakeGenericType(genericArgumentType);
                     break;
 
                 case "final":
-                    state = json.ToObject<FinalState<TData>>();
+                    stateType = typeof(FinalState<>).MakeGenericType(genericArgumentType);
                     break;
 
                 case "history":
-                    state = json.ToObject<HistoryState<TData>>();
+                    stateType = typeof(HistoryState<>).MakeGenericType(genericArgumentType);
                     break;
 
                 default:
@@ -51,7 +61,7 @@ namespace DSM.Metadata
                     break;
             }
 
-            return state;
+            return json.ToObject(stateType);
         }
     }
 }

@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 namespace DSM.Metadata.Execution
 {
@@ -15,6 +13,9 @@ namespace DSM.Metadata.Execution
     /// An action that raises an internal event in the state machine event queue.
     /// This can be used to discretely define state transitions, based on the event name or contents.
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Raise",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Raise<TData> : ExecutableContent<TData>, IRaiseMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
@@ -42,16 +43,17 @@ namespace DSM.Metadata.Execution
         /// Static message to raise in the event.
         /// To derive this value at runtime using execution state <typeparamref name="TData"/>, use <see cref="MessageFunction"/>.
         /// </summary>
-        [JsonProperty("message")]
+        [JsonProperty("message", Required = Required.DisallowNull)]
         public string Message { get; set; }
 
         /// <summary>
         /// Function to dynamically generate the logged message at runtime, using execution state <typeparamref name="TData"/>.
         /// To use a static value, use <see cref="Message"/>.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, string> MessageFunction { get; set; }
 
-        [JsonProperty("messageexpression")]
+        [JsonProperty("messageexpression", Required = Required.DisallowNull)]
         private string MessageExpression { get; set; }
 
         string IRaiseMetadata.GetMessage(dynamic data) => _messageGetter.Value(data);

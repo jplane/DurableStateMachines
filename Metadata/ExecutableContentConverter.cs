@@ -1,77 +1,87 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using DSM.Metadata.Execution;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using DSM.Metadata.Execution;
 
 namespace DSM.Metadata
 {
-    public class ExecutableContentConverter<TData> : JsonConverter<ExecutableContent<TData>>
+    public class ExecutableContentConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, [AllowNull] ExecutableContent<TData> value, JsonSerializer serializer)
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType.IsGenericType &&
+                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(ExecutableContent<>));
+        }
+
+        public override void WriteJson(JsonWriter writer, [AllowNull] object value, JsonSerializer serializer)
         {
             serializer.Serialize(writer, value);
         }
 
-        public override ExecutableContent<TData> ReadJson(JsonReader reader,
-                                                          Type objectType,
-                                                          [AllowNull] ExecutableContent<TData> existingValue,
-                                                          bool hasExistingValue,
-                                                          JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader,
+                                        Type objectType,
+                                        [AllowNull] object existingValue,
+                                        JsonSerializer serializer)
         {
             var json = JObject.Load(reader);
 
-            ExecutableContent<TData> content = null;
+            Debug.Assert(objectType.IsGenericType);
+
+            var genericArgumentType = objectType.GetGenericArguments().Single();
+
+            Type actionType = null;
 
             switch (json["type"].Value<string>())
             {
-                case "assign":
-                    content = json.ToObject<Assign<TData>>();
+                case "assign`1":
+                    actionType = typeof(Assign<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "else":
-                    content = json.ToObject<Else<TData>>();
+                case "else`1":
+                    actionType = typeof(Else<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "elseif":
-                    content = json.ToObject<ElseIf<TData>>();
+                case "elseif`1":
+                    actionType = typeof(ElseIf<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "foreach":
-                    content = json.ToObject<Foreach<TData>>();
+                case "foreach`1":
+                    actionType = typeof(Foreach<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "if":
-                    content = json.ToObject<If<TData>>();
+                case "if`1":
+                    actionType = typeof(If<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "log":
-                    content = json.ToObject<Log<TData>>();
+                case "log`1":
+                    actionType = typeof(Log<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "query":
-                    content = json.ToObject<Query<TData>>();
+                case "logic`1":
+                    actionType = typeof(Logic<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "raise":
-                    content = json.ToObject<Raise<TData>>();
+                case "query`1":
+                    actionType = typeof(Query<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "script":
-                    content = json.ToObject<Logic<TData>>();
+                case "raise`1":
+                    actionType = typeof(Raise<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "sendmessage":
-                    content = json.ToObject<SendMessage<TData>>();
+                case "sendmessage`1":
+                    actionType = typeof(SendMessage<>).MakeGenericType(genericArgumentType);
                     break;
 
                 default:
-                    Debug.Fail("Unexpected executable content type.");
+                    Debug.Fail("Unexpected action type.");
                     break;
             }
 
-            return content;
+            return json.ToObject(actionType);
         }
     }
 }

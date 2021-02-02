@@ -14,6 +14,9 @@ namespace DSM.Metadata.States
     /// <see cref="OnEntryExit{TData}"/> models the actions that execute upon entry to or exit from a <see cref="State{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "OnEntryExit",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class OnEntryExit<TData> : IOnEntryExitMetadata
     {
         private MetadataList<ExecutableContent<TData>> _actions;
@@ -32,7 +35,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of actions for this <see cref="OnEntryExit{TData}"/>.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;

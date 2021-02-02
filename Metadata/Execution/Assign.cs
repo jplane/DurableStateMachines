@@ -15,6 +15,9 @@ namespace DSM.Metadata.Execution
     /// An action that assigns a value to a named location in execution state.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Assign",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Assign<TData> : ExecutableContent<TData>, IAssignMetadata
     {
         private MemberInfo _target;
@@ -45,7 +48,7 @@ namespace DSM.Metadata.Execution
 
             var errors = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(this.TargetName) && _target == null)
+            if (string.IsNullOrWhiteSpace(this.Target) && _target == null)
             {
                 errors.Add("One of TargetName or Target must be set.");
             }
@@ -59,32 +62,34 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// Target field or property in <typeparamref name="TData"/> for the assignment.
         /// </summary>
+        [JsonIgnore]
         public Expression<Func<TData, object>> To
         {
             set => _target = value.ExtractMember(nameof(To));
         }
 
-        [JsonProperty("target")]
-        private string TargetName { get; set; }
+        [JsonProperty("target", Required = Required.Always)]
+        private string Target { get; set; }
 
         /// <summary>
         /// Static value to assign to the target field or property.
         /// To derive this value at runtime using execution state <typeparamref name="TData"/>, use <see cref="ValueFunction"/>.
         /// </summary>
-        [JsonProperty("value")]
+        [JsonProperty("value", Required = Required.DisallowNull)]
         public object Value { get; set; }
 
         /// <summary>
         /// Function to dynamically generate the assigned value at runtime, using execution state <typeparamref name="TData"/>.
         /// To use a static value, use <see cref="Value"/>.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, object> ValueFunction { get; set; }
 
-        [JsonProperty("valueexpression")]
+        [JsonProperty("valueexpression", Required = Required.DisallowNull)]
         private string ValueExpression { get; set; }
 
         object IAssignMetadata.GetValue(dynamic data) => _valueGetter.Value(data);
 
-        (string, MemberInfo) IAssignMetadata.Location => (this.TargetName, _target);
+        (string, MemberInfo) IAssignMetadata.Location => (this.Target, _target);
     }
 }

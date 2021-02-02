@@ -13,6 +13,9 @@ namespace DSM.Metadata.Execution
     /// An action to define custom behavior during execution.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Logic",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Logic<TData> : ExecutableContent<TData>, ILogicMetadata
     {
         private Lazy<Func<dynamic, object>> _executor;
@@ -44,9 +47,10 @@ namespace DSM.Metadata.Execution
         /// Function that defines the core behavior of this <see cref="Logic{TData}"/> element.
         /// Execution state <typeparamref name="TData"/> is passed as an argument.
         /// </summary>
+        [JsonIgnore]
         public Action<TData> Function { get; set; }
 
-        [JsonProperty("expression")]
+        [JsonProperty("expression", Required = Required.Always)]
         private string Expression { get; set; }
 
         void ILogicMetadata.Execute(dynamic data) => _executor.Value(data);

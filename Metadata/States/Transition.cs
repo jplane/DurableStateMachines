@@ -16,6 +16,9 @@ namespace DSM.Metadata.States
     ///  of events to zero or more target <see cref="State{TData}"/>s and an optional set of transition <see cref="Actions"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Transition",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Transition<TData> : ITransitionMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -71,26 +74,26 @@ namespace DSM.Metadata.States
         }
 
         /// <summary>
-        /// Target <see cref="State{TData}"/> name for this transition. If empty or null, a matched <see cref="Transition{TData}"/> will
+        /// Target <see cref="State{TData}"/> name for this transition. If empty, a matched <see cref="Transition{TData}"/> will
         ///  execute its configured actions but will not result in a state transition.
         /// To target multiple child states in a <see cref="ParallelState{TData}"/>, specify multiple state names separated by commas.
         /// </summary>
-        [JsonProperty("target")]
+        [JsonProperty("target", Required = Required.DisallowNull)]
         public string Target { get; set; }
 
         /// <summary>
-        /// Triggering event message name for this transition. Specify multiple names by separating with commas. Can be empty or null. Can be combined with
+        /// Triggering event message name for this transition. Specify multiple names by separating with commas. Can be empty. Can be combined with
         ///  <see cref="ConditionFunction"/> to define transition logic.
         ///  Events are raised both internally by state machine execution, by a <see cref="Raise{TData}"/> action, or from external sources
         ///  using the Durable Functions 'external events' feature: https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-external-events?tabs=csharp
         /// </summary>
-        [JsonProperty("message")]
+        [JsonProperty("message", Required = Required.DisallowNull)]
         public string Message { get; set; }
 
         /// <summary>
         /// An optional delay for this <see cref="Transition{TData}"/> to its target <see cref="State{TData}"/>. If null, the transition is immediate.
         /// </summary>
-        [JsonProperty("delay")]
+        [JsonProperty("delay", Required = Required.DisallowNull)]
         public TimeSpan? Delay { get; set; }
 
         /// <summary>
@@ -98,22 +101,23 @@ namespace DSM.Metadata.States
         /// <see cref="TransitionType.External"/> means the parent <see cref="CompoundState{TData}"/> is exited (<see cref="CompoundState{TData}.OnExit"/> fires, etc.)
         /// <see cref="TransitionType.Internal"/> means the parent <see cref="CompoundState{TData}"/> is not exited.
         /// </summary>
-        [JsonProperty("type")]
+        [JsonProperty("type", Required = Required.DisallowNull)]
         public TransitionType Type { get; set; }
 
         /// <summary>
         /// Condition evaluated to determine if this <see cref="Transition{TData}{TData}"/> is triggered. Can be null (effectively condition == true) and can
         ///  also be combined with event names using <see cref="Transition{TData}.Message"/>.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, bool> ConditionFunction { get; set; }
 
-        [JsonProperty("conditionexpression")]
+        [JsonProperty("conditionexpression", Required = Required.DisallowNull)]
         private string ConditionExpression { get; set; }
 
         /// <summary>
         /// The set of actions executed for this <see cref="Transition{TData}"/>, when triggered.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.DisallowNull)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;

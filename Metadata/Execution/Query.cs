@@ -16,6 +16,9 @@ namespace DSM.Metadata.Execution
     /// To use, implement <see cref="IQueryConfiguration"/> and an activity that accepts an instance of your custom type as input.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Query",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {
         private MemberInfo _resultTarget;
@@ -29,31 +32,32 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// Name of the custom activity that models your request-response operation.
         /// </summary>
-        [JsonProperty("activitytype")]
+        [JsonProperty("activitytype", Required = Required.Always)]
         public string ActivityType { get; set; }
 
         /// <summary>
         /// Target field or property in <typeparamref name="TData"/> into which the query response should be assigned.
         /// </summary>
+        [JsonIgnore]
         public Expression<Func<TData, object>> AssignTo
         {
             set => _resultTarget = value.ExtractMember(nameof(AssignTo));
         }
 
-        [JsonProperty("resultlocation")]
+        [JsonProperty("resultlocation", Required = Required.Always)]
         private string ResultLocation { get; set; }
 
         /// <summary>
         /// An instance of your custom configuration that provides all needed information for the query operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        [JsonProperty("configuration")]
+        [JsonProperty("configuration", Required = Required.Always)]
         public IQueryConfiguration Configuration { get; set; }
 
         /// <summary>
         /// The set of actions executed for this <see cref="Query{TData}"/> once a successful response is received.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.DisallowNull)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;

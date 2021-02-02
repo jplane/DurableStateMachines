@@ -17,6 +17,9 @@ namespace DSM.Metadata.States
     /// It defines child states in <see cref="States"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "CompoundState",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class CompoundState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -45,13 +48,13 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Initial child state to enter upon entrance to this <see cref="CompoundState{TData}"/>. If empty, the first child in <see cref="States"/> is used instead.
         /// </summary>
-        [JsonProperty("initialstate")]
+        [JsonProperty("initialstate", Required = Required.DisallowNull)]
         public string InitialState { get; set; }
 
         /// <summary>
         /// Defines behavior that executes upon each entry into this <see cref="CompoundState{TData}"/>.
         /// </summary>
-        [JsonProperty("onentry")]
+        [JsonProperty("onentry", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
@@ -76,7 +79,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines behavior that executes upon each exit from this <see cref="CompoundState{TData}"/>.
         /// </summary>
-        [JsonProperty("onexit")]
+        [JsonProperty("onexit", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnExit
         {
             get => _onExit;
@@ -101,7 +104,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines transitions from this <see cref="CompoundState{TData}"/> to other <see cref="State"/>s.
         /// </summary>
-        [JsonProperty("transitions")]
+        [JsonProperty("transitions", Required = Required.DisallowNull)]
         public MetadataList<Transition<TData>> Transitions
         {
             get => _transitions;
@@ -127,7 +130,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of child states for this <see cref="CompoundState{TData}"/>.
         /// </summary>
-        [JsonProperty("states")]
+        [JsonProperty("states", ItemConverterType = typeof(StateConverter), Required = Required.Always)]
         public MetadataList<State<TData>> States
         {
             get => _states;

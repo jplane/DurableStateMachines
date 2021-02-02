@@ -10,6 +10,9 @@ namespace DSM.Metadata.States
     /// Represents a state in a state machine definition. Uniquely identified by <see cref="Id"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "State",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public abstract class State<TData> : IModelMetadata
     {
         protected int? _documentOrder;
@@ -21,10 +24,10 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Unique identifier for this <see cref="State"/> within the state machine definition.
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("id", Required = Required.Always)]
         public string Id { get; set; }
 
-        [JsonProperty("type")]
+        [JsonProperty("type", Required = Required.Always)]
         private string SerializationType
         {
             get => ((IStateMetadata)this).Type.ToString().ToLowerInvariant();

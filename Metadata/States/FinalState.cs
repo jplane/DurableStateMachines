@@ -14,6 +14,9 @@ namespace DSM.Metadata.States
     /// It optionally defines actions that fire upon entry (<see cref="OnEntry"/>) and exit (<see cref="OnExit"/>).
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "FinalState",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class FinalState<TData> : State<TData>, IFinalStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -26,7 +29,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines behavior that executes upon each entry into this <see cref="FinalState{TData}"/>.
         /// </summary>
-        [JsonProperty("onentry")]
+        [JsonProperty("onentry", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
@@ -51,7 +54,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines behavior that executes upon each exit from this <see cref="FinalState{TData}"/>.
         /// </summary>
-        [JsonProperty("onexit")]
+        [JsonProperty("onexit", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnExit
         {
             get => _onExit;

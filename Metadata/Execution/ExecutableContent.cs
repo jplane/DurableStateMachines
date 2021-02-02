@@ -6,13 +6,16 @@ using System.Collections.Generic;
 
 namespace DSM.Metadata.Execution
 {
+    [JsonObject(Id = "ExecutableContent",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public class ExecutableContent<TData> : IExecutableContentMetadata
     {
-        protected internal ExecutableContent()
+        internal ExecutableContent()
         {
         }
 
-        [JsonProperty("type")]
+        [JsonProperty("type", Required = Required.Always)]
         private string SerializationType
         {
             get => this.GetType().Name.ToLowerInvariant();

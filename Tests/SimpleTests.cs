@@ -5,6 +5,9 @@ using DSM.Metadata.Execution;
 using DSM.Metadata.States;
 using System;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DSM.Tests
 {
@@ -80,9 +83,132 @@ namespace DSM.Tests
 
             var context = tuple.Item1;
 
-            await context.StartAsync(data);
+            await context.RunAsync(data);
 
             Assert.AreEqual(15, data.Sum);
+        }
+
+        [TestMethod]
+        [TestScaffold]
+        public async Task JsonSerialization(ScaffoldFactoryDelegate factory, string _)
+        {
+            //var machine = new StateMachine<TestData>
+            //{
+            //    Id = "test",
+            //    InitialState = "loop",
+            //    States =
+            //    {
+            //        new AtomicState<TestData>
+            //        {
+            //            Id = "loop",
+            //            OnEntry = new OnEntryExit<TestData>
+            //            {
+            //                Actions =
+            //                {
+            //                    new Foreach<TestData>
+            //                    {
+            //                        CurrentItem = d => d.ArrayItem,
+            //                        ValueFunction = data => data.Items,
+            //                        Actions =
+            //                        {
+            //                            new Assign<TestData> { To = d => d.Sum, ValueFunction = d => d.Sum + d.ArrayItem },
+            //                            new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
+            //                        }
+            //                    }
+            //                }
+            //            },
+            //            Transitions =
+            //            {
+            //                new Transition<TestData>
+            //                {
+            //                    ConditionFunction = d => d.Sum >= 15,
+            //                    Target = "done"
+            //                }
+            //            }
+            //        },
+            //        new FinalState<TestData>
+            //        {
+            //            Id = "done",
+            //            OnEntry = new OnEntryExit<TestData>
+            //            {
+            //                Actions =
+            //                {
+            //                    new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
+            //                }
+            //            }
+            //        }
+            //    }
+            //};
+
+            var json = @"{
+                           'id': 'test',
+                           'initialstate': 'loop',
+                           'failfast': false,
+                           'states': [
+                             {
+                               'id': 'loop',
+                               'type': 'atomic',
+                               'onentry': {
+                                 'actions': [
+                                   {
+                                     'type': 'foreach`1',
+                                     'currentitemlocation': 'arrayItem',
+                                     'valueexpression': 'items',
+                                     'actions': [
+                                       {
+                                         'type': 'assign`1',
+                                         'target': 'sum',
+                                         'valueexpression': 'sum + arrayItem'
+                                       },
+                                       {
+                                         'type': 'log`1',
+                                         'messageexpression': '""item = "" + arrayItem'
+                                       }
+                                     ]
+                                   }
+                                 ]
+                               },
+                               'transitions': [
+                                 {
+                                   'conditionexpression': 'sum >= 15',
+                                   'target': 'done'
+                                 }
+                               ]
+                             },
+                             {
+                               'id': 'done',
+                               'type': 'final',
+                               'onentry': {
+                                 'actions': [
+                                   {
+                                     'type': 'log`1',
+                                     'messageexpression': '""item = "" + arrayItem'
+                                   }
+                                 ]
+                               }
+                             }
+                           ]
+                         }";
+
+            var machine = StateMachine<Dictionary<string, object>>.FromJson(json);
+
+            Assert.IsNotNull(machine);
+
+            var data = new Dictionary<string, object>
+            {
+                { "items", new [] { 1, 2, 3, 4, 5 } },
+                { "sum", 0 }
+            };
+
+            var tuple = factory(machine, null, null);
+
+            var context = tuple.Item1;
+
+            await context.RunAsync(data);
+
+            var sum = (int) data["sum"];
+
+            Assert.IsTrue(sum >= 15);
         }
 
         [TestMethod]
@@ -131,7 +257,7 @@ namespace DSM.Tests
 
             var context = tuple.Item1;
 
-            await context.StartAsync(true);
+            await context.RunAsync(true);
 
             var jsonResult = await listenerTask;
 
@@ -189,7 +315,7 @@ namespace DSM.Tests
 
             var context = tuple.Item1;
 
-            var task = context.StartAsync(data);
+            var task = context.RunAsync(data);
 
             await Task.WhenAll(task, listenerTask);
 
@@ -269,7 +395,7 @@ namespace DSM.Tests
 
             var context = tuple.Item1;
 
-            data = await context.StartAsync(data);
+            data = await context.RunAsync(data);
 
             Assert.AreEqual(5, data.x);
 

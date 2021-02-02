@@ -48,7 +48,7 @@ namespace DSM.Engine
             });
         }
 
-        public async Task<TData> StartAsync<TData>(TData data)
+        public async Task<TData> RunAsync<TData>(TData data)
         {
             data.CheckArgNull(nameof(data));
 
@@ -119,7 +119,7 @@ namespace DSM.Engine
 
             var context = new ExecutionContext(childMachine, this.CancelToken, _lookupChild, true, _logger);
 
-            return context.StartAsync(data);
+            return context.RunAsync(data);
         }
 
         protected override Task<ExternalMessage> GetNextExternalMessageAsync()

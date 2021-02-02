@@ -14,6 +14,9 @@ namespace DSM.Metadata.Execution
     /// Only used in conjuction with <see cref="If{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "ElseIf",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class ElseIf<TData> : ExecutableContent<TData>, IElseIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
@@ -45,15 +48,16 @@ namespace DSM.Metadata.Execution
         /// Condition evaluated to determine if this <see cref="ElseIf{TData}"/> branch is executed.
         /// Execution state <typeparamref name="TData"/> can be used as part of the conditional logic.
         /// </summary>
+        [JsonIgnore]
         public Func<TData, bool> ConditionFunction { get; set; }
 
-        [JsonProperty("conditionexpression")]
+        [JsonProperty("conditionexpression", Required = Required.Always)]
         private string ConditionExpression { get; set; }
 
         /// <summary>
         /// The set of actions executed for this <see cref="ElseIf{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;

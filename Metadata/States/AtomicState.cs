@@ -15,6 +15,9 @@ namespace DSM.Metadata.States
     /// It optionally defines invocations of child state machines in <see cref="Invokes"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "AtomicState",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class AtomicState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
@@ -31,7 +34,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines behavior that executes upon each entry into this <see cref="AtomicState{TData}"/>.
         /// </summary>
-        [JsonProperty("onentry")]
+        [JsonProperty("onentry", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnEntry
         {
             get => _onEntry;
@@ -56,7 +59,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines behavior that executes upon each exit from this <see cref="AtomicState{TData}"/>.
         /// </summary>
-        [JsonProperty("onexit")]
+        [JsonProperty("onexit", Required = Required.DisallowNull)]
         public OnEntryExit<TData> OnExit
         {
             get => _onExit;
@@ -81,7 +84,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines transitions from this <see cref="AtomicState{TData}"/> to other <see cref="State"/>s.
         /// </summary>
-        [JsonProperty("transitions")]
+        [JsonProperty("transitions", Required = Required.DisallowNull)]
         public MetadataList<Transition<TData>> Transitions
         {
             get => _transitions;
@@ -107,7 +110,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// Defines child state machine invocations that occur upon entry into this <see cref="AtomicState{TData}"/>.
         /// </summary>
-        [JsonProperty("childinvocations")]
+        [JsonProperty("childinvocations", Required = Required.DisallowNull)]
         public MetadataList<InvokeStateMachine<TData>> Invokes
         {
             get => _invokes;

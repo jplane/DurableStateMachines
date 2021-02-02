@@ -15,6 +15,9 @@ namespace DSM.Metadata.States
     ///  the <see cref="HistoryState{TData}"/>, the saved "last executing state" is then re-entered. For more information see: https://statecharts.github.io/glossary/history-state.html
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "HistoryState",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class HistoryState<TData> : State<TData>, IHistoryStateMetadata
     {
         public HistoryState()
@@ -25,7 +28,7 @@ namespace DSM.Metadata.States
         /// There are two types of <see cref="HistoryState{TData}"/> behavior: shallow and deep.
         ///  Shallow history tracks only the immediate sub-state. Deep history tracks (and will re-enter) all current nested sub-states.
         /// </summary>
-        [JsonProperty("deep")]
+        [JsonProperty("deep", Required = Required.DisallowNull)]
         public bool IsDeep { get; set; }
 
         internal override void Validate(IDictionary<string, List<string>> errorMap)

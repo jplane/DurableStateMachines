@@ -7,6 +7,11 @@ using DSM.Metadata.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
+using Newtonsoft.Json.Serialization;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DSM.Metadata.States
 {
@@ -14,6 +19,9 @@ namespace DSM.Metadata.States
     /// <see cref="StateMachine{TData}"/> defines the child states, transitions, and actions that together determine the state machines behavior and lifecycle.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "StateMachine",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class StateMachine<TData> : IStateMachineMetadata
     {
         private Logic<TData> _initScript;
@@ -24,10 +32,31 @@ namespace DSM.Metadata.States
             this.States = new MetadataList<State<TData>>();
         }
 
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public static StateMachine<TData> FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<StateMachine<TData>>(json);
+        }
+
+        public static string GenerateSchema()
+        {
+            var generator = new JSchemaGenerator();
+
+            generator.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
+            var jschema = generator.Generate(typeof(StateMachine<TData>));
+
+            return jschema.ToString();
+        }
+
         /// <summary>
         /// Unique identifier for this <see cref="StateMachine{TData}"/>.
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("id", Required = Required.Always)]
         public string Id { get; set; }
 
         /// <summary>
@@ -42,13 +71,13 @@ namespace DSM.Metadata.States
         /// If <see cref="FailFast"/> = true, the state machine interpreter will instead cause execution to stop gracefully and prevent <see cref="Transition{TData}"/> handling
         ///  of errors.
         /// </summary>
-        [JsonProperty("failfast")]
+        [JsonProperty("failfast", Required = Required.DisallowNull)]
         public bool FailFast { get; set; }
 
         /// <summary>
         /// Defines optional initialization logic for this <see cref="StateMachine{TData}"/>.
         /// </summary>
-        [JsonProperty("initlogic")]
+        [JsonProperty("initlogic", Required = Required.DisallowNull)]
         public Logic<TData> InitLogic
         {
             get => _initScript;
@@ -72,7 +101,7 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of child states for this <see cref="StateMachine{TData}"/>.
         /// </summary>
-        [JsonProperty("states")]
+        [JsonProperty("states", ItemConverterType = typeof(StateConverter), Required = Required.Always)]
         public MetadataList<State<TData>> States
         {
             get => _states;

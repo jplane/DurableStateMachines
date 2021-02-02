@@ -13,6 +13,9 @@ namespace DSM.Metadata.Execution
     /// Only used in conjuction with <see cref="If{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "Else",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class Else<TData> : ExecutableContent<TData>, IElseMetadata
     {
         private MetadataList<ExecutableContent<TData>> _actions;
@@ -25,7 +28,7 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of actions executed for this <see cref="Else{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions")]
+        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
         public MetadataList<ExecutableContent<TData>> Actions
         {
             get => _actions;

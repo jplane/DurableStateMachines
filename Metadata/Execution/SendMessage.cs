@@ -13,6 +13,9 @@ namespace DSM.Metadata.Execution
     /// To use, implement <see cref="ISendMessageConfiguration"/> and an activity that accepts an instance of your custom type as input.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
+    [JsonObject(Id = "SendMessage",
+                ItemNullValueHandling = NullValueHandling.Ignore,
+                ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class SendMessage<TData> : ExecutableContent<TData>, ISendMessageMetadata
     {
         public SendMessage()
@@ -22,26 +25,26 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// Identifier of this action instance. Can be used as a correlation identifier for messaging implementations that require it.
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("id", Required = Required.Always)]
         public string Id { get; set; }
 
         /// <summary>
         /// An optional time delay for the messaging operation. If null, the operation occurs immediately.
         /// </summary>
-        [JsonProperty("delay")]
+        [JsonProperty("delay", Required = Required.DisallowNull)]
         public TimeSpan? Delay { get; set; }
 
         /// <summary>
         /// Name of the custom activity that models your messaging operation.
         /// </summary>
-        [JsonProperty("activitytype")]
+        [JsonProperty("activitytype", Required = Required.Always)]
         public string ActivityType { get; set; }
 
         /// <summary>
         /// An instance of your custom configuration that provides all needed information for the messaging operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        [JsonProperty("configuration")]
+        [JsonProperty("configuration", Required = Required.Always)]
         public ISendMessageConfiguration Configuration { get; set; }
 
         internal override void Validate(IDictionary<string, List<string>> errorMap)
