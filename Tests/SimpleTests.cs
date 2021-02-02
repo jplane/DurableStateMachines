@@ -142,8 +142,6 @@ namespace DSM.Tests
 
             var json = @"{
                            'id': 'test',
-                           'initialstate': 'loop',
-                           'failfast': false,
                            'states': [
                              {
                                'id': 'loop',
