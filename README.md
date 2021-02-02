@@ -38,6 +38,8 @@ For advanced scenarios, you can also define your own metadata syntax and map it 
 
 Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [IDurableClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask.idurableclient?view=azure-dotnet) APIs.
 
+### Option 1: strongly-typed C#
+
 ```csharp
 // in your DF app (on the server)
 
@@ -107,6 +109,71 @@ var result = await client.WaitForStateMachineCompletionAsync(instanceId);
 data = result.ToOutput<(int x, int y)>();
 
 Console.WriteLine(data.x);
+
+```
+
+### Option 2: HTTP + JSON
+
+```
+
+// from any client
+
+HTTP POST /runtime/webhooks/durabletask/orchestrators/statemachine-definition
+
+{
+  'input': {
+    'items': [ 1, 2, 3, 4, 5 ],
+    'sum': 0
+  },
+  'statemachine': {
+    'id': 'test',
+    'initialstate': 'loop',
+    'states': [
+      {
+        'id': 'loop',
+        'type': 'atomic',
+        'onentry': {
+          'actions': [
+            {
+              'type': 'foreach`1',
+              'valueexpression': 'items',
+              'currentitemlocation': 'arrayItem',
+              'actions': [
+                {
+                  'type': 'assign`1',
+                  'target': 'sum',
+                  'valueexpression': 'sum + arrayItem'
+                },
+                {
+                  'type': 'log`1',
+                  'messageexpression': '""item = "" + arrayItem'
+                }
+              ]
+            }
+          ]
+        },
+        'transitions': [
+          {
+            'conditionexpression': 'sum >= 15',
+            'target': 'done'
+          }
+        ]
+      },
+      {
+        'id': 'done',
+        'type': 'final',
+        'onentry': {
+          'actions': [
+            {
+              'type': 'log`1',
+              'messageexpression': '""item = "" + arrayItem'
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
 
 ```
 
