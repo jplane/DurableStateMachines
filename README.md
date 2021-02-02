@@ -39,53 +39,64 @@ For advanced scenarios, you can also define your own metadata syntax and map it 
 Run statecharts as a Durable Function [orchestration](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp), using the standard [IDurableClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask.idurableclient?view=azure-dotnet) APIs.
 
 ```csharp
+// in your DF app (on the server)
 
-var machine = new StateMachine<(int x, int y)>
+public class Definitions
 {
-    Id = "test",
-    States =
-    {
-        new AtomicState<(int x, int y)>
+    [StateMachineDefinition("my-state-machine")]
+    public StateMachine<(int x, int y)> MyStateMachine =>
+        new StateMachine<(int x, int y)>
         {
-            Id = "state1",
-            OnEntry = new OnEntryExit<(int x, int y)>
+            Id = "test",
+            States =
             {
-                Actions =
+                new AtomicState<(int x, int y)>
                 {
-                    new Assign<(int x, int y)>
+                    Id = "state1",
+                    OnEntry = new OnEntryExit<(int x, int y)>
                     {
-                        Target = d => d.x,
-                        ValueFunction = data => data.x + 1
-                    }
-                }
-            },
-            OnExit = new OnEntryExit<(int x, int y)>
-            {
-                Actions =
-                {
-                    new Assign<(int x, int y)>
+                        Actions =
+                        {
+                            new Assign<(int x, int y)>
+                            {
+                                Target = d => d.x,
+                                ValueFunction = data => data.x + 1
+                            }
+                        }
+                    },
+                    OnExit = new OnEntryExit<(int x, int y)>
                     {
-                        Target = d => d.x,
-                        ValueFunction = data => data.x + 1
+                        Actions =
+                        {
+                            new Assign<(int x, int y)>
+                            {
+                                Target = d => d.x,
+                                ValueFunction = data => data.x + 1
+                            }
+                        }
+                    },
+                    Transitions =
+                    {
+                        new Transition<(int x, int y)>
+                        {
+                            Targets = { "alldone" }
+                        }
                     }
-                }
-            },
-            Transitions =
-            {
-                new Transition<(int x, int y)>
+                },
+                new FinalState<(int x, int y)>
                 {
-                    Targets = { "alldone" }
+                    Id = "alldone"
                 }
             }
-        },
-        new FinalState<(int x, int y)>
-        {
-            Id = "alldone"
-        }
-    }
-};
+        };
+}
 
-IDurableClient client = GetDurableFunctionClient();     // can obtain via dependency injection
+```
+
+```csharp
+// on the client
+
+IDurableClient client = GetDurableFunctionClient();     // obtain via dependency injection
 
 var data = (5, 0);                                      // any serializable type
 
