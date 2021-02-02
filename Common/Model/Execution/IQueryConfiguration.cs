@@ -6,6 +6,5 @@ namespace DSM.Common.Model.Execution
 {
     public interface IQueryConfiguration
     {
-        void ResolveConfigValues(Func<string, string> resolver);
     }
 }

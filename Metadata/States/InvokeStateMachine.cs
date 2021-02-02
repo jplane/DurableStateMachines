@@ -31,6 +31,7 @@ namespace DSM.Metadata.States
 
         public InvokeStateMachine()
         {
+            this.ExecutionMode = ChildStateMachineExecutionMode.Inline;
             this.CompletionActions = new MetadataList<ExecutableContent<TData>>();
 
             _getData = new Lazy<Func<dynamic, object>>(() =>
@@ -155,9 +156,9 @@ namespace DSM.Metadata.States
                 errors.Add("ChildStateMachineExecutionMode.Remote requires a RemoteUri value.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.StateMachineIdentifier))
+            if (string.IsNullOrWhiteSpace(this.StateMachineIdentifier) && this.Definition == null)
             {
-                errors.Add("State machine identifier is invalid.");
+                errors.Add("Invoke operation must specify either a state machine identifier or definition.");
             }
 
             foreach (var action in this.CompletionActions)

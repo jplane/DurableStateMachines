@@ -119,6 +119,6 @@ namespace DSM.Metadata.States
 
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => throw new NotSupportedException();
 
-        IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() => throw new NotSupportedException();
+        IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() => Enumerable.Empty<ITransitionMetadata>();
     }
 }

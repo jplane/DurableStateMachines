@@ -78,8 +78,6 @@ namespace DSM.FunctionHost
             }
             else
             {
-                Debug.Fail("Need to sort out by-id vs. by-def for remote invocation.");
-
                 Debug.Assert(!string.IsNullOrWhiteSpace(metadata.RemoteUri));
 
                 var uri = new Uri(metadata.RemoteUri);
@@ -116,9 +114,16 @@ namespace DSM.FunctionHost
             }
             else
             {
+                Debug.Assert(input == null || input is JObject);
+
+                if (input == null)
+                {
+                    input = new JObject();
+                }
+
                 return (FunctionProvider.StateMachineWithDefinitionEndpoint, new StateMachineDefinitionPayload
                 {
-                    Input = (Dictionary<string, object>) input,
+                    Input = ((JObject) input).ToObject<Dictionary<string, object>>(),
                     Definition = (StateMachine<Dictionary<string, object>>) metadata.GetRoot(),
                     DebugInfo = _debugInfo,
                     IsChildStateMachine = true
@@ -199,6 +204,8 @@ namespace DSM.FunctionHost
             }
             else
             {
+                ResolveConfigValues(config.Item2);
+
                 return _orchestrationContext.CallActivityAsync<string>(activityType, config.Item2);
             }
         }
@@ -222,6 +229,8 @@ namespace DSM.FunctionHost
             }
             else
             {
+                ResolveConfigValues(config.Item2);
+
                 return _orchestrationContext.CallActivityAsync(activityType, config.Item2);
             }
         }

@@ -1,11 +1,10 @@
 ﻿using System.Linq;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using DSM.Common;
 using DSM.Common.Model.Execution;
 using System;
-using System.Collections;
-using DSM.Engine;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace DSM.Engine.Model.Execution
 {
@@ -46,7 +45,12 @@ namespace DSM.Engine.Model.Execution
             {
                 await context.LogDebugAsync($"Foreach: Array item index {idx}");
 
-                var item = items[idx];
+                object item = items[idx];
+
+                if (item is JToken jt)
+                {
+                    item = JsonConvert.DeserializeObject(jt.ToString());
+                }
 
                 if (!foreachMetadata.Item.Equals(default))
                 {

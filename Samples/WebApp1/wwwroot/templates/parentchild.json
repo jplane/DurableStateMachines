@@ -12,7 +12,7 @@
     ]
   },
   "input": {
-    "y": 40
+    "innerData":  null
   },
   "statemachine": {
     "id": "outer",
@@ -20,10 +20,13 @@
       {
         "id": "outerState1",
         "type": "atomic",
-        "invokes": [
+        "childinvocations": [
           {
             "id": "innerInvoke",
             "resultlocation": "innerData",
+            "input": {
+              "y": 40
+            },
             "statemachinedefinition": {
               "id": "inner",
               "states": [
@@ -51,7 +54,7 @@
                 }
               ]
             },
-            "finalize": [
+            "completionactions": [
               {
                 "type": "assign`1",
                 "target": "innerZ",

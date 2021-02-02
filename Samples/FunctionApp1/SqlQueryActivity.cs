@@ -17,11 +17,6 @@ namespace DSM.DurableFunction.Host
 {
     public class SqlQueryConfiguration : IQueryConfiguration
     {
-        public virtual void ResolveConfigValues(Func<string, string> resolver)
-        {
-            this.ConnectionString = resolver(this.ConnectionString);
-        }
-
         [JsonProperty("connectionstring")]
         public string ConnectionString { get; set; }
 

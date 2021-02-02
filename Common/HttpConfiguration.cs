@@ -17,7 +17,7 @@ namespace DSM.Common
         {
         }
 
-        public virtual void ResolveConfigValues(Func<string, string> resolver)
+        public void ResolveConfigValues(Func<string, string> resolver)
         {
             resolver.CheckArgNull(nameof(resolver));
 

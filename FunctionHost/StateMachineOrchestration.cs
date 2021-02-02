@@ -65,7 +65,7 @@ namespace DSM.FunctionHost
                                         input,
                                         payload.IsChildStateMachine,
                                         payload.DebugInfo,
-                                        _ => null,
+                                        null,
                                         logger);
 
             Debug.Assert(result != null);

@@ -61,7 +61,7 @@
             "target": "state2",
             "actions": [
               {
-                "type": "assign~1",
+                "type": "assign`1",
                 "target": "x",
                 "valueexpression": "x + \" [transition to state2] \""
               }
