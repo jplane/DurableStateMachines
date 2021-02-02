@@ -178,41 +178,51 @@ namespace DSM.FunctionHost
             }
         }
 
-        internal override Task<string> QueryAsync(string activityType, IQueryConfiguration config)
+        internal override Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
-            config.CheckArgNull(nameof(config));
 
-            config.ResolveConfigValues(this.ResolveConfigValue);
+            Debug.Assert(config.Item1 == null);
+            Debug.Assert(config.Item2 != null);
 
             if (string.Compare(activityType, "http-get", true, CultureInfo.InvariantCulture) == 0)
             {
                 var http = new HttpService(this.ExecutionData, _orchestrationContext);
 
-                return http.GetAsync(config);
+                var httpConfig = config.Item2.ToObject<HttpQueryConfiguration>();
+
+                Debug.Assert(httpConfig != null);
+
+                httpConfig.ResolveConfigValues(this.ResolveConfigValue);
+
+                return http.GetAsync(httpConfig);
             }
             else
             {
-                return _orchestrationContext.CallActivityAsync<string>(activityType, config);
+                return _orchestrationContext.CallActivityAsync<string>(activityType, config.Item2);
             }
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
-
-            config.ResolveConfigValues(this.ResolveConfigValue);
 
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
                 var http = new HttpService(this.ExecutionData, _orchestrationContext);
 
-                return http.PostAsync(correlationId, config);
+                var httpConfig = config.Item2.ToObject<HttpSendMessageConfiguration>();
+
+                Debug.Assert(httpConfig != null);
+
+                httpConfig.ResolveConfigValues(this.ResolveConfigValue);
+
+                return http.PostAsync(correlationId, httpConfig);
             }
             else
             {
-                return _orchestrationContext.CallActivityAsync(activityType, config);
+                return _orchestrationContext.CallActivityAsync(activityType, config.Item2);
             }
         }
 
@@ -254,7 +264,7 @@ namespace DSM.FunctionHost
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
 
-                return _orchestrationContext.CallActivityAsync("statemachine-debugger-break", (endpoint, info));
+                return _orchestrationContext.CallActivityAsync(FunctionProvider.StateMachineDebuggerBreakEndpoint, (endpoint, info));
             }
             else
             {

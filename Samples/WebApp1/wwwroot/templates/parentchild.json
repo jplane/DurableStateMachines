@@ -1,6 +1,5 @@
 {
   "debug": {
-    "uri": "%DEBUGGER_ENDPOINT%",
     "instructions": [
       {
         "action": "enterstate",
@@ -12,36 +11,31 @@
       }
     ]
   },
-  "args": {
-    "x": 4732
+  "input": {
+    "y": 40
   },
-  "format": "json",
   "statemachine": {
-    "name": "outer",
+    "id": "outer",
     "states": [
       {
         "id": "outerState1",
+        "type": "atomic",
         "invokes": [
           {
             "id": "innerInvoke",
-            "params": [
-              {
-                "name": "y",
-                "location": "x"
-              }
-            ],
             "resultlocation": "innerData",
-            "content": {
-              "name": "inner",
+            "statemachinedefinition": {
+              "id": "inner",
               "states": [
                 {
                   "id": "innerState1",
+                  "type": "atomic",
                   "onentry": {
-                    "content": [
+                    "actions": [
                       {
-                        "type": "assign",
-                        "location": "z",
-                        "expr": "y * 2"
+                        "type": "assign`1",
+                        "target": "z",
+                        "valueexpression": "y * 2"
                       }
                     ]
                   },
@@ -59,16 +53,16 @@
             },
             "finalize": [
               {
-                "type": "assign",
-                "location": "innerZ",
-                "expr": "innerData[\"z\"]"
+                "type": "assign`1",
+                "target": "innerZ",
+                "valueexpression": "innerData[\"z\"]"
               }
             ]
           }
         ],
         "transitions": [
           {
-            "cond": "innerData != null",
+            "conditionexpression": "innerData != null",
             "target": "outeralldone"
           }
         ]

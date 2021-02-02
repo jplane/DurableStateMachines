@@ -30,7 +30,7 @@ namespace DSM.Engine.Model.Execution
 
             try
             {
-                var result = await context.QueryAsync(metadata.ActivityType, metadata.Configuration);
+                var result = await context.QueryAsync(metadata.ActivityType, metadata.GetConfiguration());
 
                 if (!metadata.ResultLocation.Equals(default))
                 {

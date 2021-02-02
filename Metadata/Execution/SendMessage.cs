@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DSM.Metadata.Execution
 {
@@ -44,8 +45,10 @@ namespace DSM.Metadata.Execution
         /// An instance of your custom configuration that provides all needed information for the messaging operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        [JsonProperty("configuration", Required = Required.Always)]
         public ISendMessageConfiguration Configuration { get; set; }
+
+        [JsonProperty("configuration", Required = Required.Always)]
+        private JObject JsonConfig { get; set; }
 
         internal override void Validate(IDictionary<string, List<string>> errorMap)
         {
@@ -53,7 +56,7 @@ namespace DSM.Metadata.Execution
 
             var errors = new List<string>();
 
-            if (this.Configuration == null)
+            if (this.Configuration == null && this.JsonConfig == null)
             {
                 errors.Add("Configuration is invalid.");
             }
@@ -73,5 +76,7 @@ namespace DSM.Metadata.Execution
                 errorMap.Add(((IModelMetadata)this).MetadataId, errors);
             }
         }
+
+        (ISendMessageConfiguration, JObject) ISendMessageMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
     }
 }

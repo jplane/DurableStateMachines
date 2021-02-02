@@ -1,6 +1,5 @@
 {
   "debug": {
-    "uri": "%DEBUGGER_ENDPOINT%",
     "instructions": [
       {
         "action": "enterstate",
@@ -12,15 +11,11 @@
       }
     ]
   },
-  "format": "json",
+  "input": {
+    "x": 0
+  },
   "statemachine": {
-    "name": "test",
-    "datamodel": [
-      {
-        "id": "x",
-        "expr": "0"
-      }
-    ],
+    "id": "test",
     "states": [
       {
         "id": "state1",
@@ -28,24 +23,26 @@
         "states": [
           {
             "id": "state2",
+            "type": "atomic",
             "onentry": {
-              "content": [
+              "actions": [
                 {
-                  "type": "assign",
-                  "location": "x",
-                  "expr": "x + 1"
+                  "type": "assign`1",
+                  "target": "x",
+                  "valueexpression": "x + 1"
                 }
               ]
             }
           },
           {
             "id": "state3",
+            "type": "atomic",
             "onentry": {
-              "content": [
+              "actions": [
                 {
-                  "type": "assign",
-                  "location": "x",
-                  "expr": "x + 1"
+                  "type": "assign`1",
+                  "target": "x",
+                  "valueexpression": "x + 1"
                 }
               ]
             }
@@ -53,9 +50,8 @@
         ],
         "transitions": [
           {
-            "cond": "x > 1",
+            "conditionexpression": "x > 1",
             "target": "bigfinish"
-
           }
         ]
       },

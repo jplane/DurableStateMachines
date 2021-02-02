@@ -14,8 +14,6 @@ namespace DSM.FunctionHost
 {
     public static class StateMachineOrchestration
     {
-        public static IConfiguration Configuration { get; set; }    // yuck
-
         public static async Task<object> RunStateMachineWithNameAsync(
             [OrchestrationTrigger] IDurableOrchestrationContext context,
             ILogger logger)
@@ -29,7 +27,7 @@ namespace DSM.FunctionHost
             Debug.Assert(payload != null);
             Debug.Assert(!string.IsNullOrWhiteSpace(payload.StateMachineIdentifier));
 
-            var resolver = new DefinitionResolver(Configuration);
+            var resolver = new DefinitionResolver(Startup.Configuration);
 
             var stateMachineDefinition = resolver.Resolve(payload.StateMachineIdentifier);
 
@@ -60,9 +58,11 @@ namespace DSM.FunctionHost
             Debug.Assert(payload != null);
             Debug.Assert(payload.Definition != null);
 
+            var input = payload.Input ?? new Dictionary<string, object>();
+
             var result = await RunAsync(context,
                                         payload.Definition,
-                                        payload.Input,
+                                        input,
                                         payload.IsChildStateMachine,
                                         payload.DebugInfo,
                                         _ => null,
@@ -89,7 +89,7 @@ namespace DSM.FunctionHost
                                                            input,
                                                            isChildStateMachine,
                                                            debugInfo,
-                                                           Configuration,
+                                                           Startup.Configuration,
                                                            resolver,
                                                            logger);
 

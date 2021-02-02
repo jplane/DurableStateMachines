@@ -9,6 +9,6 @@ namespace DSM.Common.Model.Execution
         string Id { get; }
         TimeSpan? Delay { get; }
         string ActivityType { get; }
-        ISendMessageConfiguration Configuration { get; }
+        (ISendMessageConfiguration, JObject) GetConfiguration();
     }
 }

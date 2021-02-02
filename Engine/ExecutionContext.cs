@@ -10,6 +10,7 @@ using DSM.Common.Messages;
 using System.Threading;
 using DSM.Engine.Services;
 using DSM.Common.Model.Execution;
+using Newtonsoft.Json.Linq;
 
 namespace DSM.Engine
 {
@@ -77,26 +78,32 @@ namespace DSM.Engine
             return Task.Delay(timespan, this.CancelToken);
         }
 
-        internal override Task<string> QueryAsync(string activityType, IQueryConfiguration config)
+        internal override Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
 
+            Debug.Assert(config.Item1 != null);
+            Debug.Assert(config.Item2 == null);
+
             if (_externalQueries.Value.TryGetValue(activityType, out ExternalQueryDelegate query))
             {
-                return query(config);
+                return query(config.Item1);
             }
 
             throw new InvalidOperationException("Unable to resolve external query type: " + activityType);
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
 
+            Debug.Assert(config.Item1 != null);
+            Debug.Assert(config.Item2 == null);
+
             if (_externalServices.Value.TryGetValue(activityType, out ExternalServiceDelegate service))
             {
-                return service(correlationId, config);
+                return service(correlationId, config.Item1);
             }
 
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);

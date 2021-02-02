@@ -1,6 +1,5 @@
 {
   "debug": {
-    "uri": "%DEBUGGER_ENDPOINT%",
     "instructions": [
       {
         "action": "enterstate",
@@ -12,23 +11,20 @@
       }
     ]
   },
-  "format": "json",
   "statemachine": {
-    "name": "test",
+    "id": "test",
     "states": [
       {
         "id": "state1",
+        "type": "atomic",
         "onentry": {
-          "content": [
+          "actions": [
             {
-              "id": "test-func",
-              "type": "sendmessage",
-              "activity": "http-post",
-              "config": {
-                "uri": "http://localhost:7071/api/TestFunction",
-                "content": {
-                  "value": 5
-                }
+              "type": "query`1",
+              "activitytype": "http-get",
+              "resultlocation": "x",
+              "configuration": {
+                "uri": "%TEST_FUNCTION_ENDPOINT%"
               }
             }
           ]

@@ -25,7 +25,7 @@ namespace DSM.FunctionClient
         /// <summary>
         /// The state machine definition.
         /// </summary>
-        [JsonProperty("statemachineid")]
+        [JsonProperty("statemachine")]
         public StateMachine<Dictionary<string, object>> Definition { get; set; }
 
         [JsonProperty("ischildstatemachine")]

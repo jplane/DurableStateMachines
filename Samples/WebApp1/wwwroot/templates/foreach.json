@@ -1,0 +1,66 @@
+{
+  "debug": {
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "input": {
+    "items": [ 1, 2, 3, 4, 5 ],
+    "sum": 0
+  },
+  "statemachine": {
+    "id": "test",
+    "initialstate": "loop",
+    "states": [
+      {
+        "id": "loop",
+        "type": "atomic",
+        "onentry": {
+          "actions": [
+            {
+              "type": "foreach`1",
+              "valueexpression": "items",
+              "currentitemlocation": "arrayItem",
+              "actions": [
+                {
+                  "type": "assign`1",
+                  "target": "sum",
+                  "valueexpression": "sum + arrayItem"
+                },
+                {
+                  "type": "log`1",
+                  "messageexpression": "\"item = \" + arrayItem"
+                }
+              ]
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "conditionexpression": "sum >= 15",
+            "target": "done"
+          }
+        ]
+      },
+      {
+        "id": "done",
+        "type": "final",
+        "onentry": {
+          "actions": [
+            {
+              "type": "log`1",
+              "messageexpression": "\"item = \" + arrayItem"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

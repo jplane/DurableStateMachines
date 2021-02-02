@@ -15,6 +15,8 @@ using System.Threading;
 using DSM.Common.Model.Execution;
 using DSM.Common.Debugger;
 using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DSM.Engine
 {
@@ -64,9 +66,9 @@ namespace DSM.Engine
 
         internal abstract Task DelayAsync(TimeSpan timespan);
 
-        internal abstract Task<string> QueryAsync(string activityType, IQueryConfiguration config);
+        internal abstract Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config);
 
-        internal abstract Task SendMessageAsync(string activityType, string correlationId, ISendMessageConfiguration config);
+        internal abstract Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config);
 
         internal abstract Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId);
 
@@ -84,7 +86,7 @@ namespace DSM.Engine
         {
             var dict = new Dictionary<string, object>(_internalData);
 
-            dict.Add("executionstate", _data);
+            dict.Add("executionstate", JsonConvert.SerializeObject(_data));
 
             return dict;
         }

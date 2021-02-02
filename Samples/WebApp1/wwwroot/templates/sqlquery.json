@@ -1,6 +1,5 @@
 {
   "debug": {
-    "uri": "%DEBUGGER_ENDPOINT%",
     "instructions": [
       {
         "action": "enterstate",
@@ -12,20 +11,21 @@
       }
     ]
   },
-  "format": "json",
   "statemachine": {
-    "name": "test",
+    "id": "test",
     "states": [
       {
         "id": "state1",
+        "type": "atomic",
         "onentry": {
-          "content": [
+          "actions": [
             {
-              "type": "query",
-              "activity": "http-get",
+              "type": "query`1",
+              "activitytype": "sql-query",
               "resultlocation": "x",
-              "config": {
-                "uri": "%TEST_FUNCTION_ENDPOINT%"
+              "configuration": {
+                "connectionstring": "%SQL_CONN_STRING%",
+                "query": "SELECT TOP 10 [FirstName], [LastName] FROM [SalesLT].[Customer]"
               }
             }
           ]

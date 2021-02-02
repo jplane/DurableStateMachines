@@ -1,0 +1,152 @@
+{
+  "debug": {
+    "instructions": [
+      {
+        "action": "enterstate",
+        "element": "*"
+      },
+      {
+        "action": "exitstate",
+        "element": "*"
+      }
+    ]
+  },
+  "input": {
+    "x":  ""
+  },
+  "statemachine": {
+    "id": "test",
+    "initialstate": "state3",
+    "states": [
+      {
+        "id": "state2",
+        "type": "atomic",
+        "onentry": {
+          "actions": [
+            {
+              "type": "assign`1",
+              "target": "x",
+              "valueexpression": "x + \" [enter state2] \""
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "target": "exit",
+            "actions": [
+              {
+                "type": "assign`1",
+                "target": "x",
+                "valueexpression": "x + \" [transition to exit] \""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state3",
+        "type": "compound",
+        "initialstate": "state5",
+        "onentry": {
+          "actions": [
+            {
+              "type": "assign`1",
+              "target": "x",
+              "valueexpression": "x + \" [enter state3] \""
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "target": "state2",
+            "actions": [
+              {
+                "type": "assign~1",
+                "target": "x",
+                "valueexpression": "x + \" [transition to state2] \""
+              }
+            ]
+          }
+        ],
+        "states": [
+          {
+            "id": "state6",
+            "type": "atomic",
+            "onentry": {
+              "actions": [
+                {
+                  "type": "assign`1",
+                  "target": "x",
+                  "valueexpression": "x + \" [enter state6] \""
+                }
+              ]
+            },
+            "transitions": [
+              {
+                "target": "exitstate3",
+                "actions": [
+                  {
+                    "type": "assign`1",
+                    "target": "x",
+                    "valueexpression": "x + \" [transition to exitstate3] \""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state5",
+            "type": "atomic",
+            "onentry": {
+              "actions": [
+                {
+                  "type": "assign`1",
+                  "target": "x",
+                  "valueexpression": "x + \" [enter state5] \""
+                }
+              ]
+            },
+            "transitions": [
+              {
+                "target": "state6",
+                "actions": [
+                  {
+                    "type": "assign`1",
+                    "target": "x",
+                    "valueexpression": "x + \" [transition to state6] \""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "exitstate3",
+            "type": "final",
+            "onentry": {
+              "actions": [
+                {
+                  "type": "assign`1",
+                  "target": "x",
+                  "valueexpression": "x + \" [enter exitstate3] \""
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "exit",
+        "type": "final",
+        "onentry": {
+          "actions": [
+            {
+              "type": "assign`1",
+              "target": "x",
+              "valueexpression": "x + \" [enter exit ;-)] \""
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

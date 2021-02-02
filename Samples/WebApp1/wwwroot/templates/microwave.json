@@ -1,6 +1,5 @@
 {
   "debug": {
-    "uri": "%DEBUGGER_ENDPOINT%",
     "instructions": [
       {
         "action": "enterstate",
@@ -12,63 +11,56 @@
       }
     ]
   },
-  "format": "json",
+  "input": {
+    "cook_time": 5,
+    "door_closed": true,
+    "timer":  0
+  },
   "statemachine": {
-    "name": "test",
-    "initial": "off",
-    "datamodel": [
-      {
-        "id": "cook_time",
-        "expr": "5"
-      },
-      {
-        "id": "door_closed",
-        "expr": "true"
-      },
-      {
-        "id": "timer",
-        "expr": "0"
-      }
-    ],
+    "id": "test",
+    "initialstate": "off",
     "states": [
       {
         "id": "off",
+        "type": "atomic",
         "transitions": [
           {
-            "event": "turn.on",
+            "message": "turn.on",
             "target": "on"
           }
         ]
       },
       {
         "id": "on",
-        "initial": "idle",
+        "type": "compound",
+        "initialstate": "idle",
         "transitions": [
           {
-            "event": "turn.off",
+            "message": "turn.off",
             "target": "off"
           },
           {
-            "cond": "timer >= cook_time",
+            "conditionexpression": "timer >= cook_time",
             "target": "done"
           }
         ],
         "states": [
           {
             "id": "idle",
+            "type": "atomic",
             "transitions": [
               {
-                "cond": "door_closed",
+                "conditionexpression": "door_closed",
                 "target": "cooking"
               },
               {
-                "event": "door.close",
+                "message": "door.close",
                 "target": "cooking",
-                "content": [
+                "actions": [
                   {
-                    "type": "assign",
-                    "location": "door_closed",
-                    "expr": "true"
+                    "type": "assign`1",
+                    "target": "door_closed",
+                    "valueexpression": "true"
                   }
                 ]
               }
@@ -76,25 +68,26 @@
           },
           {
             "id": "cooking",
+            "type": "atomic",
             "transitions": [
               {
-                "event": "door.open",
+                "message": "door.open",
                 "target": "idle",
-                "content": [
+                "actions": [
                   {
-                    "type": "assign",
-                    "location": "door_closed",
-                    "expr": "false"
+                    "type": "assign`1",
+                    "target": "door_closed",
+                    "valueexpression": "false"
                   }
                 ]
               },
               {
-                "event": "time",
-                "content": [
+                "message": "time",
+                "actions": [
                   {
-                    "type": "assign",
-                    "location": "timer",
-                    "expr": "timer + 1"
+                    "type": "assign`1",
+                    "target": "timer",
+                    "valueexpression": "timer + 1"
                   }
                 ]
               }

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace DSM.Metadata.Execution
 {
@@ -51,8 +52,10 @@ namespace DSM.Metadata.Execution
         /// An instance of your custom configuration that provides all needed information for the query operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        [JsonProperty("configuration", Required = Required.Always)]
         public IQueryConfiguration Configuration { get; set; }
+
+        [JsonProperty("configuration", Required = Required.Always)]
+        private JObject JsonConfig { get; set; }
 
         /// <summary>
         /// The set of actions executed for this <see cref="Query{TData}"/> once a successful response is received.
@@ -86,7 +89,7 @@ namespace DSM.Metadata.Execution
 
             var errors = new List<string>();
 
-            if (this.Configuration == null)
+            if (this.Configuration == null && this.JsonConfig == null)
             {
                 errors.Add("Configuration is invalid.");
             }
@@ -116,5 +119,7 @@ namespace DSM.Metadata.Execution
 
         IEnumerable<IExecutableContentMetadata> IQueryMetadata.GetExecutableContent() =>
             this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+
+        (IQueryConfiguration, JObject) IQueryMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
     }
 }

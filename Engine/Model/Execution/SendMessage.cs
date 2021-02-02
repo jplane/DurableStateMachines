@@ -27,7 +27,7 @@ namespace DSM.Engine.Model.Execution
                     await context.DelayAsync(metadata.Delay.Value);
                 }
 
-                await context.SendMessageAsync(metadata.ActivityType, metadata.Id, metadata.Configuration);
+                await context.SendMessageAsync(metadata.ActivityType, metadata.Id, metadata.GetConfiguration());
             }
             catch (TaskCanceledException)
             {
