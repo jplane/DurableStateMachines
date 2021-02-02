@@ -7,7 +7,7 @@ using DSM.Common;
 
 namespace DSM.Engine
 {
-    public class DynamicDictionary : DynamicObject
+    public sealed class DynamicDictionary : DynamicObject
     {
         private readonly IDictionary<string, object> _internalData;
         private readonly object _data;

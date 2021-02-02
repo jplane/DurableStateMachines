@@ -14,7 +14,7 @@ namespace DSM.Metadata.States
     /// <see cref="StateMachine{TData}"/> defines the child states, transitions, and actions that together determine the state machines behavior and lifecycle.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class StateMachine<TData> : IStateMachineMetadata
+    public sealed class StateMachine<TData> : IStateMachineMetadata
     {
         private Logic<TData> _initScript;
         private MetadataList<State<TData>> _states;

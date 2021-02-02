@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace DSM.Common.Debugger
 {
-    public class DebuggerInstruction
+    public sealed class DebuggerInstruction
     {
         [JsonProperty("action")]
         public DebuggerAction Action { get; set; }

@@ -14,7 +14,7 @@ namespace DSM.Metadata.Execution
     /// Can be used in conjuction with <see cref="ElseIf{TData}"/> and <see cref="Else{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class If<TData> : ExecutableContent<TData>, IIfMetadata
+    public sealed class If<TData> : ExecutableContent<TData>, IIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 

@@ -10,11 +10,11 @@ namespace DSM.Metadata.States
     /// Represents a state in a state machine definition. Uniquely identified by <see cref="Id"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class State<TData> : IModelMetadata
+    public abstract class State<TData> : IModelMetadata
     {
         protected int? _documentOrder;
 
-        protected internal State()
+        internal State()
         {
         }
 

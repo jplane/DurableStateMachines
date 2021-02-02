@@ -16,7 +16,7 @@ namespace DSM.Metadata.Execution
     /// To use, implement <see cref="IQueryConfiguration"/> and an activity that accepts an instance of your custom type as input.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Query<TData> : ExecutableContent<TData>, IQueryMetadata
+    public sealed class Query<TData> : ExecutableContent<TData>, IQueryMetadata
     {
         private MemberInfo _resultTarget;
         private MetadataList<ExecutableContent<TData>> _actions;

@@ -13,7 +13,7 @@ namespace DSM.Metadata.Execution
     /// An action that logs messages to a configured <see cref="ILogger"/> implementation.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Log<TData> : ExecutableContent<TData>, ILogMetadata
+    public sealed class Log<TData> : ExecutableContent<TData>, ILogMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
 

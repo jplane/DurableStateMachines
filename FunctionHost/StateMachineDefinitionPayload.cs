@@ -8,7 +8,7 @@ namespace DSM.FunctionClient
     /// <summary>
     /// Input type for JSON-based state machine orchestrations.
     /// </summary>
-    public class StateMachineDefinitionPayload
+    public sealed class StateMachineDefinitionPayload
     {
         /// <summary>
         /// Provides optional debugging information for the state machine runtime.

@@ -13,7 +13,7 @@ using DSM.Common.Model.Execution;
 
 namespace DSM.Engine
 {
-    public class ExecutionContext : ExecutionContextBase
+    public sealed class ExecutionContext : ExecutionContextBase
     {
         private readonly AsyncProducerConsumerQueue<ExternalMessage> _externalMessages;
         private readonly Interpreter _interpreter;

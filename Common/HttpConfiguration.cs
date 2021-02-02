@@ -13,6 +13,10 @@ namespace DSM.Common
 {
     public abstract class HttpConfiguration
     {
+        internal HttpConfiguration()
+        {
+        }
+
         public virtual void ResolveConfigValues(Func<string, string> resolver)
         {
             resolver.CheckArgNull(nameof(resolver));
@@ -34,11 +38,11 @@ namespace DSM.Common
         public IReadOnlyDictionary<string, string> QueryString { get; set; }
     }
 
-    public class HttpQueryConfiguration : HttpConfiguration, IQueryConfiguration
+    public sealed class HttpQueryConfiguration : HttpConfiguration, IQueryConfiguration
     {
     }
 
-    public class HttpSendMessageConfiguration : HttpConfiguration, ISendMessageConfiguration
+    public sealed class HttpSendMessageConfiguration : HttpConfiguration, ISendMessageConfiguration
     {
         private readonly Lazy<Func<dynamic, object>> _getContent;
 

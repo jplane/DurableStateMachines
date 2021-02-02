@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace DSM.Common
 {
-    public class ExpressionCompilerException : ApplicationException
+    public sealed class ExpressionCompilerException : ApplicationException
     {
         private readonly string[] _errors;
 
@@ -13,12 +13,6 @@ namespace DSM.Common
             : base("Unable to compile expression.")
         {
             _errors = errors.ToArray();
-        }
-
-        protected ExpressionCompilerException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            _errors = (string[]) info.GetValue("__errors", typeof(string[]));
         }
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)

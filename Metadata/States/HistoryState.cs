@@ -15,7 +15,7 @@ namespace DSM.Metadata.States
     ///  the <see cref="HistoryState{TData}"/>, the saved "last executing state" is then re-entered. For more information see: https://statecharts.github.io/glossary/history-state.html
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class HistoryState<TData> : State<TData>, IHistoryStateMetadata
+    public sealed class HistoryState<TData> : State<TData>, IHistoryStateMetadata
     {
         public HistoryState()
         {

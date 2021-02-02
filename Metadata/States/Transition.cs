@@ -16,7 +16,7 @@ namespace DSM.Metadata.States
     ///  of events to zero or more target <see cref="State{TData}"/>s and an optional set of transition <see cref="Actions"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Transition<TData> : ITransitionMetadata
+    public sealed class Transition<TData> : ITransitionMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 

@@ -19,7 +19,7 @@ namespace DSM.Metadata.States
     /// It's permitted that child state machines may themselves have children, as well.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class InvokeStateMachine<TData> : IInvokeStateMachineMetadata
+    public sealed class InvokeStateMachine<TData> : IInvokeStateMachineMetadata
     {
         private readonly Lazy<Func<dynamic, object>> _getData;
 

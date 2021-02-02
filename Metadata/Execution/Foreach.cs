@@ -17,7 +17,7 @@ namespace DSM.Metadata.Execution
     /// The child actions in <see cref="Actions"/> execute for each item in <see cref="Value"/> or <see cref="ValueFunction"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
+    public sealed class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
     {
         private MemberInfo _currentItemTarget;
         private MemberInfo _currentIndexTarget;

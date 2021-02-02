@@ -13,7 +13,7 @@ namespace DSM.Metadata.Execution
     /// An action to define custom behavior during execution.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Logic<TData> : ExecutableContent<TData>, ILogicMetadata
+    public sealed class Logic<TData> : ExecutableContent<TData>, ILogicMetadata
     {
         private Lazy<Func<dynamic, object>> _executor;
 

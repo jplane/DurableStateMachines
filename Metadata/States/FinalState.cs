@@ -14,7 +14,7 @@ namespace DSM.Metadata.States
     /// It optionally defines actions that fire upon entry (<see cref="OnEntry"/>) and exit (<see cref="OnExit"/>).
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class FinalState<TData> : State<TData>, IFinalStateMetadata
+    public sealed class FinalState<TData> : State<TData>, IFinalStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
         private OnEntryExit<TData> _onExit;

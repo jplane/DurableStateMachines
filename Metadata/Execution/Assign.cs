@@ -15,7 +15,7 @@ namespace DSM.Metadata.Execution
     /// An action that assigns a value to a named location in execution state.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Assign<TData> : ExecutableContent<TData>, IAssignMetadata
+    public sealed class Assign<TData> : ExecutableContent<TData>, IAssignMetadata
     {
         private MemberInfo _target;
         private Lazy<Func<dynamic, object>> _valueGetter;

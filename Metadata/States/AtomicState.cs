@@ -15,7 +15,7 @@ namespace DSM.Metadata.States
     /// It optionally defines invocations of child state machines in <see cref="Invokes"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class AtomicState<TData> : State<TData>, IStateMetadata
+    public sealed class AtomicState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
         private OnEntryExit<TData> _onExit;

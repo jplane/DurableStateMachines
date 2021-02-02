@@ -10,7 +10,7 @@ namespace DSM.FunctionClient
     /// <summary>
     /// Input type for state machine orchestrations.
     /// </summary>
-    public class StateMachinePayload
+    public sealed class StateMachinePayload
     {
         /// <summary>
         /// Provides optional debugging information for the state machine runtime.

@@ -13,7 +13,7 @@ namespace DSM.Metadata.Execution
     /// To use, implement <see cref="ISendMessageConfiguration"/> and an activity that accepts an instance of your custom type as input.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class SendMessage<TData> : ExecutableContent<TData>, ISendMessageMetadata
+    public sealed class SendMessage<TData> : ExecutableContent<TData>, ISendMessageMetadata
     {
         public SendMessage()
         {

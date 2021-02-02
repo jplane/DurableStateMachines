@@ -15,7 +15,7 @@ namespace DSM.Metadata.Execution
     /// An action that raises an internal event in the state machine event queue.
     /// This can be used to discretely define state transitions, based on the event name or contents.
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Raise<TData> : ExecutableContent<TData>, IRaiseMetadata
+    public sealed class Raise<TData> : ExecutableContent<TData>, IRaiseMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
 

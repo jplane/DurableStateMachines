@@ -2,7 +2,7 @@
 
 namespace DSM.Common.Messages
 {
-    public class ExternalMessage : Message
+    public sealed class ExternalMessage : Message
     {
         public ExternalMessage()
         {

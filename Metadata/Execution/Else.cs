@@ -13,7 +13,7 @@ namespace DSM.Metadata.Execution
     /// Only used in conjuction with <see cref="If{TData}"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class Else<TData> : ExecutableContent<TData>, IElseMetadata
+    public sealed class Else<TData> : ExecutableContent<TData>, IElseMetadata
     {
         private MetadataList<ExecutableContent<TData>> _actions;
 

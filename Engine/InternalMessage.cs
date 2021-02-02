@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DSM.Engine
 {
-    public class InternalMessage : Message
+    public sealed class InternalMessage : Message
     {
         internal InternalMessage()
         {

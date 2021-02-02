@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DSM.Common.Debugger
 {
-    public class DebuggerInfo
+    public sealed class DebuggerInfo
     {
         [JsonProperty("instructions")]
         public DebuggerInstruction[] Instructions { get; set; }

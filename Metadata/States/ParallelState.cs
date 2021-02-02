@@ -17,7 +17,7 @@ namespace DSM.Metadata.States
     /// It defines child states in <see cref="States"/>.
     /// </summary>
     /// <typeparam name="TData">The execution state of the state machine.</typeparam>
-    public class ParallelState<TData> : State<TData>, IStateMetadata
+    public sealed class ParallelState<TData> : State<TData>, IStateMetadata
     {
         private OnEntryExit<TData> _onEntry;
         private OnEntryExit<TData> _onExit;
