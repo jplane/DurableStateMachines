@@ -331,7 +331,7 @@ namespace DSM.Engine.Model.States
                 var state1DocOrder = state1._metadata.GetDocumentOrder();
                 var state2DocOrder = state2._metadata.GetDocumentOrder();
 
-                return state1DocOrder == state2DocOrder ? 0 : state1DocOrder > state2DocOrder ? -1 : 1;
+                return state1DocOrder == state2DocOrder ? 0 : state1DocOrder > state2DocOrder ? 1 : -1;
             }
         }
 
