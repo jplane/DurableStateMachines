@@ -109,17 +109,14 @@ namespace DSM.Engine
             return SendMessageAsync("cancel");
         }
 
-        public Task SendMessageAsync(string message,
-                                     object content = null,
-                                     IReadOnlyDictionary<string, object> parameters = null)
+        public Task SendMessageAsync(string message, object content = null)
         {
             message.CheckArgNull(nameof(message));
 
             var msg = new ExternalMessage
             {
                 Name = message,
-                Content = content,
-                Parameters = parameters
+                Content = content
             };
 
             return SendAsync(msg);

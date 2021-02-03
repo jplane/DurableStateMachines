@@ -12,8 +12,6 @@ namespace DSM.Common.Messages
 
         public object Content { get; set; }
 
-        public IReadOnlyDictionary<string, object> Parameters { get; set; }
-
         public string CorrelationId { get; set; }
     }
 }

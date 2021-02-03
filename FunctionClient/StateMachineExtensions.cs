@@ -1,8 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using DSM.Common;
-using DSM.Common.Debugger;
-using System;
 using System.Threading.Tasks;
+using DSM.Common.Messages;
 
 namespace DSM.FunctionClient
 {
@@ -43,6 +42,21 @@ namespace DSM.FunctionClient
         }
 
         /// <summary>
+        /// Raise an event of type <see cref="ExternalMessage"/> to a running state machine instance.
+        /// </summary>
+        /// <param name="client"><see cref="IDurableClient"/> instance, usually obtained via dependency injection.</param>
+        /// <param name="instanceId">Instance id of the state machine, obtained from <see cref="StateMachineExtensions.StartNewStateMachineAsync"/></param>
+        /// <param name="message">The message to send to the state machine.</param>
+        public static Task SendStateMachineMessageAsync(this IDurableClient client, string instanceId, ExternalMessage message)
+        {
+            client.CheckArgNull(nameof(client));
+            instanceId.CheckArgNull(nameof(instanceId));
+            message.CheckArgNull(nameof(message));
+
+            return client.RaiseEventAsync(instanceId, "state-machine-event", message);
+        }
+
+        /// <summary>
         /// If the state machine executed successfully, deserializes the output to an instance of <typeparamref name="TOutput"/>.
         ///  Otherwise it returns default(<typeparamref name="TOutput"/>)
         /// </summary>
@@ -51,6 +65,8 @@ namespace DSM.FunctionClient
         /// <returns>The deserialized output.</returns>
         public static TOutput ToOutput<TOutput>(this DurableOrchestrationStatus status)
         {
+            status.CheckArgNull(nameof(status));
+
             if (status.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
             {
                 return status.Output.ToObject<TOutput>();
