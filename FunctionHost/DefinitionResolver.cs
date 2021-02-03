@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using DSM.Common;
+﻿using DSM.Common;
 using DSM.Common.Model.States;
 using DSM.FunctionClient;
 using System;
@@ -18,23 +17,21 @@ namespace DSM.FunctionHost
 
     internal class DefinitionResolver
     {
-        private readonly IConfiguration _config;
         private readonly Lazy<IStateMachineDefinitionProvider[]> _providers;
         private readonly ConcurrentDictionary<string, IStateMachineMetadata> _funcs;
 
-        public DefinitionResolver(IConfiguration config)
+        public DefinitionResolver()
         {
-            _config = config;
-
             _funcs = new ConcurrentDictionary<string, IStateMachineMetadata>();
 
             _providers = new Lazy<IStateMachineDefinitionProvider[]>(() =>
-                            Assembly.Load(_config["DEFINITIONS_ASSEMBLY"])  // TODO: change this
-                                    .GetTypes()
-                                    .Where(t => typeof(IStateMachineDefinitionProvider).IsAssignableFrom(t) &&
-                                                t.GetConstructor(Type.EmptyTypes) != null)
-                                    .Select(t => (IStateMachineDefinitionProvider) Activator.CreateInstance(t)).ToArray());
+                Assemblies.SelectMany(assembly => assembly.GetTypes())
+                            .Where(t => typeof(IStateMachineDefinitionProvider).IsAssignableFrom(t) &&
+                                        t.GetConstructor(Type.EmptyTypes) != null)
+                            .Select(t => (IStateMachineDefinitionProvider)Activator.CreateInstance(t)).ToArray());
         }
+
+        public static Assembly[] Assemblies { get; set; } = { };
 
         private static bool IsMatch(PropertyInfo prop, string attributeName, string identifier)
         {
@@ -60,12 +57,11 @@ namespace DSM.FunctionHost
 
             return _funcs.GetOrAdd(identifier, _ =>
             {
-                var targetProps = Assembly.Load(_config["DEFINITIONS_ASSEMBLY"])  // TODO: change this
-                                          .GetTypes()
-                                          .SelectMany(t => t.GetProperties())
-                                          .Select(p => (prop: p, attr: p.GetCustomAttribute<StateMachineDefinitionAttribute>()))
-                                          .Where(tuple => tuple.attr != null && IsMatch(tuple.prop, tuple.attr.Name, identifier))
-                                          .ToArray();
+                var targetProps = Assemblies.SelectMany(assembly => assembly.GetTypes())
+                                            .SelectMany(t => t.GetProperties())
+                                            .Select(p => (prop: p, attr: p.GetCustomAttribute<StateMachineDefinitionAttribute>()))
+                                            .Where(tuple => tuple.attr != null && IsMatch(tuple.prop, tuple.attr.Name, identifier))
+                                            .ToArray();
 
                 if (targetProps.Length == 1)
                 {

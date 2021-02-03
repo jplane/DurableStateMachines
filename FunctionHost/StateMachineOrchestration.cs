@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using DSM.Common.Debugger;
 using DSM.Common.Model.States;
@@ -27,7 +26,7 @@ namespace DSM.FunctionHost
             Debug.Assert(payload != null);
             Debug.Assert(!string.IsNullOrWhiteSpace(payload.StateMachineIdentifier));
 
-            var resolver = new DefinitionResolver(Startup.Configuration);
+            var resolver = new DefinitionResolver();
 
             var stateMachineDefinition = resolver.Resolve(payload.StateMachineIdentifier);
 
