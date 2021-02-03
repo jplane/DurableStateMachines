@@ -52,7 +52,7 @@ namespace DSM.Metadata.Execution
         /// An instance of your custom configuration that provides all needed information for the query operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        public IQueryConfiguration Configuration { get; set; }
+        public object Configuration { get; set; }
 
         [JsonProperty("configuration", Required = Required.Always)]
         private JObject JsonConfig { get; set; }
@@ -120,6 +120,6 @@ namespace DSM.Metadata.Execution
         IEnumerable<IExecutableContentMetadata> IQueryMetadata.GetExecutableContent() =>
             this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
 
-        (IQueryConfiguration, JObject) IQueryMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
+        (object, JObject) IQueryMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
     }
 }

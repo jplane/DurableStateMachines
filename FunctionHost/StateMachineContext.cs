@@ -183,7 +183,7 @@ namespace DSM.FunctionHost
             }
         }
 
-        internal override Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config)
+        internal override Task<string> QueryAsync(string activityType, (object, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
 
@@ -210,20 +210,22 @@ namespace DSM.FunctionHost
             }
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, (object, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
-            config.CheckArgNull(nameof(config));
+
+            Debug.Assert(config.Item1 == null);
+            Debug.Assert(config.Item2 != null);
 
             if (string.Compare(activityType, "http-post", true, CultureInfo.InvariantCulture) == 0)
             {
-                var http = new HttpService(this.ExecutionData, _orchestrationContext);
-
                 var httpConfig = config.Item2.ToObject<HttpSendMessageConfiguration>();
 
                 Debug.Assert(httpConfig != null);
 
                 httpConfig.ResolveConfigValues(this.ResolveConfigValue);
+
+                var http = new HttpService(this.ExecutionData, _orchestrationContext);
 
                 return http.PostAsync(correlationId, httpConfig);
             }

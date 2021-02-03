@@ -23,7 +23,7 @@ namespace DSM.Engine.Services
             _token = token;
         }
 
-        public async Task<string> GetAsync(IQueryConfiguration input)
+        public async Task<string> GetAsync(object input )
         {
             input.CheckArgNull(nameof(input));
 
@@ -36,7 +36,7 @@ namespace DSM.Engine.Services
             return await Invoke(headers, uri, null, null, HttpMethod.Get, _token);
         }
 
-        public async Task PostAsync(string correlationId, ISendMessageConfiguration input)
+        public async Task PostAsync(string correlationId, object input)
         {
             input.CheckArgNull(nameof(input));
 

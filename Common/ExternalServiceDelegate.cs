@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace DSM.Common
 {
-    public delegate Task ExternalServiceDelegate(string correlationId, ISendMessageConfiguration config);
+    public delegate Task ExternalServiceDelegate(string correlationId, object config);
 }

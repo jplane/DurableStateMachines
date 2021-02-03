@@ -1,13 +1,7 @@
 ﻿using Newtonsoft.Json;
-using DSM.Common.ExpressionTrees;
-using DSM.Common.Model.Execution;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace DSM.Common
 {
@@ -38,11 +32,11 @@ namespace DSM.Common
         public IReadOnlyDictionary<string, string> QueryString { get; set; }
     }
 
-    public sealed class HttpQueryConfiguration : HttpConfiguration, IQueryConfiguration
+    public sealed class HttpQueryConfiguration : HttpConfiguration
     {
     }
 
-    public sealed class HttpSendMessageConfiguration : HttpConfiguration, ISendMessageConfiguration
+    public sealed class HttpSendMessageConfiguration : HttpConfiguration
     {
         private readonly Lazy<Func<dynamic, object>> _getContent;
 
@@ -56,11 +50,7 @@ namespace DSM.Common
                 }
                 else if (this.ContentFunction != null)
                 {
-                    var func = this.ContentFunction.Compile();
-
-                    Debug.Assert(func != null);
-
-                    return data => func((IDictionary<string, object>) data);
+                    return data => this.ContentFunction(data);
                 }
                 else
                 {
@@ -76,10 +66,9 @@ namespace DSM.Common
         public object Content { get; set; }
 
         [JsonProperty("contentexpression")]
-        public string ContentExpression { get; set; }
+        private string ContentExpression { get; set; }
 
-        [JsonProperty("contentfunction", ItemConverterType = typeof(ExpressionTreeConverter))]
-        public Expression<Func<IDictionary<string, object>, object>> ContentFunction { get; set; }
+        public Func<dynamic, object> ContentFunction { get; set; }
 
         internal object GetContent(dynamic data) => _getContent.Value(data);
     }

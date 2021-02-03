@@ -15,7 +15,7 @@ using DSM.Common.Model.Execution;
 
 namespace DSM.DurableFunction.Host
 {
-    public class SqlQueryConfiguration : IQueryConfiguration
+    public class SqlQueryConfiguration
     {
         [JsonProperty("connectionstring")]
         public string ConnectionString { get; set; }

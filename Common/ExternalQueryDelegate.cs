@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace DSM.Common
 {
-    public delegate Task<string> ExternalQueryDelegate(IQueryConfiguration config);
+    public delegate Task<string> ExternalQueryDelegate(object config);
 }

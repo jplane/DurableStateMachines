@@ -45,7 +45,7 @@ namespace DSM.Metadata.Execution
         /// An instance of your custom configuration that provides all needed information for the messaging operation.
         /// Instances of this class should be JSON-serializable.
         /// </summary>
-        public ISendMessageConfiguration Configuration { get; set; }
+        public object Configuration { get; set; }
 
         [JsonProperty("configuration", Required = Required.Always)]
         private JObject JsonConfig { get; set; }
@@ -77,6 +77,6 @@ namespace DSM.Metadata.Execution
             }
         }
 
-        (ISendMessageConfiguration, JObject) ISendMessageMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
+        (object, JObject) ISendMessageMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
     }
 }

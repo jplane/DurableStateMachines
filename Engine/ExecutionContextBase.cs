@@ -66,9 +66,9 @@ namespace DSM.Engine
 
         internal abstract Task DelayAsync(TimeSpan timespan);
 
-        internal abstract Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config);
+        internal abstract Task<string> QueryAsync(string activityType, (object, JObject) config);
 
-        internal abstract Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config);
+        internal abstract Task SendMessageAsync(string activityType, string correlationId, (object, JObject) config);
 
         internal abstract Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId);
 

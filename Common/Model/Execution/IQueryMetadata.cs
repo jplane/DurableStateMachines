@@ -10,6 +10,6 @@ namespace DSM.Common.Model.Execution
         (string, MemberInfo) ResultLocation { get; }
         string ActivityType { get; }
         IEnumerable<IExecutableContentMetadata> GetExecutableContent();
-        (IQueryConfiguration, JObject) GetConfiguration();
+        (object, JObject) GetConfiguration();
     }
 }

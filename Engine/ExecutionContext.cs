@@ -78,7 +78,7 @@ namespace DSM.Engine
             return Task.Delay(timespan, this.CancelToken);
         }
 
-        internal override Task<string> QueryAsync(string activityType, (IQueryConfiguration, JObject) config)
+        internal override Task<string> QueryAsync(string activityType, (object, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
 
@@ -93,7 +93,7 @@ namespace DSM.Engine
             throw new InvalidOperationException("Unable to resolve external query type: " + activityType);
         }
 
-        internal override Task SendMessageAsync(string activityType, string correlationId, (ISendMessageConfiguration, JObject) config)
+        internal override Task SendMessageAsync(string activityType, string correlationId, (object, JObject) config)
         {
             activityType.CheckArgNull(nameof(activityType));
             config.CheckArgNull(nameof(config));
