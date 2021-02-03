@@ -104,7 +104,7 @@ namespace DSM.Engine
             }
         }
 
-        public Task SendStopMessageAsync()
+        public Task TerminateAsync()
         {
             return SendMessageAsync("cancel");
         }
@@ -130,7 +130,7 @@ namespace DSM.Engine
             return Task.CompletedTask;
         }
 
-        public bool IsRunning
+        internal bool IsRunning
         {
             get => _isRunning && (!this.FailFast || _error == null);
         }
