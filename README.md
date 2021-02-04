@@ -1,6 +1,14 @@
-# DurableStateMachines
+# Durable State Machines
 
-Durable state machines is an extension that adds a declarative state machine programming model on top of Azure Durable Functions. The state machine implementation is based on statecharts and the SCXML spec.
+DSM implements a declarative state machine programming model as an extension for [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp). It's based on the "hierarchical state machine" concepts behind [statecharts](https://statecharts.github.io/) and the [SCXML W3C Recommendation](https://www.w3.org/TR/scxml/).
+
+| | |  |
+| ------------- | ----------- | --- |
+| DurableStateMachines.Core | Metadata + interpreter (standalone, in-memory component... no durable bits) | [![NuGet](https://img.shields.io/nuget/v/DurableStateMachines.Core)](https://www.nuget.org/packages/DurableStateMachines.Core/) |
+| DurableStateMachines.Functions | Durable Functions integration | [![NuGet](https://img.shields.io/nuget/v/DurableStateMachines.Functions)](https://www.nuget.org/packages/DurableStateMachines.Functions/) |
+| DurableStateMachines.Client | Durable Functions client API | [![NuGet](https://img.shields.io/nuget/v/DurableStateMachines.Client)](https://www.nuget.org/packages/DurableStateMachines.Client/) |
+| | |  |
+
 
 ## What are statecharts?
 
