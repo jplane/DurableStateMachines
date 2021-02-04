@@ -5,16 +5,31 @@
     <AssemblyName>DSM.Engine</AssemblyName>
     <RootNamespace>DSM.Engine</RootNamespace>
     <LangVersion>9.0</LangVersion>
+    <PackageId>DSM.StateMachines.Core</PackageId>
+    <Title>Core metadata and interpreter for Durable State Machines. Usable as a standalone component for ephemeral (non-durable) execution.</Title>
+    <Description>This package defines the metadata abstractions for describing hierarchical state machines (also known as "statecharts"), as well as an initial .NET object model implementation and an in-memory interpreter that works directly against that metadata. For more information on statecharts, see https://statecharts.github.io/.
+</Description>
+    <Version>0.1.0</Version>
+    <Authors>josh.lane</Authors>
+    <Company>FuzzyMaths Inc.</Company>
+    <PackageTags>statemachine;state-machine;statechart;durable;durable-functions;</PackageTags>
+    <RepositoryUrl>https://github.com/jplane/DurableStateMachines.git</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
+    <PackageReference Include="Teronis.MSBuild.Packaging.ProjectBuildInPackage" Version="0.1.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Metadata\Metadata.csproj" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
