@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.csproj" />
     <ProjectReference Include="..\..\FunctionHost\FunctionHost.csproj" />
     <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />
   </ItemGroup>

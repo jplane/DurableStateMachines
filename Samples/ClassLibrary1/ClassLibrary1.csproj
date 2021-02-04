@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Metadata\Metadata.csproj" />
     <ProjectReference Include="..\..\FunctionClient\FunctionClient.csproj" />
   </ItemGroup>
 
