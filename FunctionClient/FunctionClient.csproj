@@ -5,7 +5,7 @@
     <AssemblyName>DSM.FunctionClient</AssemblyName>
     <RootNamespace>DSM.FunctionClient</RootNamespace>
     <LangVersion>9.0</LangVersion>
-    <PackageId>DSM.StateMachines.Client</PackageId>
+    <PackageId>DurableStateMachines.Client</PackageId>
     <Title>Strongly-typed client library extensions for Durable State Machines.</Title>
     <Description>This package defines the client APIs for starting new hierarchical state machine (or "statechart") instances that run on Azure Durable Functions. For more information on statecharts, see https://statecharts.github.io/.</Description>
     <Version>0.1.0</Version>

@@ -5,7 +5,7 @@
     <AssemblyName>DSM.FunctionHost</AssemblyName>
     <RootNamespace>DSM.FunctionHost</RootNamespace>
     <LangVersion>9.0</LangVersion>
-    <PackageId>DSM.StateMachines.Functions</PackageId>
+    <PackageId>DurableStateMachines.Functions</PackageId>
     <Title>Implements state machine orchestrations using Azure Durable Functions. Usable from any 'dotnet' Azure Functions app.</Title>
     <Description>This package implements the integration between the hierarchical state machine (or "statechart") interpreter and Azure Durable Functions. To use it, simply reference this package in a standard Azure Durable Functions project and define statecharts using either strongly-typed .NET syntax, or JSON. For more information on statecharts, see https://statecharts.github.io/.</Description>
     <Version>0.1.0</Version>
