@@ -26,7 +26,7 @@ namespace DSM.Metadata.Execution
             {
                 if (!string.IsNullOrWhiteSpace(this.MessageExpression))
                 {
-                    return ExpressionCompiler.Compile<string>(this.MessageExpression);
+                    return ExpressionCompiler.Compile<string>(((IModelMetadata)this).MetadataId, this.MessageExpression);
                 }
                 else if (this.MessageFunction != null)
                 {

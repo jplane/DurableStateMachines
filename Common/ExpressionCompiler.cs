@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using DSM.Common;
 using DSM.Common.Exceptions;
+using System.Collections.Concurrent;
 
 namespace DSM.Common
 {
@@ -22,7 +23,17 @@ namespace DSM.Common
     //  - have All The Tests
     internal static class ExpressionCompiler
     {
-        public static Func<dynamic, T> Compile<T>(string expression)
+        private static ConcurrentDictionary<string, Delegate> _cache = new ConcurrentDictionary<string, Delegate>();
+
+        public static Func<dynamic, T> Compile<T>(string uniqueId, string expression)
+        {
+            uniqueId.CheckArgNull(nameof(uniqueId));
+            expression.CheckArgNull(nameof(expression));
+
+            return (Func<dynamic, T>) _cache.GetOrAdd(uniqueId, _ => Compile<T>(expression));
+        }
+
+        private static Func<dynamic, T> Compile<T>(string expression)
         {
             expression.CheckArgNull(nameof(expression));
 

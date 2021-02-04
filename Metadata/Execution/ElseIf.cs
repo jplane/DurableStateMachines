@@ -31,7 +31,7 @@ namespace DSM.Metadata.Execution
             {
                 if (!string.IsNullOrWhiteSpace(this.ConditionExpression))
                 {
-                    return ExpressionCompiler.Compile<bool>(this.ConditionExpression);
+                    return ExpressionCompiler.Compile<bool>(((IModelMetadata)this).MetadataId, this.ConditionExpression);
                 }
                 else if (this.ConditionFunction != null)
                 {

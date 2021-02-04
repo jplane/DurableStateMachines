@@ -46,7 +46,7 @@ namespace DSM.Common
             {
                 if (!string.IsNullOrWhiteSpace(this.ContentExpression))
                 {
-                    return ExpressionCompiler.Compile<object>(this.ContentExpression);
+                    return ExpressionCompiler.Compile<object>($"sendmessage__{this.ContentExpression}", this.ContentExpression);
                 }
                 else if (this.ContentFunction != null)
                 {

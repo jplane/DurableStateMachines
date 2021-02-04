@@ -38,7 +38,7 @@ namespace DSM.Metadata.States
             {
                 if (!string.IsNullOrWhiteSpace(this.InputExpression))
                 {
-                    return ExpressionCompiler.Compile<object>(this.InputExpression);
+                    return ExpressionCompiler.Compile<object>(((IModelMetadata)this).MetadataId, this.InputExpression);
                 }
                 else if (this.InputFunction != null)
                 {

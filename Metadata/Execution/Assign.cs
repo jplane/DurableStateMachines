@@ -29,7 +29,7 @@ namespace DSM.Metadata.Execution
             {
                 if (!string.IsNullOrWhiteSpace(this.ValueExpression))
                 {
-                    return ExpressionCompiler.Compile<object>(this.ValueExpression);
+                    return ExpressionCompiler.Compile<object>(((IModelMetadata)this).MetadataId, this.ValueExpression);
                 }
                 else if (this.ValueFunction != null)
                 {

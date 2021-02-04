@@ -35,7 +35,7 @@ namespace DSM.Metadata.Execution
             {
                 if (!string.IsNullOrWhiteSpace(this.ValueExpression))
                 {
-                    return ExpressionCompiler.Compile<IEnumerable>(this.ValueExpression);
+                    return ExpressionCompiler.Compile<IEnumerable>(((IModelMetadata)this).MetadataId, this.ValueExpression);
                 }
                 else if (this.ValueFunction != null)
                 {
