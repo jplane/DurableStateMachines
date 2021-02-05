@@ -8,7 +8,7 @@
           integrity="sha512-jleMREJi/sXJYu6+/B0AQIgzmqq0yy/NUKNZu8K/pI1vedbvTCOzUjS8svSW21JA1YiDpAEuVIxHpt4OWAilYQ=="
           crossorigin="anonymous" />
 
-    <title>World's Worst Durable State Machine Debugger</title>
+    <title>Durable State Machines</title>
 
     <style type="text/css">
         table {
@@ -138,9 +138,13 @@
             integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
             crossorigin="anonymous"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"
+            integrity="sha512-BCMqEPl2dokU3T/EFba7jrfL4FxgY6ryUh4rRC9feZw4yWUslZ3Uf/lPZ5/5UlEjn4prlQTRfIPYQkDrLCZJXA=="
+            crossorigin="anonymous"></script>
+
     <script type="text/javascript">
 
-        const orchestration_endpoint = 'http://localhost:7071/runtime/webhooks/durabletask/orchestrators/statemachine-definition';
+        const orchestration_endpoint = 'http://localhost:7071/runtime/webhooks/durabletask/orchestrators/statemachine-definition/';
 
         const container = document.getElementById('jsoneditor');
 
@@ -219,9 +223,17 @@
 
             });
 
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl('/observer')
+                .build();
+
             document.getElementById('start-button').addEventListener('click', function () {
 
-                axios.post(orchestration_endpoint, editor.get())
+                var instanceId = uuidv4();
+
+                connection.send('register', instanceId);
+
+                axios.post(orchestration_endpoint + instanceId, editor.get())
                     .then(resp => {
 
                         var select = document.getElementById('instances');
@@ -242,10 +254,6 @@
                     });
 
             });
-
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl('/debug')
-                .build();
 
             connection.on('break', function (info) {
 
@@ -281,7 +289,11 @@
 
                     document.getElementById('resume-button').addEventListener('click', function (event) {
 
-                        connection.send('resume');
+                        var instanceData = JSON.parse(document.getElementById('instances').value);
+
+                        var currentInstanceId = instanceData.id;
+
+                        connection.send('resume', currentInstanceId);
 
                         document.getElementById('resume-button').disabled = true;
 

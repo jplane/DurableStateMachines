@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using DSM.Common;
-using DSM.Common.Debugger;
 using DSM.Common.Model.States;
 using System.Diagnostics;
+using DSM.Common.Observability;
 
 namespace DSM.FunctionClient
 {
@@ -13,10 +13,10 @@ namespace DSM.FunctionClient
     public sealed class StateMachinePayload
     {
         /// <summary>
-        /// Provides optional debugging information for the state machine runtime.
+        /// Provides optional observability information for the state machine runtime.
         /// </summary>
-        [JsonProperty("debug")]
-        public DebuggerInfo DebugInfo { get; set; }
+        [JsonProperty("observables")]
+        public Instruction[] Observables { get; set; }
 
         /// <summary>
         /// Initial execution data for the state machine runtime.
@@ -30,8 +30,8 @@ namespace DSM.FunctionClient
         [JsonProperty("statemachineid")]
         public string StateMachineIdentifier { get; set; }
 
-        [JsonProperty("ischildstatemachine")]
-        internal bool IsChildStateMachine { get; set; }
+        [JsonProperty("parentstack")]
+        internal string[] ParentInstanceStack { get; set; }
 
         internal object DeserializeInput(IStateMachineMetadata metadata)
         {

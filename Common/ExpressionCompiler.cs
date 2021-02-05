@@ -23,7 +23,7 @@ namespace DSM.Common
     //  - have All The Tests
     internal static class ExpressionCompiler
     {
-        private static ConcurrentDictionary<string, Delegate> _cache = new ConcurrentDictionary<string, Delegate>();
+        private static readonly ConcurrentDictionary<string, Delegate> _cache = new ConcurrentDictionary<string, Delegate>();
 
         public static Func<dynamic, T> Compile<T>(string uniqueId, string expression)
         {

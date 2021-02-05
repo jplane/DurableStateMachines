@@ -8,8 +8,7 @@ using DSM.Common.Model.States;
 using DSM.Common.Model;
 using DSM.Common;
 using DSM.Common.Messages;
-using DSM.Common.Debugger;
-using DSM.Engine;
+using DSM.Common.Observability;
 
 namespace DSM.Engine.Model.States
 {
@@ -90,7 +89,7 @@ namespace DSM.Engine.Model.States
         {
             context.CheckArgNull(nameof(context));
 
-            await context.BreakOnDebugger(DebuggerAction.MakeTransition, _metadata);
+            await context.OnAction(ObservableAction.MakeTransition, _metadata);
 
             if (_metadata.Delay != null)
             {

@@ -1,16 +1,14 @@
 {
-  "debug": {
-    "instructions": [
-      {
-        "action": "enterstate",
-        "element": "*"
-      },
-      {
-        "action": "exitstate",
-        "element": "*"
-      }
-    ]
-  },
+  "observables": [
+    {
+      "action": "enterstate",
+      "element": "*"
+    },
+    {
+      "action": "exitstate",
+      "element": "*"
+    }
+  ],
   "statemachine": {
     "id": "test",
     "states": [

@@ -1,18 +1,16 @@
 {
-  "debug": {
-    "instructions": [
-      {
-        "action": "enterstate",
-        "element": "*"
-      },
-      {
-        "action": "exitstate",
-        "element": "*"
-      }
-    ]
-  },
+  "observables": [
+    {
+      "action": "enterstate",
+      "element": "*"
+    },
+    {
+      "action": "exitstate",
+      "element": "*"
+    }
+  ],
   "input": {
-    "innerData":  null
+    "innerData": null
   },
   "statemachine": {
     "id": "outer",

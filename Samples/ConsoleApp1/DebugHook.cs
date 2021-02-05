@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
-    internal class DebugHook : Listener
+    internal class DebugHook : StateMachineObserver
     {
         public DebugHook()
         {

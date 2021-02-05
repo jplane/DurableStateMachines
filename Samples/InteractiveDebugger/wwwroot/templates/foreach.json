@@ -1,16 +1,14 @@
 {
-  "debug": {
-    "instructions": [
-      {
-        "action": "enterstate",
-        "element": "*"
-      },
-      {
-        "action": "exitstate",
-        "element": "*"
-      }
-    ]
-  },
+  "observables": [
+    {
+      "action": "enterstate",
+      "element": "*"
+    },
+    {
+      "action": "exitstate",
+      "element": "*"
+    }
+  ],
   "input": {
     "items": [ 1, 2, 3, 4, 5 ],
     "sum": 0

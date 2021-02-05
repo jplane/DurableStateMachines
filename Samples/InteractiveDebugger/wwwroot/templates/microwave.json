@@ -1,20 +1,18 @@
 {
-  "debug": {
-    "instructions": [
-      {
-        "action": "enterstate",
-        "element": "*"
-      },
-      {
-        "action": "exitstate",
-        "element": "*"
-      }
-    ]
-  },
+  "observables": [
+    {
+      "action": "enterstate",
+      "element": "*"
+    },
+    {
+      "action": "exitstate",
+      "element": "*"
+    }
+  ],
   "input": {
     "cook_time": 5,
     "door_closed": true,
-    "timer":  0
+    "timer": 0
   },
   "statemachine": {
     "id": "test",

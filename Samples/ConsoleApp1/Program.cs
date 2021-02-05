@@ -31,7 +31,12 @@ namespace ConsoleApp1
 
             Debug.Assert(client != null);
 
-            var instanceId = await client.StartNewStateMachineAsync("tupletest", (5, 0));
+            await using var observer = new DebugHook
+            {
+                EndpointUri = config["DEBUGGER_URI"]
+            };
+
+            var instanceId = await client.StartNewStateMachineAsync("tupletest", (5, 0), observer);
 
             var result = await client.WaitForStateMachineCompletionAsync(instanceId);
 

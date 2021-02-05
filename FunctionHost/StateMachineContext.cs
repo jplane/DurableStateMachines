@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using DSM.Common;
-using DSM.Common.Debugger;
+using DSM.Common.Observability;
 using DSM.Common.Messages;
 using DSM.Common.Model;
 using DSM.Common.Model.States;
@@ -24,17 +24,17 @@ namespace DSM.FunctionHost
     {
         private readonly IDurableOrchestrationContext _orchestrationContext;
         private readonly IConfiguration _config;
-        private readonly DebuggerInfo _debugInfo;
+        private readonly Instruction[] _observableInstructions;
 
         public StateMachineContext(IStateMachineMetadata metadata,
                                    IDurableOrchestrationContext orchestrationContext,
                                    object data,
-                                   bool isChild,
-                                   DebuggerInfo debugInfo,
+                                   string[] parentInstanceIds,
+                                   Instruction[] observableInstructions,
                                    IConfiguration config,
                                    Func<string, IStateMachineMetadata> lookupChild,
                                    ILogger logger)
-            : base(metadata, default, lookupChild, isChild, logger)
+            : base(metadata, default, lookupChild, parentInstanceIds, logger)
         {
             metadata.CheckArgNull(nameof(metadata));
             orchestrationContext.CheckArgNull(nameof(orchestrationContext));
@@ -43,11 +43,10 @@ namespace DSM.FunctionHost
 
             _orchestrationContext = orchestrationContext;
             _config = config;
-            _debugInfo = debugInfo;
+            _observableInstructions = observableInstructions;
             _data = data;
 
-            SetInternalDataValue("_instanceId", _orchestrationContext.InstanceId);
-            SetInternalDataValue("_parentInstanceId", _orchestrationContext.ParentInstanceId);
+            this.InstanceId = _orchestrationContext.InstanceId;
         }
 
         public object GetData() => _data;
@@ -57,10 +56,9 @@ namespace DSM.FunctionHost
             return _orchestrationContext.NewGuid();
         }
 
-        internal override async Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId)
+        internal override async Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
-            parentStateMetadataId.CheckArgNull(nameof(parentStateMetadataId));
 
             var childMachine = ResolveChildStateMachine(metadata);
 
@@ -107,8 +105,8 @@ namespace DSM.FunctionHost
                 {
                     Input = input,
                     StateMachineIdentifier = metadata.GetRootIdentifier(),
-                    DebugInfo = _debugInfo,
-                    IsChildStateMachine = true
+                    Observables = _observableInstructions,
+                    ParentInstanceStack = this.InstanceIdStack
                 });
             }
             else
@@ -124,8 +122,8 @@ namespace DSM.FunctionHost
                 {
                     Input = ((JObject) input).ToObject<Dictionary<string, object>>(),
                     Definition = (StateMachine<Dictionary<string, object>>) metadata.GetRoot(),
-                    DebugInfo = _debugInfo,
-                    IsChildStateMachine = true
+                    Observables = _observableInstructions,
+                    ParentInstanceStack = this.InstanceIdStack
                 });
             }
         }
@@ -255,15 +253,15 @@ namespace DSM.FunctionHost
             return Task.CompletedTask;
         }
 
-        internal override Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
+        internal override Task OnAction(ObservableAction action, IModelMetadata metadata)
         {
             Debug.Assert(metadata != null);
 
-            if (_debugInfo != null && _debugInfo.IsMatch(action, metadata.MetadataId))
+            if (_observableInstructions != null && _observableInstructions.IsMatch(action, metadata.MetadataId))
             {
                 var info = new Dictionary<string, object>(metadata.DebuggerInfo);
 
-                info["_debuggeraction"] = action;
+                info["_action"] = action;
 
                 foreach (var pair in this.GetDebuggerValues())
                 {
@@ -274,7 +272,9 @@ namespace DSM.FunctionHost
 
                 Debug.Assert(!string.IsNullOrWhiteSpace(endpoint));
 
-                return _orchestrationContext.CallActivityAsync(FunctionProvider.StateMachineDebuggerBreakEndpoint, (endpoint, info));
+                var input = (endpoint, info, this.InstanceIdStack);
+
+                return _orchestrationContext.CallActivityAsync(FunctionProvider.StateMachineDebuggerBreakEndpoint, input);
             }
             else
             {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace WebApp1
+namespace InteractiveDebugger
 {
     public class Startup
     {
@@ -26,7 +26,7 @@ namespace WebApp1
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<DebugHub>("/debug");
+                endpoints.MapHub<ObserverHub>("/observer");
             });
         }
     }

@@ -1,11 +1,11 @@
 ﻿using DSM.Common;
-using DSM.Common.Debugger;
 using DSM.Common.Exceptions;
 using DSM.Common.Model.Execution;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using DSM.Engine;
+using DSM.Common.Observability;
 
 namespace DSM.Engine.Model.Execution
 {
@@ -65,7 +65,7 @@ namespace DSM.Engine.Model.Execution
         {
             await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
 
-            await context.BreakOnDebugger(DebuggerAction.BeforeAction, _metadata);
+            await context.OnAction(ObservableAction.BeforeAction, _metadata);
 
             try
             {
@@ -81,7 +81,7 @@ namespace DSM.Engine.Model.Execution
             }
             finally
             {
-                await context.BreakOnDebugger(DebuggerAction.AfterAction, _metadata);
+                await context.OnAction(ObservableAction.AfterAction, _metadata);
 
                 await context.LogInformationAsync($"End: {this.GetType().Name}.Execute");
             }

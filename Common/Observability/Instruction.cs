@@ -1,17 +1,17 @@
 ﻿using Newtonsoft.Json;
 using System.Globalization;
 
-namespace DSM.Common.Debugger
+namespace DSM.Common.Observability
 {
-    public sealed class DebuggerInstruction
+    public sealed class Instruction
     {
         [JsonProperty("action")]
-        public DebuggerAction Action { get; set; }
+        public ObservableAction Action { get; set; }
 
         [JsonProperty("element")]
         public string Element { get; set; }
 
-        internal bool IsMatch(DebuggerAction action, string element)
+        internal bool IsMatch(ObservableAction action, string element)
         {
             if (action != this.Action)
             {

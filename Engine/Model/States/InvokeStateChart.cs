@@ -5,24 +5,20 @@ using DSM.Common.Model.States;
 using DSM.Engine.Model.Execution;
 using DSM.Common;
 using System.Diagnostics;
-using DSM.Common.Debugger;
-using DSM.Engine;
+using DSM.Common.Observability;
 
 namespace DSM.Engine.Model.States
 {
     internal class InvokeStateMachine
     {
         private readonly IInvokeStateMachineMetadata _metadata;
-        private readonly string _parentMetadataId;
         private readonly Lazy<ExecutableContent[]> _finalizeContent;
 
-        public InvokeStateMachine(IInvokeStateMachineMetadata metadata, string parentMetadataId)
+        public InvokeStateMachine(IInvokeStateMachineMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
-            parentMetadataId.CheckArgNull(nameof(parentMetadataId));
 
             _metadata = metadata;
-            _parentMetadataId = parentMetadataId;
 
             _finalizeContent = new Lazy<ExecutableContent[]>(() =>
             {
@@ -36,11 +32,11 @@ namespace DSM.Engine.Model.States
 
             await context.LogInformationAsync("Start: InvokeStateMachine.Execute");
 
-            await context.BreakOnDebugger(DebuggerAction.BeforeInvokeChildStateMachine, _metadata);
+            await context.OnAction(ObservableAction.BeforeInvokeChildStateMachine, _metadata);
 
             try
             {
-                var data = await context.InvokeChildStateMachine(_metadata, _parentMetadataId);
+                var data = await context.InvokeChildStateMachine(_metadata);
 
                 Debug.Assert(data != null);
 
@@ -62,7 +58,7 @@ namespace DSM.Engine.Model.States
             }
             finally
             {
-                await context.BreakOnDebugger(DebuggerAction.AfterInvokeChildStateMachine, _metadata);
+                await context.OnAction(ObservableAction.AfterInvokeChildStateMachine, _metadata);
 
                 await context.LogInformationAsync("End: InvokeStateMachine.Execute");
             }

@@ -26,7 +26,7 @@ namespace DSM.Tests
                 {
                     var cts = new CancellationTokenSource();
 
-                    var context = new ExecContext(machine, cts.Token, lookup, false, logger);
+                    var context = new ExecContext(machine, cts.Token, lookup, null, logger);
                     
                     return (context, cts);
                 }),

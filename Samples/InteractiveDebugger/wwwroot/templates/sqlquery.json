@@ -1,16 +1,14 @@
 {
-  "debug": {
-    "instructions": [
-      {
-        "action": "enterstate",
-        "element": "*"
-      },
-      {
-        "action": "exitstate",
-        "element": "*"
-      }
-    ]
-  },
+  "observables": [
+    {
+      "action": "enterstate",
+      "element": "*"
+    },
+    {
+      "action": "exitstate",
+      "element": "*"
+    }
+  ],
   "statemachine": {
     "id": "test",
     "states": [
@@ -21,10 +19,11 @@
           "actions": [
             {
               "type": "query`1",
-              "activitytype": "http-get",
+              "activitytype": "sql-query",
               "resultlocation": "x",
               "configuration": {
-                "uri": "%TEST_FUNCTION_ENDPOINT%"
+                "connectionstring": "%SQL_CONN_STRING%",
+                "query": "SELECT TOP 10 [FirstName], [LastName] FROM [SalesLT].[Customer]"
               }
             }
           ]

@@ -7,8 +7,7 @@ using DSM.Common.Model.States;
 using DSM.Common.Model;
 using DSM.Common;
 using System.Diagnostics;
-using DSM.Common.Debugger;
-using DSM.Engine;
+using DSM.Common.Observability;
 
 namespace DSM.Engine.Model.States
 {
@@ -57,7 +56,7 @@ namespace DSM.Engine.Model.States
 
             _invokes = new Lazy<InvokeStateMachine[]>(() =>
             {
-                return _metadata.GetStateMachineInvokes().Select(sm => new InvokeStateMachine(sm, _metadata.MetadataId)).ToArray();
+                return _metadata.GetStateMachineInvokes().Select(sm => new InvokeStateMachine(sm)).ToArray();
             });
 
             _initialTransition = new Lazy<Transition>(() =>
@@ -224,7 +223,7 @@ namespace DSM.Engine.Model.States
 
             await context.LogInformationAsync($"Enter {this.GetType().Name}: Id {this.Id}");
 
-            await context.BreakOnDebugger(DebuggerAction.EnterState, _metadata);
+            await context.OnAction(ObservableAction.EnterState, _metadata);
 
             context.Configuration.Add(this);
 
@@ -302,7 +301,7 @@ namespace DSM.Engine.Model.States
 
             context.Configuration.Remove(this);
 
-            await context.BreakOnDebugger(DebuggerAction.ExitState, _metadata);
+            await context.OnAction(ObservableAction.ExitState, _metadata);
         }
 
         public bool IsDescendent(State state)

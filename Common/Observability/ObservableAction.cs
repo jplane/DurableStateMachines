@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace DSM.Common.Debugger
+namespace DSM.Common.Observability
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum DebuggerAction
+    public enum ObservableAction
     {
         EnterStateMachine = 1,
         ExitStateMachine,

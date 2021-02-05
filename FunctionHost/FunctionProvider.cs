@@ -68,7 +68,7 @@ namespace DSM.FunctionHost
                                                 new JProperty("name", "context")))
                 },
                 ScriptFile = CurrentAssemblyFile,
-                EntryPoint = $"{SimpleAssemblyName}.{nameof(StateMachineDebuggerActivity)}.{nameof(StateMachineDebuggerActivity.RunAsync)}",
+                EntryPoint = $"{SimpleAssemblyName}.{nameof(ObserverActivity)}.{nameof(ObserverActivity.RunAsync)}",
                 Language = "DotNetAssembly"
             });
 

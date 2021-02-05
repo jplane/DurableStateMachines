@@ -2,6 +2,7 @@
 using DSM.Common;
 using System.Threading.Tasks;
 using DSM.Common.Messages;
+using System;
 
 namespace DSM.FunctionClient
 {
@@ -14,10 +15,13 @@ namespace DSM.FunctionClient
         /// </summary>
         /// <param name="client"><see cref="IDurableClient"/> instance, usually obtained via dependency injection.</param>
         /// <param name="stateMachineId">Unique identifier for a state machine definition registered with the target Durable Functions app.</param>
+        /// <param name="observer">If specified, is used to observe state machine behavior during execution.</param>
         /// <returns>The orchestration instance id for the newly started state machine.</returns>
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client, string stateMachineId)
+        public static Task<string> StartNewStateMachineAsync(this IDurableClient client,
+                                                             string stateMachineId,
+                                                             StateMachineObserver observer = null)
         {
-            return StartNewStateMachineAsync(client, stateMachineId, null);
+            return StartNewStateMachineAsync(client, stateMachineId, null, observer);
         }
 
         /// <summary>
@@ -26,19 +30,38 @@ namespace DSM.FunctionClient
         /// <param name="client"><see cref="IDurableClient"/> instance, usually obtained via dependency injection.</param>
         /// <param name="stateMachineId">Unique identifier for a state machine definition registered with the target Durable Functions app.</param>
         /// <param name="input">Initial execution state for the state machine instance.</param>
+        /// <param name="observer">If specified, is used to observe state machine behavior during execution.</param>
         /// <returns>The orchestration instance id for the newly started state machine.</returns>
-        public static Task<string> StartNewStateMachineAsync(this IDurableClient client, string stateMachineId, object input)
+        public static async Task<string> StartNewStateMachineAsync(this IDurableClient client,
+                                                                   string stateMachineId,
+                                                                   object input,
+                                                                   StateMachineObserver observer = null)
         {
             client.CheckArgNull(nameof(client));
             stateMachineId.CheckArgNull(nameof(stateMachineId));
 
+            string instanceId;
+
+            if (observer != null)
+            {
+                await observer.StartAsync();
+                instanceId = observer.InstanceId;
+            }
+            else
+            {
+                 instanceId = Guid.NewGuid().ToString("N");
+            }
+
             var payload = new StateMachinePayload
             {
+                Observables = observer.Instructions,
                 StateMachineIdentifier = stateMachineId,
                 Input = input
             };
 
-            return client.StartNewAsync(StateMachineWithNameEndpoint, payload);
+            await client.StartNewAsync(StateMachineWithNameEndpoint, instanceId, payload);
+
+            return instanceId;
         }
 
         /// <summary>

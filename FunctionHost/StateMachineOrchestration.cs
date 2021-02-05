@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using DSM.Common.Debugger;
+using DSM.Common.Observability;
 using DSM.Common.Model.States;
 using DSM.Engine;
 using DSM.FunctionClient;
@@ -38,8 +38,8 @@ namespace DSM.FunctionHost
             return await RunAsync(context,
                                   stateMachineDefinition,
                                   payload.DeserializeInput(stateMachineDefinition),
-                                  payload.IsChildStateMachine,
-                                  payload.DebugInfo,
+                                  payload.ParentInstanceStack,
+                                  payload.Observables,
                                   resolver.Resolve,
                                   logger);
         }
@@ -62,8 +62,8 @@ namespace DSM.FunctionHost
             var result = await RunAsync(context,
                                         payload.Definition,
                                         input,
-                                        payload.IsChildStateMachine,
-                                        payload.DebugInfo,
+                                        payload.ParentInstanceStack,
+                                        payload.Observables,
                                         null,
                                         logger);
 
@@ -75,8 +75,8 @@ namespace DSM.FunctionHost
         private static async Task<object> RunAsync(IDurableOrchestrationContext context,
                                                    IStateMachineMetadata stateMachineDefinition,
                                                    object input,
-                                                   bool isChildStateMachine,
-                                                   DebuggerInfo debugInfo,
+                                                   string[] parentInstanceStack,
+                                                   Instruction[] observableInstructions,
                                                    Func<string, IStateMachineMetadata> resolver,
                                                    ILogger logger)
         {
@@ -86,8 +86,8 @@ namespace DSM.FunctionHost
             var executionContext = new StateMachineContext(stateMachineDefinition,
                                                            context,
                                                            input,
-                                                           isChildStateMachine,
-                                                           debugInfo,
+                                                           parentInstanceStack,
+                                                           observableInstructions,
                                                            Startup.Configuration,
                                                            resolver,
                                                            logger);

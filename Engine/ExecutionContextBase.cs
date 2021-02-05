@@ -12,11 +12,10 @@ using DSM.Common.Model;
 using DSM.Common.Exceptions;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using DSM.Common.Model.Execution;
-using DSM.Common.Debugger;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using DSM.Common.Observability;
 
 namespace DSM.Engine
 {
@@ -33,7 +32,7 @@ namespace DSM.Engine
         private readonly Set<State> _statesToInvoke;
         private readonly StateMachine _root;
         private readonly IStateMachineMetadata _metadata;
-        private readonly bool _isChild;
+        private readonly string[] _parentInstanceIds;
 
         private IDictionary<string, object> _internalData;
         private CancellationToken _cancelToken;
@@ -43,7 +42,7 @@ namespace DSM.Engine
         internal ExecutionContextBase(IStateMachineMetadata metadata,
                                       CancellationToken cancelToken,
                                       Func<string, IStateMachineMetadata> lookupChild = null,
-                                      bool isChild = false,
+                                      string[] parentInstanceIds = null,
                                       ILogger logger = null)
         {
             metadata.CheckArgNull(nameof(metadata));
@@ -55,7 +54,7 @@ namespace DSM.Engine
             _cancelToken = cancelToken;
             _logger = logger;
             _lookupChild = lookupChild;
-            _isChild = isChild;
+            _parentInstanceIds = parentInstanceIds;
 
             _internalData = new Dictionary<string, object>();
             _historyValues = new Dictionary<string, IEnumerable<State>>();
@@ -70,7 +69,7 @@ namespace DSM.Engine
 
         internal abstract Task SendMessageAsync(string activityType, string correlationId, (object, JObject) config);
 
-        internal abstract Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string parentStateMetadataId);
+        internal abstract Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata);
 
         internal abstract Task LogDebugAsync(string message);
 
@@ -80,7 +79,7 @@ namespace DSM.Engine
 
         protected abstract Task<ExternalMessage> GetNextExternalMessageAsync();
 
-        protected bool IsChildStateMachine => _isChild;
+        protected bool IsChildStateMachine => _parentInstanceIds?.Any() ?? false;
 
         protected IReadOnlyDictionary<string, object> GetDebuggerValues()
         {
@@ -91,7 +90,7 @@ namespace DSM.Engine
             return dict;
         }
 
-        internal virtual Task BreakOnDebugger(DebuggerAction action, IModelMetadata metadata)
+        internal virtual Task OnAction(ObservableAction action, IModelMetadata metadata)
         {
             return Task.CompletedTask;
         }
@@ -162,7 +161,7 @@ namespace DSM.Engine
         {
             _internalData["_name"] = this.Root.Name;
 
-            await this.BreakOnDebugger(DebuggerAction.EnterStateMachine, _metadata);
+            await this.OnAction(ObservableAction.EnterStateMachine, _metadata);
 
             _isRunning = true;
 
@@ -171,7 +170,7 @@ namespace DSM.Engine
 
         internal Task ExitAsync()
         {
-            return this.BreakOnDebugger(DebuggerAction.ExitStateMachine, _metadata);
+            return this.OnAction(ObservableAction.ExitStateMachine, _metadata);
         }
 
         internal StateMachine Root => _root;
@@ -202,6 +201,15 @@ namespace DSM.Engine
         }
 
         internal DynamicDictionary ExecutionData => new DynamicDictionary(_internalData, _data);
+
+        protected string[] InstanceIdStack =>
+            new[] { this.InstanceId }.Concat(_parentInstanceIds ?? Enumerable.Empty<string>()).ToArray();
+
+        protected string InstanceId
+        {
+            get => (string) _internalData["_instanceId"];
+            set => _internalData["_instanceId"] = value;
+        }
 
         internal void SetInternalDataValue(string key, object value)
         {

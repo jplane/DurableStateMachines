@@ -11,6 +11,7 @@ using System.Threading;
 using DSM.Engine.Services;
 using DSM.Common.Model.Execution;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace DSM.Engine
 {
@@ -25,9 +26,9 @@ namespace DSM.Engine
         public ExecutionContext(IStateMachineMetadata metadata,
                                 CancellationToken cancelToken,
                                 Func<string, IStateMachineMetadata> lookupChild = null,
-                                bool isChild = false,
+                                string[] instanceIds = null,
                                 ILogger logger = null)
-            : base(metadata, cancelToken, lookupChild, isChild, logger)
+            : base(metadata, cancelToken, lookupChild, instanceIds, logger)
         {
             _interpreter = new Interpreter();
             _externalMessages = new AsyncProducerConsumerQueue<ExternalMessage>();
@@ -55,7 +56,7 @@ namespace DSM.Engine
 
             _data = data;
 
-            SetInternalDataValue("_instanceId", this.GenerateGuid().ToString("N"));
+            this.InstanceId = this.GenerateGuid().ToString("N");
 
             await _interpreter.RunAsync(this);
 
@@ -109,7 +110,7 @@ namespace DSM.Engine
             throw new InvalidOperationException("Unable to resolve external service type: " + activityType);
         }
 
-        internal override Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata, string _)
+        internal override Task<object> InvokeChildStateMachine(IInvokeStateMachineMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
@@ -124,7 +125,7 @@ namespace DSM.Engine
 
             var data = metadata.GetData(this.ExecutionData);
 
-            var context = new ExecutionContext(childMachine, this.CancelToken, _lookupChild, true, _logger);
+            var context = new ExecutionContext(childMachine, this.CancelToken, _lookupChild, this.InstanceIdStack, _logger);
 
             return context.RunAsync(data);
         }
