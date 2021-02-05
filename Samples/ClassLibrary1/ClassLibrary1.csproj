@@ -1,13 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common.csproj" />
-    <ProjectReference Include="..\..\Metadata\Metadata.csproj" />
-    <ProjectReference Include="..\..\FunctionClient\FunctionClient.csproj" />
+    <PackageReference Include="DurableStateMachines.Client" Version="0.1.3" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@
     <AssemblyName>DSM.Metadata</AssemblyName>
     <RootNamespace>DSM.Metadata</RootNamespace>
     <LangVersion>9.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

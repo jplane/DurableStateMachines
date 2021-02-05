@@ -5,6 +5,7 @@
     <AssemblyName>DSM.Common</AssemblyName>
     <RootNamespace>DSM.Common</RootNamespace>
     <LangVersion>9.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

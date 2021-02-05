@@ -8,12 +8,13 @@
     <PackageId>DurableStateMachines.Functions</PackageId>
     <Title>Implements state machine orchestrations using Azure Durable Functions. Usable from any 'dotnet' Azure Functions app.</Title>
     <Description>This package implements the integration between the hierarchical state machine (or "statechart") interpreter and Azure Durable Functions. To use it, simply reference this package in a standard Azure Durable Functions project and define statecharts using either strongly-typed .NET syntax, or JSON. For more information on statecharts, see https://statecharts.github.io/. </Description>
-    <Version>0.1.1</Version>
+    <Version>0.1.3</Version>
     <Authors>josh.lane</Authors>
     <Company>FuzzyMaths Inc.</Company>
     <PackageTags>statemachine;state-machine;statechart;durable;durable-functions;</PackageTags>
     <RepositoryUrl>https://github.com/jplane/DurableStateMachines.git</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
