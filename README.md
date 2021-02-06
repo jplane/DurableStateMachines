@@ -185,6 +185,14 @@ HTTP POST /runtime/webhooks/durabletask/orchestrators/statemachine-definition
 
 ```
 
+## Samples and Tests
+
+- Unit tests are [here](./Tests) (work-in-progress :-))
+
+- Small standalone durable tests are [here](./DurableTests)
+
+- More full-featured sample applications are [here](./Samples)
+
 ## Background and Resources
 
 - Excellent, pragmatic statechart explainer [here](https://statecharts.github.io/)

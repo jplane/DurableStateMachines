@@ -64,17 +64,5 @@ namespace ConsoleApp1
             OnDebugEvent(data);
             return base.OnAfterAction(data);
         }
-
-        protected override Task OnBeforeInvokeChildStateMachine(IDictionary<string, object> data)
-        {
-            OnDebugEvent(data);
-            return base.OnBeforeInvokeChildStateMachine(data);
-        }
-
-        protected override Task OnAfterInvokeChildStateMachine(IDictionary<string, object> data)
-        {
-            OnDebugEvent(data);
-            return base.OnAfterInvokeChildStateMachine(data);
-        }
     }
 }

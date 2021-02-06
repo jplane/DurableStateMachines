@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DurableStateMachines.Client" Version="0.1.3" />
+    <PackageReference Include="DurableStateMachines.Client" Version="0.1.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
   </ItemGroup>
 
