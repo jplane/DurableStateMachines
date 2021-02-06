@@ -7,7 +7,7 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class SendMessage : ExecutableContent
+    internal class SendMessage : Action
     {
         public SendMessage(ISendMessageMetadata metadata)
             : base(metadata)

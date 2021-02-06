@@ -27,12 +27,12 @@ namespace DSM.Metadata.States
         private readonly Lazy<Func<dynamic, object>> _getData;
 
         private MemberInfo _resultTarget;
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Execution.Action<TData>> _actions;
 
         public InvokeStateMachine()
         {
             this.ExecutionMode = ChildStateMachineExecutionMode.Inline;
-            this.CompletionActions = new MetadataList<ExecutableContent<TData>>();
+            this.CompletionActions = new MetadataList<Execution.Action<TData>>();
 
             _getData = new Lazy<Func<dynamic, object>>(() =>
             {
@@ -116,8 +116,8 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of actions executed for this <see cref="InvokeStateMachine{TData}"/> once the child invocation successfully completes.
         /// </summary>
-        [JsonProperty("completionactions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.DisallowNull)]
-        public MetadataList<ExecutableContent<TData>> CompletionActions
+        [JsonProperty("completionactions", ItemConverterType = typeof(ActionConverter), Required = Required.DisallowNull)]
+        public MetadataList<Execution.Action<TData>> CompletionActions
         {
             get => _actions;
 
@@ -184,8 +184,8 @@ namespace DSM.Metadata.States
             }
         }
 
-        IEnumerable<IExecutableContentMetadata> IInvokeStateMachineMetadata.GetFinalizeExecutableContent() =>
-            this.CompletionActions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IInvokeStateMachineMetadata.GetCompletionActions() =>
+            this.CompletionActions ?? Enumerable.Empty<IActionMetadata>();
 
         (string, IStateMachineMetadata) IInvokeStateMachineMetadata.GetStateMachineInfo() =>
             (this.StateMachineIdentifier, this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>());

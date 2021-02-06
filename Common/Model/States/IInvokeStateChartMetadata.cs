@@ -17,7 +17,7 @@ namespace DSM.Common.Model.States
 
         (string, IStateMachineMetadata) GetStateMachineInfo();
         object GetData(dynamic data);
-        IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
+        IEnumerable<IActionMetadata> GetCompletionActions();
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

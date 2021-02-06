@@ -10,15 +10,15 @@ namespace DSM.Engine.Model.Execution
 {
     internal class Else
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Action[]> _content;
 
         public Else(IElseMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Action[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetActions().Select(Action.Create).ToArray();
             });
         }
 

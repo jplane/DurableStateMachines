@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class Assign : ExecutableContent
+    internal class Assign : Action
     {
         public Assign(IAssignMetadata metadata)
             : base(metadata)

@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace DSM.Common.Model.Execution
 {
-    public interface IForeachMetadata : IExecutableContentMetadata
+    public interface IForeachMetadata : IActionMetadata
     {
         (string, MemberInfo) Item { get; }
         (string, MemberInfo) Index { get; }
 
         IEnumerable GetArray(dynamic data);
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
     }
 }

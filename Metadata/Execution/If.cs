@@ -17,17 +17,17 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "If",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class If<TData> : ExecutableContent<TData>, IIfMetadata
+    public sealed class If<TData> : Action<TData>, IIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Action<TData>> _actions;
         private MetadataList<ElseIf<TData>> _elseIfs;
         private Else<TData> _else;
 
         public If()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Action<TData>>();
             this.ElseIfs = new MetadataList<ElseIf<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
@@ -60,8 +60,8 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of actions executed for this <see cref="If{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
+        public MetadataList<Action<TData>> Actions
         {
             get => _actions;
 
@@ -166,8 +166,8 @@ namespace DSM.Metadata.Execution
 
         IEnumerable<IElseIfMetadata> IIfMetadata.GetElseIfs() => this.ElseIfs ?? Enumerable.Empty<IElseIfMetadata>();
 
-        IEnumerable<IExecutableContentMetadata> IIfMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IIfMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
 
         IElseMetadata IIfMetadata.GetElse() => this.Else;
     }

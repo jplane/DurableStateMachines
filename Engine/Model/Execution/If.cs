@@ -7,20 +7,20 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class If : ExecutableContent
+    internal class If : Action
     {
         private readonly Lazy<ElseIf[]> _elseifs;
         private readonly Lazy<Else> _else;
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Action[]> _content;
 
         public If(IIfMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Action[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetActions().Select(Action.Create).ToArray();
             });
 
             _else = new Lazy<Else>(() =>

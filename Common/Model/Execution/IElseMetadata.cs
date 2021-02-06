@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace DSM.Common.Model.Execution
 {
-    public interface IElseMetadata : IExecutableContentMetadata
+    public interface IElseMetadata : IActionMetadata
     {
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
     }
 }

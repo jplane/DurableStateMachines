@@ -5,7 +5,7 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class Log : ExecutableContent
+    internal class Log : Action
     {
         public Log(ILogMetadata metadata)
             : base(metadata)

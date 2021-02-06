@@ -12,7 +12,7 @@ namespace DSM.Engine.Model.States
     internal class InvokeStateMachine
     {
         private readonly IInvokeStateMachineMetadata _metadata;
-        private readonly Lazy<ExecutableContent[]> _finalizeContent;
+        private readonly Lazy<Execution.Action[]> _finalizeContent;
 
         public InvokeStateMachine(IInvokeStateMachineMetadata metadata)
         {
@@ -20,9 +20,9 @@ namespace DSM.Engine.Model.States
 
             _metadata = metadata;
 
-            _finalizeContent = new Lazy<ExecutableContent[]>(() =>
+            _finalizeContent = new Lazy<Execution.Action[]>(() =>
             {
-                return metadata.GetFinalizeExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetCompletionActions().Select(Execution.Action.Create).ToArray();
             });
         }
 

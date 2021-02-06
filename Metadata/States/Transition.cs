@@ -23,12 +23,12 @@ namespace DSM.Metadata.States
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Execution.Action<TData>> _actions;
         private string _syntheticMetadataId;
 
         public Transition()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Execution.Action<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -117,8 +117,8 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of actions executed for this <see cref="Transition{TData}"/>, when triggered.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.DisallowNull)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.DisallowNull)]
+        public MetadataList<Execution.Action<TData>> Actions
         {
             get => _actions;
 
@@ -170,7 +170,7 @@ namespace DSM.Metadata.States
 
         bool ITransitionMetadata.EvalCondition(dynamic data) => _condition.Value(data);
 
-        IEnumerable<IExecutableContentMetadata> ITransitionMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> ITransitionMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
     }
 }

@@ -16,7 +16,7 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Log",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Log<TData> : ExecutableContent<TData>, ILogMetadata
+    public sealed class Log<TData> : Action<TData>, ILogMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
 

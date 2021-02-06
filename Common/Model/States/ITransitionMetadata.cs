@@ -13,6 +13,6 @@ namespace DSM.Common.Model.States
         TimeSpan? Delay { get; }
 
         bool EvalCondition(dynamic data);
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
     }
 }

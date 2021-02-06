@@ -16,20 +16,20 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Else",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Else<TData> : ExecutableContent<TData>, IElseMetadata
+    public sealed class Else<TData> : Action<TData>, IElseMetadata
     {
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Action<TData>> _actions;
 
         public Else()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Action<TData>>();
         }
 
         /// <summary>
         /// The set of actions executed for this <see cref="Else{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
+        public MetadataList<Action<TData>> Actions
         {
             get => _actions;
 
@@ -68,7 +68,7 @@ namespace DSM.Metadata.Execution
             }
         }
 
-        IEnumerable<IExecutableContentMetadata> IElseMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IElseMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
     }
 }

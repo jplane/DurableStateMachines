@@ -16,7 +16,7 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Raise",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Raise<TData> : ExecutableContent<TData>, IRaiseMetadata
+    public sealed class Raise<TData> : Action<TData>, IRaiseMetadata
     {
         private Lazy<Func<dynamic, string>> _messageGetter;
 

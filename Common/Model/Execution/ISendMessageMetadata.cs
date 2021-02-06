@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DSM.Common.Model.Execution
 {
-    public interface ISendMessageMetadata : IExecutableContentMetadata
+    public interface ISendMessageMetadata : IActionMetadata
     {
         string Id { get; }
         TimeSpan? Delay { get; }

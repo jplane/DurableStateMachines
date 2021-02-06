@@ -8,12 +8,12 @@ using DSM.Metadata.Execution;
 
 namespace DSM.Metadata
 {
-    public class ExecutableContentConverter : JsonConverter
+    public class ActionConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
             return objectType.IsGenericType &&
-                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(ExecutableContent<>));
+                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(Execution.Action<>));
         }
 
         public override void WriteJson(JsonWriter writer, [AllowNull] object value, JsonSerializer serializer)

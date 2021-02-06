@@ -14,7 +14,7 @@ namespace DSM.Engine.Model.States
 {
     internal class Transition
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Execution.Action[]> _content;
         private readonly ITransitionMetadata _metadata;
         private readonly State _source;
 
@@ -26,17 +26,17 @@ namespace DSM.Engine.Model.States
             _metadata = metadata;
             _source = source;
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Execution.Action[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetActions().Select(Execution.Action.Create).ToArray();
             });
         }
 
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<Execution.Action>> defaultHistoryContent)
         {
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            defaultHistoryContent[id] = new Set<ExecutableContent>(_content.Value);
+            defaultHistoryContent[id] = new Set<Execution.Action>(_content.Value);
         }
 
         public bool HasMessage => _metadata.Messages.Any();

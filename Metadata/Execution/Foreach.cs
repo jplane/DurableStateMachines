@@ -20,16 +20,16 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Foreach",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Foreach<TData> : ExecutableContent<TData>, IForeachMetadata
+    public sealed class Foreach<TData> : Action<TData>, IForeachMetadata
     {
         private MemberInfo _currentItemTarget;
         private MemberInfo _currentIndexTarget;
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Action<TData>> _actions;
         private readonly Lazy<Func<dynamic, IEnumerable>> _arrayGetter;
 
         public Foreach()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Action<TData>>();
 
             _arrayGetter = new Lazy<Func<dynamic, IEnumerable>>(() =>
             {
@@ -51,8 +51,8 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of actions executed for this <see cref="Foreach{TData}"/> element.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
+        public MetadataList<Action<TData>> Actions
         {
             get => _actions;
 
@@ -147,7 +147,7 @@ namespace DSM.Metadata.Execution
 
         (string, MemberInfo) IForeachMetadata.Index => (this.CurrentIndexLocation, _currentIndexTarget);
 
-        IEnumerable<IExecutableContentMetadata> IForeachMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IForeachMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
     }
 }

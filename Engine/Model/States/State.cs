@@ -215,7 +215,7 @@ namespace DSM.Engine.Model.States
 
         public async Task EnterAsync(ExecutionContextBase context,
                                      Set<State> statesForDefaultEntry,
-                                     Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+                                     Dictionary<string, Set<Execution.Action>> defaultHistoryContent)
         {
             context.CheckArgNull(nameof(context));
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
@@ -244,7 +244,7 @@ namespace DSM.Engine.Model.States
                 }
             }
 
-            if (defaultHistoryContent.TryGetValue(this.Id, out Set<ExecutableContent> set))
+            if (defaultHistoryContent.TryGetValue(this.Id, out Set<Execution.Action> set))
             {
                 foreach (var content in set)
                 {

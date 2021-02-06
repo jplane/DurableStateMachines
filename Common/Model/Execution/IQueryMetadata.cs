@@ -5,11 +5,11 @@ using System.Reflection;
 
 namespace DSM.Common.Model.Execution
 {
-    public interface IQueryMetadata : IExecutableContentMetadata
+    public interface IQueryMetadata : IActionMetadata
     {
         (string, MemberInfo) ResultLocation { get; }
         string ActivityType { get; }
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
         (object, JObject) GetConfiguration();
     }
 }

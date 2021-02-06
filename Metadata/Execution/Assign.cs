@@ -18,7 +18,7 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Assign",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Assign<TData> : ExecutableContent<TData>, IAssignMetadata
+    public sealed class Assign<TData> : Action<TData>, IAssignMetadata
     {
         private MemberInfo _target;
         private Lazy<Func<dynamic, object>> _valueGetter;

@@ -17,7 +17,7 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "SendMessage",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class SendMessage<TData> : ExecutableContent<TData>, ISendMessageMetadata
+    public sealed class SendMessage<TData> : Action<TData>, ISendMessageMetadata
     {
         public SendMessage()
         {

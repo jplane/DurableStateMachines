@@ -7,6 +7,6 @@ namespace DSM.Common.Model.States
     {
         bool IsEntry { get; }
 
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
     }
 }

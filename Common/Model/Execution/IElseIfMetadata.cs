@@ -4,10 +4,10 @@ using System.Linq;
 
 namespace DSM.Common.Model.Execution
 {
-    public interface IElseIfMetadata : IExecutableContentMetadata
+    public interface IElseIfMetadata : IActionMetadata
     {
         bool EvalCondition(dynamic data);
 
-        IEnumerable<IExecutableContentMetadata> GetExecutableContent();
+        IEnumerable<IActionMetadata> GetActions();
     }
 }

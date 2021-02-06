@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 namespace DSM.Metadata.Execution
 {
-    [JsonObject(Id = "ExecutableContent",
+    [JsonObject(Id = "Action",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public class ExecutableContent<TData> : IExecutableContentMetadata
+    public class Action<TData> : IActionMetadata
     {
-        internal ExecutableContent()
+        internal Action()
         {
         }
 

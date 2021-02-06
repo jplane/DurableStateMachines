@@ -6,7 +6,7 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class Script : ExecutableContent
+    internal class Script : Action
     {
         public Script(ILogicMetadata metadata)
             : base(metadata)

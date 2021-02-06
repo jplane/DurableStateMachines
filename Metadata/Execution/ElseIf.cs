@@ -17,15 +17,15 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "ElseIf",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class ElseIf<TData> : ExecutableContent<TData>, IElseIfMetadata
+    public sealed class ElseIf<TData> : Action<TData>, IElseIfMetadata
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Action<TData>> _actions;
 
         public ElseIf()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Action<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -57,8 +57,8 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of actions executed for this <see cref="ElseIf{TData}"/> branch.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
+        public MetadataList<Action<TData>> Actions
         {
             get => _actions;
 
@@ -104,7 +104,7 @@ namespace DSM.Metadata.Execution
 
         bool IElseIfMetadata.EvalCondition(dynamic data) => _condition.Value(data);
 
-        IEnumerable<IExecutableContentMetadata> IElseIfMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IElseIfMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
     }
 }

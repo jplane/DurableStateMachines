@@ -20,14 +20,14 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Query",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Query<TData> : ExecutableContent<TData>, IQueryMetadata
+    public sealed class Query<TData> : Action<TData>, IQueryMetadata
     {
         private MemberInfo _resultTarget;
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Action<TData>> _actions;
 
         public Query()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Action<TData>>();
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace DSM.Metadata.Execution
         /// <summary>
         /// The set of actions executed for this <see cref="Query{TData}"/> once a successful response is received.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.DisallowNull)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.DisallowNull)]
+        public MetadataList<Action<TData>> Actions
         {
             get => _actions;
 
@@ -117,8 +117,8 @@ namespace DSM.Metadata.Execution
 
         (string, MemberInfo) IQueryMetadata.ResultLocation => (this.ResultLocation, _resultTarget);
 
-        IEnumerable<IExecutableContentMetadata> IQueryMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IQueryMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
 
         (object, JObject) IQueryMetadata.GetConfiguration() => (this.Configuration, this.JsonConfig);
     }

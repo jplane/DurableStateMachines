@@ -5,7 +5,7 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class Raise : ExecutableContent
+    internal class Raise : Action
     {
         public Raise(IRaiseMetadata metadata)
             : base(metadata)

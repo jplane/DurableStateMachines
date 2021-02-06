@@ -7,18 +7,18 @@ using DSM.Engine;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal class Query : ExecutableContent
+    internal class Query : Action
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Action[]> _content;
 
         public Query(IQueryMetadata metadata)
             : base(metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Action[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetActions().Select(Action.Create).ToArray();
             });
         }
 

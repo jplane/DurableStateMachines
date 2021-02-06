@@ -10,7 +10,7 @@ namespace DSM.Engine.Model.States
 {
     internal class OnEntryExit
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Execution.Action[]> _content;
         private readonly bool _isEntry;
 
         public OnEntryExit(IOnEntryExitMetadata metadata)
@@ -19,9 +19,9 @@ namespace DSM.Engine.Model.States
 
             _isEntry = metadata.IsEntry;
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Execution.Action[]>(() =>
             {
-                return metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return metadata.GetActions().Select(Execution.Action.Create).ToArray();
             });
         }
 

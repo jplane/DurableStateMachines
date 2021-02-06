@@ -334,7 +334,7 @@ namespace DSM.Engine
 
             var statesForDefaultEntry = new Set<State>();
 
-            var defaultHistoryContent = new Dictionary<string, Set<ExecutableContent>>();
+            var defaultHistoryContent = new Dictionary<string, Set<Model.Execution.Action>>();
 
             await ComputeEntrySetAsync(context, enabledTransitions, statesToEnter, statesForDefaultEntry, defaultHistoryContent);
 
@@ -350,7 +350,7 @@ namespace DSM.Engine
                                                 IEnumerable<Transition> enabledTransitions,
                                                 Set<State> statesToEnter,
                                                 Set<State> statesForDefaultEntry,
-                                                Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+                                                Dictionary<string, Set<Model.Execution.Action>> defaultHistoryContent)
         {
             Debug.Assert(context != null);
             Debug.Assert(enabledTransitions != null);
@@ -386,7 +386,7 @@ namespace DSM.Engine
                                                          State ancestor,
                                                          Set<State> statesToEnter,
                                                          Set<State> statesForDefaultEntry,
-                                                         Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+                                                         Dictionary<string, Set<Model.Execution.Action>> defaultHistoryContent)
         {
             Debug.Assert(state != null);
             Debug.Assert(statesToEnter != null);
@@ -424,7 +424,7 @@ namespace DSM.Engine
                                                            State state,
                                                            Set<State> statesToEnter,
                                                            Set<State> statesForDefaultEntry,
-                                                           Dictionary<string, Set<ExecutableContent>> defaultHistoryContent)
+                                                           Dictionary<string, Set<Model.Execution.Action>> defaultHistoryContent)
         {
             Debug.Assert(context != null);
             Debug.Assert(state != null);

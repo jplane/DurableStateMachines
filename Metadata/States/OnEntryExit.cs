@@ -19,11 +19,11 @@ namespace DSM.Metadata.States
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class OnEntryExit<TData> : IOnEntryExitMetadata
     {
-        private MetadataList<ExecutableContent<TData>> _actions;
+        private MetadataList<Execution.Action<TData>> _actions;
 
         public OnEntryExit()
         {
-            this.Actions = new MetadataList<ExecutableContent<TData>>();
+            this.Actions = new MetadataList<Execution.Action<TData>>();
         }
 
         internal bool IsEntry { private get; set; }
@@ -35,8 +35,8 @@ namespace DSM.Metadata.States
         /// <summary>
         /// The set of actions for this <see cref="OnEntryExit{TData}"/>.
         /// </summary>
-        [JsonProperty("actions", ItemConverterType = typeof(ExecutableContentConverter), Required = Required.Always)]
-        public MetadataList<ExecutableContent<TData>> Actions
+        [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
+        public MetadataList<Execution.Action<TData>> Actions
         {
             get => _actions;
 
@@ -89,7 +89,7 @@ namespace DSM.Metadata.States
 
         bool IOnEntryExitMetadata.IsEntry => this.IsEntry;
 
-        IEnumerable<IExecutableContentMetadata> IOnEntryExitMetadata.GetExecutableContent() =>
-            this.Actions ?? Enumerable.Empty<IExecutableContentMetadata>();
+        IEnumerable<IActionMetadata> IOnEntryExitMetadata.GetActions() =>
+            this.Actions ?? Enumerable.Empty<IActionMetadata>();
     }
 }

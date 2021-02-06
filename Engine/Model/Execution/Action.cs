@@ -9,22 +9,22 @@ using DSM.Common.Observability;
 
 namespace DSM.Engine.Model.Execution
 {
-    internal abstract class ExecutableContent
+    internal abstract class Action
     {
-        protected readonly IExecutableContentMetadata _metadata;
+        protected readonly IActionMetadata _metadata;
 
-        protected ExecutableContent(IExecutableContentMetadata metadata)
+        protected Action(IActionMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
             _metadata = metadata;
         }
 
-        public static ExecutableContent Create(IExecutableContentMetadata metadata)
+        public static Action Create(IActionMetadata metadata)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            ExecutableContent content = null;
+            Action content = null;
 
             switch (metadata)
             {

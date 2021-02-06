@@ -9,7 +9,7 @@ namespace DSM.Engine.Model.Execution
 {
     internal class ElseIf
     {
-        private readonly Lazy<ExecutableContent[]> _content;
+        private readonly Lazy<Action[]> _content;
         private readonly IElseIfMetadata _metadata;
 
         public ElseIf(IElseIfMetadata metadata)
@@ -18,9 +18,9 @@ namespace DSM.Engine.Model.Execution
 
             _metadata = metadata;
 
-            _content = new Lazy<ExecutableContent[]>(() =>
+            _content = new Lazy<Action[]>(() =>
             {
-                return _metadata.GetExecutableContent().Select(ExecutableContent.Create).ToArray();
+                return _metadata.GetActions().Select(Action.Create).ToArray();
             });
         }
 

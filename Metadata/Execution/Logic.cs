@@ -16,7 +16,7 @@ namespace DSM.Metadata.Execution
     [JsonObject(Id = "Logic",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class Logic<TData> : ExecutableContent<TData>, ILogicMetadata
+    public sealed class Logic<TData> : Action<TData>, ILogicMetadata
     {
         private Lazy<Func<dynamic, object>> _executor;
 
@@ -48,7 +48,7 @@ namespace DSM.Metadata.Execution
         /// Execution state <typeparamref name="TData"/> is passed as an argument.
         /// </summary>
         [JsonIgnore]
-        public Action<TData> Function { get; set; }
+        public System.Action<TData> Function { get; set; }
 
         [JsonProperty("expression", Required = Required.Always)]
         private string Expression { get; set; }
