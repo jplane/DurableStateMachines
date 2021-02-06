@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using System.Threading.Tasks;
 using DSM.Common.Model.States;
 using DSM.Common.Model;
@@ -215,7 +215,7 @@ namespace DSM.Engine.Model.States
 
         public async Task EnterAsync(ExecutionContextBase context,
                                      Set<State> statesForDefaultEntry,
-                                     Dictionary<string, Set<Execution.Action>> defaultHistoryContent)
+                                     Dictionary<string, Set<Actions.Action>> defaultHistoryContent)
         {
             context.CheckArgNull(nameof(context));
             statesForDefaultEntry.CheckArgNull(nameof(statesForDefaultEntry));
@@ -244,7 +244,7 @@ namespace DSM.Engine.Model.States
                 }
             }
 
-            if (defaultHistoryContent.TryGetValue(this.Id, out Set<Execution.Action> set))
+            if (defaultHistoryContent.TryGetValue(this.Id, out Set<Actions.Action> set))
             {
                 foreach (var content in set)
                 {

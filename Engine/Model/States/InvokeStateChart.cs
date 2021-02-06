@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DSM.Common.Model.States;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using DSM.Common;
 using System.Diagnostics;
 using DSM.Common.Observability;
@@ -12,7 +12,7 @@ namespace DSM.Engine.Model.States
     internal class InvokeStateMachine
     {
         private readonly IInvokeStateMachineMetadata _metadata;
-        private readonly Lazy<Execution.Action[]> _finalizeContent;
+        private readonly Lazy<Actions.Action[]> _finalizeContent;
 
         public InvokeStateMachine(IInvokeStateMachineMetadata metadata)
         {
@@ -20,9 +20,9 @@ namespace DSM.Engine.Model.States
 
             _metadata = metadata;
 
-            _finalizeContent = new Lazy<Execution.Action[]>(() =>
+            _finalizeContent = new Lazy<Actions.Action[]>(() =>
             {
-                return metadata.GetCompletionActions().Select(Execution.Action.Create).ToArray();
+                return metadata.GetCompletionActions().Select(Actions.Action.Create).ToArray();
             });
         }
 

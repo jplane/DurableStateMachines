@@ -1,0 +1,90 @@
+﻿using DSM.Common;
+using DSM.Common.Exceptions;
+using DSM.Common.Model.Actions;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using DSM.Engine;
+using DSM.Common.Observability;
+
+namespace DSM.Engine.Model.Actions
+{
+    internal abstract class Action
+    {
+        protected readonly IActionMetadata _metadata;
+
+        protected Action(IActionMetadata metadata)
+        {
+            metadata.CheckArgNull(nameof(metadata));
+
+            _metadata = metadata;
+        }
+
+        public static Action Create(IActionMetadata metadata)
+        {
+            metadata.CheckArgNull(nameof(metadata));
+
+            Action content = null;
+
+            switch (metadata)
+            {
+                case IIfMetadata @if:
+                    content = new If(@if);
+                    break;
+                case IRaiseMetadata raise:
+                    content = new Raise(raise);
+                    break;
+                case ILogicMetadata logic:
+                    content = new Logic(logic);
+                    break;
+                case IForeachMetadata @foreach:
+                    content = new Foreach(@foreach);
+                    break;
+                case ILogMetadata log:
+                    content = new Log(log);
+                    break;
+                case ISendMessageMetadata send:
+                    content = new SendMessage(send);
+                    break;
+                case IAssignMetadata assign:
+                    content = new Assign(assign);
+                    break;
+                case IQueryMetadata query:
+                    content = new Query(query);
+                    break;
+            }
+
+            Debug.Assert(content != null, $"Action is not a recognized type: {metadata.GetType().FullName}");
+
+            return content;
+        }
+
+        protected abstract Task _ExecuteAsync(ExecutionContextBase context);
+
+        public async Task ExecuteAsync(ExecutionContextBase context)
+        {
+            await context.LogInformationAsync($"Start: {this.GetType().Name}.Execute");
+
+            await context.OnAction(ObservableAction.BeforeAction, _metadata);
+
+            try
+            {
+                await _ExecuteAsync(context);
+            }
+            catch (StateMachineException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                context.EnqueueExecutionError(ex);
+            }
+            finally
+            {
+                await context.OnAction(ObservableAction.AfterAction, _metadata);
+
+                await context.LogInformationAsync($"End: {this.GetType().Name}.Execute");
+            }
+        }
+    }
+}

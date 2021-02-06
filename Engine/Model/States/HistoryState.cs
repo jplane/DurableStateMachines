@@ -1,6 +1,6 @@
 ﻿using DSM.Common.Model.States;
 using DSM.Engine;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +38,7 @@ namespace DSM.Engine.Model.States
         }
 
         public void VisitTransition(List<State> targetStates,
-                                    Dictionary<string, Set<Execution.Action>> defaultHistoryContent,
+                                    Dictionary<string, Set<Actions.Action>> defaultHistoryContent,
                                     StateMachine root)
         {
             var transition = _transitions.Value.Single();

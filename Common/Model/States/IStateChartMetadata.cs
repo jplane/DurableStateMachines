@@ -1,4 +1,4 @@
-﻿using DSM.Common.Model.Execution;
+﻿using DSM.Common.Model.Actions;
 
 namespace DSM.Common.Model.States
 {

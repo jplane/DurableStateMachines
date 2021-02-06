@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using DSM.Common;
 using DSM.Common.Model.States;
 using DSM.Common.Model;
@@ -11,19 +11,19 @@ namespace DSM.Engine.Model.States
 {
     internal class StateMachine : State
     {
-        private readonly Lazy<Script> _script;
+        private readonly Lazy<Logic> _script;
 
         public StateMachine(IStateMachineMetadata metadata)
             : base(metadata, null)
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            _script = new Lazy<Script>(() =>
+            _script = new Lazy<Logic>(() =>
             {
                 var meta = metadata.GetScript();
 
                 if (meta != null)
-                    return new Script(meta);
+                    return new Logic(meta);
                 else
                     return null;
             });

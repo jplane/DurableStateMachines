@@ -1,4 +1,4 @@
-﻿using DSM.Common.Model.Execution;
+﻿using DSM.Common.Model.Actions;
 using System.Collections.Generic;
 
 namespace DSM.Common.Model.States

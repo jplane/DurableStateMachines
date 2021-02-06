@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using DSM.Common;
 using DSM.Common.Model;
-using DSM.Common.Model.Execution;
+using DSM.Common.Model.Actions;
 using DSM.Common.Model.States;
-using DSM.Metadata.Execution;
+using DSM.Metadata.Actions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,12 +23,12 @@ namespace DSM.Metadata.States
     {
         private readonly Lazy<Func<dynamic, bool>> _condition;
 
-        private MetadataList<Execution.Action<TData>> _actions;
+        private MetadataList<Actions.Action<TData>> _actions;
         private string _syntheticMetadataId;
 
         public Transition()
         {
-            this.Actions = new MetadataList<Execution.Action<TData>>();
+            this.Actions = new MetadataList<Actions.Action<TData>>();
 
             _condition = new Lazy<Func<dynamic, bool>>(() =>
             {
@@ -118,7 +118,7 @@ namespace DSM.Metadata.States
         /// The set of actions executed for this <see cref="Transition{TData}"/>, when triggered.
         /// </summary>
         [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.DisallowNull)]
-        public MetadataList<Execution.Action<TData>> Actions
+        public MetadataList<Actions.Action<TData>> Actions
         {
             get => _actions;
 

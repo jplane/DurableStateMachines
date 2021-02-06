@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using DSM.Common.Model.States;
@@ -14,7 +14,7 @@ namespace DSM.Engine.Model.States
 {
     internal class Transition
     {
-        private readonly Lazy<Execution.Action[]> _content;
+        private readonly Lazy<Actions.Action[]> _content;
         private readonly ITransitionMetadata _metadata;
         private readonly State _source;
 
@@ -26,17 +26,17 @@ namespace DSM.Engine.Model.States
             _metadata = metadata;
             _source = source;
 
-            _content = new Lazy<Execution.Action[]>(() =>
+            _content = new Lazy<Actions.Action[]>(() =>
             {
-                return metadata.GetActions().Select(Execution.Action.Create).ToArray();
+                return metadata.GetActions().Select(Actions.Action.Create).ToArray();
             });
         }
 
-        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<Execution.Action>> defaultHistoryContent)
+        public void StoreDefaultHistoryContent(string id, Dictionary<string, Set<Actions.Action>> defaultHistoryContent)
         {
             defaultHistoryContent.CheckArgNull(nameof(defaultHistoryContent));
 
-            defaultHistoryContent[id] = new Set<Execution.Action>(_content.Value);
+            defaultHistoryContent[id] = new Set<Actions.Action>(_content.Value);
         }
 
         public bool HasMessage => _metadata.Messages.Any();

@@ -4,7 +4,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using DSM.Common.Model.Execution;
+using DSM.Common.Model.Actions;
 
 namespace DSM.Common.Model.States
 {

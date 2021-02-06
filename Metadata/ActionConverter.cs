@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using DSM.Metadata.Execution;
+using DSM.Metadata.Actions;
 
 namespace DSM.Metadata
 {
@@ -13,7 +13,7 @@ namespace DSM.Metadata
         public override bool CanConvert(Type objectType)
         {
             return objectType.IsGenericType &&
-                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(Execution.Action<>));
+                   objectType.GetGenericTypeDefinition().IsSubclassOf(typeof(Actions.Action<>));
         }
 
         public override void WriteJson(JsonWriter writer, [AllowNull] object value, JsonSerializer serializer)

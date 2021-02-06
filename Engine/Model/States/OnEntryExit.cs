@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using DSM.Common;
 using DSM.Common.Model.States;
-using DSM.Engine.Model.Execution;
+using DSM.Engine.Model.Actions;
 using System;
 using DSM.Engine;
 
@@ -10,7 +10,7 @@ namespace DSM.Engine.Model.States
 {
     internal class OnEntryExit
     {
-        private readonly Lazy<Execution.Action[]> _content;
+        private readonly Lazy<Actions.Action[]> _content;
         private readonly bool _isEntry;
 
         public OnEntryExit(IOnEntryExitMetadata metadata)
@@ -19,9 +19,9 @@ namespace DSM.Engine.Model.States
 
             _isEntry = metadata.IsEntry;
 
-            _content = new Lazy<Execution.Action[]>(() =>
+            _content = new Lazy<Actions.Action[]>(() =>
             {
-                return metadata.GetActions().Select(Execution.Action.Create).ToArray();
+                return metadata.GetActions().Select(Actions.Action.Create).ToArray();
             });
         }
 

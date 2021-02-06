@@ -2,9 +2,9 @@
 using Newtonsoft.Json.Linq;
 using DSM.Common;
 using DSM.Common.Model;
-using DSM.Common.Model.Execution;
+using DSM.Common.Model.Actions;
 using DSM.Common.Model.States;
-using DSM.Metadata.Execution;
+using DSM.Metadata.Actions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,12 +27,12 @@ namespace DSM.Metadata.States
         private readonly Lazy<Func<dynamic, object>> _getData;
 
         private MemberInfo _resultTarget;
-        private MetadataList<Execution.Action<TData>> _actions;
+        private MetadataList<Actions.Action<TData>> _actions;
 
         public InvokeStateMachine()
         {
             this.ExecutionMode = ChildStateMachineExecutionMode.Inline;
-            this.CompletionActions = new MetadataList<Execution.Action<TData>>();
+            this.CompletionActions = new MetadataList<Actions.Action<TData>>();
 
             _getData = new Lazy<Func<dynamic, object>>(() =>
             {
@@ -117,7 +117,7 @@ namespace DSM.Metadata.States
         /// The set of actions executed for this <see cref="InvokeStateMachine{TData}"/> once the child invocation successfully completes.
         /// </summary>
         [JsonProperty("completionactions", ItemConverterType = typeof(ActionConverter), Required = Required.DisallowNull)]
-        public MetadataList<Execution.Action<TData>> CompletionActions
+        public MetadataList<Actions.Action<TData>> CompletionActions
         {
             get => _actions;
 

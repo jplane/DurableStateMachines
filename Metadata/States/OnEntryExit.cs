@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using DSM.Common.Model;
-using DSM.Common.Model.Execution;
+using DSM.Common.Model.Actions;
 using DSM.Common.Model.States;
-using DSM.Metadata.Execution;
+using DSM.Metadata.Actions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,11 +19,11 @@ namespace DSM.Metadata.States
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
     public sealed class OnEntryExit<TData> : IOnEntryExitMetadata
     {
-        private MetadataList<Execution.Action<TData>> _actions;
+        private MetadataList<Actions.Action<TData>> _actions;
 
         public OnEntryExit()
         {
-            this.Actions = new MetadataList<Execution.Action<TData>>();
+            this.Actions = new MetadataList<Actions.Action<TData>>();
         }
 
         internal bool IsEntry { private get; set; }
@@ -36,7 +36,7 @@ namespace DSM.Metadata.States
         /// The set of actions for this <see cref="OnEntryExit{TData}"/>.
         /// </summary>
         [JsonProperty("actions", ItemConverterType = typeof(ActionConverter), Required = Required.Always)]
-        public MetadataList<Execution.Action<TData>> Actions
+        public MetadataList<Actions.Action<TData>> Actions
         {
             get => _actions;
 
