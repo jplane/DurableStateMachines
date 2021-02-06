@@ -54,7 +54,7 @@ namespace DSM.FunctionClient
 
             var payload = new StateMachinePayload
             {
-                Observables = observer.Instructions,
+                Observables = observer?.Instructions,
                 StateMachineIdentifier = stateMachineId,
                 Input = input
             };

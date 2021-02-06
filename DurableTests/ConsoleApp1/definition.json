@@ -1,0 +1,70 @@
+{
+  "input": {
+    "innerData": null
+  },
+  "statemachine": {
+    "id": "outer",
+    "states": [
+      {
+        "id": "outerState1",
+        "type": "atomic",
+        "onentry": {
+          "actions": [
+            {
+              "id": "invokeInner",
+              "type": "invokestatemachine`1",
+              "resultlocation": "innerData",
+              "input": {
+                "y": 40
+              },
+              "statemachinedefinition": {
+                "id": "inner",
+                "states": [
+                  {
+                    "id": "innerState1",
+                    "type": "atomic",
+                    "onentry": {
+                      "actions": [
+                        {
+                          "type": "assign`1",
+                          "target": "z",
+                          "valueexpression": "y * 2"
+                        }
+                      ]
+                    },
+                    "transitions": [
+                      {
+                        "target": "inneralldone"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "inneralldone",
+                    "type": "final"
+                  }
+                ]
+              },
+              "completionactions": [
+                {
+                  "type": "assign`1",
+                  "target": "innerZ",
+                  "valueexpression": "innerData[\"z\"]"
+                }
+              ]
+            }
+          ]
+        },
+        "transitions": [
+          {
+            "conditionexpression": "innerData != null",
+            "target": "outeralldone"
+          }
+        ]
+      },
+      {
+        "id": "outeralldone",
+        "type": "final"
+      }
+    ]
+  }
+}
