@@ -334,15 +334,18 @@ namespace DSM.Tests
                     new AtomicState<(int x, (int x, int y) innerX)>
                     {
                         Id = "state1",
-                        Invokes =
+                        OnEntry = new OnEntryExit<(int x, (int x, int y) innerX)>
                         {
-                            new InvokeStateMachine<(int x, (int x, int y) innerX)>
+                            Actions =
                             {
-                                Id = "an-invoke",
-                                StateMachineIdentifier = "inner",
-                                InputFunction = d => (d.x, 0),
-                                AssignTo = d => d.innerX
-                            }
+                                new InvokeStateMachine<(int x, (int x, int y) innerX)>
+                                {
+                                    Id = "an-invoke",
+                                    StateMachineIdentifier = "inner",
+                                    InputFunction = d => (d.x, 0),
+                                    AssignTo = d => d.innerX
+                                }
+                            },
                         },
                         Transitions =
                         {

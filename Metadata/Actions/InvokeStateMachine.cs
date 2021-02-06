@@ -4,15 +4,15 @@ using DSM.Common;
 using DSM.Common.Model;
 using DSM.Common.Model.Actions;
 using DSM.Common.Model.States;
-using DSM.Metadata.Actions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using DSM.Metadata.States;
 
-namespace DSM.Metadata.States
+namespace DSM.Metadata.Actions
 {
     /// <summary>
     /// <see cref="InvokeStateMachine{TData}"/> models the execution of a <see cref="StateMachine{TData}"/> as a child of the currently executing <see cref="StateMachine{TData}"/>.
@@ -22,7 +22,7 @@ namespace DSM.Metadata.States
     [JsonObject(Id = "InvokeStateMachine",
                 ItemNullValueHandling = NullValueHandling.Ignore,
                 ItemReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
-    public sealed class InvokeStateMachine<TData> : IInvokeStateMachineMetadata
+    public sealed class InvokeStateMachine<TData> : Action<TData>, IInvokeStateMachineMetadata
     {
         private readonly Lazy<Func<dynamic, object>> _getData;
 
@@ -50,8 +50,6 @@ namespace DSM.Metadata.States
                 }
             });
         }
-
-        internal Func<IModelMetadata, string> MetadataIdResolver { private get; set; }
 
         string IModelMetadata.MetadataId => this.MetadataIdResolver?.Invoke(this);
 
@@ -139,7 +137,7 @@ namespace DSM.Metadata.States
             }
         }
 
-        internal void Validate(IDictionary<string, List<string>> errorMap)
+        internal override void Validate(IDictionary<string, List<string>> errorMap)
         {
             Debug.Assert(errorMap != null);
 

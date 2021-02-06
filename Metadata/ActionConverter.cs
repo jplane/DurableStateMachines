@@ -76,6 +76,10 @@ namespace DSM.Metadata
                     actionType = typeof(SendMessage<>).MakeGenericType(genericArgumentType);
                     break;
 
+                case "invokestatemachine`1":
+                    actionType = typeof(InvokeStateMachine<>).MakeGenericType(genericArgumentType);
+                    break;
+
                 default:
                     Debug.Fail("Unexpected action type.");
                     break;

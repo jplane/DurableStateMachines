@@ -23,12 +23,10 @@ namespace DSM.Metadata.States
         private OnEntryExit<TData> _onEntry;
         private OnEntryExit<TData> _onExit;
         private MetadataList<Transition<TData>> _transitions;
-        private MetadataList<InvokeStateMachine<TData>> _invokes;
 
         public AtomicState()
         {
             this.Transitions = new MetadataList<Transition<TData>>();
-            this.Invokes = new MetadataList<InvokeStateMachine<TData>>();
         }
 
         /// <summary>
@@ -107,32 +105,6 @@ namespace DSM.Metadata.States
             }
         }
 
-        /// <summary>
-        /// Defines child state machine invocations that occur upon entry into this <see cref="AtomicState{TData}"/>.
-        /// </summary>
-        [JsonProperty("childinvocations", Required = Required.DisallowNull)]
-        public MetadataList<InvokeStateMachine<TData>> Invokes
-        {
-            get => _invokes;
-
-            private set
-            {
-                if (value == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                if (_invokes != null)
-                {
-                    _invokes.MetadataIdResolver = null;
-                }
-
-                value.MetadataIdResolver = () => $"{this.MetadataIdResolver?.Invoke(this) ?? "atomicstate"}.invokes";
-
-                _invokes = value;
-            }
-        }
-
         internal override void Validate(IDictionary<string, List<string>> errorMap)
         {
             Debug.Assert(errorMap != null);
@@ -147,11 +119,6 @@ namespace DSM.Metadata.States
             foreach (var transition in this.Transitions)
             {
                 transition.Validate(errorMap);
-            }
-
-            foreach (var invoke in this.Invokes)
-            {
-                invoke.Validate(errorMap);
             }
 
             this.OnEntry?.Validate(errorMap);
@@ -182,9 +149,6 @@ namespace DSM.Metadata.States
 
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() =>
             this.Transitions ?? Enumerable.Empty<ITransitionMetadata>();
-
-        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() =>
-            this.Invokes ?? Enumerable.Empty<IInvokeStateMachineMetadata>();
 
         ITransitionMetadata IStateMetadata.GetInitialTransition() => throw new NotSupportedException();
 

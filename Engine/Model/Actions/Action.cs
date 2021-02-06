@@ -24,39 +24,42 @@ namespace DSM.Engine.Model.Actions
         {
             metadata.CheckArgNull(nameof(metadata));
 
-            Action content = null;
+            Action action = null;
 
             switch (metadata)
             {
                 case IIfMetadata @if:
-                    content = new If(@if);
+                    action = new If(@if);
                     break;
                 case IRaiseMetadata raise:
-                    content = new Raise(raise);
+                    action = new Raise(raise);
                     break;
                 case ILogicMetadata logic:
-                    content = new Logic(logic);
+                    action = new Logic(logic);
                     break;
                 case IForeachMetadata @foreach:
-                    content = new Foreach(@foreach);
+                    action = new Foreach(@foreach);
                     break;
                 case ILogMetadata log:
-                    content = new Log(log);
+                    action = new Log(log);
                     break;
                 case ISendMessageMetadata send:
-                    content = new SendMessage(send);
+                    action = new SendMessage(send);
                     break;
                 case IAssignMetadata assign:
-                    content = new Assign(assign);
+                    action = new Assign(assign);
                     break;
                 case IQueryMetadata query:
-                    content = new Query(query);
+                    action = new Query(query);
+                    break;
+                case IInvokeStateMachineMetadata invoke:
+                    action = new InvokeStateMachine(invoke);
                     break;
             }
 
-            Debug.Assert(content != null, $"Action is not a recognized type: {metadata.GetType().FullName}");
+            Debug.Assert(action != null, $"Action is not a recognized type: {metadata.GetType().FullName}");
 
-            return content;
+            return action;
         }
 
         protected abstract Task _ExecuteAsync(ExecutionContextBase context);

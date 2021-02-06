@@ -12,8 +12,6 @@ namespace DSM.Common.Observability
         ExitState,
         MakeTransition,
         BeforeAction,
-        AfterAction,
-        BeforeInvokeChildStateMachine,
-        AfterInvokeChildStateMachine
+        AfterAction
     }
 }

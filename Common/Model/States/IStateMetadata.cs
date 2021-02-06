@@ -19,8 +19,6 @@ namespace DSM.Common.Model.States
 
         IEnumerable<ITransitionMetadata> GetTransitions();
 
-        IEnumerable<IInvokeStateMachineMetadata> GetStateMachineInvokes();
-
         ITransitionMetadata GetInitialTransition();
 
         IEnumerable<IStateMetadata> GetStates();

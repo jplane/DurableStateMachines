@@ -203,8 +203,6 @@ namespace DSM.Metadata.States
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() =>
             this.Transitions ?? Enumerable.Empty<ITransitionMetadata>();
 
-        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() => throw new NotSupportedException();
-
         ITransitionMetadata IStateMetadata.GetInitialTransition() => throw new NotSupportedException();
 
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => this.States.Cast<IStateMetadata>() ?? Enumerable.Empty<IStateMetadata>();

@@ -31,14 +31,9 @@ namespace DSM.Engine
 
                 await MacrostepAsync(context);
 
-                if (context.IsRunning)
+                if (context.IsRunning && !context.HasInternalMessages)
                 {
-                    await ProcessStateMachineInvokesAsync(context);
-
-                    if (!context.HasInternalMessages)
-                    {
-                        await ProcessExternalMessageAsync(context);
-                    }
+                    await ProcessExternalMessageAsync(context);
                 }
 
                 await context.LogInformationAsync("End: event loop cycle");
@@ -71,18 +66,6 @@ namespace DSM.Engine
             }
 
             await context.ExitAsync();
-        }
-
-        private static async Task ProcessStateMachineInvokesAsync(ExecutionContextBase context)
-        {
-            Debug.Assert(context != null);
-
-            foreach (var state in context.StatesToInvoke.Sort(State.Compare))
-            {
-                await state.InvokeAsync(context);
-            }
-
-            context.StatesToInvoke.Clear();
         }
 
         private async Task ProcessExternalMessageAsync(ExecutionContextBase context)
@@ -159,13 +142,6 @@ namespace DSM.Engine
             var exitSet = ComputeExitSet(context, enabledTransitions);
 
             Debug.Assert(exitSet != null);
-
-            foreach (var state in exitSet)
-            {
-                Debug.Assert(state != null);
-
-                context.StatesToInvoke.Remove(state);
-            }
 
             foreach (var state in exitSet.Sort(State.ReverseCompare))
             {

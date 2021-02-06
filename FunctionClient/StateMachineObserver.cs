@@ -139,14 +139,6 @@ namespace DSM.FunctionClient
                     task = OnAfterAction(data);
                     break;
 
-                case ObservableAction.BeforeInvokeChildStateMachine:
-                    task = OnBeforeInvokeChildStateMachine(data);
-                    break;
-
-                case ObservableAction.AfterInvokeChildStateMachine:
-                    task = OnAfterInvokeChildStateMachine(data);
-                    break;
-
                 default:
                     Debug.Fail("Unexpected debugger action: " + action);
                     task = Task.CompletedTask;
@@ -187,16 +179,6 @@ namespace DSM.FunctionClient
         }
 
         protected virtual Task OnAfterAction(IDictionary<string, object> data)
-        {
-            return Task.CompletedTask;
-        }
-
-        protected virtual Task OnBeforeInvokeChildStateMachine(IDictionary<string, object> data)
-        {
-            return Task.CompletedTask;
-        }
-
-        protected virtual Task OnAfterInvokeChildStateMachine(IDictionary<string, object> data)
         {
             return Task.CompletedTask;
         }

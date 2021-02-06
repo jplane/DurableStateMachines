@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using DSM.Common.Model.Actions;
+using DSM.Common.Model.States;
 
-namespace DSM.Common.Model.States
+namespace DSM.Common.Model.Actions
 {
-    public interface IInvokeStateMachineMetadata : IModelMetadata
+    public interface IInvokeStateMachineMetadata : IActionMetadata
     {
         string Id { get; }
         (string, MemberInfo) ResultLocation { get; }

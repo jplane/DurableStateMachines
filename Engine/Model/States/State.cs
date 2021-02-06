@@ -18,7 +18,6 @@ namespace DSM.Engine.Model.States
         protected readonly Lazy<OnEntryExit> _onEntry;
         protected readonly Lazy<OnEntryExit> _onExit;
         protected readonly Lazy<Transition[]> _transitions;
-        protected readonly Lazy<InvokeStateMachine[]> _invokes;
         protected readonly Lazy<State[]> _states;
         protected readonly Lazy<Transition> _initialTransition;
 
@@ -52,11 +51,6 @@ namespace DSM.Engine.Model.States
             _transitions = new Lazy<Transition[]>(() =>
             {
                 return _metadata.GetTransitions().Select(tm => new Transition(tm, this)).ToArray();
-            });
-
-            _invokes = new Lazy<InvokeStateMachine[]>(() =>
-            {
-                return _metadata.GetStateMachineInvokes().Select(sm => new InvokeStateMachine(sm)).ToArray();
             });
 
             _initialTransition = new Lazy<Transition>(() =>
@@ -111,14 +105,6 @@ namespace DSM.Engine.Model.States
         public virtual Transition GetInitialStateTransition()
         {
             return _initialTransition.Value;
-        }
-
-        public virtual async Task InvokeAsync(ExecutionContextBase context)
-        {
-            foreach (var invoke in _invokes.Value)
-            {
-                await invoke.ExecuteAsync(context);
-            }
         }
 
         public virtual void RecordHistory(ExecutionContextBase context)
@@ -226,8 +212,6 @@ namespace DSM.Engine.Model.States
             await context.OnAction(ObservableAction.EnterState, _metadata);
 
             context.Configuration.Add(this);
-
-            context.StatesToInvoke.Add(this);
 
             if (_onEntry.Value != null)
             {

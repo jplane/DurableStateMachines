@@ -14,11 +14,6 @@ namespace DSM.Engine.Model.States
         {
         }
 
-        public override Task InvokeAsync(ExecutionContextBase context)
-        {
-            return Task.CompletedTask;
-        }
-
         public override IEnumerable<State> GetChildStates()
         {
             return Enumerable.Empty<State>();

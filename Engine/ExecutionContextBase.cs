@@ -16,6 +16,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using DSM.Common.Observability;
+using DSM.Common.Model.Actions;
 
 namespace DSM.Engine
 {
@@ -29,7 +30,6 @@ namespace DSM.Engine
         private readonly Dictionary<string, IEnumerable<State>> _historyValues;
         private readonly Queue<InternalMessage> _internalMessages;
         private readonly Set<State> _configuration;
-        private readonly Set<State> _statesToInvoke;
         private readonly StateMachine _root;
         private readonly IStateMachineMetadata _metadata;
         private readonly string[] _parentInstanceIds;
@@ -60,7 +60,6 @@ namespace DSM.Engine
             _historyValues = new Dictionary<string, IEnumerable<State>>();
             _internalMessages = new Queue<InternalMessage>();
             _configuration = new Set<State>();
-            _statesToInvoke = new Set<State>();
         }
 
         internal abstract Task DelayAsync(TimeSpan timespan);
@@ -308,8 +307,6 @@ namespace DSM.Engine
         }
 
         internal Set<State> Configuration => _configuration;
-
-        internal Set<State> StatesToInvoke => _statesToInvoke;
 
         internal bool TryGetHistoryValue(string key, out IEnumerable<State> value)
         {

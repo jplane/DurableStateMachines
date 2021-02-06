@@ -66,8 +66,6 @@ namespace DSM.Metadata.States
 
         IOnEntryExitMetadata IStateMetadata.GetOnExit() => throw new NotSupportedException();
 
-        IEnumerable<IInvokeStateMachineMetadata> IStateMetadata.GetStateMachineInvokes() => throw new NotSupportedException();
-
         IEnumerable<IStateMetadata> IStateMetadata.GetStates() => throw new NotSupportedException();
 
         IEnumerable<ITransitionMetadata> IStateMetadata.GetTransitions() => throw new NotSupportedException();

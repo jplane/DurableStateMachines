@@ -43,11 +43,6 @@ namespace DSM.Engine.Model.States
 
         public override string Id => "[ROOT]";
 
-        public override Task InvokeAsync(ExecutionContextBase context)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void RecordHistory(ExecutionContextBase context)
         {
             throw new NotImplementedException();

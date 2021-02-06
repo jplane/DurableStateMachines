@@ -17,11 +17,6 @@ namespace DSM.Engine.Model.States
 
         public bool IsDeep => ((IHistoryStateMetadata) _metadata).IsDeep;
 
-        public override Task InvokeAsync(ExecutionContextBase context)
-        {
-            throw new NotImplementedException();
-        }
-
         public override IEnumerable<State> GetChildStates()
         {
             throw new NotImplementedException();
