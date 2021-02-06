@@ -187,9 +187,8 @@ namespace DSM.Metadata.States
         IEnumerable<IExecutableContentMetadata> IInvokeStateMachineMetadata.GetFinalizeExecutableContent() =>
             this.CompletionActions ?? Enumerable.Empty<IExecutableContentMetadata>();
 
-        IStateMachineMetadata IInvokeStateMachineMetadata.GetRoot() => this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>();
-
-        string IInvokeStateMachineMetadata.GetRootIdentifier() => this.StateMachineIdentifier;
+        (string, IStateMachineMetadata) IInvokeStateMachineMetadata.GetStateMachineInfo() =>
+            (this.StateMachineIdentifier, this.Definition?.ToObject<StateMachine<Dictionary<string, object>>>());
 
         object IInvokeStateMachineMetadata.GetData(dynamic data) => _getData.Value(data);
 

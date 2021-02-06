@@ -152,8 +152,10 @@ namespace DSM.Engine
         {
             Debug.Assert(metadata != null);
 
-            return metadata.GetRoot() ??
-                   _lookupChild?.Invoke(metadata.GetRootIdentifier()) ??
+            var info = metadata.GetStateMachineInfo();
+
+            return info.Item2 ??
+                   _lookupChild?.Invoke(info.Item1) ??
                    throw new InvalidOperationException($"Unable to resolve child state machine: {metadata.MetadataId}");
         }
 

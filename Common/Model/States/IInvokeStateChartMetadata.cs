@@ -15,8 +15,7 @@ namespace DSM.Common.Model.States
         ChildStateMachineExecutionMode ExecutionMode { get; }
         string RemoteUri { get; }
 
-        IStateMachineMetadata GetRoot();
-        string GetRootIdentifier();
+        (string, IStateMachineMetadata) GetStateMachineInfo();
         object GetData(dynamic data);
         IEnumerable<IExecutableContentMetadata> GetFinalizeExecutableContent();
     }

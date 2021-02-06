@@ -99,18 +99,24 @@ namespace DSM.FunctionHost
 
             var isByIdentifier = _lookupChild != null;
 
+            var info = metadata.GetStateMachineInfo();
+
             if (isByIdentifier)
             {
+                Debug.Assert(!string.IsNullOrWhiteSpace(info.Item1));
+
                 return (StateMachineExtensions.StateMachineWithNameEndpoint, new StateMachinePayload
                 {
                     Input = input,
-                    StateMachineIdentifier = metadata.GetRootIdentifier(),
+                    StateMachineIdentifier = info.Item1,
                     Observables = _observableInstructions,
                     ParentInstanceStack = this.InstanceIdStack
                 });
             }
             else
             {
+                Debug.Assert(info.Item2 != null);
+                Debug.Assert(info.Item2 is StateMachine<Dictionary<string, object>>);
                 Debug.Assert(input == null || input is JObject);
 
                 if (input == null)
@@ -121,7 +127,7 @@ namespace DSM.FunctionHost
                 return (FunctionProvider.StateMachineWithDefinitionEndpoint, new StateMachineDefinitionPayload
                 {
                     Input = ((JObject) input).ToObject<Dictionary<string, object>>(),
-                    Definition = (StateMachine<Dictionary<string, object>>) metadata.GetRoot(),
+                    Definition = (StateMachine<Dictionary<string, object>>) info.Item2,
                     Observables = _observableInstructions,
                     ParentInstanceStack = this.InstanceIdStack
                 });
