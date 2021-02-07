@@ -22,7 +22,7 @@
         "onentry": {
           "actions": [
             {
-              "type": "assign`1",
+              "type": "assign",
               "target": "x",
               "valueexpression": "x + \" [enter state2] \""
             }
@@ -33,7 +33,7 @@
             "target": "exit",
             "actions": [
               {
-                "type": "assign`1",
+                "type": "assign",
                 "target": "x",
                 "valueexpression": "x + \" [transition to exit] \""
               }
@@ -48,7 +48,7 @@
         "onentry": {
           "actions": [
             {
-              "type": "assign`1",
+              "type": "assign",
               "target": "x",
               "valueexpression": "x + \" [enter state3] \""
             }
@@ -59,7 +59,7 @@
             "target": "state2",
             "actions": [
               {
-                "type": "assign`1",
+                "type": "assign",
                 "target": "x",
                 "valueexpression": "x + \" [transition to state2] \""
               }
@@ -73,7 +73,7 @@
             "onentry": {
               "actions": [
                 {
-                  "type": "assign`1",
+                  "type": "assign",
                   "target": "x",
                   "valueexpression": "x + \" [enter state6] \""
                 }
@@ -84,7 +84,7 @@
                 "target": "exitstate3",
                 "actions": [
                   {
-                    "type": "assign`1",
+                    "type": "assign",
                     "target": "x",
                     "valueexpression": "x + \" [transition to exitstate3] \""
                   }
@@ -98,7 +98,7 @@
             "onentry": {
               "actions": [
                 {
-                  "type": "assign`1",
+                  "type": "assign",
                   "target": "x",
                   "valueexpression": "x + \" [enter state5] \""
                 }
@@ -109,7 +109,7 @@
                 "target": "state6",
                 "actions": [
                   {
-                    "type": "assign`1",
+                    "type": "assign",
                     "target": "x",
                     "valueexpression": "x + \" [transition to state6] \""
                   }
@@ -123,7 +123,7 @@
             "onentry": {
               "actions": [
                 {
-                  "type": "assign`1",
+                  "type": "assign",
                   "target": "x",
                   "valueexpression": "x + \" [enter exitstate3] \""
                 }
@@ -138,7 +138,7 @@
         "onentry": {
           "actions": [
             {
-              "type": "assign`1",
+              "type": "assign",
               "target": "x",
               "valueexpression": "x + \" [enter exit ;-)] \""
             }

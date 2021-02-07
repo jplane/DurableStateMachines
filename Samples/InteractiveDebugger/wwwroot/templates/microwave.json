@@ -56,7 +56,7 @@
                 "target": "cooking",
                 "actions": [
                   {
-                    "type": "assign`1",
+                    "type": "assign",
                     "target": "door_closed",
                     "valueexpression": "true"
                   }
@@ -73,7 +73,7 @@
                 "target": "idle",
                 "actions": [
                   {
-                    "type": "assign`1",
+                    "type": "assign",
                     "target": "door_closed",
                     "valueexpression": "false"
                   }
@@ -83,7 +83,7 @@
                 "message": "time",
                 "actions": [
                   {
-                    "type": "assign`1",
+                    "type": "assign",
                     "target": "timer",
                     "valueexpression": "timer + 1"
                   }

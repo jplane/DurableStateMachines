@@ -19,7 +19,7 @@
           "actions": [
             {
               "id": "test-func",
-              "type": "sendmessage`1",
+              "type": "sendmessage",
               "activitytype": "http-post",
               "configuration": {
                 "uri": "http://localhost:7071/api/TestFunction",

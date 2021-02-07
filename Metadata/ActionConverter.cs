@@ -36,47 +36,47 @@ namespace DSM.Metadata
 
             switch (json["type"].Value<string>())
             {
-                case "assign`1":
+                case "assign":
                     actionType = typeof(Assign<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "else`1":
+                case "else":
                     actionType = typeof(Else<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "elseif`1":
+                case "elseif":
                     actionType = typeof(ElseIf<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "foreach`1":
+                case "foreach":
                     actionType = typeof(Foreach<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "if`1":
+                case "if":
                     actionType = typeof(If<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "log`1":
+                case "log":
                     actionType = typeof(Log<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "logic`1":
+                case "logic":
                     actionType = typeof(Logic<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "query`1":
+                case "query":
                     actionType = typeof(Query<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "raise`1":
+                case "raise":
                     actionType = typeof(Raise<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "sendmessage`1":
+                case "sendmessage":
                     actionType = typeof(SendMessage<>).MakeGenericType(genericArgumentType);
                     break;
 
-                case "invokestatemachine`1":
+                case "invokestatemachine":
                     actionType = typeof(InvokeStateMachine<>).MakeGenericType(genericArgumentType);
                     break;
 

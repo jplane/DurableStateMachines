@@ -18,7 +18,7 @@ namespace DSM.Metadata.Actions
         [JsonProperty("type", Required = Required.Always)]
         private string SerializationType
         {
-            get => this.GetType().Name.ToLowerInvariant();
+            get => this.GetType().Name[..^2].ToLowerInvariant();
             set { }
         }
 

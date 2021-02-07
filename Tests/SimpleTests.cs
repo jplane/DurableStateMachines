@@ -92,54 +92,6 @@ namespace DSM.Tests
         [TestScaffold]
         public async Task JsonSerialization(ScaffoldFactoryDelegate factory, string _)
         {
-            //var machine = new StateMachine<TestData>
-            //{
-            //    Id = "test",
-            //    InitialState = "loop",
-            //    States =
-            //    {
-            //        new AtomicState<TestData>
-            //        {
-            //            Id = "loop",
-            //            OnEntry = new OnEntryExit<TestData>
-            //            {
-            //                Actions =
-            //                {
-            //                    new Foreach<TestData>
-            //                    {
-            //                        CurrentItem = d => d.ArrayItem,
-            //                        ValueFunction = data => data.Items,
-            //                        Actions =
-            //                        {
-            //                            new Assign<TestData> { To = d => d.Sum, ValueFunction = d => d.Sum + d.ArrayItem },
-            //                            new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
-            //                        }
-            //                    }
-            //                }
-            //            },
-            //            Transitions =
-            //            {
-            //                new Transition<TestData>
-            //                {
-            //                    ConditionFunction = d => d.Sum >= 15,
-            //                    Target = "done"
-            //                }
-            //            }
-            //        },
-            //        new FinalState<TestData>
-            //        {
-            //            Id = "done",
-            //            OnEntry = new OnEntryExit<TestData>
-            //            {
-            //                Actions =
-            //                {
-            //                    new Log<TestData> { MessageFunction = d => $"item = {d.ArrayItem}" }
-            //                }
-            //            }
-            //        }
-            //    }
-            //};
-
             var json = @"{
                            'id': 'test',
                            'states': [
@@ -149,17 +101,17 @@ namespace DSM.Tests
                                'onentry': {
                                  'actions': [
                                    {
-                                     'type': 'foreach`1',
+                                     'type': 'foreach',
                                      'currentitemlocation': 'arrayItem',
                                      'valueexpression': 'items',
                                      'actions': [
                                        {
-                                         'type': 'assign`1',
+                                         'type': 'assign',
                                          'target': 'sum',
                                          'valueexpression': 'sum + arrayItem'
                                        },
                                        {
-                                         'type': 'log`1',
+                                         'type': 'log',
                                          'messageexpression': '""item = "" + arrayItem'
                                        }
                                      ]
@@ -179,7 +131,7 @@ namespace DSM.Tests
                                'onentry': {
                                  'actions': [
                                    {
-                                     'type': 'log`1',
+                                     'type': 'log',
                                      'messageexpression': '""item = "" + arrayItem'
                                    }
                                  ]

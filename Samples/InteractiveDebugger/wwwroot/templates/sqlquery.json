@@ -18,7 +18,7 @@
         "onentry": {
           "actions": [
             {
-              "type": "query`1",
+              "type": "query",
               "activitytype": "sql-query",
               "resultlocation": "x",
               "configuration": {

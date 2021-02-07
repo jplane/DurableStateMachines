@@ -143,17 +143,17 @@ HTTP POST /runtime/webhooks/durabletask/orchestrators/statemachine-definition
         'onentry': {
           'actions': [
             {
-              'type': 'foreach`1',
+              'type': 'foreach',
               'valueexpression': 'items',
               'currentitemlocation': 'arrayItem',
               'actions': [
                 {
-                  'type': 'assign`1',
+                  'type': 'assign',
                   'target': 'sum',
                   'valueexpression': 'sum + arrayItem'
                 },
                 {
-                  'type': 'log`1',
+                  'type': 'log',
                   'messageexpression': '""item = "" + arrayItem'
                 }
               ]
@@ -173,7 +173,7 @@ HTTP POST /runtime/webhooks/durabletask/orchestrators/statemachine-definition
         'onentry': {
           'actions': [
             {
-              'type': 'log`1',
+              'type': 'log',
               'messageexpression': '""item = "" + arrayItem'
             }
           ]

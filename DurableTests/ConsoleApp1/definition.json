@@ -12,7 +12,7 @@
           "actions": [
             {
               "id": "invokeInner",
-              "type": "invokestatemachine`1",
+              "type": "invokestatemachine",
               "resultlocation": "innerData",
               "input": {
                 "y": 40
@@ -26,7 +26,7 @@
                     "onentry": {
                       "actions": [
                         {
-                          "type": "assign`1",
+                          "type": "assign",
                           "target": "z",
                           "valueexpression": "y * 2"
                         }
@@ -46,7 +46,7 @@
               },
               "completionactions": [
                 {
-                  "type": "assign`1",
+                  "type": "assign",
                   "target": "innerZ",
                   "valueexpression": "innerData[\"z\"]"
                 }
