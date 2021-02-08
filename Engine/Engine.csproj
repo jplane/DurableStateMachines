@@ -9,7 +9,7 @@
     <Title>Core metadata and interpreter for Durable State Machines. Usable as a standalone component for ephemeral (non-durable) execution.</Title>
     <Description>This package defines the metadata abstractions for describing hierarchical state machines (also known as "statecharts"), as well as an initial .NET object model implementation and an in-memory interpreter that works directly against that metadata. For more information on statecharts, see https://statecharts.github.io/.
 </Description>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <Authors>josh.lane</Authors>
     <Company>FuzzyMaths Inc.</Company>
     <PackageTags>statemachine;state-machine;statechart;durable;durable-functions;</PackageTags>

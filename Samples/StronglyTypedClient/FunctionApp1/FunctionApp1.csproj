@@ -7,7 +7,7 @@
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DurableStateMachines.Functions" Version="0.1.4" />
+    <PackageReference Include="DurableStateMachines.Functions" Version="0.1.5" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />

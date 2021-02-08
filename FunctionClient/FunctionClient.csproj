@@ -8,7 +8,7 @@
     <PackageId>DurableStateMachines.Client</PackageId>
     <Title>Strongly-typed client library extensions for Durable State Machines.</Title>
     <Description>This package defines the client APIs for starting new hierarchical state machine (or "statechart") instances that run on Azure Durable Functions. For more information on statecharts, see https://statecharts.github.io/.</Description>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <Authors>josh.lane</Authors>
     <Company>FuzzyMaths Inc.</Company>
     <PackageTags>statemachine;state-machine;statechart;durable;durable-functions;</PackageTags>
