@@ -4,7 +4,7 @@ Included here are two full-featured samples that demonstrate various aspects of 
 
 ## Interactive Debugger
 
-[InteractiveDebugger.sln](./InteractiveDebugger.sln)
+[InteractiveDebugger.sln](./InteractiveDebugger)
 
 This sample demonstrates a simple web interface for submitting state machine execution requests as JSON. It also demonstrates the ability to listen for observability events during state machine execution, using a SignalR client. The web app pauses execution to display state machine progress, and allows the user to resume execution at the click of a button.
 
@@ -12,7 +12,7 @@ This sample includes a number of state machine definitions as starters; you can 
 
 ## Strongly Typed Client
 
-[StronglyTypedClient.sln](./InteractiveDebugger.sln)
+[StronglyTypedClient.sln](./StronglyTypedClient)
 
 This sample demonstrates the use of [IDurableClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.webjobs.extensions.durabletask.idurableclient?view=azure-dotnet) to submit state machine jobs, check status, etc. using purpose-built extension methods. IDurableClient invocations are submitted by name, and mapped to existing definitions already registered on the Durable Functions application.
 

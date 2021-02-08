@@ -30,7 +30,7 @@ namespace ClassLibrary1
                                     To = d => d.X,
                                     ValueFunction = data => data.X + 1
                                 }
-}
+                            }
                         },
                         OnExit = new OnEntryExit<TestState>
                         {
